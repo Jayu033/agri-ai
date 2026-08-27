@@ -1,0 +1,247 @@
+@model AgriAI.Web.ViewModels.CropPredictorInputModel
+@using AgriAI.Web.ViewModels
+
+@{
+    ViewData["Title"] = "AgriAI Crop Predictor - Machine Learning Soil & Weather Analysis";
+    var result = ViewBag.PredictionResult as CropPredictionResult;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/CropPredictor.css" asp-append-version="true" />
+}
+
+<div class="crop-predictor-container">
+
+    <!-- Top Hero Banner (Matching Exact Layout and Header) -->
+    <div class="crop-predictor-hero">
+        <h1 class="crop-hero-title">
+            <i class="bi bi-cpu"></i> AgriAI Crop Predictor
+        </h1>
+        <p class="crop-hero-subtitle">
+            Our advanced Machine Learning algorithm analyzes your soil metrics to recommend the absolute best crop for maximum yield.
+        </p>
+    </div>
+
+    <!-- Quick Preset Soil Badges for 1-Click Testing -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 px-1">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="text-muted small fw-bold"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Quick Presets:</span>
+            <button type="button" class="soil-preset-btn" onclick="applySoilPreset(90, 42, 43, 20.8, 82.0, 6.5)">
+                🌾 Standard (Rice / Wheat)
+            </button>
+            <button type="button" class="soil-preset-btn" onclick="applySoilPreset(120, 46, 20, 24.0, 79.8, 6.8)">
+                ☁️ Black Soil (Cotton)
+            </button>
+            <button type="button" class="soil-preset-btn" onclick="applySoilPreset(35, 40, 45, 26.0, 60.0, 6.5)">
+                🥜 Saurashtra (Groundnut)
+            </button>
+            <button type="button" class="soil-preset-btn" onclick="applySoilPreset(40, 30, 30, 21.0, 50.0, 7.2)">
+                🌿 Unjha (Cumin / Jeera)
+            </button>
+            <button type="button" class="soil-preset-btn" onclick="applySoilPreset(40, 68, 80, 19.0, 17.0, 7.3)">
+                🌱 Winter Pulse (Chickpea / Chana)
+            </button>
+        </div>
+        <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-3 py-1">
+            <i class="bi bi-graph-up-arrow me-1"></i> Mandi Price Forecaster
+        </a>
+    </div>
+
+    <!-- Main Soil & Weather Input Form Card -->
+    <div class="crop-form-card">
+        <div class="crop-form-heading">
+            <span><i class="bi bi-sliders text-success me-2"></i>Enter Soil &amp; Weather Data</span>
+            <span class="badge bg-success bg-opacity-10 text-success fw-semibold small">Machine Learning V2.4</span>
+        </div>
+
+        <form asp-action="PredictCrop" method="post" id="cropPredictorForm">
+            <!-- Row 1: N, P, K Ratios -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="crop-form-label" for="inputN">
+                        Nitrogen (N) <span class="unit">(Ratio)</span>
+                    </label>
+                    <input type="number" step="any" class="form-control crop-input-field" id="inputN" name="Nitrogen" value="@Model.Nitrogen" placeholder="e.g. 90" required />
+                </div>
+                <div class="col-md-4">
+                    <label class="crop-form-label" for="inputP">
+                        Phosphorus (P) <span class="unit">(Ratio)</span>
+                    </label>
+                    <input type="number" step="any" class="form-control crop-input-field" id="inputP" name="Phosphorus" value="@Model.Phosphorus" placeholder="e.g. 42" required />
+                </div>
+                <div class="col-md-4">
+                    <label class="crop-form-label" for="inputK">
+                        Potassium (K) <span class="unit">(Ratio)</span>
+                    </label>
+                    <input type="number" step="any" class="form-control crop-input-field" id="inputK" name="Potassium" value="@Model.Potassium" placeholder="e.g. 43" required />
+                </div>
+            </div>
+
+            <!-- Row 2: Temperature, Humidity, pH Value -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="crop-form-label" for="inputTemp">
+                        Temperature <span class="unit">(°C)</span>
+                    </label>
+                    <input type="number" step="any" class="form-control crop-input-field" id="inputTemp" name="Temperature" value="@Model.Temperature" placeholder="e.g. 20.8" required />
+                </div>
+                <div class="col-md-4">
+                    <label class="crop-form-label" for="inputHumidity">
+                        Humidity <span class="unit">(%)</span>
+                    </label>
+                    <input type="number" step="any" class="form-control crop-input-field" id="inputHumidity" name="Humidity" value="@Model.Humidity" placeholder="e.g. 82.0" required />
+                </div>
+                <div class="col-md-4">
+                    <label class="crop-form-label" for="inputPh">
+                        pH Value
+                    </label>
+                    <input type="number" step="any" min="0" max="14" class="form-control crop-input-field" id="inputPh" name="PhValue" value="@Model.PhValue" placeholder="e.g. 6.5" required />
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn-predict-crop" id="btnPredictSubmit">
+                <i class="bi bi-stars"></i> Predict Crop
+            </button>
+        </form>
+    </div>
+
+    <!-- Prediction Results Section (Displays on Result) -->
+    @if (result != null)
+    {
+        <div class="crop-result-container" id="predictionResultCard">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                <div class="crop-result-badge">
+                    <i class="bi bi-patch-check-fill text-success"></i> AI Recommendation Found
+                </div>
+                <div class="crop-match-pill">
+                    <i class="bi bi-stars"></i> @result.MatchScore% Optimal Match
+                </div>
+            </div>
+
+            <div class="row align-items-center g-4 mb-4">
+                <div class="col-md-7">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-4 bg-success bg-opacity-10 d-flex align-items-center justify-content-center p-3 border border-success border-opacity-25" style="width: 80px; height: 80px; font-size: 2.8rem;">
+                            @result.Emoji
+                        </div>
+                        <div>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary fw-semibold small mb-1">
+                                @result.Category
+                            </span>
+                            <h2 class="crop-result-title m-0">@result.CropName</h2>
+                            <strong class="text-success fs-5">@result.GujaratiName</strong>
+                        </div>
+                    </div>
+                    <p class="text-muted small mt-3 mb-0 leading-relaxed">
+                        @result.Description
+                    </p>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="crop-stat-box">
+                                <div class="label">Sowing Season</div>
+                                <div class="value text-success">@result.Season</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="crop-stat-box">
+                                <div class="label">Expected Yield</div>
+                                <div class="value">@result.ExpectedYield</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="crop-stat-box">
+                                <div class="label">Growth Period</div>
+                                <div class="value">@result.GrowthDuration</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="crop-stat-box">
+                                <div class="label">Avg APMC Rate</div>
+                                <div class="value text-success">₹@result.EstimatedPricePerQtl.ToString("N0") / Qtl</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agronomy Soil & Care Advice -->
+            <div class="p-3.5 bg-light rounded-4 border mb-4">
+                <h6 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                    <i class="bi bi-lightbulb-fill text-warning"></i> Soil Care &amp; Best Practices
+                </h6>
+                <p class="text-muted small mb-0">
+                    @result.SoilAdvice
+                </p>
+            </div>
+
+            <!-- Top 3 Alternative Crops -->
+            @if (result.TopAlternatives.Any())
+            {
+                <div class="mb-4">
+                    <h6 class="fw-bold text-dark mb-2">Alternative Crop Recommendations:</h6>
+                    <div class="row g-2">
+                        @foreach (var alt in result.TopAlternatives)
+                        {
+                            <div class="col-md-4">
+                                <div class="alternative-crop-item">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="fs-4">@alt.Emoji</span>
+                                        <div>
+                                            <strong class="text-dark d-block small">@alt.CropName</strong>
+                                            <span class="text-muted" style="font-size: 0.72rem;">@alt.Category</span>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold">@alt.MatchScore%</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Action CTAs -->
+            <div class="d-flex flex-wrap gap-2 pt-2 border-top">
+                <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-sm btn-success rounded-pill fw-bold px-3.5 py-2 shadow-sm" style="background-color: #006653; border-color: #006653;">
+                    <i class="bi bi-graph-up me-1"></i> Forecast Price for @result.CropName
+                </a>
+                <a asp-controller="Product" asp-action="Index" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-3.5 py-2">
+                    <i class="bi bi-basket2 me-1"></i> Shop Quality Seeds &amp; Fertilizers
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold px-3 py-2 ms-auto" onclick="document.getElementById('inputN').focus();">
+                    <i class="bi bi-arrow-repeat me-1"></i> Test Another Sample
+                </button>
+            </div>
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        function applySoilPreset(n, p, k, temp, hum, ph) {
+            document.getElementById('inputN').value = n;
+            document.getElementById('inputP').value = p;
+            document.getElementById('inputK').value = k;
+            document.getElementById('inputTemp').value = temp;
+            document.getElementById('inputHumidity').value = hum;
+            document.getElementById('inputPh').value = ph;
+
+            // Highlight button
+            const btn = document.getElementById('btnPredictSubmit');
+            btn.classList.add('pulse-glow');
+            setTimeout(() => btn.classList.remove('pulse-glow'), 600);
+        }
+
+        // Auto-scroll to results if present
+        document.addEventListener("DOMContentLoaded", function () {
+            const resultCard = document.getElementById("predictionResultCard");
+            if (resultCard) {
+                resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        });
+    </script>
+}

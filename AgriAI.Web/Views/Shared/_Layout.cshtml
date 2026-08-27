@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="~/css/Register.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Login.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/PricePredictor.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/CropPredictor.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/GovPortal.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/LiveMandi.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Chatbot.css" asp-append-version="true" />
@@ -111,8 +112,13 @@
                     </a>
                 </li>
                 <li>
-                    <a asp-controller="AI" asp-action="PricePredictor" class="gov-nav-link text-success fw-bold @(curCtrl == "AI" ? "active" : "")">
-                        <i class="bi bi-stars"></i> AI Price Predictor
+                    <a asp-controller="AI" asp-action="CropPredictor" class="gov-nav-link text-success fw-bold @(curCtrl == "AI" && curAct == "CropPredictor" ? "active" : "")">
+                        <i class="bi bi-cpu"></i> AI Crop Predictor
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="AI" asp-action="PricePredictor" class="gov-nav-link @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
+                        <i class="bi bi-stars"></i> Mandi Forecaster
                     </a>
                 </li>
                 <li>
@@ -250,9 +256,16 @@
             <p class="sidebar-section-title">AI Intelligence</p>
             <ul class="menu-list">
                 <li class="menu-item">
-                    <a asp-controller="AI" asp-action="PricePredictor" class="menu-link ai-highlight-link @(curCtrl == "AI" ? "active" : "")">
+                    <a asp-controller="AI" asp-action="CropPredictor" class="menu-link ai-highlight-link @(curCtrl == "AI" && curAct == "CropPredictor" ? "active" : "")">
+                        <span class="menu-icon-box"><i class="bi bi-cpu"></i></span>
+                        <span>AgriAI Crop Predictor</span>
+                        <span class="ai-badge">NEW</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a asp-controller="AI" asp-action="PricePredictor" class="menu-link @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
                         <span class="menu-icon-box"><i class="bi bi-stars"></i></span>
-                        <span>Smart Price Predictor</span>
+                        <span>Mandi Price Predictor</span>
                         <span class="ai-badge">AI PRO</span>
                     </a>
                 </li>
