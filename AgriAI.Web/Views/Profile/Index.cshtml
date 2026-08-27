@@ -1,0 +1,180 @@
+@model AgriAI.Web.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = "My Account Profile";
+    var userInitial = (!string.IsNullOrEmpty(Model.FirstName) ? Model.FirstName.Substring(0, 1).ToUpper() : (!string.IsNullOrEmpty(Model.Username) ? Model.Username.Substring(0, 1).ToUpper() : "U"));
+    var userRole = User.IsInRole("Admin") ? "Admin" : User.IsInRole("Farmer") ? "Farmer" : "Customer";
+    var dashCtrl = User.IsInRole("Admin") ? "Admin" : User.IsInRole("Farmer") ? "Farmer" : "Customer";
+}
+
+<div class="py-4 my-2">
+    <div class="container" style="max-width: 1100px;">
+        
+        <!-- Header & Breadcrumb Navigation -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1 small">
+                        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-success text-decoration-none">Home</a></li>
+                        <li class="breadcrumb-item"><a asp-controller="@dashCtrl" asp-action="Dashboard" class="text-success text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Account Profile</li>
+                    </ol>
+                </nav>
+                <h2 class="fw-extrabold text-dark mb-0">My Account Profile &amp; Settings</h2>
+            </div>
+            <div>
+                <a asp-controller="@dashCtrl" asp-action="Dashboard" class="btn btn-outline-success rounded-pill px-4 py-2 fw-bold shadow-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show bg-white shadow-sm rounded-4 border-success p-3.5 mb-4" role="alert">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                    <strong class="text-success">@TempData["SuccessMessage"]</strong>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="row g-4">
+            <!-- Left Column: User Profile Badge & Status -->
+            <div class="col-lg-4">
+                <div class="bg-white rounded-4 border shadow-sm p-4 text-center mb-4">
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="rounded-circle text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 90px; height: 90px; font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, #006653 0%, #16a34a 100%); border: 4px solid #ffffff;">
+                            @userInitial
+                        </div>
+                    </div>
+                    
+                    <h4 class="fw-bold text-dark mb-1">@(string.IsNullOrEmpty(Model.FirstName) && string.IsNullOrEmpty(Model.LastName) ? Model.Username : $"{Model.FirstName} {Model.LastName}")</h4>
+                    <p class="text-muted small mb-2"><i class="bi bi-envelope me-1"></i>@Model.Email</p>
+                    
+                    <div class="d-inline-flex align-items-center gap-1.5 px-3 py-1 bg-success bg-opacity-10 text-success rounded-pill fw-bold small border border-success border-opacity-25 mb-3">
+                        <i class="bi bi-patch-check-fill"></i>
+                        <span>@userRole Account</span>
+                    </div>
+
+                    <hr class="my-3 text-muted opacity-25" />
+
+                    <div class="text-start small text-muted">
+                        <div class="d-flex justify-content-between py-1.5 border-bottom">
+                            <span>Username:</span>
+                            <strong class="text-dark">@@@Model.Username</strong>
+                        </div>
+                        <div class="d-flex justify-content-between py-1.5 border-bottom">
+                            <span>Account Status:</span>
+                            <span class="text-success fw-bold">Active &amp; Verified 🟢</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-1.5">
+                            <span>Region:</span>
+                            <strong class="text-dark">Gujarat, India</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Tip Box -->
+                <div class="p-3.5 bg-success bg-opacity-10 rounded-4 border border-success border-opacity-25 text-start">
+                    <div class="d-flex align-items-center gap-2 text-success fw-bold mb-1">
+                        <i class="bi bi-shield-check fs-5"></i>
+                        <span>Secure Farmer Portal</span>
+                    </div>
+                    <p class="text-muted small mb-0" style="font-size: 0.82rem;">
+                        Your credentials and personal information are protected under government digital standards.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Column: Editable Profile Form -->
+            <div class="col-lg-8">
+                <div class="bg-white rounded-4 border shadow-sm p-4 p-md-5">
+                    <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-4">
+                        <h4 class="fw-bold text-dark mb-0">Personal Information</h4>
+                        <span class="badge bg-light text-muted border">Edit Details</span>
+                    </div>
+
+                    <form asp-action="Index" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-3 mb-4 rounded-3"></div>
+
+                        <!-- Name Fields -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="FirstName" class="form-label fw-bold text-dark small mb-1.5">First Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-person"></i></span>
+                                    <input asp-for="FirstName" class="form-control border-start-0 px-2.5 py-2 shadow-none" placeholder="Enter first name" />
+                                </div>
+                                <span asp-validation-for="FirstName" class="text-danger small mt-1 d-block"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="LastName" class="form-label fw-bold text-dark small mb-1.5">Last Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-person"></i></span>
+                                    <input asp-for="LastName" class="form-control border-start-0 px-2.5 py-2 shadow-none" placeholder="Enter last name" />
+                                </div>
+                                <span asp-validation-for="LastName" class="text-danger small mt-1 d-block"></span>
+                            </div>
+                        </div>
+
+                        <!-- Username -->
+                        <div class="mb-3">
+                            <label asp-for="Username" class="form-label fw-bold text-dark small mb-1.5">Username (Login ID)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted border-end-0">@@</span>
+                                <input asp-for="Username" class="form-control border-start-0 px-2.5 py-2 shadow-none" placeholder="Enter unique username" />
+                            </div>
+                            <span asp-validation-for="Username" class="text-danger small mt-1 d-block"></span>
+                            <small class="text-muted d-block mt-1">You can use this unique username to log in instead of your email address.</small>
+                        </div>
+
+                        <!-- Email (Readonly) -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark small mb-1.5">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control border-start-0 px-2.5 py-2 bg-light text-muted shadow-none" value="@Model.Email" readonly />
+                            </div>
+                            <small class="text-muted d-block mt-1">Contact helpdesk support to modify verified primary email address.</small>
+                        </div>
+
+                        <!-- Security Verification Card -->
+                        <div class="p-4 rounded-4 border bg-light bg-opacity-50 mb-4">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-shield-lock-fill text-danger fs-5"></i>
+                                <h6 class="fw-bold text-danger mb-0">Security Password Verification</h6>
+                            </div>
+                            <p class="text-muted small mb-3">To protect your account, please enter your current password to authorize changes.</p>
+
+                            <div class="mb-1">
+                                <label asp-for="CurrentPassword" class="form-label fw-bold text-dark small mb-1.5">Current Password *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-key-fill"></i></span>
+                                    <input asp-for="CurrentPassword" type="password" class="form-control border-start-0 px-2.5 py-2 shadow-none border-danger border-opacity-50" placeholder="••••••••" />
+                                </div>
+                                <span asp-validation-for="CurrentPassword" class="text-danger small mt-1 d-block"></span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex align-items-center justify-content-end gap-2 pt-2">
+                            <a asp-controller="@dashCtrl" asp-action="Dashboard" class="btn btn-light rounded-pill px-4 py-2 fw-bold text-muted border">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;">
+                                <i class="bi bi-check2-circle me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

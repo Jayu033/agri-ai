@@ -1,0 +1,92 @@
+@model AgriAI.Web.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Sign In";
+}
+
+<div class="login-page-bg">
+    <div class="modern-login-card">
+        <!-- Brand Icon -->
+        <div class="login-brand-icon-box">
+            <i class="bi bi-tree-fill"></i>
+        </div>
+
+        <!-- Header -->
+        <h2 class="login-card-title">Welcome Back</h2>
+        <p class="login-card-subtext">Sign in with your credentials to access AgriAI</p>
+
+        <form asp-action="Login" method="post" id="loginForm">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2 mb-3 rounded-3"></div>
+
+            <!-- Email / Username -->
+            <div class="login-field-group">
+                <label asp-for="UsernameOrEmail" class="login-field-label">Email or Username</label>
+                <div class="login-input-wrapper">
+                    <input asp-for="UsernameOrEmail" class="login-form-input" placeholder="e.g. admin or name@example.com" autofocus />
+                    <i class="bi bi-person-fill login-input-icon"></i>
+                </div>
+                <span asp-validation-for="UsernameOrEmail" class="text-danger small mt-1 d-block"></span>
+            </div>
+
+            <!-- Password -->
+            <div class="login-field-group">
+                <label asp-for="Password" class="login-field-label">Password</label>
+                <div class="login-input-wrapper">
+                    <input asp-for="Password" type="password" id="loginPasswordInput" class="login-form-input pe-5" placeholder="Enter your password" />
+                    <i class="bi bi-lock-fill login-input-icon"></i>
+                    <button type="button" class="login-eye-toggle" id="loginPwdToggleBtn" tabindex="-1" aria-label="Toggle password visibility">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Password" class="text-danger small mt-1 d-block"></span>
+            </div>
+
+            <!-- Remember Me & Forgot Password -->
+            <div class="login-meta-row">
+                <div class="form-check m-0 d-flex align-items-center gap-2">
+                    <input class="form-check-input mt-0" type="checkbox" asp-for="RememberMe" id="rememberMeCheck" />
+                    <label class="form-check-label login-remember-text" for="rememberMeCheck">
+                        Remember me
+                    </label>
+                </div>
+                <a asp-action="ForgotPassword" class="login-forgot-pwd">Forgot Password?</a>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn-login-action">
+                <span>Login</span>
+                <i class="bi bi-box-arrow-in-right fs-5"></i>
+            </button>
+
+            <!-- Bottom Register Link -->
+            <div class="login-register-prompt">
+                <span>Don't have an account?</span>
+                <a asp-action="Register">Register</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const pwdToggleBtn = document.getElementById('loginPwdToggleBtn');
+            const pwdInput = document.getElementById('loginPasswordInput');
+            if (pwdToggleBtn && pwdInput) {
+                pwdToggleBtn.addEventListener('click', function () {
+                    const icon = this.querySelector('i');
+                    if (pwdInput.type === 'password') {
+                        pwdInput.type = 'text';
+                        icon.classList.remove('bi-eye');
+                        icon.classList.add('bi-eye-slash');
+                    } else {
+                        pwdInput.type = 'password';
+                        icon.classList.remove('bi-eye-slash');
+                        icon.classList.add('bi-eye');
+                    }
+                });
+            }
+        });
+    </script>
+}

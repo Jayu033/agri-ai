@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="AgriAI.Application/AgriAI.Application.csproj" />
+  <Project Path="AgriAI.Domain/AgriAI.Domain.csproj" />
+  <Project Path="AgriAI.Infrastructure/AgriAI.Infrastructure.csproj" />
+  <Project Path="AgriAI.Web/AgriAI.Web.csproj" />
+</Solution>

@@ -1,0 +1,397 @@
+@model AgriAI.Domain.Entities.Order
+@using AgriAI.Infrastructure.Identity
+
+@{
+    ViewData["Title"] = $"Order #{Model.Id:D5} Details";
+    var farmerUser = ViewBag.FarmerUser as ApplicationUser;
+    var farmerName = farmerUser != null 
+        ? (!string.IsNullOrEmpty(farmerUser.FirstName) || !string.IsNullOrEmpty(farmerUser.LastName) 
+            ? $"{farmerUser.FirstName} {farmerUser.LastName}".Trim() 
+            : farmerUser.UserName) 
+        : "Verified Gujarat Producer";
+    var farmerPhone = farmerUser?.PhoneNumber ?? "+91 97245 60047";
+    var baseAmount = Model.TotalAmount - Model.LogisticsFee - Model.PlatformFee;
+    var orderNoStr = "AG-" + Model.Id.ToString("D5");
+    var dateFormatted = Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt");
+    var firstItem = Model.OrderItems.FirstOrDefault();
+    var produceName = firstItem?.Product?.Name ?? "Farm Crop Harvest";
+    var itemQty = firstItem?.Quantity ?? 1;
+    var unitPrice = firstItem?.UnitPrice ?? Model.TotalAmount;
+}
+
+<div class="container py-4 my-2" style="max-width: 1050px;">
+    
+    <!-- Top Breadcrumb & Navigation -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-success text-decoration-none">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/Customer/Dashboard?tab=ordersTab" class="text-success text-decoration-none">Customer Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="/Customer/Dashboard?tab=ordersTab" class="text-success text-decoration-none">Order History</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Order #@Model.Id.ToString("D5")</li>
+                </ol>
+            </nav>
+            <div class="d-flex align-items-center gap-2">
+                <h2 class="fw-extrabold text-dark mb-0">Order #@Model.Id.ToString("D5")</h2>
+                @if (Model.Status == "Pending" || Model.Status == "Awaiting Cash on Pickup")
+                {
+                    <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill">
+                        <i class="bi bi-clock-history me-1"></i>@Model.Status
+                    </span>
+                }
+                else if (Model.Status.Contains("Delivered") || Model.Status.Contains("Settled"))
+                {
+                    <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill">
+                        <i class="bi bi-check-circle-fill me-1"></i>Completed 🟢
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill">
+                        <i class="bi bi-truck me-1"></i>@Model.Status
+                    </span>
+                }
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <a href="/Customer/Dashboard?tab=ordersTab" class="btn btn-outline-secondary rounded-pill px-3.5 py-2 fw-bold small">
+                <i class="bi bi-arrow-left me-1"></i> Back to Order History
+            </a>
+            <button type="button" class="btn btn-success rounded-pill px-3.5 py-2 fw-bold small shadow-sm" style="background-color: #006653; border-color: #006653;" onclick="printOrderInvoice('@orderNoStr', '@dateFormatted', '@User.Identity?.Name', '@produceName', @itemQty, @unitPrice, @baseAmount, @Model.LogisticsFee, @Model.PlatformFee, @Model.TotalAmount, '@(Model.PaymentMethod ?? "Online (Escrow)")', '@(Model.TransportType ?? "Direct Farm Pickup")', '@(string.IsNullOrEmpty(Model.ShippingAddress) ? "Gujarat Farm Location" : Model.ShippingAddress)')">
+                <i class="bi bi-printer me-1"></i> Print Tax Invoice
+            </button>
+        </div>
+    </div>
+
+    <!-- 1. Confidential 4-Digit Delivery OTP Card (Protected by Security Gate) -->
+    @if (Model.PaymentMethod != "Cash on Delivery" && !Model.Status.Contains("Delivered"))
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+            <div class="row align-items-center g-3">
+                <div class="col-md-7">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
+                            <i class="bi bi-shield-lock-fill me-1"></i>CONFIDENTIAL DELIVERY PASS
+                        </span>
+                        <span class="text-white-50 small">Unlocked via Security Verification</span>
+                    </div>
+                    <h4 class="fw-bold text-white mb-1">Your 4-Digit Delivery Verification OTP</h4>
+                    <p class="text-white-50 small mb-0">
+                        Give this 4-digit code to the farmer/delivery person <strong>ONLY after inspecting the quality</strong> of your harvest upon pickup.
+                    </p>
+                </div>
+
+                <div class="col-md-5 text-md-end">
+                    <div class="d-inline-flex align-items-center gap-3 bg-white bg-opacity-10 p-2.5 px-4 rounded-4 border border-white border-opacity-20 shadow">
+                        <span class="fs-2 fw-extrabold text-warning letter-spacing-3 font-monospace" id="confidentialOtp">
+                            @(string.IsNullOrEmpty(Model.DeliveryOtp) ? "7492" : Model.DeliveryOtp)
+                        </span>
+                        <button type="button" class="btn btn-sm btn-light rounded-pill px-3 fw-bold" onclick="navigator.clipboard.writeText('@Model.DeliveryOtp'); this.innerHTML='<i class=\'bi bi-check2\'></i> Copied!';">
+                            <i class="bi bi-clipboard me-1"></i> Copy OTP
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row g-4">
+        
+        <!-- Left Column: Ordered Produce & Farm Farmer Info -->
+        <div class="col-lg-7">
+            
+            <!-- Produce Items Card -->
+            <div class="bg-white rounded-4 p-4 border shadow-sm mb-4">
+                <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-basket-fill text-success"></i> Purchased Farm Produce
+                </h5>
+
+                @foreach (var item in Model.OrderItems)
+                {
+                    var itemImg = item.Product?.Images?.FirstOrDefault()?.ImageUrl;
+                    <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 border mb-3">
+                        @if (!string.IsNullOrEmpty(itemImg))
+                        {
+                            <img src="@itemImg" class="rounded-3 shadow-sm" alt="@(item.Product?.Name ?? "Produce")" style="width: 75px; height: 75px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 75px; height: 75px;">
+                                <i class="bi bi-tree text-success fs-2"></i>
+                            </div>
+                        }
+
+                        <div class="flex-grow-1">
+                            <span class="badge bg-success bg-opacity-10 text-success fw-bold small mb-1">
+                                @(item.Product?.Category?.Name ?? "Farm Produce")
+                            </span>
+                            <h5 class="fw-bold text-dark mb-1">@(item.Product?.Name ?? "Farm Produce")</h5>
+                            <span class="text-muted small">Unit Rate: ₹@item.UnitPrice.ToString("N2")</span>
+                        </div>
+
+                        <div class="text-end">
+                            <span class="badge bg-white text-dark border px-2.5 py-1 mb-1 d-inline-block fw-bold">
+                                @item.Quantity unit(s)
+                            </span>
+                            <div class="fw-extrabold text-success fs-5">
+                                ₹@((item.UnitPrice * item.Quantity).ToString("N2"))
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Fulfillment / Pickup Location Card -->
+                <div class="p-3 bg-light rounded-3 border">
+                    <strong class="text-dark small d-block mb-1">
+                        <i class="bi bi-geo-alt-fill text-success me-1"></i> Delivery &amp; Pickup Location
+                    </strong>
+                    <span class="text-muted small">
+                        @(string.IsNullOrEmpty(Model.ShippingAddress) ? "Gujarat Direct Farm Pickup Location" : Model.ShippingAddress)
+                    </span>
+                </div>
+            </div>
+
+            <!-- Farmer / Producer Direct Contact Card -->
+            <div class="bg-white rounded-4 p-4 border shadow-sm">
+                <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-person-badge-fill text-success"></i> Farmer &amp; Producer Contact
+                </h5>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center p-3 bg-light rounded-3 border gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold fs-5 shadow-sm" style="width: 48px; height: 48px; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">
+                            @(!string.IsNullOrEmpty(farmerName) ? farmerName.Substring(0, 1).ToUpper() : "F")
+                        </div>
+                        <div>
+                            <strong class="text-dark d-block fs-6">@farmerName</strong>
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 small">
+                                <i class="bi bi-patch-check-fill me-1"></i>Verified Gujarat Farmer
+                            </span>
+                            <span class="text-muted small d-block mt-0.5"><i class="bi bi-telephone text-success me-1"></i>@farmerPhone</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="tel:@farmerPhone" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold">
+                            <i class="bi bi-telephone-fill me-1"></i> Call Farmer
+                        </a>
+                        <a href="https://wa.me/@(farmerPhone.Replace("+","").Replace(" ",""))?text=Hello%20@farmerName,%20regarding%20my%20AgriAI%20Order%20#@Model.Id:D5..." target="_blank" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #25D366; border-color: #25D366;">
+                            <i class="bi bi-whatsapp me-1"></i> WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Itemized Invoice & Order Timeline -->
+        <div class="col-lg-5">
+            
+            <!-- Itemized Price Breakdown Card -->
+            <div class="bg-white rounded-4 p-4 border shadow-sm mb-4">
+                <h5 class="fw-bold text-dark mb-3">Itemized Invoice Breakdown</h5>
+
+                <div class="d-flex justify-content-between text-muted mb-2 small">
+                    <span>Base Produce Cost (@itemQty units)</span>
+                    <strong class="text-dark">₹@baseAmount.ToString("N2")</strong>
+                </div>
+
+                <div class="d-flex justify-content-between text-muted mb-2 small">
+                    <span>Transport / Logistics (@Model.TransportType)</span>
+                    <strong class="text-dark">₹@Model.LogisticsFee.ToString("N2")</strong>
+                </div>
+
+                <div class="d-flex justify-content-between text-muted mb-3 small">
+                    <span>Platform Safety Fee (2%)</span>
+                    <strong class="text-dark">₹@Model.PlatformFee.ToString("N2")</strong>
+                </div>
+
+                <hr class="my-3">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fs-6 fw-bold text-dark">Total Amount Paid</span>
+                    <span class="fs-4 fw-extrabold text-success">₹@Model.TotalAmount.ToString("N2")</span>
+                </div>
+
+                <div class="p-2.5 bg-light rounded-3 border small text-muted">
+                    <div class="d-flex justify-content-between">
+                        <span>Payment Method:</span>
+                        <strong class="text-success">@(Model.PaymentMethod ?? "Online (Escrow Protected)")</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <span>Order Date &amp; Time:</span>
+                        <strong class="text-dark">@dateFormatted</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Fulfillment Progress Timeline -->
+            <div class="bg-white rounded-4 p-4 border shadow-sm">
+                <h5 class="fw-bold text-dark mb-3">Fulfillment Progress</h5>
+
+                <div class="position-relative ps-4 border-start border-2 border-success ms-2 my-2">
+                    <div class="mb-3 position-relative">
+                        <span class="position-absolute top-0 start-0 translate-middle p-1.5 bg-success rounded-circle border border-white"></span>
+                        <strong class="small text-dark d-block">Order Placed &amp; Escrow Secured</strong>
+                        <span class="text-muted small">@dateFormatted</span>
+                    </div>
+
+                    <div class="mb-3 position-relative">
+                        <span class="position-absolute top-0 start-0 translate-middle p-1.5 @(Model.Status != "Pending" ? "bg-success" : "bg-warning") rounded-circle border border-white"></span>
+                        <strong class="small text-dark d-block">Harvest Packed &amp; Ready for Pickup</strong>
+                        <span class="text-muted small">@(Model.Status != "Pending" ? "Ready at Gujarat Farm" : "Farmer preparing produce")</span>
+                    </div>
+
+                    <div class="position-relative">
+                        <span class="position-absolute top-0 start-0 translate-middle p-1.5 @(Model.Status.Contains("Delivered") ? "bg-success" : "bg-secondary") rounded-circle border border-white"></span>
+                        <strong class="small text-dark d-block">OTP Verified &amp; Completed</strong>
+                        <span class="text-muted small">@(Model.Status.Contains("Delivered") ? "Completed 🟢" : "Pending Handover Verification")</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function printOrderInvoice(orderNo, orderDate, buyerName, produceName, qty, unitPrice, baseAmt, logisticsFee, platformFee, grandTotal, paymentMode, transportType, deliveryLocation) {
+            const printWindow = window.open('', '_blank', 'width=850,height=900');
+            const formattedTotal = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(grandTotal);
+            const formattedBase = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(baseAmt);
+            const formattedLogistics = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(logisticsFee);
+            const formattedFee = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(platformFee);
+            const formattedUnit = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(unitPrice);
+
+            const invoiceHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <title>Tax Invoice - ${orderNo} - AgriAI Platform</title>
+                <style>
+                    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 25px; color: #1e293b; line-height: 1.4; }
+                    .invoice-card { max-width: 780px; margin: auto; border: 1px solid #cbd5e1; border-radius: 12px; padding: 30px; background: #fff; }
+                    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #006653; padding-bottom: 15px; margin-bottom: 20px; }
+                    .logo-title { color: #006653; font-size: 24px; font-weight: 800; margin: 0; }
+                    .logo-sub { color: #64748b; font-size: 12px; margin: 2px 0 0 0; }
+                    .badge-inv { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px; }
+                    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+                    .info-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 15px; }
+                    .info-box h4 { margin: 0 0 6px 0; font-size: 13px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; }
+                    .info-box p { margin: 3px 0; font-size: 12.5px; color: #475569; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                    th { background: #f1f5f9; text-align: left; padding: 10px 12px; font-size: 12.5px; color: #334155; border-bottom: 2px solid #cbd5e1; }
+                    td { padding: 12px; font-size: 13px; border-bottom: 1px solid #e2e8f0; }
+                    .totals-table { width: 320px; margin-left: auto; margin-bottom: 20px; }
+                    .totals-table td { padding: 5px 8px; border: none; font-size: 12.5px; }
+                    .grand-row { border-top: 2px solid #006653 !important; font-size: 16px !important; font-weight: 800; color: #006653; padding-top: 8px !important; }
+                    .footer { border-top: 1px solid #e2e8f0; padding-top: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: #64748b; }
+                    .stamp { border: 2px dashed #86efac; background: #f0fdf4; padding: 6px 12px; border-radius: 6px; color: #15803d; font-weight: bold; font-size: 12px; }
+                    @@media print {
+                        body { padding: 0; }
+                        .invoice-card { border: none; padding: 10px; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="invoice-card">
+                    <div class="header">
+                        <div>
+                            <h1 class="logo-title">🌾 AgriAI Produce Invoice</h1>
+                            <p class="logo-sub">Direct Farm-to-Consumer Agricultural Platform &bull; Gujarat, India</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="badge-inv">OFFICIAL TAX RECEIPT</span>
+                            <p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b;"><strong>Invoice No:</strong> ${orderNo}</p>
+                            <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;"><strong>Date & Time:</strong> ${orderDate}</p>
+                        </div>
+                    </div>
+
+                    <div class="info-grid">
+                        <div class="info-box">
+                            <h4>Billed To (Customer)</h4>
+                            <p><strong>Name:</strong> ${buyerName}</p>
+                            <p><strong>Account Type:</strong> Verified Buyer</p>
+                            <p><strong>Delivery / Destination:</strong> ${deliveryLocation}</p>
+                        </div>
+                        <div class="info-box">
+                            <h4>Logistics & Payment Details</h4>
+                            <p><strong>Payment Mode:</strong> ${paymentMode}</p>
+                            <p><strong>Logistics Type:</strong> ${transportType}</p>
+                            <p><strong>Fulfillment:</strong> Direct Farm Harvest Pickup</p>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Farm Harvest / Produce Name</th>
+                                <th>Quantity</th>
+                                <th>Unit Rate</th>
+                                <th style="text-align: right;">Total (INR)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><strong>${produceName}</strong><br><small style="color: #64748b;">100% Direct Certified Farm Produce</small></td>
+                                <td>${qty} unit(s)</td>
+                                <td>${formattedUnit}</td>
+                                <td style="text-align: right; font-weight: bold;">${formattedBase}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="totals-table">
+                        <tr>
+                            <td class="text-muted">Produce Subtotal:</td>
+                            <td style="text-align: right; font-weight: 600;">${formattedBase}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Transport / Logistics:</td>
+                            <td style="text-align: right; font-weight: 600;">${formattedLogistics}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Platform Guarantee Fee (2%):</td>
+                            <td style="text-align: right; font-weight: 600;">${formattedFee}</td>
+                        </tr>
+                        <tr class="grand-row">
+                            <td>Total Amount Paid:</td>
+                            <td style="text-align: right;">${formattedTotal}</td>
+                        </tr>
+                    </table>
+
+                    <div class="footer">
+                        <div>
+                            <p style="margin: 0;"><strong>Thank you for empowering Gujarat Farmers! 🚜</strong></p>
+                            <p style="margin: 3px 0 0 0;">This is a computer-generated tax receipt backed by AgriAI Escrow Protection.</p>
+                        </div>
+                        <div class="stamp">
+                            ✓ VERIFIED PAID
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    window.onload = function() {
+                        setTimeout(function() {
+                            window.print();
+                        }, 400);
+                    };
+                <\/script>
+            </body>
+            </html>
+            `;
+
+            printWindow.document.open();
+            printWindow.document.write(invoiceHtml);
+            printWindow.document.close();
+        }
+    </script>
+}

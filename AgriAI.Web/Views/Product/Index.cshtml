@@ -1,0 +1,129 @@
+@model IEnumerable<AgriAI.Domain.Entities.Product>
+
+@{
+    ViewData["Title"] = "Products Marketplace";
+}
+
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-extrabold text-dark mb-1">Available Farm Products</h2>
+            <p class="text-muted small mb-0">Explore fresh farm produce directly from verified local Gujarat farmers.</p>
+        </div>
+        <div>
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("Farmer"))
+                {
+                    <a asp-action="Create" class="btn btn-success fw-bold px-4 py-2 rounded-pill shadow-sm" style="background-color: #2e7d32;">
+                        <i class="bi bi-plus-circle me-1"></i> Add New Product
+                    </a>
+                }
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Register" class="btn btn-outline-success fw-bold px-3.5 py-2 rounded-pill shadow-sm">
+                    <i class="bi bi-person-badge-fill me-1"></i> Sell Produce (Farmer Register)
+                </a>
+            }
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show bg-white shadow-sm rounded-3 border-success mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2 text-success"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show bg-white shadow-sm rounded-3 border-danger mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        @if (!Model.Any())
+        {
+            <div class="col-12">
+                <div class="bg-white shadow-sm rounded-4 p-5 text-center text-muted border">
+                    <i class="bi bi-basket display-3 mb-3 d-block text-success opacity-50"></i>
+                    <h5 class="fw-bold text-dark mb-2">No farm produce listed currently.</h5>
+                    
+                    @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Farmer"))
+                    {
+                        <p class="text-muted small mb-3">You are logged in as a Farmer. Click below to list your first harvest or crop produce.</p>
+                        <a asp-action="Create" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm" style="background-color: #2e7d32;">
+                            <i class="bi bi-plus-circle me-1"></i> Add Your First Product
+                        </a>
+                    }
+                    else
+                    {
+                        <p class="text-muted small mb-3">Fresh harvests will be listed by local farmers soon. Check back shortly or view today's live market prices.</p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a asp-controller="Home" asp-action="LiveMandi" class="btn btn-outline-success rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-graph-up-arrow me-1"></i> View Live Market Rates
+                            </a>
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-light rounded-pill px-4 py-2 fw-bold text-muted border">
+                                Back to Home
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        
+        @foreach (var item in Model) {
+            var imgUrl = item.Images?.FirstOrDefault()?.ImageUrl;
+            <div class="col-md-4 col-sm-6">
+                <div class="card h-100 bg-white shadow-sm rounded-4 border-0 product-card overflow-hidden">
+                    <div class="position-relative">
+                        @if (!string.IsNullOrEmpty(imgUrl))
+                        {
+                            <img src="@imgUrl" class="card-img-top" alt="@item.Name" style="height: 200px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="bi bi-box-seam text-success display-4 opacity-50"></i>
+                            </div>
+                        }
+                        <span class="position-absolute top-0 end-0 m-3 badge bg-success fw-bold px-2.5 py-1.5 shadow-sm">
+                            Fresh
+                        </span>
+                    </div>
+
+                    <div class="card-body p-4 d-flex flex-column">
+                        <small class="text-success fw-bold text-uppercase mb-1" style="font-size: 0.75rem;">
+                            @(item.Category?.Name ?? "Produce")
+                        </small>
+                        <h5 class="card-title fw-bold text-dark mb-2">@item.Name</h5>
+                        <p class="card-text text-muted small mb-3 flex-grow-1 text-truncate">@item.Description</p>
+                        
+                        <div class="d-flex align-items-center justify-content-between mt-auto pt-3 border-top">
+                            <div>
+                                <span class="fs-4 fw-extrabold text-success">₹@item.Price.ToString("F2")</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-success rounded-circle p-2" title="View Details">
+                                    <i class="bi bi-eye-fill"></i>
+                                </a>
+                                @if (User.IsInRole("Admin") || User.IsInRole("Farmer") || !User.Identity.IsAuthenticated)
+                                {
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-2" title="Delete Product" onclick="return confirm('Are you sure you want to delete product @item.Name?');">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

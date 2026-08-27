@@ -1,0 +1,183 @@
+@model AgriAI.Web.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Create an Account";
+}
+
+<div class="register-page-bg">
+    <div class="modern-register-card">
+        <!-- Brand Icon -->
+        <div class="register-brand-icon-box">
+            <i class="bi bi-tree-fill"></i>
+        </div>
+
+        <!-- Header -->
+        <h2 class="register-card-title">Create an Account</h2>
+        <p class="register-card-subtext">Join AgriAI to buy fresh farm produce or sell crops with smart AI tools</p>
+
+        <form asp-action="Register" method="post" id="registerForm">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2 mb-3 rounded-3"></div>
+
+            <!-- Native Interactive Role Selection Cards -->
+            <div class="role-selection-wrapper">
+                <label class="modern-label">Choose your account type:</label>
+                <div class="role-cards-grid">
+                    <!-- Customer Radio Card -->
+                    <input type="radio" asp-for="Role" value="Customer" id="roleCustomer" class="btn-check" checked />
+                    <label class="role-card-option" for="roleCustomer">
+                        <div class="role-icon-box">
+                            <i class="bi bi-cart-check-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="role-title">Customer</h6>
+                            <p class="role-desc">Buy fresh farm produce</p>
+                        </div>
+                        <div class="role-radio-badge"></div>
+                    </label>
+
+                    <!-- Farmer Radio Card -->
+                    <input type="radio" asp-for="Role" value="Farmer" id="roleFarmer" class="btn-check" />
+                    <label class="role-card-option" for="roleFarmer">
+                        <div class="role-icon-box">
+                            <i class="bi bi-tree-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="role-title">Farmer</h6>
+                            <p class="role-desc">Sell crops &amp; use AI tools</p>
+                        </div>
+                        <div class="role-radio-badge"></div>
+                    </label>
+                </div>
+                <span asp-validation-for="Role" class="text-danger small mt-1 d-block"></span>
+            </div>
+
+            <!-- Name Row (2 Columns) -->
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <div class="modern-input-group">
+                        <label asp-for="FirstName" class="modern-label">First Name</label>
+                        <div class="input-icon-box">
+                            <input asp-for="FirstName" class="modern-form-control" placeholder="e.g. Ramesh" />
+                            <i class="bi bi-person input-leading-icon"></i>
+                        </div>
+                        <span asp-validation-for="FirstName" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="modern-input-group">
+                        <label asp-for="LastName" class="modern-label">Last Name</label>
+                        <div class="input-icon-box">
+                            <input asp-for="LastName" class="modern-form-control" placeholder="e.g. Patel" />
+                            <i class="bi bi-person input-leading-icon"></i>
+                        </div>
+                        <span asp-validation-for="LastName" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Username & Email Row -->
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <div class="modern-input-group">
+                        <label asp-for="Username" class="modern-label">Username</label>
+                        <div class="input-icon-box">
+                            <input asp-for="Username" class="modern-form-control" placeholder="e.g. ramesh99" />
+                            <i class="bi bi-at input-leading-icon"></i>
+                        </div>
+                        <span asp-validation-for="Username" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="modern-input-group">
+                        <label asp-for="Email" class="modern-label">Email Address</label>
+                        <div class="input-icon-box">
+                            <input asp-for="Email" class="modern-form-control" placeholder="e.g. name@example.com" />
+                            <i class="bi bi-envelope input-leading-icon"></i>
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="modern-input-group">
+                <label asp-for="PhoneNumber" class="modern-label">Phone Number</label>
+                <div class="input-icon-box">
+                    <input asp-for="PhoneNumber" class="modern-form-control" placeholder="e.g. +91 98765 43210" />
+                    <i class="bi bi-telephone input-leading-icon"></i>
+                </div>
+                <span asp-validation-for="PhoneNumber" class="text-danger small mt-1 d-block"></span>
+            </div>
+
+            <!-- Passwords Row -->
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <div class="modern-input-group">
+                        <label asp-for="Password" class="modern-label">Password</label>
+                        <div class="input-icon-box">
+                            <input asp-for="Password" type="password" id="regPassword" class="modern-form-control pe-5" placeholder="Min. 6 chars" />
+                            <i class="bi bi-lock input-leading-icon"></i>
+                            <button type="button" class="password-toggle-btn toggle-pwd" data-target="regPassword" tabindex="-1" aria-label="Toggle password visibility">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="modern-input-group">
+                        <label asp-for="ConfirmPassword" class="modern-label">Confirm Password</label>
+                        <div class="input-icon-box">
+                            <input asp-for="ConfirmPassword" type="password" id="regConfirmPassword" class="modern-form-control pe-5" placeholder="Repeat password" />
+                            <i class="bi bi-shield-lock input-leading-icon"></i>
+                            <button type="button" class="password-toggle-btn toggle-pwd" data-target="regConfirmPassword" tabindex="-1" aria-label="Toggle password visibility">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="ConfirmPassword" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn-register-submit">
+                <span>Create Account</span>
+                <i class="bi bi-arrow-right-circle-fill fs-5"></i>
+            </button>
+
+            <!-- Bottom Link -->
+            <div class="register-bottom-text">
+                <span>Already have an account?</span>
+                <a asp-action="Login">Log In Here</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Password Toggle Buttons
+            const toggleBtns = document.querySelectorAll('.toggle-pwd');
+            toggleBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const targetId = this.getAttribute('data-target');
+                    const input = document.getElementById(targetId);
+                    const icon = this.querySelector('i');
+                    if (input && icon) {
+                        if (input.type === 'password') {
+                            input.type = 'text';
+                            icon.classList.remove('bi-eye');
+                            icon.classList.add('bi-eye-slash');
+                        } else {
+                            input.type = 'password';
+                            icon.classList.remove('bi-eye-slash');
+                            icon.classList.add('bi-eye');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+}

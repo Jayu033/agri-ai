@@ -1,0 +1,410 @@
+@{
+    ViewData["Title"] = "Smart AI Price Predictor";
+}
+
+<div class="predictor-container">
+    <!-- Header Section -->
+    <div class="predictor-header">
+        <div class="ai-badge-header">
+            <i class="bi bi-stars"></i>
+            <span>AgriAI Machine Learning Engine</span>
+        </div>
+        <h1 class="predictor-title">Smart Crop Price Predictor</h1>
+        <p class="predictor-subtitle">
+            Forecast upcoming crop market prices, analyze seasonal trends, and maximize harvest profit with AI intelligence across all agricultural crops.
+        </p>
+    </div>
+
+    <!-- AI Prediction Form Card -->
+    <div class="predictor-card">
+        <form asp-action="PredictPrice" method="post" id="predictorForm">
+            <!-- 1. Category Filter Toolbar & Search -->
+            <div class="crop-filter-toolbar">
+                <div class="crop-category-tabs" id="cropCategoryTabs">
+                    <button type="button" class="crop-tab-btn active" data-category="all">🌟 All Crops</button>
+                    <button type="button" class="crop-tab-btn" data-category="grain">🌾 Grains & Pulses</button>
+                    <button type="button" class="crop-tab-btn" data-category="cash">🌿 Cash & Oilseeds</button>
+                    <button type="button" class="crop-tab-btn" data-category="veg">🥔 Veg & Spices</button>
+                    <button type="button" class="crop-tab-btn" data-category="fruit">🥭 Fruits</button>
+                </div>
+
+                <div class="crop-search-box">
+                    <i class="bi bi-search crop-search-icon"></i>
+                    <input type="text" id="cropSearchInput" class="crop-search-input" placeholder="Search any crop..." />
+                </div>
+            </div>
+
+            <!-- Hidden Crop Select Field -->
+            <input type="hidden" name="cropName" id="hiddenCropInput" value="Wheat" />
+
+            <!-- 2. Rich 24+ Crop Grid -->
+            <div class="crop-grid" id="cropGridContainer">
+                <!-- Grains & Pulses -->
+                <div class="crop-option-card active" data-crop="Wheat" data-cat="grain">
+                    <span class="crop-emoji">🌾</span>
+                    <span class="crop-name-text">Wheat</span>
+                    <span class="crop-category-tag">Grain</span>
+                </div>
+                <div class="crop-option-card" data-crop="Rice (Paddy)" data-cat="grain">
+                    <span class="crop-emoji">🍚</span>
+                    <span class="crop-name-text">Rice (Paddy)</span>
+                    <span class="crop-category-tag">Grain</span>
+                </div>
+                <div class="crop-option-card" data-crop="Maize (Corn)" data-cat="grain">
+                    <span class="crop-emoji">🌽</span>
+                    <span class="crop-name-text">Maize (Corn)</span>
+                    <span class="crop-category-tag">Grain</span>
+                </div>
+                <div class="crop-option-card" data-crop="Bajra (Millet)" data-cat="grain">
+                    <span class="crop-emoji">🌾</span>
+                    <span class="crop-name-text">Bajra (Millet)</span>
+                    <span class="crop-category-tag">Grain</span>
+                </div>
+                <div class="crop-option-card" data-crop="Chickpea (Chana)" data-cat="grain">
+                    <span class="crop-emoji">🌱</span>
+                    <span class="crop-name-text">Chickpea (Chana)</span>
+                    <span class="crop-category-tag">Pulse</span>
+                </div>
+                <div class="crop-option-card" data-crop="Pigeon Pea (Tur)" data-cat="grain">
+                    <span class="crop-emoji">🌱</span>
+                    <span class="crop-name-text">Tur / Tuver</span>
+                    <span class="crop-category-tag">Pulse</span>
+                </div>
+                <div class="crop-option-card" data-crop="Moong (Green Gram)" data-cat="grain">
+                    <span class="crop-emoji">🌱</span>
+                    <span class="crop-name-text">Moong</span>
+                    <span class="crop-category-tag">Pulse</span>
+                </div>
+
+                <!-- Cash & Oilseeds -->
+                <div class="crop-option-card" data-crop="Cotton" data-cat="cash">
+                    <span class="crop-emoji">☁️</span>
+                    <span class="crop-name-text">Cotton</span>
+                    <span class="crop-category-tag">Cash Crop</span>
+                </div>
+                <div class="crop-option-card" data-crop="Groundnut (Peanut)" data-cat="cash">
+                    <span class="crop-emoji">🥜</span>
+                    <span class="crop-name-text">Groundnut</span>
+                    <span class="crop-category-tag">Oilseed</span>
+                </div>
+                <div class="crop-option-card" data-crop="Soybean" data-cat="cash">
+                    <span class="crop-emoji">🌻</span>
+                    <span class="crop-name-text">Soybean</span>
+                    <span class="crop-category-tag">Oilseed</span>
+                </div>
+                <div class="crop-option-card" data-crop="Castor (Eranda)" data-cat="cash">
+                    <span class="crop-emoji">🌿</span>
+                    <span class="crop-name-text">Castor (Eranda)</span>
+                    <span class="crop-category-tag">Cash Crop</span>
+                </div>
+                <div class="crop-option-card" data-crop="Sugarcane" data-cat="cash">
+                    <span class="crop-emoji">🎋</span>
+                    <span class="crop-name-text">Sugarcane</span>
+                    <span class="crop-category-tag">Cash Crop</span>
+                </div>
+                <div class="crop-option-card" data-crop="Mustard (Rai)" data-cat="cash">
+                    <span class="crop-emoji">🌼</span>
+                    <span class="crop-name-text">Mustard (Rai)</span>
+                    <span class="crop-category-tag">Oilseed</span>
+                </div>
+
+                <!-- Vegetables & Spices -->
+                <div class="crop-option-card" data-crop="Cumin (Jeera)" data-cat="veg">
+                    <span class="crop-emoji">🌿</span>
+                    <span class="crop-name-text">Cumin (Jeera)</span>
+                    <span class="crop-category-tag">Spice</span>
+                </div>
+                <div class="crop-option-card" data-crop="Garlic (Lasan)" data-cat="veg">
+                    <span class="crop-emoji">🧄</span>
+                    <span class="crop-name-text">Garlic</span>
+                    <span class="crop-category-tag">Spice</span>
+                </div>
+                <div class="crop-option-card" data-crop="Red Chilli" data-cat="veg">
+                    <span class="crop-emoji">🌶️</span>
+                    <span class="crop-name-text">Red Chilli</span>
+                    <span class="crop-category-tag">Spice</span>
+                </div>
+                <div class="crop-option-card" data-crop="Onion" data-cat="veg">
+                    <span class="crop-emoji">🧅</span>
+                    <span class="crop-name-text">Onion</span>
+                    <span class="crop-category-tag">Vegetable</span>
+                </div>
+                <div class="crop-option-card" data-crop="Potato" data-cat="veg">
+                    <span class="crop-emoji">🥔</span>
+                    <span class="crop-name-text">Potato</span>
+                    <span class="crop-category-tag">Vegetable</span>
+                </div>
+                <div class="crop-option-card" data-crop="Tomato" data-cat="veg">
+                    <span class="crop-emoji">🍅</span>
+                    <span class="crop-name-text">Tomato</span>
+                    <span class="crop-category-tag">Vegetable</span>
+                </div>
+                <div class="crop-option-card" data-crop="Ginger (Adu)" data-cat="veg">
+                    <span class="crop-emoji">🫚</span>
+                    <span class="crop-name-text">Ginger</span>
+                    <span class="crop-category-tag">Spice</span>
+                </div>
+
+                <!-- Fruits -->
+                <div class="crop-option-card" data-crop="Mango (Kesar/Alphonso)" data-cat="fruit">
+                    <span class="crop-emoji">🥭</span>
+                    <span class="crop-name-text">Mango</span>
+                    <span class="crop-category-tag">Fruit</span>
+                </div>
+                <div class="crop-option-card" data-crop="Banana" data-cat="fruit">
+                    <span class="crop-emoji">🍌</span>
+                    <span class="crop-name-text">Banana</span>
+                    <span class="crop-category-tag">Fruit</span>
+                </div>
+                <div class="crop-option-card" data-crop="Watermelon" data-cat="fruit">
+                    <span class="crop-emoji">🍉</span>
+                    <span class="crop-name-text">Watermelon</span>
+                    <span class="crop-category-tag">Fruit</span>
+                </div>
+
+                <!-- Custom Other Crop -->
+                <div class="crop-option-card" data-crop="custom" data-cat="all" id="customCropCard">
+                    <span class="crop-emoji">✍️</span>
+                    <span class="crop-name-text">Other Crop</span>
+                    <span class="crop-category-tag">Type Custom</span>
+                </div>
+            </div>
+
+            <!-- Custom Crop Manual Input Box (Revealed when 'Other Crop' is clicked) -->
+            <div class="custom-crop-container" id="customCropBox">
+                <label class="param-label text-success fw-bold">
+                    <i class="bi bi-pencil-square"></i> Enter Your Custom Crop Name:
+                </label>
+                <div class="param-input-box">
+                    <input type="text" id="customCropTextInput" class="param-control" placeholder="e.g. Fennel / Variyali, Coriander, Barley, Papaya..." />
+                    <i class="bi bi-flower1 param-leading-icon"></i>
+                </div>
+            </div>
+
+            <!-- 3. Agricultural Parameters Grid -->
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="param-input-group">
+                        <label class="param-label">Harvest Season</label>
+                        <div class="param-input-box">
+                            <select name="season" class="param-control">
+                                <option value="Kharif" selected>🌧️ Kharif (Monsoon)</option>
+                                <option value="Rabi">❄️ Rabi (Winter)</option>
+                                <option value="Zaid">☀️ Zaid (Summer)</option>
+                            </select>
+                            <i class="bi bi-calendar-event param-leading-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="param-input-group">
+                        <label class="param-label">Expected Rainfall (mm)</label>
+                        <div class="param-input-box">
+                            <input type="number" name="rainfall" class="param-control" required value="200" min="0" max="2500" step="10" />
+                            <i class="bi bi-droplet-half param-leading-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="param-input-group">
+                        <label class="param-label">Cultivation Area (Acres)</label>
+                        <div class="param-input-box">
+                            <input type="number" name="area" class="param-control" required value="5" min="1" max="1000" />
+                            <i class="bi bi-bounding-box-circles param-leading-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn-predict-action">
+                <i class="bi bi-stars fs-5"></i>
+                <span>Run AI Market Price Analysis</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- AI Prediction Results Display (If calculated) -->
+    @if (ViewBag.PredictedPrice != null)
+    {
+        <div class="ai-results-card">
+            <div class="results-header-badge">
+                <div class="radar-live-tag">
+                    <div class="radar-pulse-dot"></div>
+                    <span>AI Market Forecast Analysis Completed</span>
+                </div>
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1.5 rounded-pill fw-bold fs-6">
+                    🌾 Crop: @ViewBag.CropName
+                </span>
+            </div>
+
+            <div class="results-grid-metrics">
+                <div class="metric-box">
+                    <div class="metric-label">Predicted Market Price</div>
+                    <div class="metric-val-main">₹@ViewBag.PredictedPrice.ToString("N2")</div>
+                    <div class="metric-val-sub">Per Quintal (100 KG)</div>
+                </div>
+
+                <div class="metric-box">
+                    <div class="metric-label">Govt. MSP Benchmark (2025-26)</div>
+                    <div class="metric-val-main text-secondary" style="color: #475569 !important;">₹@(((double)ViewBag.MSP).ToString("N2"))</div>
+                    <div class="metric-val-sub text-muted">Official Minimum Support Price</div>
+                </div>
+
+                <div class="metric-box">
+                    <div class="metric-label">Model Confidence</div>
+                    <div class="metric-val-main text-primary" style="color: #0284c7 !important;">@ViewBag.Confidence</div>
+                    <div class="metric-val-sub text-primary" style="color: #0369a1 !important;">High Statistical Accuracy</div>
+                </div>
+
+                <div class="metric-box">
+                    <div class="metric-label">Estimated Revenue</div>
+                    <div class="metric-val-main text-success">
+                        ₹@(((double)ViewBag.PredictedPrice * 12).ToString("N0"))
+                    </div>
+                    <div class="metric-val-sub">Estimated Gross Farm Yield</div>
+                </div>
+            </div>
+
+            <div class="advisory-box">
+                <i class="bi bi-lightbulb-fill text-warning fs-3 flex-shrink-0"></i>
+                <div>
+                    <strong>AI Market Advisory for @ViewBag.CropName:</strong>
+                    Market demand for <strong>@ViewBag.CropName</strong> is projected to remain healthy. Recommended optimal selling window is within 30-45 days following harvest for peak APMC mandi returns.
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- 3 Core AI Feature Cards -->
+    <div class="predictor-features-grid">
+        <div class="feature-info-card">
+            <div class="feature-info-icon">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <div>
+                <h6 class="feature-info-title">Historical APMC Data</h6>
+                <p class="feature-info-desc">Trained on multi-year mandi price trends and regional APMC records.</p>
+            </div>
+        </div>
+
+        <div class="feature-info-card">
+            <div class="feature-info-icon">
+                <i class="bi bi-cloud-sun-fill"></i>
+            </div>
+            <div>
+                <h6 class="feature-info-title">Weather Impact Analysis</h6>
+                <p class="feature-info-desc">Correlates precipitation, humidity and seasonal temperature variations.</p>
+            </div>
+        </div>
+
+        <div class="feature-info-card">
+            <div class="feature-info-icon">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <div>
+                <h6 class="feature-info-title">Yield Optimization</h6>
+                <p class="feature-info-desc">Actionable insights to minimize price risks for smart farmers.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const cropCards = document.querySelectorAll('.crop-option-card');
+            const hiddenCropInput = document.getElementById('hiddenCropInput');
+            const customCropBox = document.getElementById('customCropBox');
+            const customCropTextInput = document.getElementById('customCropTextInput');
+            const categoryTabs = document.querySelectorAll('.crop-tab-btn');
+            const searchInput = document.getElementById('cropSearchInput');
+
+            // 1. Crop Selection
+            cropCards.forEach(card => {
+                card.addEventListener('click', function () {
+                    cropCards.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    const selectedCrop = this.getAttribute('data-crop');
+
+                    if (selectedCrop === 'custom') {
+                        customCropBox.classList.add('active');
+                        customCropTextInput.focus();
+                        hiddenCropInput.value = customCropTextInput.value || "Custom Crop";
+                    } else {
+                        customCropBox.classList.remove('active');
+                        hiddenCropInput.value = selectedCrop;
+                    }
+                });
+            });
+
+            // 2. Custom crop text input binding
+            if (customCropTextInput) {
+                customCropTextInput.addEventListener('input', function () {
+                    hiddenCropInput.value = this.value || "Custom Crop";
+                });
+            }
+
+            // 3. Category Tabs Filter
+            categoryTabs.forEach(tab => {
+                tab.addEventListener('click', function () {
+                    categoryTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    const selectedCategory = this.getAttribute('data-category');
+
+                    cropCards.forEach(card => {
+                        const cardCat = card.getAttribute('data-cat');
+                        if (selectedCategory === 'all' || cardCat === selectedCategory || card.getAttribute('data-crop') === 'custom') {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // 4. Real-time Search Filter
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    const query = this.value.toLowerCase().trim();
+                    cropCards.forEach(card => {
+                        const cropName = card.querySelector('.crop-name-text')?.textContent.toLowerCase() || '';
+                        if (cropName.includes(query) || card.getAttribute('data-crop') === 'custom') {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // Set initial state from ViewBag if returned
+            const selectedCropFromBackend = '@(ViewBag.CropName ?? "")';
+            if (selectedCropFromBackend) {
+                let matched = false;
+                cropCards.forEach(card => {
+                    if (card.getAttribute('data-crop') === selectedCropFromBackend) {
+                        cropCards.forEach(c => c.classList.remove('active'));
+                        card.classList.add('active');
+                        hiddenCropInput.value = selectedCropFromBackend;
+                        matched = true;
+                    }
+                });
+
+                if (!matched && selectedCropFromBackend !== "") {
+                    // Custom crop was predicted
+                    const customCard = document.getElementById('customCropCard');
+                    if (customCard) {
+                        cropCards.forEach(c => c.classList.remove('active'));
+                        customCard.classList.add('active');
+                        customCropBox.classList.add('active');
+                        customCropTextInput.value = selectedCropFromBackend;
+                        hiddenCropInput.value = selectedCropFromBackend;
+                    }
+                }
+            }
+        });
+    </script>
+}

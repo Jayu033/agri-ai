@@ -1,0 +1,69 @@
+Year,CommodityGroup,Commodity,MSP,Season,PricePerQuintal,ArrivalMT
+2025-26,Cereals,Bajra(Pearl Millet),2775.00,Kharif,2401.97,101725.52
+2025-26,Cereals,Barley(Jau),1980.00,Rabi,2334.44,103.72
+2025-26,Cereals,Jowar(Sorghum),3699.00,Kharif,4480.09,19128.03
+2025-26,Cereals,Maize,2400.00,Kharif,2060.93,7092.49
+2025-26,Cereals,Paddy(Common),2369.00,Kharif,2343.32,76041.93
+2025-26,Cereals,Wheat,2425.00,Rabi,2565.44,609779.38
+2025-26,Fibre Crops,Cotton,7710.00,Kharif,7440.56,549121.90
+2025-26,Oil Seeds,Groundnut,7263.00,Kharif,6208.04,349264.61
+2025-26,Oil Seeds,Mustard,5950.00,Rabi,6055.25,275220.47
+2025-26,Oil Seeds,Sesamum(Til),9846.00,Kharif,11546.77,101563.37
+2025-26,Oil Seeds,Soyabean,5328.00,Kharif,4634.31,82265.30
+2025-26,Oil Seeds,Sunflower,7721.00,Kharif,5801.31,3.06
+2025-26,Pulses,Bengal Gram(Chana),5650.00,Rabi,5565.45,116341.74
+2025-26,Pulses,Black Gram(Urad),7800.00,Rabi,6490.94,34177.10
+2025-26,Pulses,Green Gram(Moong),8768.00,Rabi,7280.53,33443.68
+2025-26,Pulses,Lentil(Masur),6700.00,Rabi,8500.00,0.10
+2025-26,Pulses,Red gram(Tur),8000.00,Kharif,7073.55,92795.39
+2024-25,Cereals,Bajra(Pearl Millet),2625.00,Kharif,2440.33,142122.43
+2024-25,Cereals,Barley(Jau),1850.00,Rabi,2289.20,110.69
+2024-25,Cereals,Jowar(Sorghum),3371.00,Kharif,3772.02,24963.85
+2024-25,Cereals,Maize,2225.00,Kharif,2442.55,69660.12
+2024-25,Cereals,Paddy(Common),2300.00,Kharif,2438.30,239789.57
+2024-25,Cereals,Wheat,2275.00,Rabi,2699.42,638292.22
+2024-25,Fibre Crops,Cotton,7121.00,Kharif,7165.35,786381.88
+2024-25,Oil Seeds,Groundnut,6783.00,Kharif,5519.49,657094.35
+2024-25,Oil Seeds,Mustard,5650.00,Rabi,5537.63,300444.80
+2024-25,Oil Seeds,Sesamum(Til),9267.00,Kharif,10386.74,182783.57
+2024-25,Oil Seeds,Soyabean,4892.00,Kharif,4068.76,157587.10
+2024-25,Oil Seeds,Sunflower,7280.00,Kharif,4000.00,1.00
+2024-25,Pulses,Bengal Gram(Chana),5440.00,Rabi,5836.38,180099.99
+2024-25,Pulses,Black Gram(Urad),7400.00,Rabi,7829.21,39837.64
+2024-25,Pulses,Green Gram(Moong),8682.00,Rabi,7954.64,38379.31
+2024-25,Pulses,Lentil(Masur),6425.00,Rabi,7720.15,1.30
+2024-25,Pulses,Red gram(Tur),7550.00,Kharif,6945.59,78762.81
+2022-23,Cereals,Bajra(Pearl Millet),2350.00,Kharif,2198.53,164624.00
+2022-23,Cereals,Barley(Jau),1735.00,Rabi,2650.68,326.38
+2022-23,Cereals,Jowar(Sorghum),2970.00,Kharif,4272.66,23489.38
+2022-23,Cereals,Maize,1962.00,Kharif,2252.56,53327.13
+2022-23,Cereals,Paddy(Common),2040.00,Kharif,1781.17,92034.06
+2022-23,Cereals,Wheat,2125.00,Rabi,2457.29,458144.43
+2022-23,Fibre Crops,Cotton,6080.00,Kharif,8168.04,564283.63
+2022-23,Oil Seeds,Groundnut,5850.00,Kharif,6519.55,587320.66
+2022-23,Oil Seeds,Mustard,5050.00,Rabi,5521.33,390767.69
+2022-23,Oil Seeds,Sesamum(Til),7830.00,Kharif,13596.77,134482.17
+2022-23,Oil Seeds,Soyabean,4300.00,Kharif,5013.93,90454.30
+2022-23,Oil Seeds,Sunflower,6400.00,Kharif,3464.55,37.80
+2022-23,Pulses,Bengal Gram(Chana),5230.00,Rabi,4482.36,173582.25
+2022-23,Pulses,Black Gram(Urad),6600.00,Rabi,6619.60,19693.34
+2022-23,Pulses,Green Gram(Moong),7755.00,Rabi,6262.60,27907.63
+2022-23,Pulses,Lentil(Masur),5500.00,Rabi,4900.00,0.50
+2022-23,Pulses,Red gram(Tur),6600.00,Kharif,7514.22,49730.63
+2021-22,Cereals,Bajra(Pearl Millet),2250.00,Kharif,2026.23,154248.92
+2021-22,Cereals,Barley(Jau),1600.00,Rabi,1853.76,307.09
+2021-22,Cereals,Jowar(Sorghum),2738.00,Kharif,2929.37,26147.91
+2021-22,Cereals,Maize,1870.00,Kharif,1999.55,67269.75
+2021-22,Cereals,Paddy(Common),1940.00,Kharif,1826.57,173553.54
+2021-22,Cereals,Wheat,1975.00,Rabi,2018.67,591308.75
+2021-22,Fibre Crops,Cotton,5726.00,Kharif,8571.52,834174.91
+2021-22,Oil Seeds,Groundnut,5550.00,Kharif,5717.13,714961.67
+2021-22,Oil Seeds,Mustard,4650.00,Rabi,6222.67,495560.23
+2021-22,Oil Seeds,Sesamum(Til),7307.00,Kharif,10663.31,158464.84
+2021-22,Oil Seeds,Soyabean,3950.00,Kharif,5511.41,83988.11
+2021-22,Oil Seeds,Sunflower,5388.00,Kharif,5500.00,2.60
+2021-22,Pulses,Bengal Gram(Chana),5100.00,Rabi,4572.08,205657.13
+2021-22,Pulses,Black Gram(Urad),6300.00,Rabi,5687.56,48699.86
+2021-22,Pulses,Green Gram(Moong),7275.00,Rabi,6042.53,24832.56
+2021-22,Pulses,Lentil(Masur),5100.00,Rabi,5149.46,1.30
+2021-22,Pulses,Red gram(Tur),6300.00,Kharif,5713.15,75000.40

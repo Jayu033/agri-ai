@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AgriAI Platform</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    
+    <!-- Modularized Farm2Home CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Sidebar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Register.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Login.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/PricePredictor.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/GovPortal.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/LiveMandi.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Responsive.css" asp-append-version="true" />
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    @await RenderSectionAsync("Styles", required: false)
+
+    <style>
+        /* Hide Google Translate default top banner & branding */
+        .goog-te-banner-frame, .skiptranslate, .goog-te-gadget-icon { display: none !important; }
+        body { top: 0 !important; position: static !important; }
+        #google_translate_element { display: none !important; }
+
+        /* Hide browser default native eye icon (Edge / Chrome) */
+        input::-ms-reveal, input::-ms-clear { display: none !important; width: 0 !important; height: 0 !important; }
+        input::-webkit-contacts-auto-fill-button, input::-webkit-credentials-auto-fill-button { visibility: hidden !important; pointer-events: none !important; display: none !important; }
+
+        body { font-family: 'Inter', sans-serif; background-color: #f0fdf4; display: flex; flex-direction: column; min-height: 100vh; margin: 0; }
+        main { flex: 1; }
+        
+        /* Compact Slim Navbar */
+        .navbar-custom { background-color: #ffffff; padding: 6px 16px; border-bottom: 1px solid #e5e7eb; height: 46px; }
+        .navbar-brand-custom { color: #166534; font-weight: 700; font-size: 1.05rem; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+        .menu-btn { background: none; border: none; font-size: 1.25rem; color: #4b5563; cursor: pointer; padding: 0; margin-right: 12px; display: flex; align-items: center;}
+        
+        /* Footer */
+        .footer-custom { background-color: #1b5e20; color: #ffffff; padding: 35px 0 20px 0; margin-top: auto;}
+        .footer-logo { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .footer-text { font-size: 0.85rem; color: #a5d6a7; margin-bottom: 16px; max-width: 300px; }
+        .footer-heading { font-size: 0.9rem; font-weight: 600; margin-bottom: 12px; color: #ffffff; }
+        .footer-link { color: #a5d6a7; text-decoration: none; font-size: 0.82rem; display: block; margin-bottom: 6px; }
+        .footer-link:hover { color: #ffffff; text-decoration: underline; }
+        .social-icons a { color: #ffffff; font-size: 1.1rem; margin-right: 12px; }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-top: 24px; text-align: center; font-size: 0.78rem; color: #a5d6a7; }
+    </style>
+</head>
+<body>
+    
+    <!-- 1. Agmarknet Top Utility Bar (Clean Minimal Language Strip) -->
+    <div class="gov-top-bar d-none d-md-block" style="padding: 4px 0; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+        <div class="container d-flex align-items-center justify-content-end">
+            <ul class="gov-util-nav m-0 p-0 list-unstyled d-flex align-items-center">
+                <li>
+                    <div class="gov-lang-select-box d-flex align-items-center gap-1 px-2 py-0.5 rounded bg-white border">
+                        <i class="bi bi-translate text-success" style="font-size: 0.85rem;"></i>
+                        <select class="border-0 bg-transparent shadow-none app-language-select" style="font-size: 0.78rem; outline: none; cursor: pointer; font-weight: 600; color: #334155;">
+                            <option value="en">English</option>
+                            <option value="gu">ગુજરાતી</option>
+                            <option value="hi">हिंदी</option>
+                        </select>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 2. Main Brand Header Bar -->
+    @{
+        var curCtrl = ViewContext.RouteData.Values["Controller"]?.ToString() ?? "";
+        var curAct = ViewContext.RouteData.Values["Action"]?.ToString() ?? "";
+    }
+    <header class="gov-main-header">
+        <div class="container d-flex align-items-center justify-content-between">
+            <!-- Left Brand Logo -->
+            <div class="d-flex align-items-center">
+                <button class="menu-btn d-lg-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#globalMenu" aria-controls="globalMenu">
+                    <i class="bi bi-list fs-3"></i>
+                </button>
+
+                <a asp-controller="Home" asp-action="Index" class="gov-emblem-section text-decoration-none d-flex align-items-center gap-2.5">
+                    <img src="~/images/agriai-logo.png" alt="AgriAI Logo" class="rounded-circle shadow-sm" style="height: 60px; width: 60px; object-fit: cover;" />
+                    <div>
+                        <strong class="d-block text-dark fw-extrabold fs-3" style="letter-spacing: -0.5px; line-height: 1.1;">AgriAI</strong>
+                        <span class="small text-success fw-bold" style="font-size: 0.76rem;">Smart Farm &amp; Market Platform</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Middle Navigation Links (Clean & Essential with Dynamic Active Highlighting) -->
+            <ul class="gov-nav-menu d-none d-lg-flex">
+                <li>
+                    <a asp-controller="Home" asp-action="Index" class="gov-nav-link @(curCtrl == "Home" && curAct == "Index" ? "active" : "")">
+                        Home
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Home" asp-action="LiveMandi" class="gov-nav-link text-danger fw-bold d-inline-flex align-items-center gap-1.5 @(curCtrl == "Home" && curAct == "LiveMandi" ? "active" : "")">
+                        <span class="ticker-pulse-dot" style="background: #dc2626; width: 7px; height: 7px;"></span>
+                        <span>Live Market Rates</span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Product" asp-action="Index" class="gov-nav-link @(curCtrl == "Product" ? "active" : "")">
+                        Shop Products
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="AI" asp-action="PricePredictor" class="gov-nav-link text-success fw-bold @(curCtrl == "AI" ? "active" : "")">
+                        <i class="bi bi-stars"></i> AI Price Predictor
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Home" asp-action="Helpdesk" class="gov-nav-link @(curCtrl == "Home" && curAct == "Helpdesk" ? "active" : "")">
+                        Helpdesk
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Right Official Login / Account Button -->
+            <div class="d-flex align-items-center gap-2">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    var userInit = User.Identity.Name?.Substring(0, 1).ToUpper() ?? "U";
+                    var userRole = User.IsInRole("Admin") ? "Admin" : User.IsInRole("Farmer") ? "Farmer" : "Customer";
+                    var dashCtrl = User.IsInRole("Admin") ? "Admin" : User.IsInRole("Farmer") ? "Farmer" : "Customer";
+
+                    <div class="dropdown">
+                        <button class="btn btn-outline-success dropdown-toggle d-flex align-items-center gap-2 rounded-pill px-3 py-1.5 shadow-sm bg-white" type="button" id="userProfileDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border-color: #006653; font-size: 0.86rem;">
+                            <span class="d-flex align-items-center justify-content-center rounded-circle text-white fw-bold shadow-sm" style="width: 32px; height: 32px; background: linear-gradient(135deg, #006653 0%, #16a34a 100%); font-size: 0.85rem;">
+                                @userInit
+                            </span>
+                            <div class="text-start d-none d-sm-block lh-1">
+                                <strong class="text-dark d-block" style="font-size: 0.85rem;">@(User.Identity.Name?.Split('@')[0] ?? "User")</strong>
+                                <small class="text-success fw-bold" style="font-size: 0.70rem;">@userRole</small>
+                            </div>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-2 p-2" aria-labelledby="userProfileDropdown" style="min-width: 220px;">
+                            <li class="px-3 py-2 border-bottom mb-1 bg-light rounded-3">
+                                <strong class="d-block text-dark small">@(User.Identity.Name ?? "User")</strong>
+                                <span class="badge bg-success bg-opacity-10 text-success fw-bold" style="font-size: 0.68rem;">@userRole Account</span>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" asp-controller="@dashCtrl" asp-action="Dashboard">
+                                    <i class="bi bi-speedometer2 text-success"></i> My Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" asp-controller="Profile" asp-action="Index">
+                                    <i class="bi bi-person-circle text-primary"></i> Account Profile
+                                </a>
+                            </li>
+                            @if (User.IsInRole("Customer") || !User.IsInRole("Admin"))
+                            {
+                                <li>
+                                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" asp-controller="Checkout" asp-action="Index">
+                                        <i class="bi bi-cart3 text-warning"></i> My Cart / Orders
+                                    </a>
+                                </li>
+                            }
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li>
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                                    <button type="submit" class="dropdown-item rounded-2 py-2 text-danger d-flex align-items-center gap-2 w-100 border-0 bg-transparent">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="gov-btn-official-login">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        <span>Official Login</span>
+                    </a>
+                }
+
+                <div class="d-lg-none ms-1">
+                    <select class="form-select form-select-sm border-success text-dark bg-white shadow-none app-language-select" style="width: 85px; height: 28px; font-size: 0.72rem; padding: 2px 4px;">
+                        <option value="en">EN</option>
+                        <option value="gu">ગુજ</option>
+                        <option value="hi">हिन्दी</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Offcanvas Global Menu -->
+    <div class="offcanvas offcanvas-start offcanvas-custom d-flex flex-column" tabindex="-1" id="globalMenu" aria-labelledby="globalMenuLabel">
+        <div class="offcanvas-header-custom">
+            <a asp-controller="Home" asp-action="Index" class="offcanvas-brand d-flex align-items-center gap-2 text-decoration-none">
+                <img src="~/images/agriai-logo.png" alt="AgriAI Logo" class="rounded-circle shadow-sm" style="height: 52px; width: 52px; object-fit: cover;" />
+                <div>
+                    <h5 class="offcanvas-brand-title mb-0 fs-4">AgriAI</h5>
+                    <span class="offcanvas-brand-subtitle">Smart Farm Platform</span>
+                </div>
+            </a>
+            <button type="button" class="btn-close-custom shadow-sm" data-bs-dismiss="offcanvas" aria-label="Close">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        
+        <div class="offcanvas-body p-0 d-flex flex-column flex-grow-1">
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <div class="sidebar-user-card">
+                    <div class="sidebar-user-avatar">
+                        @(User.Identity.Name?.Substring(0, 1).ToUpper() ?? "U")
+                    </div>
+                    <div class="sidebar-user-info">
+                        <p class="sidebar-user-name">@(User.Identity.Name ?? "User")</p>
+                        <span class="sidebar-user-role @(User.IsInRole("Admin") ? "role-admin" : "")">
+                            @(User.IsInRole("Admin") ? "Admin" : User.IsInRole("Farmer") ? "Farmer" : "Customer")
+                        </span>
+                    </div>
+                </div>
+            }
+
+            <p class="sidebar-section-title">Main Navigation</p>
+            <ul class="menu-list">
+                <li class="menu-item">
+                    <a asp-controller="Home" asp-action="Index" class="menu-link @(curCtrl == "Home" && curAct == "Index" ? "active" : "")">
+                        <span class="menu-icon-box"><i class="bi bi-house-door-fill"></i></span>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a asp-controller="Home" asp-action="LiveMandi" class="menu-link text-danger fw-bold @(curCtrl == "Home" && curAct == "LiveMandi" ? "active" : "")">
+                        <span class="menu-icon-box" style="background: #fee2e2; color: #dc2626;"><i class="bi bi-broadcast"></i></span>
+                        <span>Live Market Rates</span>
+                        <span class="badge bg-danger ms-auto" style="font-size: 0.68rem;">LIVE</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a asp-controller="Product" asp-action="Index" class="menu-link @(curCtrl == "Product" ? "active" : "")">
+                        <span class="menu-icon-box"><i class="bi bi-shop"></i></span>
+                        <span>Shop Products</span>
+                    </a>
+                </li>
+            </ul>
+
+            <p class="sidebar-section-title">AI Intelligence</p>
+            <ul class="menu-list">
+                <li class="menu-item">
+                    <a asp-controller="AI" asp-action="PricePredictor" class="menu-link ai-highlight-link @(curCtrl == "AI" ? "active" : "")">
+                        <span class="menu-icon-box"><i class="bi bi-stars"></i></span>
+                        <span>Smart Price Predictor</span>
+                        <span class="ai-badge">AI PRO</span>
+                    </a>
+                </li>
+            </ul>
+
+            <p class="sidebar-section-title">Account & Info</p>
+            <ul class="menu-list">
+                <li class="menu-item">
+                    <a asp-controller="Home" asp-action="Helpdesk" class="menu-link @(curCtrl == "Home" && curAct == "Helpdesk" ? "active" : "")">
+                        <span class="menu-icon-box"><i class="bi bi-headset"></i></span>
+                        <span>Helpdesk</span>
+                    </a>
+                </li>
+                
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <li class="menu-item">
+                        <a asp-controller="@(User.IsInRole("Admin") ? "Admin" : User.IsInRole("Farmer") ? "Farmer" : "Customer")" asp-action="Dashboard" class="menu-link">
+                            <span class="menu-icon-box"><i class="bi bi-speedometer2"></i></span>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="menu-item">
+                            <a asp-controller="Admin" asp-action="Users" class="menu-link text-danger fw-bold">
+                                <span class="menu-icon-box" style="background:#fee2e2; color:#dc2626;"><i class="bi bi-people-fill"></i></span>
+                                <span>Manage Users</span>
+                            </a>
+                        </li>
+                    }
+                    <li class="menu-item">
+                        <a asp-controller="Checkout" asp-action="Index" class="menu-link">
+                            <span class="menu-icon-box"><i class="bi bi-cart3"></i></span>
+                            <span>My Cart</span>
+                        </a>
+                    </li>
+                    <li class="menu-item mt-2">
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                            <button type="submit" class="logout-btn-custom">
+                                <span class="menu-icon-box"><i class="bi bi-box-arrow-right"></i></span>
+                                <span>Logout</span>
+                            </button>
+                        </form>
+                    </li>
+                }
+                else
+                {
+                    <li class="menu-item">
+                        <a asp-controller="Account" asp-action="Login" class="menu-link">
+                            <span class="menu-icon-box"><i class="bi bi-box-arrow-in-right"></i></span>
+                            <span>Login</span>
+                        </a>
+                    </li>
+                    <li class="menu-item mt-1">
+                        <a asp-controller="Account" asp-action="Register" class="menu-btn-register">
+                            <span class="menu-icon-box"><i class="bi bi-person-plus-fill"></i></span>
+                            <span>Create Free Account</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+
+            <div class="menu-bottom-section">
+                <div class="sidebar-lang-box">
+                    <i class="bi bi-globe2 sidebar-lang-icon"></i>
+                    <select class="sidebar-lang-select app-language-select" aria-label="Select Language">
+                        <option value="en">English (US)</option>
+                        <option value="gu">ગુજરાતી (Gujarati)</option>
+                        <option value="hi">हिंदी (Hindi)</option>
+                    </select>
+                </div>
+                <div class="sidebar-trust-badge">
+                    <i class="bi bi-patch-check-fill"></i> 100% Direct Farm Fresh
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main role="main">
+        @RenderBody()
+    </main>
+
+    <!-- Global Footer -->
+    <footer class="footer-custom">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="footer-logo">
+                        <i class="bi bi-tree-fill"></i> AgriAI
+                    </div>
+                    <p class="footer-text">Connecting farmers directly with customers for fresh, organic, and affordable produce.</p>
+                </div>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="footer-heading">Quick Links</h5>
+                    <a asp-controller="Home" asp-action="Index" class="footer-link">Home</a>
+                    <a asp-controller="Product" asp-action="Index" class="footer-link">Shop Products</a>
+                    <a asp-controller="AI" asp-action="PricePredictor" class="footer-link">AI Price Predictor</a>
+                    <a asp-controller="Home" asp-action="About" class="footer-link">About Us</a>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="footer-heading">Connect With Us</h5>
+                    <div class="social-icons">
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                        <a href="#"><i class="bi bi-twitter"></i></a>
+                        <a href="#"><i class="bi bi-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2026 AgriAI. All rights reserved. Direct Farm to Home Marketplace.
+            </div>
+        </div>
+    </footer>
+
+    <!-- AI Chatbot Floating Button -->
+    <div class="floating-chatbot" style="position: fixed; bottom: 20px; right: 20px; background-color: #166534; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">
+        <i class="bi bi-robot"></i>
+    </div>
+
+    <!-- Hidden Google Translate Element -->
+    <div id="google_translate_element"></div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,gu,hi',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,13 @@
+## Ignore Visual Studio / .NET temporary & build files
+[Bb]in/
+[Oo]bj/
+.vs/
+.idea/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.user
+appsettings.Development.json
+*.log
+scratch/

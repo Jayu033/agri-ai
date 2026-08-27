@@ -1,0 +1,145 @@
+@model IEnumerable<AgriAI.Web.ViewModels.UserManagementViewModel>
+
+@{
+    ViewData["Title"] = "User Management";
+    string currentFilter = ViewBag.CurrentFilter as string ?? "All";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">User Management</h2>
+        <p class="text-muted small mb-0">Manage registered Farmers and Customers (Block / Unblock / Delete).</p>
+    </div>
+    <a asp-action="Dashboard" class="btn btn-outline-secondary rounded-pill">
+        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Role Filter Tabs -->
+<ul class="nav nav-pills mb-4 gap-2 bg-white p-2 rounded-3 shadow-sm border">
+    <li class="nav-item">
+        <a asp-action="Users" asp-route-roleFilter="All" class="nav-link rounded-pill @(currentFilter == "All" ? "active bg-success" : "text-dark")">
+            All Users (@Model.Count())
+        </a>
+    </li>
+    <li class="nav-item">
+        <a asp-action="Users" asp-route-roleFilter="Farmer" class="nav-link rounded-pill @(currentFilter == "Farmer" ? "active bg-success" : "text-dark")">
+            <i class="bi bi-person-workspace me-1"></i> Farmers (@Model.Count(u => u.Role == "Farmer"))
+        </a>
+    </li>
+    <li class="nav-item">
+        <a asp-action="Users" asp-route-roleFilter="Customer" class="nav-link rounded-pill @(currentFilter == "Customer" ? "active bg-success" : "text-dark")">
+            <i class="bi bi-bag-heart me-1"></i> Customers (@Model.Count(u => u.Role == "Customer"))
+        </a>
+    </li>
+</ul>
+
+<div class="bg-white rounded-3 shadow-sm p-4 border">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Joined Date</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="bi bi-people display-4 d-block mb-2 text-secondary opacity-50"></i>
+                            No users found.
+                        </td>
+                    </tr>
+                }
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle bg-success bg-opacity-10 text-success fw-bold rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    @(string.IsNullOrEmpty(user.FullName) ? "U" : user.FullName.Substring(0, 1).ToUpper())
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">@user.FullName</div>
+                                    <small class="text-muted">@@@user.Username</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>@user.Email</td>
+                        <td>
+                            @if (user.Role == "Farmer")
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill"><i class="bi bi-tree-fill me-1"></i> Farmer</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill"><i class="bi bi-person-fill me-1"></i> Customer</span>
+                            }
+                        </td>
+                        <td>@user.CreatedAt.ToString("MMM dd, yyyy")</td>
+                        <td>
+                            @if (user.IsBlocked)
+                            {
+                                <span class="badge bg-danger rounded-pill px-3 py-2"><i class="bi bi-slash-circle me-1"></i> Blocked</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success rounded-pill px-3 py-2"><i class="bi bi-check-circle me-1"></i> Active</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-2">
+                                <!-- Block / Unblock Button -->
+                                <form asp-action="ToggleBlockUser" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@user.Id" />
+                                    @if (user.IsBlocked)
+                                    {
+                                        <button type="submit" class="btn btn-sm btn-outline-success rounded-pill" title="Unblock User" onclick="return confirm('Are you sure you want to UNBLOCK this user?');">
+                                            <i class="bi bi-unlock-fill me-1"></i> Unblock
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-sm btn-outline-warning text-dark rounded-pill" title="Block User" onclick="return confirm('Are you sure you want to BLOCK this user?');">
+                                            <i class="bi bi-lock-fill me-1"></i> Block
+                                        </button>
+                                    }
+                                </form>
+
+                                <!-- Delete Button -->
+                                <form asp-action="DeleteUser" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@user.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle" style="width: 32px; height: 32px; padding: 0;" title="Delete User" onclick="return confirm('Are you sure you want to PERMANENTLY DELETE user @user.Email? This action cannot be undone.');">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

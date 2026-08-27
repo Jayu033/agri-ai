@@ -1,0 +1,161 @@
+@model AgriAI.Domain.Entities.Product
+
+@{
+    ViewData["Title"] = Model.Name + " - Details";
+    var imgUrl = Model.Images?.FirstOrDefault()?.ImageUrl;
+    var returnUrl = Context.Request.Query["returnUrl"].ToString();
+    if (string.IsNullOrEmpty(returnUrl))
+    {
+        if (User.IsInRole("Customer"))
+        {
+            returnUrl = "/Customer/Dashboard?tab=shopTab";
+        }
+        else if (User.IsInRole("Farmer"))
+        {
+            returnUrl = "/Farmer/Dashboard?tab=farmerProductsTab";
+        }
+        else
+        {
+            returnUrl = Url.Action("Index", "Product") ?? "/Product";
+        }
+    }
+}
+
+<div class="container py-4" style="max-width: 1100px;">
+    <div class="mb-4">
+        <a href="@returnUrl" class="btn btn-outline-secondary rounded-pill fw-bold px-3.5 py-2 small" onclick="if(window.history.length > 1 && document.referrer.includes(window.location.host)) { window.history.back(); return false; }">
+            <i class="bi bi-arrow-left me-1"></i> Back to Products
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <div class="row g-0">
+            <!-- Product Image Column -->
+            <div class="col-md-6 bg-light d-flex align-items-center justify-content-center p-4">
+                @if (!string.IsNullOrEmpty(imgUrl))
+                {
+                    <img src="@imgUrl" class="img-fluid rounded-4 shadow-sm" alt="@Model.Name" style="max-height: 400px; width: 100%; object-fit: cover;" />
+                }
+                else
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-image display-1 text-success opacity-50"></i>
+                        <p class="mt-2 fw-semibold">No Image Available</p>
+                    </div>
+                }
+            </div>
+            
+            <!-- Product Info & Purchase Column -->
+            <div class="col-md-6 p-4 p-md-5 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-success bg-opacity-10 text-success text-uppercase px-3 py-1.5 rounded-pill fw-bold small border border-success border-opacity-25">
+                            @(Model.Category?.Name ?? "Farm Produce")
+                        </span>
+                        <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1 small">
+                            <i class="bi bi-patch-check-fill text-success me-1"></i>Direct Farm
+                        </span>
+                    </div>
+
+                    <h2 class="fw-extrabold text-dark mb-2">@Model.Name</h2>
+                    
+                    <div class="d-flex align-items-baseline gap-2 mb-3">
+                        <h3 class="fw-bold text-success display-6 mb-0" id="unitPriceDisplay">₹@Model.Price.ToString("N2")</h3>
+                        <span class="text-muted small">/ Unit (Kg / Qtl)</span>
+                    </div>
+                    
+                    <p class="text-muted leading-relaxed mb-4" style="font-size: 0.95rem;">
+                        @(string.IsNullOrEmpty(Model.Description) ? "Fresh organic farm produce harvested directly by verified Gujarat farmers." : Model.Description)
+                    </p>
+                    
+                    <div class="p-3 bg-light rounded-4 border mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted small fw-semibold">Available Total Stock:</span>
+                            <span class="badge bg-success text-white fw-bold px-2.5 py-1 rounded-pill">
+                                @Model.StockQuantity units in stock
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Purchase / Order Form with Quantity Selector -->
+                <form asp-controller="Checkout" asp-action="Index" method="get" class="mt-2">
+                    <input type="hidden" name="productId" value="@Model.Id" />
+
+                    <!-- Interactive Quantity Selector -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark small mb-2 d-flex justify-content-between">
+                            <span>Select Quantity to Buy:</span>
+                            <span class="text-success fw-bold" id="totalPricePreview">Total: ₹@Model.Price.ToString("N2")</span>
+                        </label>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="input-group" style="max-width: 170px;">
+                                <button class="btn btn-outline-secondary px-3" type="button" id="btnQtyMinus">
+                                    <i class="bi bi-dash-lg"></i>
+                                </button>
+                                <input type="number" name="quantity" id="qtyInput" class="form-control text-center fw-bold shadow-none" value="1" min="1" max="@Model.StockQuantity" required />
+                                <button class="btn btn-outline-secondary px-3" type="button" id="btnQtyPlus">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
+                            <span class="text-muted small">units (Kg / Qtl)</span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg py-3 fw-bold rounded-pill shadow-sm" style="background-color: #006653; border-color: #006653;">
+                            <i class="bi bi-cart-check-fill me-2"></i> Buy Selected Produce (<span id="btnAmountPreview">₹@Model.Price.ToString("N2")</span>)
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const unitPrice = @Model.Price;
+            const maxStock = @Model.StockQuantity;
+            const qtyInput = document.getElementById("qtyInput");
+            const btnMinus = document.getElementById("btnQtyMinus");
+            const btnPlus = document.getElementById("btnQtyPlus");
+            const totalPricePreview = document.getElementById("totalPricePreview");
+            const btnAmountPreview = document.getElementById("btnAmountPreview");
+
+            function updatePrice() {
+                let qty = parseInt(qtyInput.value) || 1;
+                if (qty < 1) qty = 1;
+                if (qty > maxStock && maxStock > 0) qty = maxStock;
+                qtyInput.value = qty;
+
+                const total = (qty * unitPrice).toFixed(2);
+                const formatted = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(total);
+                
+                totalPricePreview.textContent = "Total: " + formatted;
+                btnAmountPreview.textContent = formatted;
+            }
+
+            btnMinus.addEventListener("click", function () {
+                let current = parseInt(qtyInput.value) || 1;
+                if (current > 1) {
+                    qtyInput.value = current - 1;
+                    updatePrice();
+                }
+            });
+
+            btnPlus.addEventListener("click", function () {
+                let current = parseInt(qtyInput.value) || 1;
+                if (current < maxStock) {
+                    qtyInput.value = current + 1;
+                    updatePrice();
+                }
+            });
+
+            qtyInput.addEventListener("input", updatePrice);
+        });
+    </script>
+}
