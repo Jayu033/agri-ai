@@ -25,10 +25,41 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 2. Multi-Language Switcher (English, Gujarati, Hindi)
-    const langSelects = document.querySelectorAll('.app-language-select');
-    
-    // Read saved language or check googtrans cookie
+    // 2. Chatbot Language Configurations
+    const chatLangDict = {
+        en: {
+            title: "AgriAI Farm Assistant",
+            status: "Online (Gemini AI)",
+            welcomeTitle: "Hello! 🙏 I am your AgriAI Assistant.",
+            welcomeDesc: "Ask any question about crop diseases, fertilizers, organic farming, APMC Mandi rates, or marketplace help:",
+            topics: ["🌱 Cotton Pest Control", "🌾 Wheat Market Rates", "🍅 Tomato Fertilizer Plan", "🌦️ Today's Weather Advisory"],
+            placeholder: "Type your question here...",
+            offlineMsg: "⚠️ Trouble connecting to AgriAI. Please try again shortly.",
+            emptyPrompt: "Please enter your question."
+        },
+        gu: {
+            title: "AgriAI ખેતી સહાયક",
+            status: "Online (Gemini AI)",
+            welcomeTitle: "નમસ્તે! 🙏 હું તમારો AgriAI ખેતી આસિસ્ટન્ટ છું.",
+            welcomeDesc: "પાકના રોગ, જૈવિક ખાતર, જંતુનાશક દવાઓ, મંડી બજાર ભાવ કે ખેતી સંબંધિત કોઈપણ પ્રશ્ન પૂછો:",
+            topics: ["🌱 કપાસમાં રોગ નિયંત્રણ", "🌾 ઘઉંના બજાર ભાવ", "🍅 ટામેટાના પાકમાં ખાતર", "🌦️ આજનું હવામાન"],
+            placeholder: "તમારો પ્રશ્ન અહીં લખો...",
+            offlineMsg: "⚠️ ખેતી આસિસ્ટન્ટ સાથે કનેક્ટ થવામાં મુશ્કેલી આવી છે. કૃપા કરીને થોડીવાર પછી પ્રયત્ન કરો.",
+            emptyPrompt: "કૃપા કરીને તમારો પ્રશ્ન લખો."
+        },
+        hi: {
+            title: "AgriAI कृषि सहायक",
+            status: "Online (Gemini AI)",
+            welcomeTitle: "नमस्ते! 🙏 मैं आपका AgriAI कृषि सहायक हूँ।",
+            welcomeDesc: "फसल के रोग, जैविक खाद, कीटनाशक दवाएं, मंडी भाव या खेती से जुड़े कोई भी सवाल पूछें:",
+            topics: ["🌱 कपास में कीट नियंत्रण", "🌾 गेहूं के मंडी भाव", "🍅 टमाटर की फसल में खाद", "🌦️ आज का मौसम"],
+            placeholder: "अपना सवाल यहाँ लिखें...",
+            offlineMsg: "⚠️ कृषि सहायक से कनेक्ट होने में समस्या आई है। कृपया थोड़ी देर बाद प्रयास करें।",
+            emptyPrompt: "कृपया अपना प्रश्न लिखें।"
+        }
+    };
+
+    // Helper to get active language
     function getCookie(name) {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
@@ -36,54 +67,201 @@ document.addEventListener("DOMContentLoaded", function () {
         return '';
     }
 
-    let savedLang = localStorage.getItem('agri_lang');
-    if (!savedLang) {
-        const cookieVal = getCookie('googtrans');
-        if (cookieVal && cookieVal.includes('/gu')) savedLang = 'gu';
-        else if (cookieVal && cookieVal.includes('/hi')) savedLang = 'hi';
-        else savedLang = 'en';
+    function getCurrentLanguage() {
+        let savedLang = localStorage.getItem('agri_lang');
+        if (!savedLang) {
+            const cookieVal = getCookie('googtrans');
+            if (cookieVal && cookieVal.includes('/gu')) savedLang = 'gu';
+            else if (cookieVal && cookieVal.includes('/hi')) savedLang = 'hi';
+            else savedLang = 'en';
+        }
+        return savedLang || 'en';
     }
 
+    let activeLang = getCurrentLanguage();
+
+    // 3. Multi-Language Switcher Handling
+    const langSelects = document.querySelectorAll('.app-language-select');
     langSelects.forEach(select => {
-        select.value = savedLang;
+        select.value = activeLang;
         select.addEventListener('change', function () {
             const selectedLang = this.value;
             localStorage.setItem('agri_lang', selectedLang);
+            activeLang = selectedLang;
 
             // Set Google Translate cookie for domain and path
             const host = window.location.hostname;
             const cookieValue = `/en/${selectedLang}`;
-            
             document.cookie = `googtrans=${cookieValue}; path=/; domain=${host}`;
             document.cookie = `googtrans=${cookieValue}; path=/;`;
 
-            // Reload page to re-render in chosen language
+            // Update Chatbot Language & Reload Page
+            applyChatbotLanguage(selectedLang);
             window.location.reload();
         });
     });
 
-    // 3. Chatbot functionality
-    const chatbotBtn = document.querySelector('.floating-chatbot');
-    if (chatbotBtn) {
-        chatbotBtn.addEventListener('click', function () {
-            const userMessage = prompt("AgriAI Assistant (Type your question in Gujarati, Hindi or English):");
-            if (userMessage) {
-                fetch('/api/Chatbot/ask', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ message: userMessage })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert("AgriAI: " + data.response);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert("AgriAI is currently offline. Please try again later.");
-                });
+    // 4. Dynamic Chatbot Language Setup
+    function applyChatbotLanguage(lang) {
+        const dict = chatLangDict[lang] || chatLangDict['en'];
+        
+        const titleEl = document.querySelector('.agri-chat-title');
+        if (titleEl) titleEl.textContent = dict.title;
+
+        const inputEl = document.getElementById('agriChatInput');
+        if (inputEl) inputEl.placeholder = dict.placeholder;
+
+        const initialBotMsg = document.querySelector('#agriChatBody .agri-msg-bot .agri-msg-bubble');
+        if (initialBotMsg) {
+            let pillsHtml = dict.topics.map(t => `<span class="topic-pill">${t}</span>`).join('');
+            initialBotMsg.innerHTML = `
+                <p class="mb-1"><strong>${dict.welcomeTitle}</strong></p>
+                <p class="mb-2">${dict.welcomeDesc}</p>
+                <div class="agri-quick-topics">
+                    ${pillsHtml}
+                </div>
+            `;
+        }
+    }
+
+    // Apply active language on page load
+    applyChatbotLanguage(activeLang);
+
+    // 5. Smart Interactive Gemini AI Chatbot Widget
+    const openChatBtn = document.getElementById('openChatBtn');
+    const closeChatBtn = document.getElementById('closeChatBtn');
+    const chatWidget = document.getElementById('agriChatWidget');
+    const chatBody = document.getElementById('agriChatBody');
+    const chatForm = document.getElementById('agriChatForm');
+    const chatInput = document.getElementById('agriChatInput');
+
+    if (openChatBtn && chatWidget) {
+        // Toggle Chat Window
+        openChatBtn.addEventListener('click', function () {
+            chatWidget.classList.toggle('hidden');
+            if (!chatWidget.classList.contains('hidden')) {
+                chatInput.focus();
+                scrollToBottom();
             }
+        });
+
+        if (closeChatBtn) {
+            closeChatBtn.addEventListener('click', function () {
+                chatWidget.classList.add('hidden');
+            });
+        }
+
+        // Quick Topic Pills Click
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('topic-pill')) {
+                const topicText = e.target.textContent.replace(/^[^\w\s\u0A80-\u0AFF\u0900-\u097F]+/g, '').trim();
+                sendMessage(topicText);
+            }
+        });
+
+        // Form Submit
+        if (chatForm) {
+            chatForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const text = chatInput.value.trim();
+                if (text) {
+                    sendMessage(text);
+                    chatInput.value = '';
+                }
+            });
+        }
+    }
+
+    function scrollToBottom() {
+        if (chatBody) {
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+    }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    function formatMarkdown(text) {
+        if (!text) return '';
+        let formatted = escapeHtml(text);
+        // Bold: **text**
+        formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // Italic: *text*
+        formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        // Bullet points
+        formatted = formatted.replace(/^[\*\-]\s+(.*)$/gm, '<li class="ms-3">$1</li>');
+        // Newlines
+        formatted = formatted.replace(/\n/g, '<br/>');
+        return formatted;
+    }
+
+    function sendMessage(messageText) {
+        if (!messageText) return;
+        const currentLang = getCurrentLanguage();
+        const dict = chatLangDict[currentLang] || chatLangDict['en'];
+
+        // Append User Message
+        const userMsgDiv = document.createElement('div');
+        userMsgDiv.className = 'agri-msg agri-msg-user';
+        userMsgDiv.innerHTML = `<div class="agri-msg-bubble">${escapeHtml(messageText)}</div>`;
+        chatBody.appendChild(userMsgDiv);
+        scrollToBottom();
+
+        // Append Typing Indicator
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'agri-msg agri-msg-bot typing-indicator-msg';
+        typingDiv.innerHTML = `
+            <div class="agri-msg-bubble">
+                <div class="typing-dots">
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                </div>
+            </div>`;
+        chatBody.appendChild(typingDiv);
+        scrollToBottom();
+
+        // Send to Gemini API backend with user's selected language
+        fetch('/api/Chatbot/ask', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: messageText,
+                language: currentLang
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Remove typing indicator
+            typingDiv.remove();
+
+            // Append Bot Response
+            const botMsgDiv = document.createElement('div');
+            botMsgDiv.className = 'agri-msg agri-msg-bot';
+            const botText = data.response || data.Response || "Sorry, failed to get response.";
+            botMsgDiv.innerHTML = `<div class="agri-msg-bubble">${formatMarkdown(botText)}</div>`;
+            chatBody.appendChild(botMsgDiv);
+            scrollToBottom();
+        })
+        .catch(error => {
+            console.error('Chatbot error:', error);
+            typingDiv.remove();
+
+            const botMsgDiv = document.createElement('div');
+            botMsgDiv.className = 'agri-msg agri-msg-bot';
+            botMsgDiv.innerHTML = `<div class="agri-msg-bubble text-danger">${dict.offlineMsg}</div>`;
+            chatBody.appendChild(botMsgDiv);
+            scrollToBottom();
         });
     }
 });

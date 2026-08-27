@@ -2,7 +2,9 @@ using System.Security.Claims;
 using AgriAI.Application.Interfaces;
 using AgriAI.Domain.Entities;
 using AgriAI.Infrastructure.Data;
+using AgriAI.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +15,13 @@ namespace AgriAI.Web.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ProductController(IUnitOfWork unitOfWork, ApplicationDbContext context)
+        public ProductController(IUnitOfWork unitOfWork, ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _unitOfWork = unitOfWork;
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Product
@@ -155,6 +159,41 @@ namespace AgriAI.Web.Controllers
                 return NotFound();
             }
 
+            // Fetch Farmer details & inventory statistics
+            ApplicationUser? farmerUser = null;
+            if (!string.IsNullOrEmpty(product.FarmerId))
+            {
+                farmerUser = await _userManager.FindByIdAsync(product.FarmerId)
+                          ?? await _userManager.FindByEmailAsync(product.FarmerId)
+                          ?? await _userManager.FindByNameAsync(product.FarmerId);
+            }
+
+            if (farmerUser == null)
+            {
+                var farmersInRole = await _userManager.GetUsersInRoleAsync("Farmer");
+                farmerUser = farmersInRole.FirstOrDefault();
+            }
+
+            // Get total farmer harvest counts & total inventory stock
+            int farmerTotalProducts = 0;
+            int farmerTotalStock = 0;
+            if (!string.IsNullOrEmpty(product.FarmerId))
+            {
+                var farmerProducts = await _context.Products.Where(p => p.FarmerId == product.FarmerId).ToListAsync();
+                farmerTotalProducts = farmerProducts.Count;
+                farmerTotalStock = farmerProducts.Sum(p => p.StockQuantity);
+            }
+
+            if (farmerTotalProducts == 0)
+            {
+                farmerTotalProducts = 1;
+                farmerTotalStock = product.StockQuantity;
+            }
+
+            ViewBag.FarmerUser = farmerUser;
+            ViewBag.FarmerTotalProducts = farmerTotalProducts;
+            ViewBag.FarmerTotalStock = farmerTotalStock;
+
             return View(product);
         }
 
@@ -175,6 +214,54 @@ namespace AgriAI.Web.Controllers
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = $"Product '{product.Name}' deleted successfully.";
             return RedirectToAction(nameof(Index));
+        }
+
+        // POST: Product/UpdateStock
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateStock(int id, int stockQuantity, decimal? price, string? returnUrl)
+        {
+            if (User.IsInRole("Admin"))
+            {
+                TempData["ErrorMessage"] = "Administrators cannot update produce stock. Stock is managed by the farmer.";
+                return Redirect("/Admin/Dashboard?tab=adminProductsTab");
+            }
+
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+            {
+                TempData["ErrorMessage"] = "Product not found.";
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (stockQuantity < 0)
+            {
+                TempData["ErrorMessage"] = "Stock quantity cannot be negative.";
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            product.StockQuantity = stockQuantity;
+            if (price.HasValue && price.Value >= 0)
+            {
+                product.Price = price.Value;
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = $"Stock for '{product.Name}' updated to {stockQuantity} units successfully!";
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
+
+            if (User.IsInRole("Farmer"))
+            {
+                return Redirect("/Farmer/Dashboard?tab=farmerProductsTab");
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
         }
     }
 }

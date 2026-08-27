@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="~/css/PricePredictor.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/GovPortal.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/LiveMandi.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Chatbot.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Responsive.css" asp-append-version="true" />
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -368,8 +369,54 @@
         </div>
     </footer>
 
+    <!-- Smart Interactive Chatbot Widget -->
+    <div id="agriChatWidget" class="agri-chat-widget hidden">
+        <div class="agri-chat-header">
+            <div class="agri-chat-header-info">
+                <div class="agri-chat-avatar">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <div>
+                    <h6 class="agri-chat-title">AgriAI ખેતી સહાયક</h6>
+                    <div class="agri-chat-status">
+                        <span class="status-dot"></span> Online (Gemini AI Powered)
+                    </div>
+                </div>
+            </div>
+            <button id="closeChatBtn" type="button" class="agri-chat-close-btn" title="Close Chat">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div id="agriChatBody" class="agri-chat-body">
+            <div class="agri-msg agri-msg-bot">
+                <div class="agri-msg-bubble">
+                    <p class="mb-1"><strong>નમસ્તે! 🙏 હું AgriAI ખેતી આસિસ્ટન્ટ છું.</strong></p>
+                    <p class="mb-2">પાકના રોગ, જૈવિક ખાતર, જંતુનાશક દવાઓ, મંડી બજાર ભાવ કે ખેતી સંબંધિત કોઈપણ પ્રશ્ન પૂછો:</p>
+                    <div class="agri-quick-topics">
+                        <span class="topic-pill">🌱 કપાસમાં રોગ નિયંત્રણ</span>
+                        <span class="topic-pill">🌾 ઘઉંના બજાર ભાવ</span>
+                        <span class="topic-pill">🍅 ટામેટાના પાકમાં ખાતર</span>
+                        <span class="topic-pill">🌦️ આજનું હવામાન</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="agri-chat-footer">
+            <form id="agriChatForm" class="m-0">
+                <div class="agri-chat-input-box">
+                    <input type="text" id="agriChatInput" class="agri-chat-input" placeholder="તમારો પ્રશ્ન અહીં લખો..." autocomplete="off" />
+                    <button type="submit" id="agriChatSendBtn" class="agri-chat-send-btn" title="Send Message">
+                        <i class="bi bi-send-fill" style="font-size: 0.85rem;"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- AI Chatbot Floating Button -->
-    <div class="floating-chatbot" style="position: fixed; bottom: 20px; right: 20px; background-color: #166534; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">
+    <div id="openChatBtn" class="floating-chatbot" style="position: fixed; bottom: 20px; right: 20px; background-color: #166534; color: white; width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.3); z-index: 1000;">
         <i class="bi bi-robot"></i>
     </div>
 

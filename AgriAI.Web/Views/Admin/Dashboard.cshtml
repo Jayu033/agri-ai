@@ -201,6 +201,19 @@
                             </div>
                         </div>
 
+                        <!-- Role Filter Action Buttons -->
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-3 bg-light p-2 rounded-4 border">
+                            <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-dark text-white active shadow-sm" data-filter="all" onclick="filterUsersTable('all', this)">
+                                <i class="bi bi-people-fill me-1"></i> All Users (@allUsers.Count)
+                            </button>
+                            <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-success" data-filter="Farmer" onclick="filterUsersTable('Farmer', this)">
+                                <i class="bi bi-tree-fill me-1"></i> Farmers (@allUsers.Count(u => u.Role == "Farmer"))
+                            </button>
+                            <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-primary" data-filter="Customer" onclick="filterUsersTable('Customer', this)">
+                                <i class="bi bi-person-fill me-1"></i> Customers / Buyers (@allUsers.Count(u => u.Role == "Customer"))
+                            </button>
+                        </div>
+
                         <div class="table-responsive">
                             <table class="table table-hover align-middle border rounded-4 overflow-hidden mb-0">
                                 <thead class="table-light">
@@ -221,7 +234,7 @@
                                     @foreach (var user in allUsers)
                                     {
                                         var init = !string.IsNullOrEmpty(user.Username) ? user.Username.Substring(0, 1).ToUpper() : "U";
-                                        <tr>
+                                        <tr class="user-table-row" data-role="@user.Role">
                                             <td>
                                                 <div class="d-flex align-items-center gap-2">
                                                     <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 34px; height: 34px; font-size: 0.85rem; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">
@@ -274,6 +287,12 @@
                                             </td>
                                         </tr>
                                     }
+                                    <tr id="noFilteredUsersRow" style="display: none;">
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            <i class="bi bi-people display-6 d-block mb-1 text-secondary opacity-50"></i>
+                                            No users found for this selected role.
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -302,21 +321,31 @@
                                             <th>Direct Price (₹)</th>
                                             <th>Stock (Kg/Qtl)</th>
                                             <th>Farmer ID</th>
-                                            <th>Action</th>
+                                            <th class="text-end">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach (var prod in allProducts)
                                         {
                                             <tr>
-                                                <td><strong>@prod.Name</strong></td>
+                                                <td>
+                                                    <strong>@prod.Name</strong>
+                                                </td>
                                                 <td><span class="badge bg-light text-dark border">@(prod.Category?.Name ?? "General Produce")</span></td>
                                                 <td class="fw-bold text-success">₹@prod.Price.ToString("N2")</td>
-                                                <td>@prod.StockQuantity</td>
-                                                <td class="small text-muted">@prod.FarmerId</td>
                                                 <td>
-                                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@prod.Id" class="btn btn-xs btn-outline-secondary rounded-pill px-2.5 py-1">
-                                                        View
+                                                    <span class="badge @(prod.StockQuantity > 0 ? "bg-success bg-opacity-10 text-success border border-success border-opacity-25" : "bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25") fw-bold px-2.5 py-1 rounded-pill">
+                                                        @prod.StockQuantity units
+                                                    </span>
+                                                </td>
+                                                <td class="small text-muted" title="@prod.FarmerId">
+                                                    <span style="max-width: 140px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;">
+                                                        @prod.FarmerId
+                                                    </span>
+                                                </td>
+                                                <td class="text-end">
+                                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@prod.Id" class="btn btn-xs btn-outline-secondary rounded-pill px-2.5 py-1" title="View Details">
+                                                        <i class="bi bi-eye"></i> View
                                                     </a>
                                                 </td>
                                             </tr>
@@ -353,12 +382,13 @@
                                         <th>Gross Amount</th>
                                         <th>Status</th>
                                         <th>Customer ID</th>
+                                        <th class="text-end">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @if (!Model.Any())
                                     {
-                                        <tr><td colspan="5" class="text-center text-muted py-4">No customer orders recorded in system yet.</td></tr>
+                                        <tr><td colspan="6" class="text-center text-muted py-4">No customer orders recorded in system yet.</td></tr>
                                     }
                                     @foreach (var order in Model)
                                     {
@@ -372,6 +402,11 @@
                                                 else { <span class="badge bg-info">@order.Status</span> }
                                             </td>
                                             <td class="small text-muted">@order.CustomerId</td>
+                                            <td class="text-end">
+                                                <a asp-controller="Admin" asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold">
+                                                    <i class="bi bi-eye-fill me-1"></i> View Details
+                                                </a>
+                                            </td>
                                         </tr>
                                     }
                                 </tbody>
@@ -419,6 +454,20 @@
 
 @section Scripts {
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam) {
+                const targetBtn = Array.from(document.querySelectorAll('.dash-tab-link')).find(btn => {
+                    const onclickAttr = btn.getAttribute('onclick') || '';
+                    return onclickAttr.includes(tabParam);
+                });
+                if (targetBtn) {
+                    switchDashTab(tabParam, targetBtn);
+                }
+            }
+        });
+
         function switchDashTab(tabId, btn) {
             document.querySelectorAll('.dash-tab-panel').forEach(panel => {
                 panel.classList.remove('active');
@@ -434,6 +483,47 @@
             });
             if (btn) {
                 btn.classList.add('active');
+            }
+        }
+
+        function filterUsersTable(role, btn) {
+            document.querySelectorAll('.user-filter-btn').forEach(b => {
+                b.classList.remove('active', 'bg-dark', 'text-white', 'bg-success', 'bg-primary', 'shadow-sm');
+                const filter = b.getAttribute('data-filter');
+                if (filter === 'Farmer') {
+                    b.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-success';
+                } else if (filter === 'Customer') {
+                    b.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-primary';
+                } else {
+                    b.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-secondary';
+                }
+            });
+
+            if (btn) {
+                if (role === 'Farmer') {
+                    btn.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-success text-white active shadow-sm';
+                } else if (role === 'Customer') {
+                    btn.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-primary text-white active shadow-sm';
+                } else {
+                    btn.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-dark text-white active shadow-sm';
+                }
+            }
+
+            const rows = document.querySelectorAll('.user-table-row');
+            let visibleCount = 0;
+            rows.forEach(row => {
+                const userRole = row.getAttribute('data-role');
+                if (role === 'all' || userRole === role) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const noUsersRow = document.getElementById('noFilteredUsersRow');
+            if (noUsersRow) {
+                noUsersRow.style.display = visibleCount === 0 ? '' : 'none';
             }
         }
     </script>
