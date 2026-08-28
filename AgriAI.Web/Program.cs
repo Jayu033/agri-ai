@@ -27,6 +27,7 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 // Live Mandi Govt API Services & Caching
 builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<AgriAI.Web.Services.ILiveMandiService, AgriAI.Web.Services.LiveMandiService>();
 
 builder.Services.AddSession(options => {

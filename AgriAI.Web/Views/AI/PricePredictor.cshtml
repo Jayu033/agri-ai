@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Smart AI Price Predictor";
+    ViewData["Title"] = "AI Price Predictor";
 }
 
 <div class="predictor-container">
@@ -9,7 +9,7 @@
             <i class="bi bi-stars"></i>
             <span>AgriAI Machine Learning Engine</span>
         </div>
-        <h1 class="predictor-title">Smart Crop Price Predictor</h1>
+        <h1 class="predictor-title">AI Price Predictor</h1>
         <p class="predictor-subtitle">
             Forecast upcoming crop market prices, analyze seasonal trends, and maximize harvest profit with AI intelligence across all agricultural crops.
         </p>
@@ -230,21 +230,35 @@
     @if (ViewBag.PredictedPrice != null)
     {
         <div class="ai-results-card">
-            <div class="results-header-badge">
+            <div class="results-header-badge d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div class="radar-live-tag">
                     <div class="radar-pulse-dot"></div>
                     <span>AI Market Forecast Analysis Completed</span>
                 </div>
-                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1.5 rounded-pill fw-bold fs-6">
-                    🌾 Crop: @ViewBag.CropName
-                </span>
+                <div class="d-flex align-items-center gap-2">
+                    @if (ViewBag.ModelSource != null)
+                    {
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 rounded-pill fw-semibold fs-7">
+                            <i class="bi bi-cpu me-1"></i> @ViewBag.ModelSource
+                        </span>
+                    }
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1.5 rounded-pill fw-bold fs-6">
+                        🌾 Crop: @ViewBag.CropName
+                    </span>
+                </div>
             </div>
 
             <div class="results-grid-metrics">
                 <div class="metric-box">
                     <div class="metric-label">Predicted Market Price</div>
                     <div class="metric-val-main">₹@ViewBag.PredictedPrice.ToString("N2")</div>
-                    <div class="metric-val-sub">Per Quintal (100 KG)</div>
+                    <div class="metric-val-sub">
+                        <span>Per Quintal (100 KG)</span>
+                        @if (ViewBag.Price20Kg != null)
+                        {
+                            <div class="text-success fw-bold mt-1">₹@ViewBag.Price20Kg / 20 KG (મણ) | ₹@ViewBag.PriceKg / KG</div>
+                        }
+                    </div>
                 </div>
 
                 <div class="metric-box">

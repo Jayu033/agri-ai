@@ -59,50 +59,37 @@ namespace AgriAI.Infrastructure.Data
                 }
             }
 
-            // 2. Seed Admin Users (supporting both gmail.com and gamil.com typos and admin username)
-            var adminAccounts = new List<(string Email, string UserName)>
-            {
-                ("admin123@gmail.com", "admin123@gmail.com"),
-                ("admin123@gamil.com", "admin123@gamil.com"),
-                ("admin@agriai.com", "admin")
-            };
-
+            // 2. Seed Single Default Admin User
+            string adminEmail = "admin123@gmail.com";
             string adminPassword = "Admin@123";
 
-            foreach (var (email, userName) in adminAccounts)
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+            if (adminUser == null)
             {
-                var adminUser = await userManager.FindByEmailAsync(email) 
-                               ?? await userManager.FindByNameAsync(userName);
-
-                if (adminUser == null)
+                adminUser = new ApplicationUser
                 {
-                    adminUser = new ApplicationUser
-                    {
-                        UserName = userName,
-                        Email = email,
-                        EmailConfirmed = true,
-                        FirstName = "System",
-                        LastName = "Admin",
-                        CreatedAt = DateTime.UtcNow
-                    };
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    EmailConfirmed = true,
+                    FirstName = "System",
+                    LastName = "Admin",
+                    CreatedAt = DateTime.UtcNow
+                };
 
-                    var result = await userManager.CreateAsync(adminUser, adminPassword);
-                    if (result.Succeeded)
-                    {
-                        await userManager.AddToRoleAsync(adminUser, "Admin");
-                    }
+                var result = await userManager.CreateAsync(adminUser, adminPassword);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(adminUser, "Admin");
                 }
-                else
-                {
-                    // Ensure password matches Admin@123
-                    var token = await userManager.GeneratePasswordResetTokenAsync(adminUser);
-                    await userManager.ResetPasswordAsync(adminUser, token, adminPassword);
+            }
+            else
+            {
+                var token = await userManager.GeneratePasswordResetTokenAsync(adminUser);
+                await userManager.ResetPasswordAsync(adminUser, token, adminPassword);
 
-                    // Ensure Admin role
-                    if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
-                    {
-                        await userManager.AddToRoleAsync(adminUser, "Admin");
-                    }
+                if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+                {
+                    await userManager.AddToRoleAsync(adminUser, "Admin");
                 }
             }
 

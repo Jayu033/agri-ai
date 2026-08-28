@@ -1,10 +1,12 @@
 using AgriAI.Application.Interfaces;
 using AgriAI.Domain.Entities;
+using AgriAI.Infrastructure.Data;
 using AgriAI.Infrastructure.Identity;
 using AgriAI.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AgriAI.Web.Controllers
 {
@@ -13,18 +15,29 @@ namespace AgriAI.Web.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
 
-        public AdminController(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
+        public AdminController(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
+            _context = context;
         }
 
         public async Task<IActionResult> Dashboard()
         {
-            var products = await _unitOfWork.Repository<Product>().GetAllAsync();
-            var categories = await _unitOfWork.Repository<Category>().GetAllAsync();
-            var orders = await _unitOfWork.Repository<Order>().GetAllAsync();
+            var products = await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Images)
+                .ToListAsync();
+
+            var categories = await _context.Categories.ToListAsync();
+
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(i => i.Product)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
 
             var allUsers = _userManager.Users.ToList();
             var userVMs = new List<UserManagementViewModel>();
@@ -72,41 +85,87 @@ namespace AgriAI.Web.Controllers
             }
 
             ViewBag.TotalProducts = products.Count;
-            ViewBag.TotalCategories = categories.Count;
+            ViewBag.TotalFarmers = farmersCount;
+            ViewBag.TotalCustomers = customersCount;
             ViewBag.TotalOrders = orders.Count;
             ViewBag.TotalRevenue = orders.Sum(o => o.TotalAmount);
-            ViewBag.TotalUsers = allUsers.Count;
-            ViewBag.FarmersCount = farmersCount;
-            ViewBag.CustomersCount = customersCount;
-            ViewBag.AllProducts = products;
             ViewBag.AllUsers = userVMs;
+            ViewBag.AllProducts = products;
+            ViewBag.AllCategories = categories;
 
-            // Fetch recent orders
-            var recentOrders = orders.OrderByDescending(o => o.OrderDate).Take(10).ToList();
-            
-            return View(recentOrders);
+            return View(orders);
+        }
+
+        // GET: /Admin/OrderDetails/5
+        public async Task<IActionResult> OrderDetails(int id)
+        {
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(i => i.Product)
+                        .ThenInclude(p => p.Images)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(i => i.Product)
+                        .ThenInclude(p => p.Category)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null)
+            {
+                TempData["ErrorMessage"] = "Order not found.";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
+            // 1. Get Customer Details (Buyer)
+            ApplicationUser? customerUser = null;
+            if (!string.IsNullOrEmpty(order.CustomerId))
+            {
+                customerUser = await _userManager.FindByIdAsync(order.CustomerId) 
+                            ?? await _userManager.FindByEmailAsync(order.CustomerId)
+                            ?? await _userManager.FindByNameAsync(order.CustomerId);
+            }
+
+            // 2. Get Farmer / Producer Details (The verified farmer who listed / fulfilled the produce)
+            ApplicationUser? farmerUser = null;
+            var firstProduct = order.OrderItems.FirstOrDefault()?.Product;
+            if (firstProduct != null && !string.IsNullOrEmpty(firstProduct.FarmerId))
+            {
+                farmerUser = await _userManager.FindByIdAsync(firstProduct.FarmerId) 
+                          ?? await _userManager.FindByEmailAsync(firstProduct.FarmerId)
+                          ?? await _userManager.FindByNameAsync(firstProduct.FarmerId);
+            }
+
+            // Fallback to registered farmer if direct ID wasn't set
+            if (farmerUser == null)
+            {
+                var farmersInRole = await _userManager.GetUsersInRoleAsync("Farmer");
+                farmerUser = farmersInRole.FirstOrDefault();
+            }
+
+            ViewBag.CustomerUser = customerUser;
+            ViewBag.FarmerUser = farmerUser;
+
+            return View(order);
         }
 
         // GET: /Admin/Users
-        public async Task<IActionResult> Users(string roleFilter = "All")
+        public async Task<IActionResult> Users(string? roleFilter)
         {
-            var usersList = _userManager.Users.ToList();
+            var allUsers = _userManager.Users.ToList();
             var userVMs = new List<UserManagementViewModel>();
 
-            foreach (var user in usersList)
+            foreach (var user in allUsers)
             {
                 var roles = await _userManager.GetRolesAsync(user);
                 var roleName = roles.FirstOrDefault() ?? "Customer";
 
-                // Exclude Admin accounts from management list
+                // Strictly exclude Admin from the User Management list per business rules
                 if (string.Equals(roleName, "Admin", StringComparison.OrdinalIgnoreCase))
-                {
                     continue;
-                }
 
-                if (roleFilter != "All" && !string.Equals(roleName, roleFilter, StringComparison.OrdinalIgnoreCase))
+                // Apply role filter if specified (e.g. Farmer, Customer)
+                if (!string.IsNullOrEmpty(roleFilter) && !string.Equals(roleFilter, "All", StringComparison.OrdinalIgnoreCase))
                 {
-                    continue;
+                    if (!string.Equals(roleName, roleFilter, StringComparison.OrdinalIgnoreCase))
+                        continue;
                 }
 
                 bool isBlocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
@@ -136,7 +195,7 @@ namespace AgriAI.Web.Controllers
                 });
             }
 
-            ViewBag.CurrentFilter = roleFilter;
+            ViewBag.CurrentFilter = string.IsNullOrEmpty(roleFilter) ? "All" : roleFilter;
             return View(userVMs);
         }
 
@@ -213,6 +272,7 @@ namespace AgriAI.Web.Controllers
                 return RedirectToAction(nameof(Users));
             }
 
+            // Cannot block Admin
             var currentUser = await _userManager.GetUserAsync(User);
             if (currentUser != null && currentUser.Id == user.Id)
             {

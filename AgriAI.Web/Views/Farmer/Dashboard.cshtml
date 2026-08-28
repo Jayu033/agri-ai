@@ -471,12 +471,40 @@
                     <div id="aiPredictorTab" class="dash-tab-panel">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">AI Mandi Price Forecaster &amp; Analysis</h3>
+                                <h3 class="dash-section-title">AI Price Predictor &amp; Analysis</h3>
                                 <p class="text-muted small mb-0">Get AI-driven price intelligence before selling your harvest at APMC markets.</p>
                             </div>
-                            <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-sm btn-success rounded-pill px-3.5 py-1.5 fw-bold shadow-sm">
-                                <i class="bi bi-arrows-fullscreen me-1"></i> Dedicated AI Studio
-                            </a>
+                            <div class="d-flex gap-2">
+                                <a asp-controller="AI" asp-action="CropPredictor" class="btn btn-sm btn-outline-success rounded-pill px-3.5 py-1.5 fw-bold shadow-sm">
+                                    <i class="bi bi-cpu me-1"></i> AI Crop Predictor
+                                </a>
+                                <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-sm btn-success rounded-pill px-3.5 py-1.5 fw-bold shadow-sm">
+                                    <i class="bi bi-arrows-fullscreen me-1"></i> Dedicated AI Studio
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Featured: AgriAI Crop Predictor Banner Card -->
+                        <div class="card border-0 rounded-4 shadow-sm p-4 mb-4 text-white" style="background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);">
+                            <div class="row align-items-center g-3">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
+                                            <i class="bi bi-cpu-fill me-1"></i>MACHINE LEARNING
+                                        </span>
+                                        <span class="text-white-50 small">Soil &amp; Weather Engine</span>
+                                    </div>
+                                    <h4 class="fw-bold text-white mb-1">AgriAI Crop Predictor</h4>
+                                    <p class="text-white-50 small mb-0">
+                                        Input your soil NPK, temperature, humidity, and pH to get high-accuracy crop recommendations for maximum yield.
+                                    </p>
+                                </div>
+                                <div class="col-md-4 text-md-end">
+                                    <a asp-controller="AI" asp-action="CropPredictor" class="btn btn-warning rounded-pill px-4 py-2.5 fw-bold shadow">
+                                        <i class="bi bi-stars me-1"></i> Open Crop Predictor
+                                    </a>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="row g-4 mb-3">

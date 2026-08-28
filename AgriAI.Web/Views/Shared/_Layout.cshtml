@@ -12,8 +12,10 @@
     <link rel="stylesheet" href="~/css/Register.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Login.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/PricePredictor.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/CropPredictor.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/GovPortal.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/LiveMandi.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Chatbot.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Responsive.css" asp-append-version="true" />
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -75,18 +77,18 @@
         var curAct = ViewContext.RouteData.Values["Action"]?.ToString() ?? "";
     }
     <header class="gov-main-header">
-        <div class="container d-flex align-items-center justify-content-between">
+        <div class="container-fluid px-3 px-xl-4 d-flex align-items-center justify-content-between" style="max-width: 1400px;">
             <!-- Left Brand Logo -->
             <div class="d-flex align-items-center">
                 <button class="menu-btn d-lg-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#globalMenu" aria-controls="globalMenu">
                     <i class="bi bi-list fs-3"></i>
                 </button>
 
-                <a asp-controller="Home" asp-action="Index" class="gov-emblem-section text-decoration-none d-flex align-items-center gap-2.5">
-                    <img src="~/images/agriai-logo.png" alt="AgriAI Logo" class="rounded-circle shadow-sm" style="height: 60px; width: 60px; object-fit: cover;" />
+                <a asp-controller="Home" asp-action="Index" class="gov-emblem-section text-decoration-none d-flex align-items-center gap-2">
+                    <img src="~/images/agriai-logo.png" alt="AgriAI Logo" class="rounded-circle shadow-sm" style="height: 48px; width: 48px; object-fit: cover;" />
                     <div>
-                        <strong class="d-block text-dark fw-extrabold fs-3" style="letter-spacing: -0.5px; line-height: 1.1;">AgriAI</strong>
-                        <span class="small text-success fw-bold" style="font-size: 0.76rem;">Smart Farm &amp; Market Platform</span>
+                        <strong class="d-block text-dark fw-extrabold fs-4" style="letter-spacing: -0.5px; line-height: 1.1;">AgriAI</strong>
+                        <span class="small text-success fw-bold" style="font-size: 0.72rem;">Smart Farm &amp; Market</span>
                     </div>
                 </a>
             </div>
@@ -110,7 +112,12 @@
                     </a>
                 </li>
                 <li>
-                    <a asp-controller="AI" asp-action="PricePredictor" class="gov-nav-link text-success fw-bold @(curCtrl == "AI" ? "active" : "")">
+                    <a asp-controller="AI" asp-action="CropPredictor" class="gov-nav-link text-success fw-bold @(curCtrl == "AI" && curAct == "CropPredictor" ? "active" : "")">
+                        <i class="bi bi-cpu"></i> AI Crop Predictor
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="AI" asp-action="PricePredictor" class="gov-nav-link @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
                         <i class="bi bi-stars"></i> AI Price Predictor
                     </a>
                 </li>
@@ -249,9 +256,16 @@
             <p class="sidebar-section-title">AI Intelligence</p>
             <ul class="menu-list">
                 <li class="menu-item">
-                    <a asp-controller="AI" asp-action="PricePredictor" class="menu-link ai-highlight-link @(curCtrl == "AI" ? "active" : "")">
+                    <a asp-controller="AI" asp-action="CropPredictor" class="menu-link ai-highlight-link @(curCtrl == "AI" && curAct == "CropPredictor" ? "active" : "")">
+                        <span class="menu-icon-box"><i class="bi bi-cpu"></i></span>
+                        <span>AgriAI Crop Predictor</span>
+                        <span class="ai-badge">NEW</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a asp-controller="AI" asp-action="PricePredictor" class="menu-link @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
                         <span class="menu-icon-box"><i class="bi bi-stars"></i></span>
-                        <span>Smart Price Predictor</span>
+                        <span>AI Price Predictor</span>
                         <span class="ai-badge">AI PRO</span>
                     </a>
                 </li>
@@ -368,8 +382,54 @@
         </div>
     </footer>
 
+    <!-- Smart Interactive Chatbot Widget -->
+    <div id="agriChatWidget" class="agri-chat-widget hidden">
+        <div class="agri-chat-header">
+            <div class="agri-chat-header-info">
+                <div class="agri-chat-avatar">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <div>
+                    <h6 class="agri-chat-title">AgriAI ખેતી સહાયક</h6>
+                    <div class="agri-chat-status">
+                        <span class="status-dot"></span> Online (Gemini AI Powered)
+                    </div>
+                </div>
+            </div>
+            <button id="closeChatBtn" type="button" class="agri-chat-close-btn" title="Close Chat">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div id="agriChatBody" class="agri-chat-body">
+            <div class="agri-msg agri-msg-bot">
+                <div class="agri-msg-bubble">
+                    <p class="mb-1"><strong>નમસ્તે! 🙏 હું AgriAI ખેતી આસિસ્ટન્ટ છું.</strong></p>
+                    <p class="mb-2">પાકના રોગ, જૈવિક ખાતર, જંતુનાશક દવાઓ, મંડી બજાર ભાવ કે ખેતી સંબંધિત કોઈપણ પ્રશ્ન પૂછો:</p>
+                    <div class="agri-quick-topics">
+                        <span class="topic-pill">🌱 કપાસમાં રોગ નિયંત્રણ</span>
+                        <span class="topic-pill">🌾 ઘઉંના બજાર ભાવ</span>
+                        <span class="topic-pill">🍅 ટામેટાના પાકમાં ખાતર</span>
+                        <span class="topic-pill">🌦️ આજનું હવામાન</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="agri-chat-footer">
+            <form id="agriChatForm" class="m-0">
+                <div class="agri-chat-input-box">
+                    <input type="text" id="agriChatInput" class="agri-chat-input" placeholder="તમારો પ્રશ્ન અહીં લખો..." autocomplete="off" />
+                    <button type="submit" id="agriChatSendBtn" class="agri-chat-send-btn" title="Send Message">
+                        <i class="bi bi-send-fill" style="font-size: 0.85rem;"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- AI Chatbot Floating Button -->
-    <div class="floating-chatbot" style="position: fixed; bottom: 20px; right: 20px; background-color: #166534; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">
+    <div id="openChatBtn" class="floating-chatbot" style="position: fixed; bottom: 20px; right: 20px; background-color: #166534; color: white; width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.3); z-index: 1000;">
         <i class="bi bi-robot"></i>
     </div>
 
