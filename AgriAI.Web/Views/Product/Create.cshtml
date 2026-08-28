@@ -70,22 +70,24 @@
                         <!-- Price & Quantity -->
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label asp-for="Price" class="form-label fw-bold text-dark small mb-1.5">Direct Selling Price (₹) *</label>
+                                <label asp-for="Price" class="form-label fw-bold text-dark small mb-1.5">Direct Selling Price (₹ / Kg) *</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light text-muted border-end-0 fw-bold">₹</span>
-                                    <input asp-for="Price" type="number" step="0.01" class="form-control border-start-0 px-2.5 py-2 shadow-none" placeholder="e.g. 6200.00" required />
+                                    <input asp-for="Price" type="number" step="0.01" min="0.01" class="form-control border-start-0 border-end-0 px-2.5 py-2 shadow-none" placeholder="e.g. 62.00" required />
+                                    <span class="input-group-text bg-light text-dark fw-bold border-start-0">/ Kg</span>
                                 </div>
-                                <small class="text-muted d-block mt-1">Suggested: Check APMC benchmark modal price on right panel.</small>
+                                <small class="text-muted d-block mt-1">Set direct farm selling price per Kilogram (Kg).</small>
                                 <span asp-validation-for="Price" class="text-danger small mt-1 d-block"></span>
                             </div>
                             
                             <div class="col-md-6">
-                                <label asp-for="StockQuantity" class="form-label fw-bold text-dark small mb-1.5">Available Stock Quantity (Kg / Quintal) *</label>
+                                <label asp-for="StockQuantity" class="form-label fw-bold text-dark small mb-1.5">Available Stock Quantity (in Kg) *</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-box-seam-fill"></i></span>
-                                    <input asp-for="StockQuantity" type="number" class="form-control border-start-0 px-2.5 py-2 shadow-none" placeholder="e.g. 100" required />
+                                    <input asp-for="StockQuantity" type="number" min="1" class="form-control border-start-0 border-end-0 px-2.5 py-2 shadow-none" placeholder="e.g. 500" required />
+                                    <span class="input-group-text bg-light text-dark fw-bold border-start-0">Kg</span>
                                 </div>
-                                <small class="text-muted d-block mt-1">1 Quintal = 100 Kg = 5 Maund (મણ)</small>
+                                <small class="text-muted d-block mt-1">Enter total stock quantity strictly in Kilograms (Kg).</small>
                                 <span asp-validation-for="StockQuantity" class="text-danger small mt-1 d-block"></span>
                             </div>
                         </div>
@@ -146,19 +148,19 @@
 
                     <div class="d-flex flex-column gap-2 mb-3">
                         <div class="d-flex justify-content-between align-items-center p-2.5 bg-light rounded-3">
-                            <span class="small fw-bold text-dark">🌱 Cotton (કપાસ)</span>
+                            <span class="small fw-bold text-dark">🌱 Cotton</span>
                             <span class="text-success fw-bold small">₹ 7,120 / Qtl</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center p-2.5 bg-light rounded-3">
-                            <span class="small fw-bold text-dark">🥜 Groundnut (મગફળી)</span>
+                            <span class="small fw-bold text-dark">🥜 Groundnut</span>
                             <span class="text-success fw-bold small">₹ 6,208 / Qtl</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center p-2.5 bg-light rounded-3">
-                            <span class="small fw-bold text-dark">🌿 Cumin / Jeera (જીરું)</span>
+                            <span class="small fw-bold text-dark">🌿 Cumin / Jeera</span>
                             <span class="text-success fw-bold small">₹ 28,500 / Qtl</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center p-2.5 bg-light rounded-3">
-                            <span class="small fw-bold text-dark">🌾 Wheat (ઘઉં)</span>
+                            <span class="small fw-bold text-dark">🌾 Wheat</span>
                             <span class="text-success fw-bold small">₹ 2,565 / Qtl</span>
                         </div>
                     </div>

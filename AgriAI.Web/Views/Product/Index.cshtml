@@ -1,37 +1,144 @@
 @model IEnumerable<AgriAI.Domain.Entities.Product>
 
 @{
-    ViewData["Title"] = "Products Marketplace";
+    ViewData["Title"] = "Farm Fresh Produce Marketplace";
 }
 
-<div class="container py-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-        <div>
-            <h2 class="fw-extrabold text-dark mb-1">Available Farm Products</h2>
-            <p class="text-muted small mb-0">Explore fresh farm produce directly from verified local Gujarat farmers.</p>
-        </div>
-        <div>
-            @if (User.Identity != null && User.Identity.IsAuthenticated)
-            {
-                if (User.IsInRole("Farmer"))
+<style>
+    .marketplace-hero {
+        background: linear-gradient(135deg, #006653 0%, #047857 100%);
+        border-radius: 1.25rem;
+        padding: 2.5rem 2rem;
+        color: #ffffff;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .marketplace-hero::after {
+        content: "";
+        position: absolute;
+        right: -30px;
+        bottom: -30px;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .product-card-modern {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 1.25rem;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+    }
+    .product-card-modern:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 32px rgba(0, 102, 83, 0.12);
+        border-color: #86efac;
+    }
+    .product-img-wrapper {
+        position: relative;
+        height: 220px;
+        background: #f8fafc;
+        overflow: hidden;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .product-img-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+    .product-card-modern:hover .product-img-wrapper img {
+        transform: scale(1.06);
+    }
+    .badge-organic-float {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        background: linear-gradient(135deg, #006653 0%, #16a34a 100%);
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 0.72rem;
+        padding: 5px 12px;
+        border-radius: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .badge-stock-float {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: rgba(255, 255, 255, 0.95);
+        color: #0f172a;
+        font-weight: 700;
+        font-size: 0.72rem;
+        padding: 5px 12px;
+        border-radius: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        backdrop-filter: blur(4px);
+    }
+    .filter-chip-btn {
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 0.5rem 1.2rem;
+        border-radius: 9999px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .filter-chip-btn:hover,
+    .filter-chip-btn.active {
+        background: #006653;
+        color: #ffffff;
+        border-color: #006653;
+        box-shadow: 0 4px 12px rgba(0, 102, 83, 0.2);
+    }
+</style>
+
+<div class="container-fluid py-4 px-3 px-lg-5" style="max-width: 1400px;">
+    
+    <!-- Hero Banner -->
+    <div class="marketplace-hero shadow-sm">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="badge bg-white bg-opacity-20 text-white fw-bold px-3 py-1.5 rounded-pill mb-2">
+                    🌾 Direct Farm-to-Consumer Market
+                </span>
+                <h1 class="fw-extrabold display-6 mb-2">Available Farm Produce &amp; Harvests</h1>
+                <p class="text-white-50 mb-0" style="max-width: 650px;">
+                    Explore premium organic crops, grains, and spices directly from verified Gujarat farmers at transparent mandi rates with Escrow Protection.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
-                    <a asp-action="Create" class="btn btn-success fw-bold px-4 py-2 rounded-pill shadow-sm" style="background-color: #2e7d32;">
-                        <i class="bi bi-plus-circle me-1"></i> Add New Product
+                    if (User.IsInRole("Farmer"))
+                    {
+                        <a asp-action="Create" class="btn btn-light text-success fw-bold px-4 py-2.5 rounded-pill shadow">
+                            <i class="bi bi-plus-circle-fill me-1"></i> List New Harvest Produce
+                        </a>
+                    }
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-light text-success fw-bold px-4 py-2.5 rounded-pill shadow">
+                        <i class="bi bi-person-badge-fill me-1"></i> Register as Farmer
                     </a>
                 }
-            }
-            else
-            {
-                <a asp-controller="Account" asp-action="Register" class="btn btn-outline-success fw-bold px-3.5 py-2 rounded-pill shadow-sm">
-                    <i class="bi bi-person-badge-fill me-1"></i> Sell Produce (Farmer Register)
-                </a>
-            }
+            </div>
         </div>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show bg-white shadow-sm rounded-3 border-success mb-4" role="alert">
+        <div class="alert alert-success alert-dismissible fade show bg-white shadow-sm rounded-4 border-success p-3 mb-4" role="alert">
             <i class="bi bi-check-circle-fill me-2 text-success"></i> @TempData["SuccessMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -39,13 +146,44 @@
 
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show bg-white shadow-sm rounded-3 border-danger mb-4" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show bg-white shadow-sm rounded-4 border-danger p-3 mb-4" role="alert">
             <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i> @TempData["ErrorMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <div class="row g-4">
+    <!-- Filter Pills Bar -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-2">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <button type="button" class="filter-chip-btn active" onclick="filterMarketplace('all', this)">
+                All Harvests (@Model.Count())
+            </button>
+            <button type="button" class="filter-chip-btn" onclick="filterMarketplace('grains', this)">
+                🌾 Grains &amp; Cereals
+            </button>
+            <button type="button" class="filter-chip-btn" onclick="filterMarketplace('oilseeds', this)">
+                🥜 Oilseeds
+            </button>
+            <button type="button" class="filter-chip-btn" onclick="filterMarketplace('spices', this)">
+                🌿 Spices &amp; Jeera
+            </button>
+            <button type="button" class="filter-chip-btn" onclick="filterMarketplace('pulses', this)">
+                🌱 Pulses
+            </button>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <div class="input-group input-group-sm" style="max-width: 260px;">
+                <span class="input-group-text bg-white border-end-0 rounded-start-pill text-muted ps-3">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="cropSearchInput" class="form-control border-start-0 rounded-end-pill shadow-none" placeholder="Search crops, spices..." onkeyup="searchMarketplace(this.value)" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Produce Grid with Spacious Cards -->
+    <div class="row g-4" id="marketplaceGrid">
         @if (!Model.Any())
         {
             <div class="col-12">
@@ -56,7 +194,7 @@
                     @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Farmer"))
                     {
                         <p class="text-muted small mb-3">You are logged in as a Farmer. Click below to list your first harvest or crop produce.</p>
-                        <a asp-action="Create" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm" style="background-color: #2e7d32;">
+                        <a asp-action="Create" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm" style="background-color: #006653;">
                             <i class="bi bi-plus-circle me-1"></i> Add Your First Product
                         </a>
                     }
@@ -78,48 +216,83 @@
         
         @foreach (var item in Model) {
             var imgUrl = item.Images?.FirstOrDefault()?.ImageUrl;
-            <div class="col-md-4 col-sm-6">
-                <div class="card h-100 bg-white shadow-sm rounded-4 border-0 product-card overflow-hidden">
-                    <div class="position-relative">
+            var catName = item.Category?.Name ?? "Farm Produce";
+            var catNormalized = catName.ToLower();
+            var stockQty = item.StockQuantity;
+            var maundPrice = item.Price * 20;
+
+            <div class="col-md-6 col-lg-4 col-xl-3 crop-card-item" data-category="@catNormalized" data-name="@item.Name.ToLower()">
+                <div class="product-card-modern">
+                    <!-- Image Area -->
+                    <div class="product-img-wrapper">
                         @if (!string.IsNullOrEmpty(imgUrl))
                         {
-                            <img src="@imgUrl" class="card-img-top" alt="@item.Name" style="height: 200px; object-fit: cover;">
+                            <img src="@imgUrl" alt="@item.Name">
                         }
                         else
                         {
-                            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                <i class="bi bi-box-seam text-success display-4 opacity-50"></i>
+                            <div class="d-flex align-items-center justify-content-center h-100 text-success">
+                                <i class="bi bi-tree display-4 opacity-50"></i>
                             </div>
                         }
-                        <span class="position-absolute top-0 end-0 m-3 badge bg-success fw-bold px-2.5 py-1.5 shadow-sm">
-                            Fresh
+                        <span class="badge-organic-float">
+                            <i class="bi bi-patch-check-fill me-1"></i>100% Farm Fresh
+                        </span>
+                        <span class="badge-stock-float">
+                            @if (stockQty > 0)
+                            {
+                                <span class="text-success fw-bold">● @stockQty Kg in Stock</span>
+                            }
+                            else
+                            {
+                                <span class="text-danger fw-bold">● Out of Stock</span>
+                            }
                         </span>
                     </div>
 
-                    <div class="card-body p-4 d-flex flex-column">
-                        <small class="text-success fw-bold text-uppercase mb-1" style="font-size: 0.75rem;">
-                            @(item.Category?.Name ?? "Produce")
-                        </small>
-                        <h5 class="card-title fw-bold text-dark mb-2">@item.Name</h5>
-                        <p class="card-text text-muted small mb-3 flex-grow-1 text-truncate">@item.Description</p>
+                    <!-- Card Body with Generous Internal Padding (p-4) -->
+                    <div class="p-4 d-flex flex-column flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-success bg-opacity-10 text-success fw-bold border border-success border-opacity-25 rounded-pill px-2.5 py-1" style="font-size: 0.72rem;">
+                                @catName
+                            </span>
+                            <span class="text-muted small fw-semibold" style="font-size: 0.72rem;">
+                                <i class="bi bi-geo-alt-fill text-success"></i> Gujarat APMC
+                            </span>
+                        </div>
+
+                        <h5 class="fw-bold text-dark mb-1.5 text-truncate" title="@item.Name" style="font-size: 1.12rem;">@item.Name</h5>
                         
-                        <div class="d-flex align-items-center justify-content-between mt-auto pt-3 border-top">
-                            <div>
-                                <span class="fs-4 fw-extrabold text-success">₹@item.Price.ToString("F2")</span>
+                        <p class="text-muted small mb-3 text-truncate" style="font-size: 0.82rem; min-height: 18px;">
+                            @(string.IsNullOrEmpty(item.Description) ? "Fresh organic farm crop harvested directly by local Gujarat farmers." : item.Description)
+                        </p>
+
+                        <!-- Price Section with generous padding & margins -->
+                        <div class="p-3 bg-light rounded-3 border mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="fs-5 fw-extrabold text-success">₹@item.Price.ToString("N2")</span>
+                                    <small class="text-muted fw-bold">/ Kg</small>
+                                </div>
+                                <span class="badge bg-white text-dark border py-1.5 px-2.5 rounded-pill fw-bold" style="font-size: 0.70rem;">
+                                    ₹@maundPrice.ToString("N0") / Maund
+                                </span>
                             </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-success rounded-circle p-2" title="View Details">
-                                    <i class="bi bi-eye-fill"></i>
-                                </a>
-                                @if (User.IsInRole("Admin") || User.IsInRole("Farmer") || !User.Identity.IsAuthenticated)
-                                {
-                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-2" title="Delete Product" onclick="return confirm('Are you sure you want to delete product @item.Name?');">
-                                            <i class="bi bi-trash3-fill"></i>
-                                        </button>
-                                    </form>
-                                }
-                            </div>
+                        </div>
+
+                        <!-- Card Action Buttons with proper margins -->
+                        <div class="mt-auto pt-1 d-flex gap-2 align-items-center">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-success rounded-pill fw-bold w-100 py-2.5 shadow-sm d-flex align-items-center justify-content-center gap-2" style="background-color: #006653; border-color: #006653;">
+                                <i class="bi bi-cart-check-fill fs-6"></i> View &amp; Buy Now
+                            </a>
+                            @if (User.IsInRole("Admin") || User.IsInRole("Farmer"))
+                            {
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-2" title="Delete Product" onclick="return confirm('Are you sure you want to delete @item.Name?');">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
+                                </form>
+                            }
                         </div>
                     </div>
                 </div>
@@ -127,3 +300,34 @@
         }
     </div>
 </div>
+
+<script>
+    function filterMarketplace(category, btn) {
+        document.querySelectorAll('.filter-chip-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+
+        const cards = document.querySelectorAll('.crop-card-item');
+        cards.forEach(card => {
+            if (category === 'all') {
+                card.style.display = '';
+            } else {
+                const cat = card.getAttribute('data-category') || '';
+                card.style.display = cat.includes(category) ? '' : 'none';
+            }
+        });
+    }
+
+    function searchMarketplace(keyword) {
+        keyword = keyword.toLowerCase().trim();
+        const cards = document.querySelectorAll('.crop-card-item');
+        cards.forEach(card => {
+            const name = card.getAttribute('data-name') || '';
+            const cat = card.getAttribute('data-category') || '';
+            if (name.includes(keyword) || cat.includes(keyword)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>

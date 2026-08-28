@@ -71,33 +71,33 @@
                         </div>
                     </div>
 
-                    <!-- 2. Logistics & Delivery Option -->
+                    <!-- 2. Logistics & Delivery Option (Blueprint Architecture) -->
                     <div class="bg-white shadow-sm rounded-4 p-4 border mb-4">
                         <h5 class="mb-3 text-dark fw-bold d-flex align-items-center gap-2">
-                            <i class="bi bi-truck text-success"></i> Choose Logistics / Transport
+                            <i class="bi bi-truck text-success"></i> Choose Delivery / Logistics Mode
                         </h5>
 
                         <div class="form-check p-3 rounded-3 border mb-2 cursor-pointer bg-light">
                             <input class="form-check-input ms-0 me-2" type="radio" name="transportType" id="transPickup" value="Direct Farm Pickup" checked onchange="updateBillTotal()">
                             <label class="form-check-label fw-bold text-dark d-flex justify-content-between align-items-center w-100" for="transPickup">
-                                <span><i class="bi bi-geo-alt-fill text-success me-1"></i> Direct Farm Pickup (Self Pickup)</span>
+                                <span><i class="bi bi-geo-alt-fill text-success me-1"></i> 1. Direct Farm Pickup (Self Pickup)</span>
                                 <span class="badge bg-success text-white">FREE ₹0</span>
                             </label>
-                            <small class="text-muted d-block ps-4 mt-1">Pick up harvest directly from the verified farmer's field.</small>
+                            <small class="text-muted d-block ps-4 mt-1">Pick up harvest directly from the verified farmer's field or godown.</small>
                         </div>
 
                         <div class="form-check p-3 rounded-3 border cursor-pointer bg-light">
-                            <input class="form-check-input ms-0 me-2" type="radio" name="transportType" id="transPorter" value="Porter / Local Transport" onchange="updateBillTotal()">
-                            <label class="form-check-label fw-bold text-dark d-flex justify-content-between align-items-center w-100" for="transPorter">
-                                <span><i class="bi bi-truck text-primary me-1"></i> Local Porter / Mini-Truck Delivery</span>
-                                <span class="badge bg-primary text-white">+ ₹250.00</span>
+                            <input class="form-check-input ms-0 me-2" type="radio" name="transportType" id="transCargo" value="GSRTC / Private Cargo (To-Pay)" onchange="updateBillTotal()">
+                            <label class="form-check-label fw-bold text-dark d-flex justify-content-between align-items-center w-100" for="transCargo">
+                                <span><i class="bi bi-bus-front-fill text-primary me-1"></i> 2. GSRTC / Private Cargo (Parcel Delivery)</span>
+                                <span class="badge bg-primary text-white">"To-Pay" Model</span>
                             </label>
-                            <small class="text-muted d-block ps-4 mt-1">Arranged delivery to your doorstep via local transport network.</small>
+                            <small class="text-muted d-block ps-4 mt-1">Farmer books produce via GSRTC ST Bus parcel or private cargo (Patel, Shrinath, Eagle) and uploads Bilty receipt. Pay nominal parcel freight directly at counter upon pickup.</small>
                         </div>
 
                         <div class="mt-3">
-                            <label class="form-label small fw-bold text-muted">Delivery Address / Destination Note (Optional)</label>
-                            <input type="text" name="deliveryAddress" class="form-control bg-white shadow-none" placeholder="e.g. Near APMC Market Yard, Rajkot" />
+                            <label class="form-label small fw-bold text-muted">Destination City / Delivery Address (Where to receive parcel)</label>
+                            <input type="text" name="deliveryAddress" class="form-control bg-white shadow-none" placeholder="e.g. ST Bus Station Parcel Office, Rajkot / Surat / Ahmedabad" />
                         </div>
                     </div>
 
@@ -194,12 +194,16 @@
         const platformFee = @platformFee;
 
         function updateBillTotal() {
-            const isPorter = document.getElementById("transPorter").checked;
-            const logisticsFee = isPorter ? 250 : 0;
-            const grandTotal = baseTotal + platformFee + logisticsFee;
-
-            document.getElementById("billTransport").textContent = isPorter ? "₹250.00" : "₹0.00";
-            document.getElementById("billGrandTotal").textContent = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(grandTotal);
+            const isCargo = document.getElementById("transCargo")?.checked;
+            const billTrans = document.getElementById("billTransport");
+            if (billTrans) {
+                billTrans.textContent = isCargo ? "To-Pay (At Counter)" : "₹0.00 (Free)";
+            }
+            const grandTotal = baseTotal + platformFee;
+            const grandEl = document.getElementById("billGrandTotal");
+            if (grandEl) {
+                grandEl.textContent = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(grandTotal);
+            }
         }
     </script>
 }

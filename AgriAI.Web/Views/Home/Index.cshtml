@@ -80,13 +80,13 @@
             </a>
             <div class="gov-ticker-marquee">
                 <marquee id="liveMandiMarqueeText" behavior="scroll" direction="left" scrollamount="6" onmouseover="this.stop();" onmouseout="this.start();">
-                    <span class="ticker-chip"><span class="ticker-crop">🌾 Cotton (કપાસ)</span> <span class="ticker-market">[Rajkot APMC]</span> <span class="ticker-price">₹7,440/Qtl</span> <span class="ticker-live-tag">▲ Live</span></span>
-                    <span class="ticker-chip"><span class="ticker-crop">🥜 Groundnut (મગફળી)</span> <span class="ticker-market">[Gondal APMC]</span> <span class="ticker-price">₹6,208/Qtl</span> <span class="ticker-live-tag">▲ Live</span></span>
-                    <span class="ticker-chip"><span class="ticker-crop">🌾 Wheat (ઘઉં)</span> <span class="ticker-market">[Ahmedabad APMC]</span> <span class="ticker-price">₹2,565/Qtl</span> <span class="ticker-live-tag">▲ Live</span></span>
-                    <span class="ticker-chip"><span class="ticker-crop">🌿 Cumin (જીરું)</span> <span class="ticker-market">[Unjha APMC]</span> <span class="ticker-price">₹28,500/Qtl</span> <span class="ticker-live-tag">▲ Live</span></span>
-                    <span class="ticker-chip"><span class="ticker-crop">🌱 Sesamum (તલ)</span> <span class="ticker-market">[Amreli APMC]</span> <span class="ticker-price">₹11,546/Qtl</span> <span class="ticker-live-tag">▲ Live</span></span>
-                    <span class="ticker-chip"><span class="ticker-crop">🌾 Mustard (રાઈ)</span> <span class="ticker-market">[Panthawada APMC]</span> <span class="ticker-price">₹5,055/Qtl</span> <span class="ticker-live-tag">▲ Live</span></span>
-                    <span class="ticker-chip"><span class="ticker-crop">🍲 Tur (તુવેર)</span> <span class="ticker-market">[Surat APMC]</span> <span class="ticker-price">₹7,073/Qtl</span> <span class="ticker-live-tag">▲ Live</span></span>
+                    <span class="ticker-chip"><span class="ticker-crop">🌾 Cotton</span> <span class="ticker-market">[Rajkot APMC]</span> <span class="ticker-price">₹7,440/Qtl</span> <span class="ticker-live-tag">▲ Live</span></span>
+                    <span class="ticker-chip"><span class="ticker-crop">🥜 Groundnut</span> <span class="ticker-market">[Gondal APMC]</span> <span class="ticker-price">₹6,208/Qtl</span> <span class="ticker-live-tag">▲ Live</span></span>
+                    <span class="ticker-chip"><span class="ticker-crop">🌾 Wheat</span> <span class="ticker-market">[Ahmedabad APMC]</span> <span class="ticker-price">₹2,565/Qtl</span> <span class="ticker-live-tag">▲ Live</span></span>
+                    <span class="ticker-chip"><span class="ticker-crop">🌿 Cumin / Jeera</span> <span class="ticker-market">[Unjha APMC]</span> <span class="ticker-price">₹28,500/Qtl</span> <span class="ticker-live-tag">▲ Live</span></span>
+                    <span class="ticker-chip"><span class="ticker-crop">🌱 Sesamum</span> <span class="ticker-market">[Amreli APMC]</span> <span class="ticker-price">₹11,546/Qtl</span> <span class="ticker-live-tag">▲ Live</span></span>
+                    <span class="ticker-chip"><span class="ticker-crop">🌾 Mustard</span> <span class="ticker-market">[Panthawada APMC]</span> <span class="ticker-price">₹5,055/Qtl</span> <span class="ticker-live-tag">▲ Live</span></span>
+                    <span class="ticker-chip"><span class="ticker-crop">🍲 Tur (Pigeon Pea)</span> <span class="ticker-market">[Surat APMC]</span> <span class="ticker-price">₹7,073/Qtl</span> <span class="ticker-live-tag">▲ Live</span></span>
                     <span class="ticker-chip"><span class="ticker-crop">🇮🇳 Govt. data.gov.in API</span> <span class="ticker-market">[Real-Time Connected]</span></span>
                 </marquee>
             </div>
@@ -115,7 +115,7 @@
                                 </div>
                                 <div>
                                     <h5 class="fw-bold text-dark mb-0">Maund ⇄ Quintal Calculator</h5>
-                                    <small class="text-muted">1 Maund (મણ) = 20 Kg &nbsp;|&nbsp; 1 Quintal = 100 Kg (5 Maunds)</small>
+                                    <small class="text-muted">1 Maund = 20 Kg &nbsp;|&nbsp; 1 Quintal = 100 Kg (5 Maunds)</small>
                                 </div>
                             </div>
                             <span class="badge bg-primary bg-opacity-10 text-primary fw-bold" style="font-size: 0.74rem;">
@@ -209,7 +209,7 @@
                             <div class="gainer-crop-info">
                                 <div class="gainer-crop-icon">🌿</div>
                                 <div>
-                                    <div class="gainer-crop-name">Cumin / Jeera (જીરું)</div>
+                                    <div class="gainer-crop-name">Cumin / Jeera</div>
                                     <div class="gainer-crop-market"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Unjha APMC (Mehsana)</div>
                                 </div>
                             </div>
@@ -666,68 +666,68 @@
         // 📊 Multi-Year Gujarat APMC Mandi Benchmark Dataset & Renderer
         const historicalBenchmarkData = {
             "2025-26": [
-                { group: "Fibre Crops", crop: "Cotton (કપાસ)", msp: 7710.00, season: "Kharif", price: 7440.56, arrival: 549121.90 },
-                { group: "Oil Seeds", crop: "Groundnut (મગફળી)", msp: 7263.00, season: "Kharif", price: 6208.04, arrival: 349264.61 },
-                { group: "Oil Seeds", crop: "Sesamum / Til (તલ)", msp: 9846.00, season: "Kharif", price: 11546.77, arrival: 101563.37 },
-                { group: "Pulses", crop: "Bengal Gram / Chana (ચણા)", msp: 5650.00, season: "Rabi", price: 5565.45, arrival: 116341.74 },
-                { group: "Cereals", crop: "Wheat (ઘઉં)", msp: 2425.00, season: "Rabi", price: 2565.44, arrival: 609779.38 },
-                { group: "Pulses", crop: "Red Gram / Tur (તુવેર)", msp: 8000.00, season: "Kharif", price: 7073.55, arrival: 92795.39 },
-                { group: "Oil Seeds", crop: "Mustard (રાયડો)", msp: 5950.00, season: "Rabi", price: 6055.25, arrival: 275220.47 },
-                { group: "Oil Seeds", crop: "Soyabean (સોયાબીન)", msp: 5328.00, season: "Kharif", price: 4634.31, arrival: 82265.30 },
-                { group: "Cereals", crop: "Bajra (બાજરી)", msp: 2775.00, season: "Kharif", price: 2401.97, arrival: 101725.52 },
-                { group: "Cereals", crop: "Paddy / Rice (ડાંગર)", msp: 2369.00, season: "Kharif", price: 2343.32, arrival: 76041.93 },
-                { group: "Cereals", crop: "Jowar (જુવાર)", msp: 3699.00, season: "Kharif", price: 4480.09, arrival: 19128.03 },
-                { group: "Cereals", crop: "Maize (મકાઈ)", msp: 2400.00, season: "Kharif", price: 2060.93, arrival: 7092.49 },
-                { group: "Pulses", crop: "Black Gram / Urad (અડદ)", msp: 7800.00, season: "Rabi", price: 6490.94, arrival: 34177.10 },
-                { group: "Pulses", crop: "Green Gram / Moong (મગ)", msp: 8768.00, season: "Rabi", price: 7280.53, arrival: 33443.68 }
+                { group: "Fibre Crops", crop: "Cotton", msp: 7710.00, season: "Kharif", price: 7440.56, arrival: 549121.90 },
+                { group: "Oil Seeds", crop: "Groundnut", msp: 7263.00, season: "Kharif", price: 6208.04, arrival: 349264.61 },
+                { group: "Oil Seeds", crop: "Sesamum (Til)", msp: 9846.00, season: "Kharif", price: 11546.77, arrival: 101563.37 },
+                { group: "Pulses", crop: "Bengal Gram (Chana)", msp: 5650.00, season: "Rabi", price: 5565.45, arrival: 116341.74 },
+                { group: "Cereals", crop: "Wheat", msp: 2425.00, season: "Rabi", price: 2565.44, arrival: 609779.38 },
+                { group: "Pulses", crop: "Red Gram (Tur)", msp: 8000.00, season: "Kharif", price: 7073.55, arrival: 92795.39 },
+                { group: "Oil Seeds", crop: "Mustard", msp: 5950.00, season: "Rabi", price: 6055.25, arrival: 275220.47 },
+                { group: "Oil Seeds", crop: "Soyabean", msp: 5328.00, season: "Kharif", price: 4634.31, arrival: 82265.30 },
+                { group: "Cereals", crop: "Bajra", msp: 2775.00, season: "Kharif", price: 2401.97, arrival: 101725.52 },
+                { group: "Cereals", crop: "Paddy / Rice", msp: 2369.00, season: "Kharif", price: 2343.32, arrival: 76041.93 },
+                { group: "Cereals", crop: "Jowar", msp: 3699.00, season: "Kharif", price: 4480.09, arrival: 19128.03 },
+                { group: "Cereals", crop: "Maize", msp: 2400.00, season: "Kharif", price: 2060.93, arrival: 7092.49 },
+                { group: "Pulses", crop: "Black Gram (Urad)", msp: 7800.00, season: "Rabi", price: 6490.94, arrival: 34177.10 },
+                { group: "Pulses", crop: "Green Gram (Moong)", msp: 8768.00, season: "Rabi", price: 7280.53, arrival: 33443.68 }
             ],
             "2024-25": [
-                { group: "Fibre Crops", crop: "Cotton (કપાસ)", msp: 7121.00, season: "Kharif", price: 7165.35, arrival: 786381.88 },
-                { group: "Oil Seeds", crop: "Groundnut (મગફળી)", msp: 6783.00, season: "Kharif", price: 5519.49, arrival: 657094.35 },
-                { group: "Oil Seeds", crop: "Sesamum / Til (તલ)", msp: 9267.00, season: "Kharif", price: 10386.74, arrival: 182783.57 },
-                { group: "Pulses", crop: "Bengal Gram / Chana (ચણા)", msp: 5440.00, season: "Rabi", price: 5836.38, arrival: 180099.99 },
-                { group: "Cereals", crop: "Wheat (ઘઉં)", msp: 2275.00, season: "Rabi", price: 2699.42, arrival: 638292.22 },
-                { group: "Pulses", crop: "Red Gram / Tur (તુવેર)", msp: 7550.00, season: "Kharif", price: 6945.59, arrival: 78762.81 },
-                { group: "Oil Seeds", crop: "Mustard (રાયડો)", msp: 5650.00, season: "Rabi", price: 5537.63, arrival: 300444.80 },
-                { group: "Oil Seeds", crop: "Soyabean (સોયાબીન)", msp: 4892.00, season: "Kharif", price: 4068.76, arrival: 157587.10 },
-                { group: "Cereals", crop: "Bajra (બાજરી)", msp: 2625.00, season: "Kharif", price: 2440.33, arrival: 142122.43 },
-                { group: "Cereals", crop: "Paddy / Rice (ડાંગર)", msp: 2300.00, season: "Kharif", price: 2438.30, arrival: 239789.57 },
-                { group: "Cereals", crop: "Jowar (જુવાર)", msp: 3371.00, season: "Kharif", price: 3772.02, arrival: 24963.85 },
-                { group: "Cereals", crop: "Maize (મકાઈ)", msp: 2225.00, season: "Kharif", price: 2442.55, arrival: 69660.12 },
-                { group: "Pulses", crop: "Black Gram / Urad (અડદ)", msp: 7400.00, season: "Rabi", price: 7829.21, arrival: 39837.64 },
-                { group: "Pulses", crop: "Green Gram / Moong (મગ)", msp: 8682.00, season: "Rabi", price: 7954.64, arrival: 38379.31 }
+                { group: "Fibre Crops", crop: "Cotton", msp: 7121.00, season: "Kharif", price: 7165.35, arrival: 786381.88 },
+                { group: "Oil Seeds", crop: "Groundnut", msp: 6783.00, season: "Kharif", price: 5519.49, arrival: 657094.35 },
+                { group: "Oil Seeds", crop: "Sesamum (Til)", msp: 9267.00, season: "Kharif", price: 10386.74, arrival: 182783.57 },
+                { group: "Pulses", crop: "Bengal Gram (Chana)", msp: 5440.00, season: "Rabi", price: 5836.38, arrival: 180099.99 },
+                { group: "Cereals", crop: "Wheat", msp: 2275.00, season: "Rabi", price: 2699.42, arrival: 638292.22 },
+                { group: "Pulses", crop: "Red Gram (Tur)", msp: 7550.00, season: "Kharif", price: 6945.59, arrival: 78762.81 },
+                { group: "Oil Seeds", crop: "Mustard", msp: 5650.00, season: "Rabi", price: 5537.63, arrival: 300444.80 },
+                { group: "Oil Seeds", crop: "Soyabean", msp: 4892.00, season: "Kharif", price: 4068.76, arrival: 157587.10 },
+                { group: "Cereals", crop: "Bajra", msp: 2625.00, season: "Kharif", price: 2440.33, arrival: 142122.43 },
+                { group: "Cereals", crop: "Paddy / Rice", msp: 2300.00, season: "Kharif", price: 2438.30, arrival: 239789.57 },
+                { group: "Cereals", crop: "Jowar", msp: 3371.00, season: "Kharif", price: 3772.02, arrival: 24963.85 },
+                { group: "Cereals", crop: "Maize", msp: 2225.00, season: "Kharif", price: 2442.55, arrival: 69660.12 },
+                { group: "Pulses", crop: "Black Gram (Urad)", msp: 7400.00, season: "Rabi", price: 7829.21, arrival: 39837.64 },
+                { group: "Pulses", crop: "Green Gram (Moong)", msp: 8682.00, season: "Rabi", price: 7954.64, arrival: 38379.31 }
             ],
             "2022-23": [
-                { group: "Fibre Crops", crop: "Cotton (કપાસ)", msp: 6080.00, season: "Kharif", price: 8168.04, arrival: 564283.63 },
-                { group: "Oil Seeds", crop: "Groundnut (મગફળી)", msp: 5850.00, season: "Kharif", price: 6519.55, arrival: 587320.66 },
-                { group: "Oil Seeds", crop: "Sesamum / Til (તલ)", msp: 7830.00, season: "Kharif", price: 13596.77, arrival: 134482.17 },
-                { group: "Pulses", crop: "Bengal Gram / Chana (ચણા)", msp: 5230.00, season: "Rabi", price: 4482.36, arrival: 173582.25 },
-                { group: "Cereals", crop: "Wheat (ઘઉં)", msp: 2125.00, season: "Rabi", price: 2457.29, arrival: 458144.43 },
-                { group: "Pulses", crop: "Red Gram / Tur (તુવેર)", msp: 6600.00, season: "Kharif", price: 7514.22, arrival: 49730.63 },
-                { group: "Oil Seeds", crop: "Mustard (રાયડો)", msp: 5050.00, season: "Rabi", price: 5521.33, arrival: 390767.69 },
-                { group: "Oil Seeds", crop: "Soyabean (સોયાબીન)", msp: 4300.00, season: "Kharif", price: 5013.93, arrival: 90454.30 },
-                { group: "Cereals", crop: "Bajra (બાજરી)", msp: 2350.00, season: "Kharif", price: 2198.53, arrival: 164624.00 },
-                { group: "Cereals", crop: "Paddy / Rice (ડાંગર)", msp: 2040.00, season: "Kharif", price: 1781.17, arrival: 92034.06 },
-                { group: "Cereals", crop: "Jowar (જુવાર)", msp: 2970.00, season: "Kharif", price: 4272.66, arrival: 23489.38 },
-                { group: "Cereals", crop: "Maize (મકાઈ)", msp: 1962.00, season: "Kharif", price: 2252.56, arrival: 53327.13 },
-                { group: "Pulses", crop: "Black Gram / Urad (અડદ)", msp: 6600.00, season: "Rabi", price: 6619.60, arrival: 19693.34 },
-                { group: "Pulses", crop: "Green Gram / Moong (મગ)", msp: 7755.00, season: "Rabi", price: 6262.60, arrival: 27907.63 }
+                { group: "Fibre Crops", crop: "Cotton", msp: 6080.00, season: "Kharif", price: 8168.04, arrival: 564283.63 },
+                { group: "Oil Seeds", crop: "Groundnut", msp: 5850.00, season: "Kharif", price: 6519.55, arrival: 587320.66 },
+                { group: "Oil Seeds", crop: "Sesamum (Til)", msp: 7830.00, season: "Kharif", price: 13596.77, arrival: 134482.17 },
+                { group: "Pulses", crop: "Bengal Gram (Chana)", msp: 5230.00, season: "Rabi", price: 4482.36, arrival: 173582.25 },
+                { group: "Cereals", crop: "Wheat", msp: 2125.00, season: "Rabi", price: 2457.29, arrival: 458144.43 },
+                { group: "Pulses", crop: "Red Gram (Tur)", msp: 6600.00, season: "Kharif", price: 7514.22, arrival: 49730.63 },
+                { group: "Oil Seeds", crop: "Mustard", msp: 5050.00, season: "Rabi", price: 5521.33, arrival: 390767.69 },
+                { group: "Oil Seeds", crop: "Soyabean", msp: 4300.00, season: "Kharif", price: 5013.93, arrival: 90454.30 },
+                { group: "Cereals", crop: "Bajra", msp: 2350.00, season: "Kharif", price: 2198.53, arrival: 164624.00 },
+                { group: "Cereals", crop: "Paddy / Rice", msp: 2040.00, season: "Kharif", price: 1781.17, arrival: 92034.06 },
+                { group: "Cereals", crop: "Jowar", msp: 2970.00, season: "Kharif", price: 4272.66, arrival: 23489.38 },
+                { group: "Cereals", crop: "Maize", msp: 1962.00, season: "Kharif", price: 2252.56, arrival: 53327.13 },
+                { group: "Pulses", crop: "Black Gram (Urad)", msp: 6600.00, season: "Rabi", price: 6619.60, arrival: 19693.34 },
+                { group: "Pulses", crop: "Green Gram (Moong)", msp: 7755.00, season: "Rabi", price: 6262.60, arrival: 27907.63 }
             ],
             "2021-22": [
-                { group: "Fibre Crops", crop: "Cotton (કપાસ)", msp: 5726.00, season: "Kharif", price: 8571.52, arrival: 834174.91 },
-                { group: "Oil Seeds", crop: "Groundnut (મગફળી)", msp: 5550.00, season: "Kharif", price: 5717.13, arrival: 714961.67 },
-                { group: "Oil Seeds", crop: "Sesamum / Til (તલ)", msp: 7307.00, season: "Kharif", price: 10663.31, arrival: 158464.84 },
-                { group: "Pulses", crop: "Bengal Gram / Chana (ચણા)", msp: 5100.00, season: "Rabi", price: 4572.08, arrival: 205657.13 },
-                { group: "Cereals", crop: "Wheat (ઘઉં)", msp: 1975.00, season: "Rabi", price: 2018.67, arrival: 591308.75 },
-                { group: "Pulses", crop: "Red Gram / Tur (તુવેર)", msp: 6300.00, season: "Kharif", price: 5713.15, arrival: 75000.40 },
-                { group: "Oil Seeds", crop: "Mustard (રાયડો)", msp: 4650.00, season: "Rabi", price: 6222.67, arrival: 495560.23 },
-                { group: "Oil Seeds", crop: "Soyabean (સોયાબીન)", msp: 3950.00, season: "Kharif", price: 5511.41, arrival: 83988.11 },
-                { group: "Cereals", crop: "Bajra (બાજરી)", msp: 2250.00, season: "Kharif", price: 2026.23, arrival: 154248.92 },
-                { group: "Cereals", crop: "Paddy / Rice (ડાંગર)", msp: 1940.00, season: "Kharif", price: 1826.57, arrival: 173553.54 },
-                { group: "Cereals", crop: "Jowar (જુવાર)", msp: 2738.00, season: "Kharif", price: 2929.37, arrival: 26147.91 },
-                { group: "Cereals", crop: "Maize (મકાઈ)", msp: 1870.00, season: "Kharif", price: 1999.55, arrival: 67269.75 },
-                { group: "Pulses", crop: "Black Gram / Urad (અડદ)", msp: 6300.00, season: "Rabi", price: 5687.56, arrival: 48699.86 },
-                { group: "Pulses", crop: "Green Gram / Moong (મગ)", msp: 7275.00, season: "Rabi", price: 6042.53, arrival: 24832.56 }
+                { group: "Fibre Crops", crop: "Cotton", msp: 5726.00, season: "Kharif", price: 8571.52, arrival: 834174.91 },
+                { group: "Oil Seeds", crop: "Groundnut", msp: 5550.00, season: "Kharif", price: 5717.13, arrival: 714961.67 },
+                { group: "Oil Seeds", crop: "Sesamum (Til)", msp: 7307.00, season: "Kharif", price: 10663.31, arrival: 158464.84 },
+                { group: "Pulses", crop: "Bengal Gram (Chana)", msp: 5100.00, season: "Rabi", price: 4572.08, arrival: 205657.13 },
+                { group: "Cereals", crop: "Wheat", msp: 1975.00, season: "Rabi", price: 2018.67, arrival: 591308.75 },
+                { group: "Pulses", crop: "Red Gram (Tur)", msp: 6300.00, season: "Kharif", price: 5713.15, arrival: 75000.40 },
+                { group: "Oil Seeds", crop: "Mustard", msp: 4650.00, season: "Rabi", price: 6222.67, arrival: 495560.23 },
+                { group: "Oil Seeds", crop: "Soyabean", msp: 3950.00, season: "Kharif", price: 5511.41, arrival: 83988.11 },
+                { group: "Cereals", crop: "Bajra", msp: 2250.00, season: "Kharif", price: 2026.23, arrival: 154248.92 },
+                { group: "Cereals", crop: "Paddy / Rice", msp: 1940.00, season: "Kharif", price: 1826.57, arrival: 173553.54 },
+                { group: "Cereals", crop: "Jowar", msp: 2738.00, season: "Kharif", price: 2929.37, arrival: 26147.91 },
+                { group: "Cereals", crop: "Maize", msp: 1870.00, season: "Kharif", price: 1999.55, arrival: 67269.75 },
+                { group: "Pulses", crop: "Black Gram (Urad)", msp: 6300.00, season: "Rabi", price: 5687.56, arrival: 48699.86 },
+                { group: "Pulses", crop: "Green Gram (Moong)", msp: 7275.00, season: "Rabi", price: 6042.53, arrival: 24832.56 }
             ]
         };
 

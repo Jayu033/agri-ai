@@ -1,0 +1,429 @@
+@model IEnumerable<AgriAI.Domain.Entities.Order>
+@{
+    ViewData["Title"] = "My Total Purchases & Expenditure Summary";
+    var userName = User.Identity?.Name ?? "Customer";
+    decimal totalSpent = ViewBag.TotalSpent != null ? (decimal)ViewBag.TotalSpent : 0m;
+    int totalKg = ViewBag.TotalKg != null ? (int)ViewBag.TotalKg : 0;
+    decimal estimatedSavings = ViewBag.EstimatedSavings != null ? (decimal)ViewBag.EstimatedSavings : 0m;
+    int successfulOrdersCount = ViewBag.SuccessfulOrdersCount != null ? (int)ViewBag.SuccessfulOrdersCount : 0;
+    int totalOrdersCount = ViewBag.TotalOrdersCount != null ? (int)ViewBag.TotalOrdersCount : 0;
+    var allOrders = ViewBag.AllOrders as List<AgriAI.Domain.Entities.Order> ?? new List<AgriAI.Domain.Entities.Order>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Dashboard.css" asp-append-version="true" />
+    <style>
+        .purchase-metric-box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            height: 100%;
+        }
+        .purchase-metric-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+        }
+        .purchase-metric-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .purchase-table-filter-btn {
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            color: #64748b;
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.825rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .purchase-table-filter-btn:hover,
+        .purchase-table-filter-btn.active {
+            background: #006653;
+            color: #ffffff;
+            border-color: #006653;
+        }
+    </style>
+}
+
+<div class="dashboard-page-bg py-4">
+    <div class="container" style="max-width: 1240px;">
+        
+        <!-- Header with Back Button & Action Controls -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <a href="/Customer/Dashboard?tab=overviewTab" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5 text-decoration-none">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+                <h2 class="fw-extrabold text-dark mb-0 mt-2">My Total Purchases &amp; Financial Summary</h2>
+                <p class="text-muted small mb-0">Itemized purchase ledger, cumulative crop weight (Kg), and direct farmer savings.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-3.5 py-2 fw-bold shadow-sm" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i> Print Statement
+                </button>
+                <a href="/Customer/Dashboard?tab=activeOrdersTab" class="btn btn-success rounded-pill px-3.5 py-2 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;">
+                    <i class="bi bi-box-seam me-1"></i> My Active Orders
+                </a>
+            </div>
+        </div>
+
+        <!-- 4 Clean & Modern Metric Summary Cards -->
+        <div class="row g-3 mb-4">
+            <!-- Metric 1: Total Amount Spent -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="purchase-metric-box">
+                    <div class="purchase-metric-icon bg-success bg-opacity-10 text-success">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-extrabold text-dark mb-0">₹@totalSpent.ToString("N2")</div>
+                        <div class="text-muted small fw-semibold">Total Expenditure</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metric 2: Total Volume in Kg -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="purchase-metric-box">
+                    <div class="purchase-metric-icon bg-primary bg-opacity-10 text-primary">
+                        <i class="bi bi-boxes"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-extrabold text-dark mb-0">@totalKg Kg</div>
+                        <div class="text-muted small fw-semibold">Total Produce Volume</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metric 3: Successful Orders -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="purchase-metric-box">
+                    <div class="purchase-metric-icon bg-info bg-opacity-10 text-info">
+                        <i class="bi bi-bag-check-fill"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-extrabold text-dark mb-0">@successfulOrdersCount <span class="fs-6 text-muted fw-normal">/ @totalOrdersCount</span></div>
+                        <div class="text-muted small fw-semibold">Orders Placed</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metric 4: Direct Producer Savings -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="purchase-metric-box">
+                    <div class="purchase-metric-icon bg-warning bg-opacity-15 text-warning" style="color: #d97706 !important;">
+                        <i class="bi bi-piggy-bank-fill"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-extrabold text-dark mb-0">₹@estimatedSavings.ToString("N2")</div>
+                        <div class="text-muted small fw-semibold">Estimated Direct Savings</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Itemized Purchases Breakdown Table Card -->
+        <div class="card border rounded-4 shadow-sm bg-white overflow-hidden mb-4">
+            <div class="card-header bg-white border-bottom p-3.5 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-receipt-cutoff text-success"></i> Itemized Purchase Ledger &amp; Invoices
+                    </h5>
+                    <span class="text-muted small">All organic farm orders placed through AgriAI verified network.</span>
+                </div>
+                
+                <!-- Filter Pills -->
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <button type="button" class="purchase-table-filter-btn active" onclick="filterPurchaseTable('all', this)">
+                        All (@allOrders.Count)
+                    </button>
+                    <button type="button" class="purchase-table-filter-btn" onclick="filterPurchaseTable('delivered', this)">
+                        Delivered
+                    </button>
+                    <button type="button" class="purchase-table-filter-btn" onclick="filterPurchaseTable('active', this)">
+                        Active Orders
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="purchasesTable">
+                    <thead class="table-light">
+                        <tr class="small text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                            <th class="ps-4 py-3">Order ID &amp; Date</th>
+                            <th class="py-3">Produce / Crop</th>
+                            <th class="py-3">Quantity (Kg)</th>
+                            <th class="py-3">Rate (₹/Kg)</th>
+                            <th class="py-3">Logistics</th>
+                            <th class="py-3">Total Amount</th>
+                            <th class="py-3">Status</th>
+                            <th class="pe-4 py-3 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!allOrders.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-receipt display-4 opacity-50 d-block mb-2"></i>
+                                    No purchases recorded yet. Browse fresh crops to start shopping.
+                                </td>
+                            </tr>
+                        }
+                        @foreach (var order in allOrders)
+                        {
+                            var firstItem = order.OrderItems.FirstOrDefault();
+                            var prodName = firstItem?.Product?.Name ?? "Farm Produce";
+                            var prodImg = firstItem?.Product?.Images?.FirstOrDefault()?.ImageUrl;
+                            var prodCat = firstItem?.Product?.Category?.Name ?? "Grains";
+                            var qty = firstItem?.Quantity ?? 1;
+                            var rate = firstItem?.UnitPrice ?? order.TotalAmount;
+                            var isDelivered = order.Status.Contains("Delivered") || order.Status.Contains("Settled");
+                            var isActive = order.Status == "Requested" || order.Status == "Accepted" || order.Status == "In Transit" || order.Status == "Ready for Pickup";
+                            var rowCategory = isDelivered ? "delivered" : (isActive ? "active" : "cancelled");
+                            var baseAmt = order.TotalAmount - order.LogisticsFee - order.PlatformFee;
+                            var orderNoStr = "AG-" + order.Id.ToString("D5");
+                            var dateFormatted = order.OrderDate.ToString("dd MMM yyyy, hh:mm tt");
+
+                            <tr class="purchase-row" data-category="@rowCategory">
+                                <td class="ps-4">
+                                    <strong class="text-dark d-block">#@order.Id.ToString("D5")</strong>
+                                    <small class="text-muted">@order.OrderDate.ToString("dd MMM yyyy")</small>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2.5">
+                                        @if (!string.IsNullOrEmpty(prodImg))
+                                        {
+                                            <img src="@prodImg" class="rounded-3 shadow-sm" alt="@prodName" style="width: 44px; height: 44px; object-fit: cover;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-light rounded-3 d-flex align-items-center justify-content-center text-success" style="width: 44px; height: 44px;">
+                                                <i class="bi bi-tree fs-5"></i>
+                                            </div>
+                                        }
+                                        <div>
+                                            <span class="badge bg-light text-success border small" style="font-size: 0.7rem;">@prodCat</span>
+                                            <strong class="text-dark d-block small">@prodName</strong>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1">
+                                        @qty Kg
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-muted small">₹@rate.ToString("N2") / Kg</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border small">
+                                        <i class="bi bi-truck me-1"></i>@(order.TransportType ?? "Direct Farm Pickup")
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong class="text-success fs-6">₹@order.TotalAmount.ToString("N2")</strong>
+                                </td>
+                                <td>
+                                    @if (isDelivered)
+                                    {
+                                        <span class="badge bg-success text-white fw-bold px-2.5 py-1 rounded-pill">
+                                            <i class="bi bi-check-circle-fill me-1"></i>Delivered 🟢
+                                        </span>
+                                    }
+                                    else if (order.Status == "Requested")
+                                    {
+                                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill">
+                                            <i class="bi bi-hourglass-split me-1"></i>Requested
+                                        </span>
+                                    }
+                                    else if (order.Status == "Accepted")
+                                    {
+                                        <span class="badge bg-info text-dark fw-bold px-2.5 py-1 rounded-pill">
+                                            <i class="bi bi-clock-history me-1"></i>Accepted
+                                        </span>
+                                    }
+                                    else if (order.Status == "In Transit")
+                                    {
+                                        <span class="badge bg-primary text-white fw-bold px-2.5 py-1 rounded-pill">
+                                            <i class="bi bi-truck me-1"></i>In Transit
+                                        </span>
+                                    }
+                                    else if (order.Status == "Declined" || order.Status == "Cancelled")
+                                    {
+                                        <span class="badge bg-secondary text-white fw-bold px-2.5 py-1 rounded-pill">
+                                            @order.Status (Refunded)
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark border">@order.Status</span>
+                                    }
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <div class="d-inline-flex gap-1.5">
+                                        <a asp-action="OrderDetails" asp-route-id="@order.Id" asp-route-from="totalPurchases" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold shadow-sm">
+                                            Details →
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 fw-bold" title="Print Invoice" onclick="printOrderInvoice('@orderNoStr', '@dateFormatted', '@userName', '@prodName', @qty, @rate, @baseAmt, @order.LogisticsFee, @order.PlatformFee, @order.TotalAmount, '@(order.PaymentMethod ?? "Online (Escrow)")', '@(order.TransportType ?? "Direct Farm Pickup")', '@(string.IsNullOrEmpty(order.ShippingAddress) ? "Gujarat Farm Location" : order.ShippingAddress)')">
+                                            <i class="bi bi-printer"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Print Invoice Helper Script -->
+<script>
+    function filterPurchaseTable(category, btn) {
+        document.querySelectorAll('.purchase-table-filter-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+
+        const rows = document.querySelectorAll('.purchase-row');
+        rows.forEach(r => {
+            if (category === 'all') {
+                r.style.display = '';
+            } else {
+                const rowCat = r.getAttribute('data-category');
+                r.style.display = (rowCat === category) ? '' : 'none';
+            }
+        });
+    }
+
+    function printOrderInvoice(orderNo, orderDate, buyerName, produceName, quantity, unitPrice, baseAmount, logisticsFee, platformFee, grandTotal, paymentMethod, transportType, deliveryAddress) {
+        const printWindow = window.open('', '_blank', 'width=850,height=900');
+        if (!printWindow) {
+            alert('Please allow popups to print official Tax Invoice.');
+            return;
+        }
+
+        const invoiceHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Tax Invoice - ${orderNo}</title>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+                <style>
+                    body { font-family: 'Segoe UI', system-ui, sans-serif; color: #1e293b; padding: 40px; }
+                    .invoice-header { border-bottom: 2px solid #006653; padding-bottom: 20px; margin-bottom: 25px; }
+                    .brand-logo { font-size: 26px; font-weight: 800; color: #006653; }
+                    .invoice-title { font-size: 22px; font-weight: 700; color: #0f172a; text-transform: uppercase; }
+                    .table-invoice th { background-color: #f1f5f9; color: #475569; font-weight: 600; font-size: 13px; text-transform: uppercase; }
+                    .grand-total-row { font-size: 18px; font-weight: 800; color: #006653; background-color: #f0fdf4; }
+                    .seal-box { border: 2px dashed #94a3b8; border-radius: 8px; padding: 15px; text-align: center; margin-top: 30px; }
+                    @@media print {
+                        body { padding: 0; }
+                        .no-print { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="invoice-header d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="brand-logo">🌾 AgriAI</div>
+                        <div class="text-muted small">Direct Farm-to-Buyer Digital Agricultural Marketplace</div>
+                        <div class="text-muted small">Govt. Mandi &amp; APMC Verified Trade System &bull; Gujarat, India</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="invoice-title">Tax Invoice / Receipt</div>
+                        <div class="fw-bold fs-5 text-dark">${orderNo}</div>
+                        <div class="text-muted small">Date: ${orderDate}</div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <div class="text-muted small text-uppercase fw-bold mb-1">Billed To (Buyer):</div>
+                        <div class="fw-bold text-dark fs-6">${buyerName}</div>
+                        <div class="text-muted small">Delivery Address: ${deliveryAddress}</div>
+                    </div>
+                    <div class="col-6 text-end">
+                        <div class="text-muted small text-uppercase fw-bold mb-1">Transaction Details:</div>
+                        <div class="small"><strong>Payment:</strong> ${paymentMethod}</div>
+                        <div class="small"><strong>Logistics:</strong> ${transportType}</div>
+                        <div class="small text-success"><strong>Escrow Protected:</strong> Verified 100% Safe</div>
+                    </div>
+                </div>
+
+                <table class="table table-bordered table-invoice mb-4">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Produce / Crop Harvest</th>
+                            <th class="text-center">Weight / Qty</th>
+                            <th class="text-end">Rate (₹ / Unit)</th>
+                            <th class="text-end">Net Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>${produceName}</strong><br><small class="text-muted">Direct Farmer Source &bull; Grade A Harvest</small></td>
+                            <td class="text-center fw-bold">${quantity} Kg</td>
+                            <td class="text-end">₹${parseFloat(unitPrice).toFixed(2)}</td>
+                            <td class="text-end fw-bold">₹${parseFloat(baseAmount).toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-end text-muted small">Logistics &amp; Transport Charges (${transportType}):</td>
+                            <td class="text-end small">₹${parseFloat(logisticsFee).toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-end text-muted small">Platform Safety &amp; Quality Inspection Fee:</td>
+                            <td class="text-end small">₹${parseFloat(platformFee).toFixed(2)}</td>
+                        </tr>
+                        <tr class="grand-total-row">
+                            <td colspan="4" class="text-end">Total Amount Paid (INR):</td>
+                            <td class="text-end">₹${parseFloat(grandTotal).toFixed(2)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="row align-items-center mt-4">
+                    <div class="col-8">
+                        <div class="seal-box">
+                            <strong class="text-success d-block">✓ Digitally Verified Agricultural Invoice</strong>
+                            <small class="text-muted">Direct transaction between verified farmer and customer via AgriAI Escrow Protection.</small>
+                        </div>
+                    </div>
+                    <div class="col-4 text-end">
+                        <div class="small text-muted mb-4">Authorized Signature</div>
+                        <div class="fw-bold text-dark">AgriAI Marketplace System</div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4 pt-3 border-top no-print">
+                    <button class="btn btn-success px-4 rounded-pill fw-bold" onclick="window.print()">Print Invoice</button>
+                    <button class="btn btn-secondary px-4 rounded-pill fw-bold ms-2" onclick="window.close()">Close</button>
+                </div>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(invoiceHtml);
+        printWindow.document.close();
+    }
+</script>
+

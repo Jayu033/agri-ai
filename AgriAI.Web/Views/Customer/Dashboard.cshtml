@@ -8,8 +8,13 @@
     var userPhone = "+91 97245 60047";
     var userInitial = !string.IsNullOrEmpty(displayName) ? displayName.Substring(0, 1).ToUpper() : "C";
     var customerOrders = ViewBag.Orders as List<AgriAI.Domain.Entities.Order> ?? new List<AgriAI.Domain.Entities.Order>();
+    var activeOrders = ViewBag.ActiveOrders as List<AgriAI.Domain.Entities.Order> ?? new List<AgriAI.Domain.Entities.Order>();
+    var completedOrders = ViewBag.CompletedOrders as List<AgriAI.Domain.Entities.Order> ?? new List<AgriAI.Domain.Entities.Order>();
     int totalOrdersCount = ViewBag.TotalOrdersCount != null ? (int)ViewBag.TotalOrdersCount : customerOrders.Count;
-    decimal totalSpent = ViewBag.TotalSpent != null ? (decimal)ViewBag.TotalSpent : customerOrders.Sum(o => o.TotalAmount);
+    int activeOrdersCount = ViewBag.ActiveOrdersCount != null ? (int)ViewBag.ActiveOrdersCount : activeOrders.Count;
+    int completedOrdersCount = ViewBag.CompletedOrdersCount != null ? (int)ViewBag.CompletedOrdersCount : completedOrders.Count;
+    decimal totalSpent = ViewBag.TotalSpent != null ? (decimal)ViewBag.TotalSpent : 0m;
+    int totalKgPurchased = ViewBag.TotalKgPurchased != null ? (int)ViewBag.TotalKgPurchased : 0;
 
     // Instant server-side active tab (0ms delay, no JS flicker)
     string activeTab = Context.Request.Query["tab"].ToString();
@@ -43,31 +48,57 @@
 
                     <!-- Navigation Tab Buttons (In Exact Requested Order) -->
                     <div class="dash-nav-pills">
+                        <!-- 1. Dashboard Overview -->
                         <button type="button" class="dash-tab-link @(activeTab == "overviewTab" ? "active" : "")" onclick="switchDashTab('overviewTab', this)">
                             <i class="bi bi-speedometer2"></i>
                             <span>Dashboard Overview</span>
                         </button>
-                        
+
+                        <!-- 2. Shop Farm Product -->
                         <button type="button" class="dash-tab-link @(activeTab == "shopTab" ? "active" : "")" onclick="switchDashTab('shopTab', this)">
                             <i class="bi bi-shop"></i>
-                            <span>Shop Farm Produce</span>
+                            <span>Shop Farm Product</span>
                         </button>
 
+                        <!-- 3. My Active Orders -->
+                        <button type="button" class="dash-tab-link @(activeTab == "activeOrdersTab" ? "active" : "")" onclick="switchDashTab('activeOrdersTab', this)">
+                            <i class="bi bi-box-seam"></i>
+                            <span>My Active Orders</span>
+                            @if (activeOrdersCount > 0)
+                            {
+                                <span class="badge bg-warning text-dark ms-auto fw-bold">@activeOrdersCount</span>
+                            }
+                        </button>
+
+                        <!-- 4. Total Purchases -->
+                        <a asp-action="TotalPurchases" class="dash-tab-link text-decoration-none">
+                            <i class="bi bi-wallet2"></i>
+                            <span>Total Purchases</span>
+                        </a>
+
+                        <!-- 5. My Cart -->
                         <button type="button" class="dash-tab-link @(activeTab == "cartTab" ? "active" : "")" onclick="switchDashTab('cartTab', this)">
                             <i class="bi bi-cart3"></i>
                             <span>My Cart</span>
                         </button>
 
-                        <button type="button" class="dash-tab-link @(activeTab == "ordersTab" ? "active" : "")" onclick="switchDashTab('ordersTab', this)">
+                        <!-- 6. Order History -->
+                        <button type="button" class="dash-tab-link @(activeTab == "ordersTab" || activeTab == "historyTab" ? "active" : "")" onclick="switchDashTab('ordersTab', this)">
                             <i class="bi bi-clock-history"></i>
                             <span>Order History</span>
+                            @if (completedOrdersCount > 0)
+                            {
+                                <span class="badge bg-success bg-opacity-25 text-success ms-auto fw-bold">@completedOrdersCount</span>
+                            }
                         </button>
 
+                        <!-- 7. Profile Settings -->
                         <button type="button" class="dash-tab-link @(activeTab == "profileTab" ? "active" : "")" onclick="switchDashTab('profileTab', this)">
                             <i class="bi bi-person-gear"></i>
                             <span>Profile Settings</span>
                         </button>
 
+                        <!-- 8. Logout -->
                         <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
                             <button type="submit" class="dash-tab-link logout-btn">
                                 <i class="bi bi-box-arrow-right"></i>
@@ -102,7 +133,7 @@
                                         <i class="bi bi-bag-check-fill"></i>
                                     </div>
                                     <div>
-                                        <div class="dash-metric-num">@totalOrdersCount</div>
+                                        <div class="dash-metric-num">@completedOrdersCount</div>
                                         <div class="dash-metric-label">Completed Orders</div>
                                     </div>
                                 </div>
@@ -113,7 +144,7 @@
                                         <i class="bi bi-truck"></i>
                                     </div>
                                     <div>
-                                        <div class="dash-metric-num">@totalOrdersCount</div>
+                                        <div class="dash-metric-num">@activeOrdersCount</div>
                                         <div class="dash-metric-label">Active Orders</div>
                                     </div>
                                 </div>
@@ -132,11 +163,11 @@
                             <div class="col-sm-6 col-xl-3">
                                 <div class="dash-metric-card">
                                     <div class="dash-metric-icon bg-info bg-opacity-10 text-info">
-                                        <i class="bi bi-geo-alt-fill"></i>
+                                        <i class="bi bi-boxes"></i>
                                     </div>
                                     <div>
-                                        <div class="dash-metric-num">Gujarat</div>
-                                        <div class="dash-metric-label">Primary Region</div>
+                                        <div class="dash-metric-num">@totalKgPurchased Kg</div>
+                                        <div class="dash-metric-label">Produce Volume</div>
                                     </div>
                                 </div>
                             </div>
@@ -149,17 +180,55 @@
                                     <div>
                                         <div class="d-flex align-items-center justify-content-between mb-3">
                                             <h5 class="fw-bold text-dark mb-0"><i class="bi bi-truck text-success me-2"></i>Active Shipments</h5>
-                                            <span class="badge bg-secondary bg-opacity-10 text-secondary fw-bold px-2.5 py-1 rounded-pill">No Active Orders</span>
+                                            @if (activeOrdersCount > 0)
+                                            {
+                                                <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill">@activeOrdersCount Active In-Progress</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary bg-opacity-10 text-secondary fw-bold px-2.5 py-1 rounded-pill">No Active Orders</span>
+                                            }
                                         </div>
-                                        <div class="p-4 bg-white rounded-3 border text-center my-2">
-                                            <i class="bi bi-box-seam text-muted fs-2 d-block mb-2 opacity-50"></i>
-                                            <p class="text-muted small mb-0">You have no active orders in transit. Start shopping fresh harvests directly from verified farmers.</p>
-                                        </div>
+
+                                        @if (activeOrders.Any())
+                                        {
+                                            <div class="d-flex flex-column gap-2 mb-2">
+                                                @foreach (var actOrder in activeOrders.Take(2))
+                                                {
+                                                    var actItem = actOrder.OrderItems.FirstOrDefault();
+                                                    <div class="p-3 bg-white rounded-3 border d-flex justify-content-between align-items-center gap-2">
+                                                        <div>
+                                                            <strong class="text-dark d-block small">Order #@actOrder.Id.ToString("D5") &bull; @(actItem?.Product?.Name ?? "Crop Harvest")</strong>
+                                                            <small class="text-muted">@(actItem?.Quantity ?? 1) Kg &bull; Status: <span class="text-success fw-bold">@actOrder.Status</span></small>
+                                                        </div>
+                                                        <a href="/Customer/OrderDetails?id=@actOrder.Id" class="btn btn-xs btn-outline-success rounded-pill px-3 py-1 fw-bold small">
+                                                            View Details →
+                                                        </a>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="p-4 bg-white rounded-3 border text-center my-2">
+                                                <i class="bi bi-box-seam text-muted fs-2 d-block mb-2 opacity-50"></i>
+                                                <p class="text-muted small mb-0">You have no active orders in transit. Start shopping fresh harvests directly from verified farmers.</p>
+                                            </div>
+                                        }
                                     </div>
                                     <div class="pt-2">
-                                        <button type="button" class="btn btn-sm btn-outline-success fw-bold rounded-pill" onclick="switchDashTab('shopTab', document.querySelectorAll('.dash-tab-link')[1])">
-                                            <i class="bi bi-shop me-1"></i> Start Shopping →
-                                        </button>
+                                        @if (activeOrdersCount > 0)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-success fw-bold rounded-pill px-3.5 shadow-sm" onclick="switchDashTab('activeOrdersTab', document.querySelectorAll('.dash-tab-link')[2])" style="background-color: #006653; border-color: #006653;">
+                                                <i class="bi bi-box-seam me-1"></i> Manage All Active Orders (@activeOrdersCount) →
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-success fw-bold rounded-pill" onclick="switchDashTab('shopTab', document.querySelectorAll('.dash-tab-link')[1])">
+                                                <i class="bi bi-shop me-1"></i> Start Shopping →
+                                            </button>
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -190,47 +259,76 @@
                             </a>
                         </div>
 
-                        <!-- Embedded Product Grid -->
+                        <!-- Embedded Product Grid with Modern Cards -->
                         @if (Model != null && Model.Any())
                         {
-                            <div class="row g-3 mb-3">
+                            <div class="row g-4 mb-3">
                                 @foreach (var item in Model)
                                 {
                                     var imgUrl = item.Images?.FirstOrDefault()?.ImageUrl;
+                                    var catName = item.Category?.Name ?? "Farm Produce";
+                                    var stockQty = item.StockQuantity;
+                                    var maundPrice = item.Price * 20;
+
                                     <div class="col-md-6 col-xl-4">
-                                        <div class="card h-100 bg-white shadow-sm rounded-4 border product-card overflow-hidden">
-                                            <div class="position-relative">
+                                        <div class="card h-100 bg-white shadow-sm rounded-4 border overflow-hidden position-relative" style="transition: transform 0.2s ease, box-shadow 0.2s ease;">
+                                            <div class="position-relative" style="height: 190px; overflow: hidden; background: #f8fafc; border-bottom: 1px solid #f1f5f9;">
                                                 @if (!string.IsNullOrEmpty(imgUrl))
                                                 {
-                                                    <img src="@imgUrl" class="card-img-top" alt="@item.Name" style="height: 160px; object-fit: cover;">
+                                                    <img src="@imgUrl" class="card-img-top w-100 h-100" alt="@item.Name" style="object-fit: cover;">
                                                 }
                                                 else
                                                 {
-                                                    <div class="bg-light d-flex align-items-center justify-content-center" style="height: 160px;">
-                                                        <i class="bi bi-basket text-success fs-1"></i>
+                                                    <div class="bg-light d-flex align-items-center justify-content-center h-100 text-success">
+                                                        <i class="bi bi-tree fs-1 opacity-50"></i>
                                                     </div>
                                                 }
-                                                <span class="position-absolute top-0 end-0 m-2 badge bg-success fw-bold px-2 py-1 shadow-sm" style="font-size: 0.7rem;">
-                                                    Farm Direct
+                                                <span class="position-absolute top-0 start-0 m-2.5 badge bg-success text-white fw-bold px-2.5 py-1 rounded-pill shadow-sm" style="font-size: 0.68rem;">
+                                                    <i class="bi bi-patch-check-fill me-1"></i>100% Organic
+                                                </span>
+                                                <span class="position-absolute top-0 end-0 m-2.5 badge bg-white text-dark fw-bold px-2.5 py-1 rounded-pill shadow-sm border" style="font-size: 0.68rem;">
+                                                    @if (stockQty > 0)
+                                                    {
+                                                        <span class="text-success">● @stockQty Kg in Stock</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-danger">● Out of Stock</span>
+                                                    }
                                                 </span>
                                             </div>
 
-                                            <div class="card-body d-flex flex-column p-3">
-                                                <small class="text-success fw-bold text-uppercase mb-1" style="font-size: 0.70rem;">
-                                                    @(item.Category?.Name ?? "Farm Produce")
-                                                </small>
-                                                <h6 class="card-title fw-bold text-dark mb-1">@item.Name</h6>
-                                                <p class="card-text text-muted small mb-3 flex-grow-1" style="font-size: 0.78rem;">
-                                                    @(item.Description != null && item.Description.Length > 50 ? item.Description.Substring(0, 50) + "..." : item.Description)
+                                            <div class="card-body d-flex flex-column p-4">
+                                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold border border-success border-opacity-25 rounded-pill px-2.5 py-0.5" style="font-size: 0.70rem;">
+                                                        @catName
+                                                    </span>
+                                                    <span class="text-muted small fw-semibold" style="font-size: 0.70rem;">
+                                                        <i class="bi bi-geo-alt-fill text-success"></i> Gujarat APMC
+                                                    </span>
+                                                </div>
+
+                                                <h6 class="card-title fw-bold text-dark mb-1.5 text-truncate" title="@item.Name" style="font-size: 1.05rem;">@item.Name</h6>
+                                                
+                                                <p class="card-text text-muted small mb-3 text-truncate flex-grow-1" style="font-size: 0.80rem; min-height: 18px;">
+                                                    @(string.IsNullOrEmpty(item.Description) ? "Fresh organic farm crop harvested directly by local Gujarat farmers." : item.Description)
                                                 </p>
                                                 
-                                                <div class="d-flex align-items-center justify-content-between pt-2 border-top">
-                                                    <div>
-                                                        <span class="text-muted small d-block" style="font-size: 0.68rem;">Direct Price</span>
-                                                        <span class="fw-bold text-success fs-6">₹@item.Price.ToString("N2")</span>
+                                                <div class="p-3 bg-light rounded-3 border mb-3">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <span class="fw-extrabold text-success fs-5">₹@item.Price.ToString("N2")</span>
+                                                            <small class="text-muted fw-bold">/ Kg</small>
+                                                        </div>
+                                                        <span class="badge bg-white text-dark border small fw-semibold" style="font-size: 0.68rem;">
+                                                            ₹@maundPrice.ToString("N0") / Maund
+                                                        </span>
                                                     </div>
-                                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" asp-route-returnUrl="/Customer/Dashboard?tab=shopTab" class="btn btn-sm btn-success rounded-pill px-3 fw-bold">
-                                                        Buy Now
+                                                </div>
+
+                                                <div class="mt-auto pt-1">
+                                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" asp-route-returnUrl="/Customer/Dashboard?tab=shopTab" class="btn btn-success rounded-pill w-100 fw-bold py-2.5 shadow-sm d-flex align-items-center justify-content-center gap-2" style="background-color: #006653; border-color: #006653;">
+                                                        <i class="bi bi-cart-check-fill fs-6"></i> View &amp; Buy Now
                                                     </a>
                                                 </div>
                                             </div>
@@ -271,19 +369,22 @@
                         </div>
                     </div>
 
-                    <!-- TAB 4: Order History -->
-                    <div id="ordersTab" class="dash-tab-panel @(activeTab == "ordersTab" ? "active" : "")">
+                    <!-- TAB: My Active Orders -->
+                    <div id="activeOrdersTab" class="dash-tab-panel @(activeTab == "activeOrdersTab" ? "active" : "")">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">My Order History &amp; Purchases</h3>
-                                <p class="text-muted small mb-0">Track your past purchases, direct farmer produce orders, and status.</p>
+                                <h3 class="dash-section-title">My Active Orders 🚚</h3>
+                                <p class="text-muted small mb-0">Live tracking of ongoing farm requests, 3-hour review window, transport in-transit and delivery OTP.</p>
                             </div>
+                            <button type="button" class="btn btn-sm btn-success rounded-pill px-3.5 py-2 fw-bold shadow-sm" onclick="switchDashTab('shopTab', document.querySelectorAll('.dash-tab-link')[4])" style="background-color: #006653; border-color: #006653;">
+                                <i class="bi bi-cart-plus me-1"></i> Order More Crops
+                            </button>
                         </div>
 
-                        @if (customerOrders.Any())
+                        @if (activeOrders.Any())
                         {
                             <div class="d-flex flex-column gap-3 mb-3">
-                                @foreach (var order in customerOrders)
+                                @foreach (var order in activeOrders)
                                 {
                                     var orderNoStr = "AG-" + order.Id.ToString("D5");
                                     var orderLabel = "#" + order.Id.ToString("D5");
@@ -293,41 +394,60 @@
                                     var itemQty = firstItem?.Quantity ?? 1;
                                     var unitPrice = firstItem?.UnitPrice ?? order.TotalAmount;
                                     var baseAmt = order.TotalAmount - order.LogisticsFee - order.PlatformFee;
+                                    var remSec = order.CancellationDeadline.HasValue ? (int)Math.Max(0, (order.CancellationDeadline.Value - DateTime.UtcNow).TotalSeconds) : 0;
 
                                     <div class="card border rounded-4 bg-white shadow-sm overflow-hidden mb-2">
-                                        <!-- Card Header: Order ID, Date & Status -->
+                                        <!-- Card Header: Order ID, Date & Live Status -->
                                         <div class="card-header bg-white border-bottom p-3.5 d-flex flex-wrap justify-content-between align-items-center gap-2">
                                             <div class="d-flex align-items-center gap-2">
                                                 <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill small">
-                                                    Order @orderLabel
+                                                    Active Order @orderLabel
                                                 </span>
                                                 <span class="text-muted small">
                                                     <i class="bi bi-calendar-event me-1"></i>@dateFormatted
                                                 </span>
                                             </div>
-                                            <div>
-                                                @if (order.Status == "Pending" || order.Status == "Awaiting Cash on Pickup")
+                                            <div class="d-flex align-items-center gap-2">
+                                                @if (order.Status == "Requested")
                                                 {
-                                                    <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill">
-                                                        <i class="bi bi-clock-history me-1"></i>@order.Status
+                                                    <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                                                        <i class="bi bi-hourglass-top me-1"></i>Request Sent ⏳ (Awaiting Farmer)
                                                     </span>
                                                 }
-                                                else if (order.Status.Contains("Delivered") || order.Status.Contains("Settled"))
+                                                else if (order.Status == "Accepted")
                                                 {
-                                                    <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill">
-                                                        <i class="bi bi-check-circle-fill me-1"></i>Completed 🟢
+                                                    @if (order.CancellationDeadline.HasValue && DateTime.UtcNow < order.CancellationDeadline.Value)
+                                                    {
+                                                        int ch = remSec / 3600;
+                                                        int cm = (remSec % 3600) / 60;
+                                                        int cs = remSec % 60;
+                                                        <span class="badge bg-info text-dark fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                                                            <i class="bi bi-clock-history me-1"></i>Review Window Active (@($"{ch:D2}h {cm:D2}m {cs:D2}s"))
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill">
+                                                            <i class="bi bi-lock-fill me-1"></i>Locked for Harvest &amp; Dispatch
+                                                        </span>
+                                                    }
+                                                }
+                                                else if (order.Status == "In Transit")
+                                                {
+                                                    <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                                                        <i class="bi bi-truck me-1"></i>In Transit (@(string.IsNullOrEmpty(order.CargoServiceName) ? "Logistics" : order.CargoServiceName))
                                                     </span>
                                                 }
                                                 else
                                                 {
                                                     <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill">
-                                                        <i class="bi bi-truck me-1"></i>@order.Status
+                                                        <i class="bi bi-box-seam me-1"></i>@order.Status
                                                     </span>
                                                 }
                                             </div>
                                         </div>
 
-                                        <!-- Card Body: Clean Produce Summary (Strict Privacy, No Open OTP) -->
+                                        <!-- Card Body: Produce Items Summary in Kg -->
                                         <div class="card-body p-3.5">
                                             @foreach (var item in order.OrderItems)
                                             {
@@ -336,17 +456,18 @@
                                                     <div class="d-flex align-items-center gap-3">
                                                         @if (!string.IsNullOrEmpty(itemImg))
                                                         {
-                                                            <img src="@itemImg" class="rounded-3 shadow-sm" alt="@(item.Product?.Name ?? "Produce")" style="width: 55px; height: 55px; object-fit: cover;" />
+                                                            <img src="@itemImg" class="rounded-3 shadow-sm" alt="@(item.Product?.Name ?? "Produce")" style="width: 58px; height: 58px; object-fit: cover;" />
                                                         }
                                                         else
                                                         {
-                                                            <div class="bg-light rounded-3 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;">
+                                                            <div class="bg-light rounded-3 d-flex align-items-center justify-content-center" style="width: 58px; height: 58px;">
                                                                 <i class="bi bi-tree text-success fs-4"></i>
                                                             </div>
                                                         }
                                                         <div>
+                                                            <span class="badge bg-light text-success border small mb-1">@(item.Product?.Category?.Name ?? "Organic Crop")</span>
                                                             <h6 class="fw-bold text-dark mb-0">@(item.Product?.Name ?? "Farm Produce")</h6>
-                                                            <small class="text-muted">Ordered: <strong>@item.Quantity unit(s)</strong> @@ ₹@item.UnitPrice.ToString("N2")</small>
+                                                            <small class="text-muted">Quantity: <strong class="text-dark">@item.Quantity Kg</strong> @@ ₹@item.UnitPrice.ToString("N2") / Kg</small>
                                                         </div>
                                                     </div>
 
@@ -355,18 +476,35 @@
                                                     </div>
                                                 </div>
                                             }
+
+                                            @if (!string.IsNullOrEmpty(order.BiltyNumber))
+                                            {
+                                                <div class="mt-3 p-2.5 rounded-3 bg-light border d-flex align-items-center justify-content-between">
+                                                    <div>
+                                                        <small class="text-muted d-block">GSRTC / Cargo Bilty LR Number:</small>
+                                                        <strong class="text-primary font-monospace">@order.BiltyNumber</strong>
+                                                    </div>
+                                                    @if (!string.IsNullOrEmpty(order.BiltyImageUrl))
+                                                    {
+                                                        <a href="@order.BiltyImageUrl" target="_blank" class="btn btn-xs btn-outline-primary rounded-pill px-3 py-1 fw-bold small">
+                                                            <i class="bi bi-receipt me-1"></i> View Bilty Slip
+                                                        </a>
+                                                    }
+                                                </div>
+                                            }
                                         </div>
 
                                         <!-- Card Footer: Total Paid & Security Protected Action Buttons -->
                                         <div class="card-footer bg-white border-top p-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
                                             <div class="d-flex align-items-center gap-2">
-                                                <span class="badge bg-light text-dark border"><i class="bi bi-credit-card me-1"></i>@(order.PaymentMethod ?? "Online")</span>
-                                                <span class="text-muted small">Total Paid:</span>
+                                                <span class="badge bg-light text-dark border"><i class="bi bi-credit-card me-1"></i>@(order.PaymentMethod ?? "Online (Escrow)")</span>
+                                                <span class="badge bg-light text-dark border"><i class="bi bi-truck me-1"></i>@(order.TransportType ?? "Direct Farm Pickup")</span>
+                                                <span class="text-muted small">Total:</span>
                                                 <span class="fw-extrabold text-success fs-5">₹@order.TotalAmount.ToString("N2")</span>
                                             </div>
 
                                             <div class="d-flex align-items-center gap-2">
-                                                <button type="button" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;" onclick="openSecurityGate(@order.Id, '@orderLabel')">
+                                                <button type="button" class="btn btn-sm btn-success rounded-pill px-3.5 py-1.5 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;" onclick="openSecurityGate(@order.Id, '@orderLabel')">
                                                     <i class="bi bi-shield-lock-fill me-1"></i> View More Details &amp; OTP
                                                 </button>
                                                 <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1.5 fw-bold" onclick="printOrderInvoice('@orderNoStr', '@dateFormatted', '@userName', '@produceName', @itemQty, @unitPrice, @baseAmt, @order.LogisticsFee, @order.PlatformFee, @order.TotalAmount, '@(order.PaymentMethod ?? "Online (Escrow)")', '@(order.TransportType ?? "Direct Farm Pickup")', '@(string.IsNullOrEmpty(order.ShippingAddress) ? "Gujarat Farm Location" : order.ShippingAddress)')">
@@ -381,11 +519,168 @@
                         else
                         {
                             <div class="p-5 rounded-4 border bg-white shadow-sm text-center my-3">
+                                <i class="bi bi-box-seam display-4 text-success opacity-50 d-block mb-3"></i>
+                                <h5 class="fw-bold text-dark mb-2">No Active Orders Currently</h5>
+                                <p class="text-muted small mb-4">You have no in-progress orders. Browse freshly harvested crops directly from verified Gujarat farmers.</p>
+                                <button type="button" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm" onclick="switchDashTab('shopTab', document.querySelectorAll('.dash-tab-link')[4])" style="background-color: #006653; border-color: #006653;">
+                                    <i class="bi bi-bag-plus me-1"></i> Explore Farm Produce
+                                </button>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- TAB: Order History (Completed Orders) - Detailed Micro-Breakdown -->
+                    <div id="ordersTab" class="dash-tab-panel @(activeTab == "ordersTab" || activeTab == "historyTab" ? "active" : "")">
+                        <div class="dash-section-header">
+                            <div>
+                                <h3 class="dash-section-title">Order History &amp; Fulfilled Purchases 📋</h3>
+                                <p class="text-muted small mb-0">Master record of all completed, delivered and fulfilled farm purchases.</p>
+                            </div>
+                            <a asp-action="TotalPurchases" class="btn btn-sm btn-outline-success rounded-pill px-3.5 py-2 fw-bold">
+                                <i class="bi bi-graph-up me-1"></i> Full Purchase Statement
+                            </a>
+                        </div>
+
+                        @if (completedOrders.Any())
+                        {
+                            <div class="d-flex flex-column gap-3 mb-3">
+                                @foreach (var order in completedOrders)
+                                {
+                                    var orderNoStr = "AG-" + order.Id.ToString("D5");
+                                    var orderLabel = "#" + order.Id.ToString("D5");
+                                    var dateFormatted = order.OrderDate.ToString("dd MMM yyyy, hh:mm tt");
+                                    var deliveredDateStr = order.DeliveredAt.HasValue ? order.DeliveredAt.Value.ToString("dd MMM yyyy, hh:mm tt") : dateFormatted;
+                                    var firstItem = order.OrderItems.FirstOrDefault();
+                                    var produceName = firstItem?.Product?.Name ?? "Farm Crop Harvest";
+                                    var itemQty = firstItem?.Quantity ?? 1;
+                                    var unitPrice = firstItem?.UnitPrice ?? order.TotalAmount;
+                                    var baseAmt = order.TotalAmount - order.LogisticsFee - order.PlatformFee;
+
+                                    <div class="card border rounded-4 bg-white shadow-sm overflow-hidden mb-2">
+                                        <!-- Card Header: Order ID, Delivered Date & Final Status -->
+                                        <div class="card-header bg-white border-bottom p-3.5 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill small">
+                                                    Order @orderLabel
+                                                </span>
+                                                <span class="text-muted small">
+                                                    <i class="bi bi-calendar-check me-1"></i>Ordered: @dateFormatted
+                                                </span>
+                                            </div>
+                                            <div>
+                                                @if (order.Status.Contains("Delivered") || order.Status.Contains("Settled"))
+                                                {
+                                                    <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                                                        <i class="bi bi-check-circle-fill me-1"></i>Delivered &amp; Settled 🟢
+                                                    </span>
+                                                }
+                                                else if (order.Status == "Declined")
+                                                {
+                                                    <span class="badge bg-danger text-white fw-bold px-3 py-1.5 rounded-pill">
+                                                        <i class="bi bi-x-circle-fill me-1"></i>Declined (100% Refunded)
+                                                    </span>
+                                                }
+                                                else if (order.Status == "Cancelled")
+                                                {
+                                                    <span class="badge bg-secondary text-white fw-bold px-3 py-1.5 rounded-pill">
+                                                        <i class="bi bi-slash-circle me-1"></i>Cancelled (100% Refunded)
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-light text-dark border">@order.Status</span>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <!-- Card Body: Micro-detailed Itemized Breakdown -->
+                                        <div class="card-body p-3.5">
+                                            @foreach (var item in order.OrderItems)
+                                            {
+                                                var itemImg = item.Product?.Images?.FirstOrDefault()?.ImageUrl;
+                                                <div class="d-flex flex-wrap align-items-center justify-content-between py-1 gap-3">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        @if (!string.IsNullOrEmpty(itemImg))
+                                                        {
+                                                            <img src="@itemImg" class="rounded-3 shadow-sm" alt="@(item.Product?.Name ?? "Produce")" style="width: 58px; height: 58px; object-fit: cover;" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="bg-light rounded-3 d-flex align-items-center justify-content-center" style="width: 58px; height: 58px;">
+                                                                <i class="bi bi-tree text-success fs-4"></i>
+                                                            </div>
+                                                        }
+                                                        <div>
+                                                            <span class="badge bg-light text-success border small mb-1">@(item.Product?.Category?.Name ?? "Produce")</span>
+                                                            <h6 class="fw-bold text-dark mb-0">@(item.Product?.Name ?? "Farm Produce")</h6>
+                                                            <div class="small text-muted mt-0.5">
+                                                                <span>Delivered Quantity: <strong class="text-dark">@item.Quantity Kg</strong></span> &bull; 
+                                                                <span>Rate: <strong>₹@item.UnitPrice.ToString("N2") / Kg</strong></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="text-end">
+                                                        <span class="fw-extrabold text-success fs-5">₹@((item.UnitPrice * item.Quantity).ToString("N2"))</span>
+                                                    </div>
+                                                </div>
+                                            }
+
+                                            <!-- Micro-Details Pill Bar -->
+                                            <div class="row g-2 mt-2 pt-2 border-top small text-muted">
+                                                <div class="col-sm-6 col-md-4">
+                                                    <i class="bi bi-truck text-success me-1"></i> <strong>Logistics:</strong> @(order.TransportType ?? "Direct Farm Pickup")
+                                                </div>
+                                                <div class="col-sm-6 col-md-4">
+                                                    <i class="bi bi-credit-card text-success me-1"></i> <strong>Payment:</strong> @(order.PaymentMethod ?? "Online Escrow")
+                                                </div>
+                                                <div class="col-sm-12 col-md-4 text-md-end">
+                                                    <i class="bi bi-geo-alt text-success me-1"></i> <strong>Destination:</strong> @(string.IsNullOrEmpty(order.ShippingAddress) ? "Farm Location" : order.ShippingAddress)
+                                                </div>
+                                            </div>
+
+                                            @if (!string.IsNullOrEmpty(order.BiltyNumber))
+                                            {
+                                                <div class="mt-2 p-2 bg-light rounded-3 d-flex justify-content-between align-items-center small">
+                                                    <span><i class="bi bi-bus-front text-primary me-1"></i> <strong>GSRTC/Cargo Bilty LR:</strong> @order.BiltyNumber (@(order.CargoServiceName ?? "ST Bus Parcel"))</span>
+                                                    @if (!string.IsNullOrEmpty(order.BiltyImageUrl))
+                                                    {
+                                                        <a href="@order.BiltyImageUrl" target="_blank" class="text-primary text-decoration-none fw-bold">
+                                                            <i class="bi bi-image me-1"></i> View Slip
+                                                        </a>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <!-- Card Footer: Total Paid & Action Buttons -->
+                                        <div class="card-footer bg-white border-top p-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="text-muted small">Total Paid Amount:</span>
+                                                <span class="fw-extrabold text-success fs-5">₹@order.TotalAmount.ToString("N2")</span>
+                                            </div>
+
+                                            <div class="d-flex align-items-center gap-2">
+                                                <a asp-action="OrderDetails" asp-route-id="@order.Id" asp-route-from="history" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold">
+                                                    <i class="bi bi-eye-fill me-1"></i> View Order Details
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1.5 fw-bold" onclick="printOrderInvoice('@orderNoStr', '@dateFormatted', '@userName', '@produceName', @itemQty, @unitPrice, @baseAmt, @order.LogisticsFee, @order.PlatformFee, @order.TotalAmount, '@(order.PaymentMethod ?? "Online (Escrow)")', '@(order.TransportType ?? "Direct Farm Pickup")', '@(string.IsNullOrEmpty(order.ShippingAddress) ? "Gujarat Farm Location" : order.ShippingAddress)')">
+                                                    <i class="bi bi-printer me-1"></i> Print Tax Invoice
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="p-5 rounded-4 border bg-white shadow-sm text-center my-3">
                                 <i class="bi bi-clock-history display-4 text-success opacity-50 d-block mb-3"></i>
-                                <h5 class="fw-bold text-dark mb-2">No Order History Found</h5>
-                                <p class="text-muted small mb-4">You haven't placed any orders yet. When you buy crops or farm produce, your order invoices and tracking will appear here.</p>
-                                <button type="button" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm" onclick="switchDashTab('shopTab', document.querySelectorAll('.dash-tab-link')[1])">
-                                    <i class="bi bi-bag-plus me-1"></i> Start Your First Order
+                                <h5 class="fw-bold text-dark mb-2">No Completed Order History</h5>
+                                <p class="text-muted small mb-4">When your ongoing orders are delivered and settled, they will be archived with full invoices in this history section.</p>
+                                <button type="button" class="btn btn-outline-success rounded-pill px-4 py-2 fw-bold shadow-sm" onclick="switchDashTab('activeOrdersTab', document.querySelectorAll('.dash-tab-link')[2])">
+                                    <i class="bi bi-box-seam me-1"></i> View Active Orders
                                 </button>
                             </div>
                         }

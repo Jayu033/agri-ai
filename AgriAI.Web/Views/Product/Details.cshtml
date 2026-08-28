@@ -2,7 +2,7 @@
 @using AgriAI.Infrastructure.Identity
 
 @{
-    ViewData["Title"] = Model.Name + " - Details";
+    ViewData["Title"] = Model.Name + " - Fresh Harvest Details";
     var imgUrl = Model.Images?.FirstOrDefault()?.ImageUrl;
     var returnUrl = Context.Request.Query["returnUrl"].ToString();
     var isAdmin = User.IsInRole("Admin");
@@ -14,14 +14,10 @@
             ? $"{farmerUser.FirstName} {farmerUser.LastName}".Trim() 
             : farmerUser.UserName) 
         : "Verified Gujarat Producer";
-    var farmerEmail = farmerUser?.Email ?? "farmer@agriai.com";
-    var farmerPhone = !string.IsNullOrEmpty(farmerUser?.PhoneNumber) ? farmerUser.PhoneNumber : "+91 97245 60047";
     var farmerLocation = !string.IsNullOrEmpty(farmerUser?.City) 
         ? $"{farmerUser.City}, {farmerUser.State ?? "Gujarat"} {(string.IsNullOrEmpty(farmerUser?.ZipCode) ? "" : "- " + farmerUser.ZipCode)}" 
         : (!string.IsNullOrEmpty(farmerUser?.Address) ? farmerUser.Address : "Gujarat Agricultural Farm Location");
-    var farmerJoinDate = farmerUser != null ? farmerUser.CreatedAt.ToString("MMM yyyy") : "Verified Member";
-    var totalFarmerStock = ViewBag.FarmerTotalStock != null ? (int)ViewBag.FarmerTotalStock : Model.StockQuantity;
-    var totalFarmerProducts = ViewBag.FarmerTotalProducts != null ? (int)ViewBag.FarmerTotalProducts : 1;
+    var maundPrice = Model.Price * 20;
 
     if (string.IsNullOrEmpty(returnUrl))
     {
@@ -44,217 +40,289 @@
     }
 }
 
-<div class="container py-4" style="max-width: 1100px;">
+<style>
+    .product-details-hero-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        padding: 2.5rem !important;
+        overflow: hidden;
+    }
+    .product-details-img-box {
+        position: relative;
+        background: #f8fafc;
+        border-radius: 1.25rem;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        min-height: 380px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .product-details-img-box img {
+        width: 100%;
+        height: 100%;
+        max-height: 440px;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+    .product-details-img-box:hover img {
+        transform: scale(1.03);
+    }
+    .trust-badge-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        padding: 1.25rem 0.75rem !important;
+        transition: all 0.2s ease;
+    }
+    .trust-badge-card:hover {
+        background: #f0fdf4;
+        border-color: #86efac;
+    }
+    .qty-control-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        font-size: 1.1rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #334155;
+        transition: all 0.2s ease;
+    }
+    .qty-control-btn:hover {
+        background: #006653;
+        color: #ffffff;
+        border-color: #006653;
+    }
+    .qty-display-input {
+        width: 80px;
+        height: 44px;
+        border-radius: 12px;
+        border: 1px solid #cbd5e1;
+        text-align: center;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+    .details-box {
+        padding: 1.5rem !important;
+        border-radius: 1.25rem;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<div class="container-fluid py-4 px-3 px-lg-5" style="max-width: 1360px;">
+    
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show rounded-4 border-success p-3 mb-4 shadow-sm" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <i class="bi bi-check-circle-fill me-2 text-success"></i>@TempData["SuccessMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
         <div class="alert alert-danger alert-dismissible fade show rounded-4 border-danger p-3 mb-4 shadow-sm" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>@TempData["ErrorMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <div class="mb-4">
-        <a href="@returnUrl" class="btn btn-outline-secondary rounded-pill fw-bold px-3.5 py-2 small" onclick="if(window.history.length > 1 && document.referrer.includes(window.location.host)) { window.history.back(); return false; }">
-            <i class="bi bi-arrow-left me-1"></i> Back to Products
+    <!-- Navigation Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <a href="@returnUrl" class="btn btn-outline-success rounded-pill fw-bold px-4 py-2 shadow-sm d-inline-flex align-items-center gap-2">
+            <i class="bi bi-arrow-left"></i> Back to Products
         </a>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1.5 fw-bold">
+                <i class="bi bi-patch-check-fill me-1"></i> Verified Direct Farm Produce
+            </span>
+            <span class="badge bg-light text-muted border rounded-pill px-3 py-1.5 fw-bold">
+                <i class="bi bi-geo-alt-fill text-success me-1"></i> Gujarat Origin
+            </span>
+        </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
-        <div class="row g-0">
-            <!-- Product Image Column -->
-            <div class="col-md-6 bg-light d-flex align-items-center justify-content-center p-4">
-                @if (!string.IsNullOrEmpty(imgUrl))
-                {
-                    <img src="@imgUrl" class="img-fluid rounded-4 shadow-sm" alt="@Model.Name" style="max-height: 400px; width: 100%; object-fit: cover;" />
-                }
-                else
-                {
-                    <div class="text-center py-5 text-muted">
-                        <i class="bi bi-image display-1 text-success opacity-50"></i>
-                        <p class="mt-2 fw-semibold">No Image Available</p>
-                    </div>
-                }
-            </div>
+    <!-- Main Product Details Card -->
+    <div class="product-details-hero-card mb-4">
+        <div class="row g-4 g-lg-5">
             
-            <!-- Product Info & Action Column -->
-            <div class="col-md-6 p-4 p-md-5 d-flex flex-column justify-content-between">
+            <!-- Left Column: Hero Crop Photo & Trust Seals -->
+            <div class="col-lg-6">
+                <div class="product-details-img-box mb-4 shadow-sm">
+                    @if (!string.IsNullOrEmpty(imgUrl))
+                    {
+                        <img src="@imgUrl" class="img-fluid" alt="@Model.Name" />
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-tree display-1 text-success opacity-50"></i>
+                            <p class="mt-2 fw-semibold">No Harvest Photo Available</p>
+                        </div>
+                    }
+                    <span class="position-absolute top-0 start-0 m-3 badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill shadow">
+                        <i class="bi bi-stars me-1"></i> 100% Organic Farm Direct
+                    </span>
+                    <span class="position-absolute top-0 end-0 m-3 badge bg-white text-dark fw-bold px-3 py-1.5 rounded-pill shadow border">
+                        <i class="bi bi-check2-circle text-success me-1"></i> Grade A Quality
+                    </span>
+                </div>
+
+                <!-- 3 Buyer Protection Trust Cards -->
+                <div class="row g-3">
+                    <div class="col-sm-4">
+                        <div class="trust-badge-card text-center h-100">
+                            <i class="bi bi-shield-lock-fill text-success fs-4 d-block mb-1"></i>
+                            <strong class="text-dark d-block small">100% Escrow</strong>
+                            <small class="text-muted" style="font-size: 0.72rem;">Funds held safe until delivery</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="trust-badge-card text-center h-100">
+                            <i class="bi bi-clipboard-check-fill text-success fs-4 d-block mb-1"></i>
+                            <strong class="text-dark d-block small">Pre-Delivery OTP</strong>
+                            <small class="text-muted" style="font-size: 0.72rem;">Inspect before releasing OTP</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="trust-badge-card text-center h-100">
+                            <i class="bi bi-truck text-success fs-4 d-block mb-1"></i>
+                            <strong class="text-dark d-block small">Farm Logistics</strong>
+                            <small class="text-muted" style="font-size: 0.72rem;">ST bus parcel &amp; self pickup</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Pricing, Farmer Profile & Purchase Actions -->
+            <div class="col-lg-6 d-flex flex-column justify-content-between">
                 <div>
-                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
-                        <span class="badge bg-success bg-opacity-10 text-success text-uppercase px-3 py-1.5 rounded-pill fw-bold small border border-success border-opacity-25">
-                            @(Model.Category?.Name ?? "Farm Produce")
+                    <!-- Category & Stock Status -->
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
+                        <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #f0fdf4; color: #006653; border: 1px solid #bbf7d0; font-size: 0.78rem;">
+                            🌾 @(Model.Category?.Name ?? "Farm Produce")
                         </span>
-                        <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1 small">
-                            <i class="bi bi-patch-check-fill text-success me-1"></i>Direct Farm
-                        </span>
-                        @if (isAdmin)
+                        @if (Model.StockQuantity > 0)
                         {
-                            <span class="badge bg-dark text-white rounded-pill px-2.5 py-1 small">
-                                <i class="bi bi-shield-check me-1 text-warning"></i>Admin Audit View
+                            <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #ecfdf5; color: #047857; border: 1px solid #86efac; font-size: 0.82rem;">
+                                <i class="bi bi-check-circle-fill me-1 text-success"></i> @Model.StockQuantity Kg Available in Stock
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-size: 0.82rem;">
+                                <i class="bi bi-x-circle-fill me-1 text-danger"></i> Out of Stock
                             </span>
                         }
                     </div>
 
-                    <h2 class="fw-extrabold text-dark mb-2">@Model.Name</h2>
-                    
-                    <div class="d-flex align-items-baseline gap-2 mb-3">
-                        <h3 class="fw-bold text-success display-6 mb-0" id="unitPriceDisplay">₹@Model.Price.ToString("N2")</h3>
-                        <span class="text-muted small">/ Unit (Kg / Qtl)</span>
+                    <!-- Title -->
+                    <h1 class="fw-extrabold text-dark mb-3 display-6" style="line-height: 1.2;">@Model.Name</h1>
+
+                    <!-- Price Box with Guaranteed 1.5rem Padding -->
+                    <div class="details-box bg-light shadow-sm">
+                        <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-3 mb-2">
+                            <div class="d-flex align-items-baseline gap-2">
+                                <span class="fs-1 fw-extrabold text-success" id="unitPriceDisplay">₹@Model.Price.ToString("N2")</span>
+                                <span class="text-muted fw-bold fs-5">/ Kg</span>
+                            </div>
+                            <span class="badge bg-white text-dark border px-3 py-2 rounded-pill fw-bold shadow-sm" style="font-size: 0.85rem;">
+                                Equivalent: ₹@maundPrice.ToString("N0") / Maund (20 Kg)
+                            </span>
+                        </div>
+                        <div class="text-muted small">
+                            <i class="bi bi-graph-up-arrow text-success me-1"></i> Direct producer rate — Zero intermediary commissions.
+                        </div>
                     </div>
-                    
-                    <p class="text-muted leading-relaxed mb-4" style="font-size: 0.95rem;">
-                        @(string.IsNullOrEmpty(Model.Description) ? "Fresh organic farm produce harvested directly by verified Gujarat farmers." : Model.Description)
-                    </p>
-                    
-                    <div class="p-3 bg-light rounded-4 border mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="text-muted small fw-semibold">Available Produce Stock:</span>
-                            @if (Model.StockQuantity > 0)
-                            {
-                                <span class="badge bg-success text-white fw-bold px-2.5 py-1 rounded-pill">
-                                    @Model.StockQuantity units in stock
+
+                    <!-- Description Box with Guaranteed 1.5rem Padding -->
+                    <div class="details-box bg-white shadow-sm">
+                        <h6 class="fw-bold text-dark mb-2">Produce Description &amp; Quality Notes:</h6>
+                        <p class="text-muted leading-relaxed mb-0" style="font-size: 0.95rem; line-height: 1.6;">
+                            @(string.IsNullOrEmpty(Model.Description) ? "Fresh organic farm produce harvested directly by verified Gujarat farmers. Cleaned, sorted, and ready for dispatch." : Model.Description)
+                        </p>
+                    </div>
+
+                    <!-- Verified Farmer Profile Box with Guaranteed 1.5rem Padding -->
+                    <div class="details-box bg-light shadow-sm">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold fs-4 shadow-sm" style="width: 50px; height: 50px; min-width: 50px; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">
+                                    @(!string.IsNullOrEmpty(farmerName) ? farmerName.Substring(0, 1).ToUpper() : "F")
+                                </div>
+                                <div>
+                                    <strong class="text-dark d-block fs-6 mb-0.5">@farmerName</strong>
+                                    <span class="text-muted small d-flex align-items-center gap-1">
+                                        <i class="bi bi-geo-alt-fill text-success"></i> @farmerLocation
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem;">
+                                    <i class="bi bi-patch-check-fill"></i> Verified Farmer &bull; Contact Unlocked on Order
                                 </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger text-white fw-bold px-2.5 py-1 rounded-pill">
-                                    Out of Stock (0 units)
-                                </span>
-                            }
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                @if (isAdmin)
-                {
-                    <!-- Farmer / Producer Full Profile & Total Stock Card (જેવી રીતે ઓર્ડરમાં દેખાય છે) -->
-                    <div class="bg-white rounded-4 p-3.5 border shadow-sm mt-2">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-                                <i class="bi bi-person-workspace text-success fs-5"></i> Farmer Details (વેચનાર ખેડૂત)
-                            </h6>
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2.5 py-1 fw-bold small">
-                                <i class="bi bi-patch-check-fill me-1"></i>Verified Producer
-                            </span>
-                        </div>
+                <!-- Purchase / Checkout Form Card with Guaranteed 1.5rem Padding -->
+                <div class="mt-2">
+                    @if (Model.StockQuantity > 0)
+                    {
+                        <form asp-controller="Checkout" asp-action="Index" method="get" class="details-box bg-white shadow-sm mb-0">
+                            <input type="hidden" name="productId" value="@Model.Id" />
 
-                        <div class="p-3 bg-light rounded-3 border">
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold fs-5 shadow-sm" style="width: 48px; height: 48px; min-width: 48px; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">
-                                    @(!string.IsNullOrEmpty(farmerName) ? farmerName.Substring(0, 1).ToUpper() : "F")
-                                </div>
-                                <div class="flex-grow-1 overflow-hidden">
-                                    <strong class="text-dark fs-6 d-block text-truncate">@farmerName</strong>
-                                    <div class="d-flex flex-wrap gap-1.5 align-items-center">
-                                        <small class="text-muted" style="font-size: 0.75rem;">Member since @farmerJoinDate</small>
-                                        <span class="badge bg-secondary bg-opacity-10 text-secondary font-monospace" style="font-size: 0.68rem;">ID: @(farmerUser?.Id ?? Model.FarmerId)</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Farmer Total Stock & Inventory Stats -->
-                            <div class="row g-2 mb-3">
-                                <div class="col-6">
-                                    <div class="p-2 bg-white rounded-3 border">
-                                        <span class="text-muted d-block small" style="font-size: 0.72rem;">This Item Stock:</span>
-                                        <strong class="text-success fs-6">@Model.StockQuantity units</strong>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="p-2 bg-white rounded-3 border">
-                                        <span class="text-muted d-block small" style="font-size: 0.72rem;">Farmer's Total Farm Stock:</span>
-                                        <strong class="text-primary fs-6">@totalFarmerStock units</strong>
-                                        <span class="text-muted d-block" style="font-size: 0.68rem;">(@totalFarmerProducts Harvest listing(s))</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row g-2 small">
+                            <div class="row align-items-center g-3 mb-4 pb-3 border-bottom">
                                 <div class="col-sm-6">
-                                    <div class="p-2 bg-white rounded border">
-                                        <span class="text-muted d-block" style="font-size: 0.72rem;">Email Address:</span>
-                                        <strong class="text-dark text-break" style="font-size: 0.82rem;">@farmerEmail</strong>
+                                    <label class="fw-bold text-dark small mb-2 d-block">
+                                        <i class="bi bi-bag-plus text-success me-1"></i> Select Quantity to Buy:
+                                    </label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button class="qty-control-btn" type="button" id="btnQtyMinus">
+                                            <i class="bi bi-dash"></i>
+                                        </button>
+                                        <input type="number" name="quantity" id="qtyInput" class="qty-display-input shadow-none" value="1" min="1" max="@Model.StockQuantity" required />
+                                        <button class="qty-control-btn" type="button" id="btnQtyPlus">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                        <span class="fw-bold text-muted ms-1 fs-6">Kg</span>
                                     </div>
                                 </div>
-                                <div class="col-sm-6">
-                                    <div class="p-2 bg-white rounded border">
-                                        <span class="text-muted d-block" style="font-size: 0.72rem;">Mobile / Contact:</span>
-                                        <strong class="text-success" style="font-size: 0.82rem;">@farmerPhone</strong>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="p-2 bg-white rounded border">
-                                        <span class="text-muted d-block" style="font-size: 0.72rem;">Farm Location / Address:</span>
-                                        <strong class="text-dark" style="font-size: 0.82rem;">@farmerLocation</strong>
-                                    </div>
+
+                                <div class="col-sm-6 text-sm-end">
+                                    <span class="text-muted small fw-semibold d-block mb-1">Estimated Total Bill:</span>
+                                    <span class="fs-3 fw-extrabold text-success" id="totalPricePreview">₹@Model.Price.ToString("N2")</span>
                                 </div>
                             </div>
 
-                            <div class="d-flex flex-wrap gap-2 mt-3 pt-2 border-top">
-                                <a href="tel:@farmerPhone" class="btn btn-xs btn-outline-success rounded-pill px-3 py-1.5 fw-bold">
-                                    <i class="bi bi-telephone-fill me-1"></i> Call Farmer
-                                </a>
-                                <a href="https://wa.me/@(farmerPhone.Replace("+","").Replace(" ",""))?text=Hello%20@farmerName,%20regarding%20AgriAI%20Produce%20@Model.Name..." target="_blank" class="btn btn-xs btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #25D366; border-color: #25D366;">
-                                    <i class="bi bi-whatsapp me-1"></i> WhatsApp
-                                </a>
-                                <a href="@returnUrl" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1.5 fw-bold ms-auto">
-                                    <i class="bi bi-arrow-left me-1"></i> Dashboard
-                                </a>
+                            <button type="submit" class="btn btn-success btn-lg py-3 fw-bold rounded-pill shadow w-100 d-flex align-items-center justify-content-center gap-2" style="background-color: #006653; border-color: #006653;">
+                                <i class="bi bi-cart-check-fill fs-5"></i> Buy Selected Produce (<span id="btnAmountPreview">₹@Model.Price.ToString("N2")</span>)
+                            </button>
+                            <div class="text-center mt-2.5">
+                                <small class="text-muted" style="font-size: 0.75rem;">
+                                    <i class="bi bi-shield-check text-success me-1"></i> 100% Escrow Protected Trade &bull; Quality Checked at Farm
+                                </small>
                             </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="p-4 bg-light rounded-4 border text-center">
+                            <i class="bi bi-exclamation-circle text-warning fs-2 d-block mb-2"></i>
+                            <h6 class="fw-bold text-dark mb-1">Currently Out of Stock</h6>
+                            <p class="text-muted small mb-0">This farm produce is currently not available for purchase. Please check back after the next harvest.</p>
                         </div>
-                    </div>
-                }
-                else
-                {
-                    <!-- Purchase / Order Form for Retail Customers & Buyers -->
-                    <form asp-controller="Checkout" asp-action="Index" method="get" class="mt-2">
-                        <input type="hidden" name="productId" value="@Model.Id" />
-
-                        @if (Model.StockQuantity > 0)
-                        {
-                            <!-- Interactive Quantity Selector -->
-                            <div class="mb-4">
-                                <label class="form-label fw-bold text-dark small mb-2 d-flex justify-content-between">
-                                    <span>Select Quantity to Buy:</span>
-                                    <span class="text-success fw-bold" id="totalPricePreview">Total: ₹@Model.Price.ToString("N2")</span>
-                                </label>
-
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="input-group" style="max-width: 170px;">
-                                        <button class="btn btn-outline-secondary px-3" type="button" id="btnQtyMinus">
-                                            <i class="bi bi-dash-lg"></i>
-                                        </button>
-                                        <input type="number" name="quantity" id="qtyInput" class="form-control text-center fw-bold shadow-none" value="1" min="1" max="@Model.StockQuantity" required />
-                                        <button class="btn btn-outline-secondary px-3" type="button" id="btnQtyPlus">
-                                            <i class="bi bi-plus-lg"></i>
-                                        </button>
-                                    </div>
-                                    <span class="text-muted small">units (Kg / Qtl)</span>
-                                </div>
-                            </div>
-
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-success btn-lg py-3 fw-bold rounded-pill shadow-sm" style="background-color: #006653; border-color: #006653;">
-                                    <i class="bi bi-cart-check-fill me-2"></i> Buy Selected Produce (<span id="btnAmountPreview">₹@Model.Price.ToString("N2")</span>)
-                                </button>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="p-4 bg-light rounded-4 border text-center my-2">
-                                <i class="bi bi-exclamation-circle text-warning fs-2 d-block mb-2"></i>
-                                <h6 class="fw-bold text-dark mb-1">Currently Out of Stock</h6>
-                                <p class="text-muted small mb-0">This farm produce is currently not available for purchase. Please check back after the next harvest.</p>
-                            </div>
-                        }
-                    </form>
-                }
+                    }
+                </div>
 
             </div>
         </div>
@@ -282,7 +350,7 @@
                     const total = (qty * unitPrice).toFixed(2);
                     const formatted = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(total);
                     
-                    if (totalPricePreview) totalPricePreview.textContent = "Total: " + formatted;
+                    if (totalPricePreview) totalPricePreview.textContent = formatted;
                     if (btnAmountPreview) btnAmountPreview.textContent = formatted;
                 }
 

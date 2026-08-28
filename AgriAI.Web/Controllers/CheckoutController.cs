@@ -104,15 +104,16 @@ namespace AgriAI.Web.Controllers
             var order = new Order
             {
                 CustomerId = userId,
-                OrderDate = DateTime.Now,
+                OrderDate = DateTime.UtcNow,
                 TotalAmount = grandTotal,
-                Status = paymentMethod == "COD" ? "Awaiting Cash on Pickup" : "Pending",
+                Status = "Requested", // Starts as Order Request awaiting farmer acceptance
                 PaymentMethod = paymentMethod == "COD" ? "Cash on Delivery" : "Online (Escrow Protected)",
                 DeliveryOtp = generatedOtp,
                 TransportType = transportType,
                 LogisticsFee = logisticsFee,
                 PlatformFee = platformFee,
-                ShippingAddress = string.IsNullOrWhiteSpace(deliveryAddress) ? "Gujarat Farm Pickup" : deliveryAddress
+                ShippingAddress = string.IsNullOrWhiteSpace(deliveryAddress) ? "Gujarat Farm Pickup" : deliveryAddress,
+                CancellationDeadline = DateTime.UtcNow.AddHours(3)
             };
 
             if (product != null)
@@ -134,13 +135,9 @@ namespace AgriAI.Web.Controllers
             await _context.Orders.AddAsync(order);
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"Order #{order.Id:D5} placed successfully! 🔐 Your Delivery OTP is: {generatedOtp}";
+            TempData["SuccessMessage"] = $"🌾 Order Request #{order.Id:D5} placed successfully! The producer will review and accept your request shortly.";
 
-            if (User.IsInRole("Customer"))
-            {
-                return RedirectToAction("Dashboard", "Customer");
-            }
-            return RedirectToAction("Dashboard", "Customer");
+            return RedirectToAction("OrderDetails", "Customer", new { id = order.Id });
         }
 
         [HttpPost]

@@ -17,47 +17,71 @@
     var produceName = firstItem?.Product?.Name ?? "Farm Crop Harvest";
     var itemQty = firstItem?.Quantity ?? 1;
     var unitPrice = firstItem?.UnitPrice ?? Model.TotalAmount;
+    var remainingSeconds = Model.CancellationDeadline.HasValue ? (int)Math.Max(0, (Model.CancellationDeadline.Value - DateTime.UtcNow).TotalSeconds) : 0;
+    string returnUrl = Context.Request.Query["returnUrl"].ToString();
+    string from = Context.Request.Query["from"].ToString();
+    string backUrl = !string.IsNullOrEmpty(returnUrl) 
+        ? returnUrl 
+        : (from == "totalPurchases" ? "/Customer/TotalPurchases" : (from == "active" ? "/Customer/Dashboard?tab=activeOrdersTab" : "/Customer/Dashboard?tab=ordersTab"));
+    string backLabel = from == "totalPurchases" ? "Back to Total Purchases" : (from == "active" ? "Back to Active Orders" : "Back to Order History");
 }
 
-<div class="container py-4 my-2" style="max-width: 1050px;">
+<div class="container-fluid py-4 my-2 px-3 px-md-4 px-lg-5" style="max-width: 1380px;">
     
-    <!-- Top Breadcrumb & Navigation -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
-        <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1 small">
-                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-success text-decoration-none">Home</a></li>
-                    <li class="breadcrumb-item"><a href="/Customer/Dashboard?tab=ordersTab" class="text-success text-decoration-none">Customer Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="/Customer/Dashboard?tab=ordersTab" class="text-success text-decoration-none">Order History</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Order #@Model.Id.ToString("D5")</li>
-                </ol>
-            </nav>
-            <div class="d-flex align-items-center gap-2">
-                <h2 class="fw-extrabold text-dark mb-0">Order #@Model.Id.ToString("D5")</h2>
-                @if (Model.Status == "Pending" || Model.Status == "Awaiting Cash on Pickup")
+    <!-- Top Header Bar with Clean Single Back Navigation -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <h2 class="fw-extrabold text-dark mb-0">Order #@Model.Id.ToString("D5")</h2>
+            @if (Model.Status == "Requested")
+            {
+                <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                    <i class="bi bi-hourglass-top me-1"></i>Request Sent ⏳
+                </span>
+            }
+            else if (Model.Status == "Accepted")
+            {
+                @if (Model.CancellationDeadline.HasValue && DateTime.UtcNow < Model.CancellationDeadline.Value)
                 {
-                    <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill">
-                        <i class="bi bi-clock-history me-1"></i>@Model.Status
-                    </span>
-                }
-                else if (Model.Status.Contains("Delivered") || Model.Status.Contains("Settled"))
-                {
-                    <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill">
-                        <i class="bi bi-check-circle-fill me-1"></i>Completed 🟢
+                    <span class="badge bg-info text-dark fw-bold px-3 py-1.5 rounded-pill">
+                        <i class="bi bi-clock-history me-1"></i>Accepted (3h Review Window)
                     </span>
                 }
                 else
                 {
                     <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill">
-                        <i class="bi bi-truck me-1"></i>@Model.Status
+                        <i class="bi bi-lock-fill me-1"></i>Locked for Harvest &amp; Dispatch
                     </span>
                 }
-            </div>
+            }
+            else if (Model.Status == "Declined")
+            {
+                <span class="badge bg-danger text-white fw-bold px-3 py-1.5 rounded-pill">
+                    <i class="bi bi-x-circle-fill me-1"></i>Declined (Refunded)
+                </span>
+            }
+            else if (Model.Status == "Cancelled")
+            {
+                <span class="badge bg-secondary text-white fw-bold px-3 py-1.5 rounded-pill">
+                    <i class="bi bi-slash-circle me-1"></i>Cancelled (Refunded)
+                </span>
+            }
+            else if (Model.Status.Contains("Delivered") || Model.Status.Contains("Settled"))
+            {
+                <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill">
+                    <i class="bi bi-check-circle-fill me-1"></i>Completed 🟢
+                </span>
+            }
+            else
+            {
+                <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill">
+                    <i class="bi bi-truck me-1"></i>@Model.Status
+                </span>
+            }
         </div>
 
         <div class="d-flex align-items-center gap-2">
-            <a href="/Customer/Dashboard?tab=ordersTab" class="btn btn-outline-secondary rounded-pill px-3.5 py-2 fw-bold small">
-                <i class="bi bi-arrow-left me-1"></i> Back to Order History
+            <a href="@backUrl" class="btn btn-outline-secondary rounded-pill px-3.5 py-2 fw-bold small">
+                <i class="bi bi-arrow-left me-1"></i> @backLabel
             </a>
             <button type="button" class="btn btn-success rounded-pill px-3.5 py-2 fw-bold small shadow-sm" style="background-color: #006653; border-color: #006653;" onclick="printOrderInvoice('@orderNoStr', '@dateFormatted', '@User.Identity?.Name', '@produceName', @itemQty, @unitPrice, @baseAmount, @Model.LogisticsFee, @Model.PlatformFee, @Model.TotalAmount, '@(Model.PaymentMethod ?? "Online (Escrow)")', '@(Model.TransportType ?? "Direct Farm Pickup")', '@(string.IsNullOrEmpty(Model.ShippingAddress) ? "Gujarat Farm Location" : Model.ShippingAddress)')">
                 <i class="bi bi-printer me-1"></i> Print Tax Invoice
@@ -65,8 +89,167 @@
         </div>
     </div>
 
+    <!-- Step 2: 3-Hour Cancellation & Review Window Card -->
+    @if (Model.Status == "Requested")
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-dark bg-warning bg-opacity-10 border border-warning border-opacity-25">
+            <div class="row align-items-center g-3">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
+                            <i class="bi bi-hourglass-split me-1"></i>AWAITING PRODUCER ACCEPTANCE
+                        </span>
+                        <span class="text-muted small">100% Escrow Protected</span>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">Your Order Request has been sent to the Producer</h5>
+                    <p class="text-muted small mb-0">
+                        The farmer will review and accept your order shortly. You can cancel with an instant 100% refund at any time before dispatch lock.
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button type="button" class="btn btn-outline-danger rounded-pill px-3.5 py-2 fw-bold shadow-sm" onclick="openCancelModal()">
+                        <i class="bi bi-x-circle me-1"></i> Cancel Request (100% Refund)
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+    else if (Model.Status == "Accepted")
+    {
+        @if (Model.CancellationDeadline.HasValue && DateTime.UtcNow < Model.CancellationDeadline.Value)
+        {
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%);">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-7">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
+                                <i class="bi bi-clock-history me-1"></i>3-HOUR CANCELLATION WINDOW ACTIVE
+                            </span>
+                            <span class="text-white-50 small">100% Instant Refund Available</span>
+                        </div>
+                        <h4 class="fw-bold text-white mb-1">Your Order is in the 3-Hour Review Period</h4>
+                        <p class="text-white-50 small mb-0">
+                            The farmer accepted your order! You have a 3-hour window to review or cancel for an immediate refund. When the countdown reaches zero, the order will lock for fresh harvest packaging.
+                        </p>
+                    </div>
+                    <div class="col-md-5 text-md-end">
+                        <div class="d-inline-block bg-black bg-opacity-25 p-3 rounded-4 border border-white border-opacity-20 text-center">
+                            <small class="text-white-50 d-block mb-1" style="font-size: 0.75rem;">CANCELLATION COUNTDOWN</small>
+                            <span class="fs-2 fw-extrabold text-warning font-monospace d-block" id="customerCountdownTimer" data-remaining="@remainingSeconds">
+                                @{
+                                    int ch = remainingSeconds / 3600;
+                                    int cm = (remainingSeconds % 3600) / 60;
+                                    int cs = remainingSeconds % 60;
+                                    @($"{ch:D2}h {cm:D2}m {cs:D2}s")
+                                }
+                            </span>
+                            <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1 fw-bold mt-2" onclick="openCancelModal()">
+                                <i class="bi bi-x-circle me-1"></i> Cancel &amp; Instant Refund
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-success border-0 shadow-sm rounded-4 p-3.5 mb-4 d-flex align-items-center gap-3" style="background-color: #d1fae5; color: #065f46;">
+                <i class="bi bi-lock-fill fs-3"></i>
+                <div>
+                    <strong>Order Locked for Harvest &amp; Dispatch:</strong>
+                    <p class="small mb-0">The 3-hour review window has concluded. The farmer is now preparing and packing your fresh harvest produce.</p>
+                </div>
+            </div>
+        }
+    }
+    else if (Model.Status == "Declined")
+    {
+        <div class="alert alert-danger border-0 shadow-sm rounded-4 p-3.5 mb-4 d-flex align-items-center gap-3" style="background-color: #fee2e2; color: #991b1b;">
+            <i class="bi bi-x-circle-fill fs-3"></i>
+            <div>
+                <strong>Order Declined by Farmer:</strong>
+                <p class="small mb-0">Reason: @(string.IsNullOrEmpty(Model.FarmerDeclineReason) ? "Stock unavailable / logistics constraint" : Model.FarmerDeclineReason). Total payment of ₹@Model.TotalAmount.ToString("N2") has been refunded to your payment method.</p>
+            </div>
+        </div>
+    }
+    else if (Model.Status == "Cancelled")
+    {
+        <div class="alert alert-secondary border-0 shadow-sm rounded-4 p-3.5 mb-4 d-flex align-items-center gap-3">
+            <i class="bi bi-slash-circle-fill fs-3 text-secondary"></i>
+            <div>
+                <strong>Order Cancelled by Buyer:</strong>
+                <p class="small mb-0">Reason: @(string.IsNullOrEmpty(Model.CustomerCancelReason) ? "Cancelled within review window" : Model.CustomerCancelReason). 100% refund of ₹@Model.TotalAmount.ToString("N2") has been credited back.</p>
+            </div>
+        </div>
+    }
+
+    <!-- GSRTC / Private Cargo Bilty Dispatch Card (Step 5 Blueprint) -->
+    @if (!string.IsNullOrEmpty(Model.BiltyNumber) || !string.IsNullOrEmpty(Model.BiltyImageUrl))
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);">
+            <div class="row align-items-center g-3">
+                <div class="col-md-7">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
+                            <i class="bi bi-bus-front-fill me-1"></i>GSRTC / CARGO DISPATCHED
+                        </span>
+                        <span class="text-white-50 small">"To-Pay" Parcel Model</span>
+                    </div>
+                    <h4 class="fw-bold text-white mb-1">Harvest Dispatched via @(Model.CargoServiceName ?? "GSRTC ST Bus Parcel")</h4>
+                    <p class="text-white-50 small mb-2">
+                        Your produce is in transit! Show the Bilty LR Number at the parcel counter in your city and collect your harvest by paying the nominal counter parcel fee.
+                    </p>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-white-50 small"><i class="bi bi-clock-history me-1"></i>Dispatched: @(Model.DispatchedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "Recently")</span>
+                    </div>
+                </div>
+
+                <div class="col-md-5 text-md-end">
+                    <div class="d-inline-flex flex-column align-items-md-end gap-2 bg-white bg-opacity-10 p-3 rounded-4 border border-white border-opacity-20 shadow">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-white-50 small">BILTY / LR NO:</span>
+                            <span class="fs-4 fw-extrabold text-warning letter-spacing-2 font-monospace">
+                                @Model.BiltyNumber
+                            </span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-light rounded-pill px-3 fw-bold" onclick="navigator.clipboard.writeText('@Model.BiltyNumber'); this.innerHTML='<i class=\'bi bi-check2\'></i> Copied!';">
+                                <i class="bi bi-clipboard me-1"></i> Copy Bilty #
+                            </button>
+                            @if (!string.IsNullOrEmpty(Model.BiltyImageUrl))
+                            {
+                                <a href="@Model.BiltyImageUrl" target="_blank" class="btn btn-sm btn-warning text-dark rounded-pill px-3 fw-bold">
+                                    <i class="bi bi-receipt-cutoff me-1"></i> View Bilty Slip
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Quality & Weight Inspection Checklist (Step 6 Blueprint) -->
+    <div class="card border-0 shadow-sm rounded-4 p-3.5 mb-4 bg-light border border-success border-opacity-25">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-patch-check-fill text-success fs-5"></i>
+            <h6 class="fw-bold text-dark mb-0">Buyer Pre-Delivery Quality Inspection Guide</h6>
+        </div>
+        <div class="row g-2 small text-muted">
+            <div class="col-md-4">
+                <i class="bi bi-check-circle-fill text-success me-1"></i> <strong>1. Bag Seals &amp; Weight:</strong> Inspect packaging seals and ensure total measured weight matches invoice.
+            </div>
+            <div class="col-md-4">
+                <i class="bi bi-check-circle-fill text-success me-1"></i> <strong>2. Quality &amp; Moisture:</strong> Check crop cleanliness, grain size purity, and appropriate moisture levels.
+            </div>
+            <div class="col-md-4">
+                <i class="bi bi-check-circle-fill text-success me-1"></i> <strong>3. Share Delivery OTP:</strong> Share your confidential 4-digit Delivery OTP only after complete inspection.
+            </div>
+        </div>
+    </div>
+
     <!-- 1. Confidential 4-Digit Delivery OTP Card (Protected by Security Gate) -->
-    @if (Model.PaymentMethod != "Cash on Delivery" && !Model.Status.Contains("Delivered"))
+    @if (Model.PaymentMethod != "Cash on Delivery" && !Model.Status.Contains("Delivered") && Model.Status != "Declined" && Model.Status != "Cancelled")
     {
         <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
             <div class="row align-items-center g-3">
@@ -257,8 +440,67 @@
     </div>
 </div>
 
+<!-- Customer Cancel Order Confirmation Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-danger text-white p-3.5 px-4">
+                <h5 class="modal-title fw-bold" id="cancelOrderModalLabel">
+                    <i class="bi bi-x-circle me-1"></i> Cancel Order &amp; Request Refund
+                </h5>
+                <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="Customer" asp-action="CancelOrder" method="post">
+                <input type="hidden" name="orderId" value="@Model.Id" />
+                <div class="modal-body p-4">
+                    <div class="alert alert-warning p-2.5 rounded-3 mb-3 small">
+                        <i class="bi bi-shield-check me-1"></i> <strong>100% Instant Refund:</strong> Your entire payment of ₹@Model.TotalAmount.ToString("N2") will be returned to your original payment method.
+                    </div>
+
+                    <label class="form-label small fw-bold text-dark mb-1">Reason for Cancellation (Optional):</label>
+                    <textarea name="reason" class="form-control rounded-3 mb-2 shadow-none small" rows="3" placeholder="e.g. Ordered incorrect quantity / changed delivery plans..."></textarea>
+                    <small class="text-muted d-block">Are you sure you want to cancel this order?</small>
+                </div>
+                <div class="modal-footer bg-light p-3 px-4 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Keep Order</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Yes, Cancel &amp; Refund</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
+        function openCancelModal() {
+            const modal = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
+            modal.show();
+        }
+
+        // Live Countdown Timer on Customer Order Details
+        let customerRemSeconds = parseInt(document.getElementById('customerCountdownTimer')?.getAttribute('data-remaining') || '0', 10);
+
+        function updateCustomerCountdown() {
+            const timerEl = document.getElementById('customerCountdownTimer');
+            if (!timerEl) return;
+
+            if (customerRemSeconds <= 0) {
+                timerEl.textContent = "00h 00m 00s (Locking...)";
+                setTimeout(() => { location.reload(); }, 2000);
+                return;
+            }
+
+            const hours = Math.floor(customerRemSeconds / 3600);
+            const minutes = Math.floor((customerRemSeconds % 3600) / 60);
+            const seconds = customerRemSeconds % 60;
+            timerEl.textContent = `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+            customerRemSeconds--;
+        }
+
+        if (customerRemSeconds > 0) {
+            setInterval(updateCustomerCountdown, 1000);
+        }
+
         function printOrderInvoice(orderNo, orderDate, buyerName, produceName, qty, unitPrice, baseAmt, logisticsFee, platformFee, grandTotal, paymentMode, transportType, deliveryLocation) {
             const printWindow = window.open('', '_blank', 'width=850,height=900');
             const formattedTotal = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(grandTotal);

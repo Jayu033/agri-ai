@@ -426,12 +426,51 @@
                                             <td>@order.OrderDate.ToString("MMM dd, yyyy")</td>
                                             <td class="fw-bold text-success">₹@order.TotalAmount.ToString("N2")</td>
                                             <td>
-                                                @if (order.Status == "Pending") { <span class="badge bg-warning text-dark">Pending</span> }
-                                                else if (order.Status == "Delivered") { <span class="badge bg-success">Delivered 🟢</span> }
-                                                else { <span class="badge bg-info">@order.Status</span> }
+                                                @if (order.Status == "Requested")
+                                                {
+                                                    <span class="badge bg-warning text-dark fw-bold">Requested ⏳</span>
+                                                }
+                                                else if (order.Status == "Accepted")
+                                                {
+                                                    <span class="badge bg-info text-dark fw-bold">Accepted (Review Window)</span>
+                                                }
+                                                else if (order.Status == "In Transit")
+                                                {
+                                                    <span class="badge bg-primary text-white fw-bold">In Transit 🚚</span>
+                                                }
+                                                else if (order.Status.Contains("Delivered") || order.Status.Contains("Settled"))
+                                                {
+                                                    <span class="badge bg-success text-white fw-bold">Delivered &amp; Settled 🟢</span>
+                                                }
+                                                else if (order.Status == "Declined" || order.Status == "Cancelled")
+                                                {
+                                                    <span class="badge bg-danger text-white fw-bold">@order.Status</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary text-white">@order.Status</span>
+                                                }
+
+                                                @if (!string.IsNullOrEmpty(order.BiltyImageUrl))
+                                                {
+                                                    <div class="mt-1">
+                                                        <a href="@order.BiltyImageUrl" target="_blank" class="badge bg-light text-primary border text-decoration-none">
+                                                            <i class="bi bi-file-earmark-image me-1"></i>Bilty #@(string.IsNullOrEmpty(order.BiltyNumber) ? "Slip" : order.BiltyNumber)
+                                                        </a>
+                                                    </div>
+                                                }
                                             </td>
                                             <td class="small text-muted">@order.CustomerId</td>
                                             <td class="text-end">
+                                                @if (order.Status == "In Transit" && !string.IsNullOrEmpty(order.BiltyImageUrl))
+                                                {
+                                                    <form asp-controller="Admin" asp-action="ReleaseEscrowPayoutViaBilty" method="post" class="d-inline me-1" onsubmit="return confirm('Release escrow payout of ₹@order.TotalAmount to farmer bank account based on verified Bilty proof?');">
+                                                        <input type="hidden" name="orderId" value="@order.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-2.5 py-1 fw-bold shadow-sm" title="Release Escrow to Farmer">
+                                                            <i class="bi bi-shield-check me-1"></i> Release Payout
+                                                        </button>
+                                                    </form>
+                                                }
                                                 <a asp-controller="Admin" asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold">
                                                     <i class="bi bi-eye-fill me-1"></i> View Details
                                                 </a>

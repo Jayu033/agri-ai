@@ -334,5 +334,32 @@ namespace AgriAI.Web.Controllers
 
             return RedirectToAction(nameof(Users));
         }
+
+        // POST: /Admin/ReleaseEscrowPayoutViaBilty (Step 6 Blueprint)
+        [HttpPost]
+        public async Task<IActionResult> ReleaseEscrowPayoutViaBilty(int orderId, string? reason)
+        {
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null)
+            {
+                TempData["ErrorMessage"] = "Order not found.";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
+            order.Status = "Delivered & Settled (Admin Approved)";
+            order.AdminApprovedPayout = true;
+            order.AdminPayoutReason = string.IsNullOrWhiteSpace(reason) 
+                ? "Escrow payout released by Admin upon verifying valid GSRTC / Cargo Bilty proof of dispatch." 
+                : reason.Trim();
+            order.DeliveredAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"🛡️ Escrow Payout of ₹{order.TotalAmount:N2} for Order #{order.Id:D5} has been released to Farmer Bank based on verified Bilty Proof!";
+            return RedirectToAction(nameof(Dashboard));
+        }
     }
 }
