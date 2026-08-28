@@ -77,18 +77,18 @@
         var curAct = ViewContext.RouteData.Values["Action"]?.ToString() ?? "";
     }
     <header class="gov-main-header">
-        <div class="container d-flex align-items-center justify-content-between">
+        <div class="container-fluid px-3 px-xl-4 d-flex align-items-center justify-content-between" style="max-width: 1400px;">
             <!-- Left Brand Logo -->
             <div class="d-flex align-items-center">
                 <button class="menu-btn d-lg-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#globalMenu" aria-controls="globalMenu">
                     <i class="bi bi-list fs-3"></i>
                 </button>
 
-                <a asp-controller="Home" asp-action="Index" class="gov-emblem-section text-decoration-none d-flex align-items-center gap-2.5">
-                    <img src="~/images/agriai-logo.png" alt="AgriAI Logo" class="rounded-circle shadow-sm" style="height: 60px; width: 60px; object-fit: cover;" />
+                <a asp-controller="Home" asp-action="Index" class="gov-emblem-section text-decoration-none d-flex align-items-center gap-2">
+                    <img src="~/images/agriai-logo.png" alt="AgriAI Logo" class="rounded-circle shadow-sm" style="height: 48px; width: 48px; object-fit: cover;" />
                     <div>
-                        <strong class="d-block text-dark fw-extrabold fs-3" style="letter-spacing: -0.5px; line-height: 1.1;">AgriAI</strong>
-                        <span class="small text-success fw-bold" style="font-size: 0.76rem;">Smart Farm &amp; Market Platform</span>
+                        <strong class="d-block text-dark fw-extrabold fs-4" style="letter-spacing: -0.5px; line-height: 1.1;">AgriAI</strong>
+                        <span class="small text-success fw-bold" style="font-size: 0.72rem;">Smart Farm &amp; Market</span>
                     </div>
                 </a>
             </div>
@@ -118,7 +118,7 @@
                 </li>
                 <li>
                     <a asp-controller="AI" asp-action="PricePredictor" class="gov-nav-link @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
-                        <i class="bi bi-stars"></i> Mandi Forecaster
+                        <i class="bi bi-stars"></i> AI Price Predictor
                     </a>
                 </li>
                 <li>
@@ -265,7 +265,7 @@
                 <li class="menu-item">
                     <a asp-controller="AI" asp-action="PricePredictor" class="menu-link @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
                         <span class="menu-icon-box"><i class="bi bi-stars"></i></span>
-                        <span>Mandi Price Predictor</span>
+                        <span>AI Price Predictor</span>
                         <span class="ai-badge">AI PRO</span>
                     </a>
                 </li>
