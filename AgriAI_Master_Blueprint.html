@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <title>AgriAI - Master Platform Architecture & Operational Workflow</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Noto+Sans+Gujarati:wght@400;600;700&display=swap');
+
+        @page {
+            size: A4;
+            margin: 15mm 15mm 15mm 15mm;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans Gujarati', 'Segoe UI', Arial, sans-serif;
+            color: #1e293b;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            font-size: 13.5px;
+        }
+
+        .header-banner {
+            background: linear-gradient(135deg, #004d40 0%, #006653 100%);
+            color: #ffffff;
+            padding: 24px 30px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 77, 64, 0.15);
+        }
+
+        .brand-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-subtitle {
+            font-size: 13px;
+            color: #a7f3d0;
+            margin-top: 4px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .doc-meta {
+            text-align: right;
+            font-size: 12px;
+            color: #e2e8f0;
+        }
+
+        .doc-badge {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #004d40;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 6px;
+            margin-top: 24px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 14px;
+            margin-bottom: 6px;
+        }
+
+        .step-card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #006653;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 14px;
+            page-break-inside: avoid;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .step-num {
+            background-color: #006653;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 12px;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+
+        .step-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        .highlight-box {
+            background-color: #ecfdf5;
+            border: 1px dashed #059669;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 10px;
+            font-size: 12.5px;
+            color: #065f46;
+        }
+
+        .warning-box {
+            background-color: #fffbeb;
+            border: 1px dashed #d97706;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 10px;
+            font-size: 12.5px;
+            color: #92400e;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 14px;
+            margin-bottom: 18px;
+            font-size: 12.5px;
+        }
+
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 9px 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .footer {
+            margin-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 12px;
+            text-align: center;
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .badge-green {
+            background-color: #dcfce7;
+            color: #15803d;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .badge-blue {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <div class="header-banner">
+        <div>
+            <div class="brand-title">🌾 AgriAI</div>
+            <div class="brand-subtitle">Smart Farm &amp; Direct Market Platform</div>
+        </div>
+        <div class="doc-meta">
+            <button onclick="window.print()" style="background-color: #ffffff; color: #004d40; border: none; padding: 7px 16px; border-radius: 20px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+                🖨️ Download / Save as PDF
+            </button><br>
+            <span class="doc-badge">OFFICIAL BLUEPRINT</span><br>
+            <strong>Version:</strong> 2.0 (Production Architecture)<br>
+            <strong>Date:</strong> August 2026<br>
+            <strong>Region:</strong> Gujarat, India
+        </div>
+    </div>
+
+    <!-- Executive Summary -->
+    <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px;">
+        <h3 style="margin-top: 0; color: #166534;">🌟 પ્લેટફોર્મનો મુખ્ય ઉદ્દેશ્ય (Platform Objective)</h3>
+        <p style="margin: 0; font-size: 13px; color: #14532d;">
+            <strong>AgriAI</strong> એ ગુજરાતના ખેડૂતો અને ગ્રાહકોને વચેટીયા (દલાલો) વગર સીધા જોડતું ૧૦૦% પારદર્શક, સુરક્ષિત અને આધુનિક એગ્રીટેક પ્લેટફોર્મ છે. ખેડૂતને પાકના પૂરા રોકડિયા પૈસા મળે અને ગ્રાહકને શુદ્ધ ઓર્ગેનિક પાક યોગ્ય ભાવે મળે તે માટે એસ્ક્રો પેમેન્ટ, ઓર્ડર સ્વીકાર પોલિસી, અને GSRTC/કાર્ગો ટ્રાન્સપોર્ટ મોડેલ તૈયાર કરવામાં આવ્યું છે.
+        </p>
+    </div>
+
+    <!-- Section 1: Farmer & Customer Onboarding -->
+    <h2>📋 ૧. ઓનબોર્ડિંગ અને વેરિફિકેશન (Onboarding & Verification)</h2>
+
+    <div class="step-card">
+        <div class="step-header">
+            <span class="step-title">👨‍🌾 A. ખેડૂત રજીસ્ટ્રેશન &amp; એડમિન એપ્રુવલ (Farmer KYC)</span>
+            <span class="badge-green">Strict Verification</span>
+        </div>
+        <ul>
+            <li><strong>માહિતી સંગ્રહ:</strong> ખેડૂતનું પૂરું નામ, મોબાઈલ નંબર, જિલ્લો/તાલુકો/ગામ અને ખેતરનું સરનામું.</li>
+            <li><strong>બેંકિંગ વિગતો:</strong> Bank Name, Account Number, IFSC Code, અને UPI ID (વેચાણના પૈસા જમા કરવા માટે).</li>
+            <li><strong>ડોક્યુમેન્ટ વેરિફિકેશન:</strong> જમીનનો <strong>૭/૧૨ નો ઉતારો (Satbara)</strong> અથવા <strong>આધાર કાર્ડ</strong> નો ફોટો અપલોડ કરવાનો રહેશે.</li>
+            <li><strong>એડમિન મંજૂરી:</strong> રજીસ્ટ્રેશન પછી વિગતો એડમિન પેનલમાં જશે. એડમિન ચકાસીને <strong>Approve</strong> કરશે પછી જ ખેડૂતનું એકાઉન્ટ સક્રિય થશે અને તેને <strong>`🟢 Verified Producer`</strong> બેજ મળશે.</li>
+        </ul>
+    </div>
+
+    <div class="step-card">
+        <div class="step-header">
+            <span class="step-title">🛒 B. ગ્રાહક સાઈન-અપ &amp; મોબાઈલ વેરિફિકેશન (Customer Sign-up)</span>
+            <span class="badge-blue">Frictionless Checkout</span>
+        </div>
+        <ul>
+            <li><strong>સરળ સાઈન-અપ:</strong> ગ્રાહકનું પૂરું નામ, ઈમેલ આઈડી અને પાસવર્ડ.</li>
+            <li><strong>મોબાઈલ નંબર વેરિફિકેશન:</strong> ડિલિવરી સમયે ડ્રાઈવર/ખેડૂત સાથે સંપર્ક માટે <strong>Mobile Number OTP Verification</strong> ફરજિયાત રહેશે.</li>
+            <li><strong>ડિલિવરી એડ્રેસ:</strong> શહેર, જિલ્લો, અને પિનકોડ સાથેનું સરનામું.</li>
+            <li><strong>સિક્યોરિટી ગેટ:</strong> ગ્રાહકનો ૪-અંકનો ડિલિવરી OTP પાસવર્ડ સિક્યોરિટી ગેટ પાછળ સુરક્ષિત રહેશે.</li>
+        </ul>
+    </div>
+
+    <!-- Section 2: Crop Listing & Pricing -->
+    <h2>🌾 ૨. પાક લિસ્ટિંગ અને બજાર ભાવ (Crop Listing & Live Mandi)</h2>
+    <div class="step-card">
+        <div class="step-header">
+            <span class="step-title">ખેડૂત દ્વારા પાક અપલોડ (Produce Management)</span>
+        </div>
+        <ul>
+            <li>ખેડૂત પોતાના ખેતરમાં તૈયાર થયેલ પાક (મગફળી, જીરું, કપાસ, ઘઉં વગેરે) લિસ્ટ કરશે.</li>
+            <li><strong>વિગતો:</strong> પાકનું નામ, કેટેગરી, ઉપલબ્ધ સ્ટોક (કિલો / બોરી), અને ભાવ (₹ પ્રતિ મણ / કિલો).</li>
+            <li><strong>લાઈવ મંડી રેફરન્સ:</strong> પાક મુકતી વખતે ખેડૂતને ગુજરાતની APMC મંડીના આજના લાઈવ બજાર ભાવ દેખાશે જેથી તે યોગ્ય અને વ્યાજબી ભાવ રાખી શકે.</li>
+        </ul>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- Section 3: Order Request & Acceptance -->
+    <h2>📦 ૩. ઓર્ડર રિક્વેસ્ટ અને ૨-૩ કલાકનો નિયમ (Order Request & Cancellation Policy)</h2>
+    
+    <div class="step-card">
+        <div class="step-header">
+            <span class="step-title">ઓર્ડર સ્વીકાર પ્રક્રિયા (Farmer Acceptance Workflow)</span>
+        </div>
+        <ul>
+            <li><strong>સ્ટેપ ૧ (ગ્રાહક રિક્વેસ્ટ):</strong> ગ્રાહક પાક અને જથ્થો પસંદ કરીને ઓર્ડર રિક્વેસ્ટ મોકલશે.</li>
+            <li><strong>સ્ટેપ ૨ (ખેડૂત તપાસ):</strong> ખેડૂત પાસે સ્ટોક ઉપલબ્ધ છે કે નહીં તે જોઈને ઓર્ડર <strong>`Accept`</strong> કરશે.</li>
+            <li><strong>સ્ટેપ ૩ (૨-૩ કલાકનો કેન્સલેશન નિયમ):</strong> ઓર્ડર એક્સેપ્ટ કર્યા પછી ખેડૂતની સ્ક્રીન પર <strong>૨ થી ૩ કલાકનો કાઉન્ટડાઉન ટાઈમર</strong> ચાલશે. જો આ સમયગાળામાં કોઈ અનિવાર્ય કારણસર કેન્સલ કરવું હોય તો જ થઈ શકશે અને ગ્રાહકને ૧૦૦% પૈસા તરત રીફંડ મળશે. ૨-૩ કલાક પછી કેન્સલેશન બટન લોક થઈ જશે.</li>
+        </ul>
+    </div>
+
+    <!-- Section 4: Safe Payment & Escrow -->
+    <h2>💳 ૪. ૧૦૦% સુરક્ષિત એસ્ક્રો પેમેન્ટ પદ્ધતિ (Escrow Payment System)</h2>
+    
+    <div class="step-card">
+        <div class="step-header">
+            <span class="step-title">નાણાકીય સુરક્ષા અને એસ્ક્રો ગેરંટી</span>
+        </div>
+        <ul>
+            <li>ખેડૂતે ઓર્ડર સ્વીકાર્યા પછી ગ્રાહક ઓનલાઈન પેમેન્ટ કરશે.</li>
+            <li><strong>Escrow Holding:</strong> ગ્રાહકના પૈસા ખેડૂત કે કંપનીના નફામાં નહીં, પણ <strong>બેંકના સુરક્ષિત Escrow એકાઉન્ટમાં લોક</strong> થઈ જશે.</li>
+            <li>ખેડૂતને SMS &amp; ડેશબોર્ડમાં એલર્ટ જશે: <em>"ગ્રાહકના ₹૬,૦૦૦ બેંકમાં જમા છે. માલ પેક કરવો ૧૦૦% સુરક્ષિત છે."</em></li>
+        </ul>
+        <div class="highlight-box">
+            🔒 <strong>ખેડૂત સુરક્ષા:</strong> ખેડૂત ઉધાર પર માલ મોકલતો નથી, પૈસા અગાઉથી બેંકમાં આવી ગયા હોય છે.<br>
+            🔒 <strong>ગ્રાહક સુરક્ષા:</strong> જ્યાં સુધી માલ હાથમાં ન આવે ત્યાં સુધી ખેડૂતને પૈસા મળતા નથી.
+        </div>
+    </div>
+
+    <!-- Section 5: Delivery & Logistics Architecture -->
+    <h2>🚚 ૫. ડિલિવરી અને GSRTC "To-Pay" મોડેલ (Logistics Architecture)</h2>
+    
+    <table style="margin-top: 10px;">
+        <thead>
+            <tr>
+                <th style="width: 25%;">ડિલિવરી મોડ</th>
+                <th style="width: 35%;">કાર્યપદ્ધતિ (How it Works)</th>
+                <th style="width: 20%;">ટ્રાન્સપોર્ટ ચાર્જ</th>
+                <th style="width: 20%;">માન્ય પેમેન્ટ</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>૧. Direct Farm Pickup (ખેતરે રૂબરૂ)</strong></td>
+                <td>ગ્રાહક પોતે ખેડૂતના ખેતરે/ગોડાઉને જઈને માલ ચકાસીને લેશે.</td>
+                <td><strong>₹૦ (ફ્રી)</strong></td>
+                <td>Online Escrow અથવા Cash on Pickup (COD)</td>
+            </tr>
+            <tr>
+                <td><strong>૨. GSRTC / Private Cargo (પાર્સલ ડિલિવરી)</strong></td>
+                <td>ખેડૂત ST બસ પાર્સલ અથવા પ્રાઈવેટ કાર્ગો (પટેલ, શ્રીનાથ, ઇગલ) માં માલ જમા કરાવશે અને બિલ્ટી સ્લિપ અપલોડ કરશે.</td>
+                <td><strong>"To-Pay"</strong> (ગ્રાહકે અસલી પાવતી મુજબ કાઉન્ટર પર ચૂકવવું)</td>
+                <td><strong>માત્ર Online Escrow</strong> (COD માન્ય નથી)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Section 6: Delivery Verification & Payout -->
+    <h2>✅ ૬. ડિલિવરી વેરિફિકેશન અને પેમેન્ટ સેટલમેન્ટ (Payout Settlement)</h2>
+
+    <div class="step-card">
+        <div class="step-header">
+            <span class="step-title">માલ સ્વીકાર &amp; ખેડૂતના ખાતામાં પૈસા જમા</span>
+        </div>
+        <ul>
+            <li><strong>માલ ચકાસણી:</strong> ગ્રાહક બોરીઓ ઉતારીને ગુણવત્તા અને વજન ચકાસશે.</li>
+            <li><strong>૪-અંકનો OTP:</strong> સંતોષ થયા પછી ગ્રાહક સિક્યોરિટી ગેટ ખોલીને ખેડૂત/ડ્રાઈવરને ૪-અંકનો Delivery OTP આપશે.</li>
+            <li><strong>તાત્કાલિક સેટલમેન્ટ:</strong> OTP દાખલ થતાં જ સિસ્ટમ આપોઆપ ખેડૂતના બેંક ખાતા / UPI માં પૂરા પૈસા ટ્રાન્સફર કરી દેશે!</li>
+        </ul>
+        <div class="warning-box">
+            🛡️ <strong>જો ગ્રાહક OTP આપવામાં વિલંબ કે બદમાશી કરે તો?</strong><br>
+            ખેડૂતને ગભરાવાની જરૂર નથી! ખેડૂતે અપલોડ કરેલી <strong>GSRTC / Cargo બિલ્ટી રસીદ (Proof of Dispatch)</strong> ના આધારે એડમિન ૨૪ કલાકમાં તપાસ કરીને ખેડૂતના પૈસા રીલીઝ કરી આપશે.
+        </div>
+    </div>
+
+    <!-- Summary Table -->
+    <h2>📊 ૭. સંક્ષિપ્ત સારાંશ (At-a-Glance Matrix)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>વિભાગ</th>
+                <th>ખેડૂત (Farmer)</th>
+                <th>ગ્રાહક (Customer)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>વેરિફિકેશન</strong></td>
+                <td>૭/૧૨ અથવા આધાર + બેંક A/C (Admin Approved)</td>
+                <td>મોબાઈલ નંબર OTP + ડિલિવરી એડ્રેસ</td>
+            </tr>
+            <tr>
+                <td><strong>ઓર્ડર પ્રોસેસ</strong></td>
+                <td>સ્ટોક જોઈને Accept કરશે (૨-૩ કલાક વિન્ડો)</td>
+                <td>ઓર્ડર રિક્વેસ્ટ મોકલશે &amp; ટ્રેક કરશે</td>
+            </tr>
+            <tr>
+                <td><strong>પેમેન્ટ સુરક્ષા</strong></td>
+                <td>Escrow બેંક ગેરંટી (માલ પહોંચતાં ૨૪ કલાકમાં પેઆઉટ)</td>
+                <td>માલ ચેક કર્યા પછી જ OTP થી પેમેન્ટ રીલીઝ</td>
+            </tr>
+            <tr>
+                <td><strong>ટ્રાન્સપોર્ટ</strong></td>
+                <td>ખેતરે ડિલિવરી અથવા GSRTC/કાર્ગો પાવતી અપલોડ</td>
+                <td>રૂબરૂ ફ્રી અથવા To-Pay સરકારી પાવતી મુજબ</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <strong>AgriAI Platform</strong> &bull; An Intelligent Agricultural Ecosystem &bull; Prepared for Stakeholders &amp; Presentation &bull; Confidential
+    </div>
+
+</body>
+</html>

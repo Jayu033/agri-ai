@@ -73,7 +73,68 @@
     color: #64748b;
     font-size: 0.85rem;
     text-align: center;
+    margin-bottom: 18px;
+}
+
+/* 2-Step Multi-Step Stepper Header */
+.reg-stepper-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 22px;
+    gap: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 10px 18px;
+    border-radius: 50px;
+}
+
+.reg-step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.80rem;
+    font-weight: 700;
+    color: #94a3b8;
+    transition: all 0.25s ease;
+}
+
+.reg-step-item.active {
+    color: #15803d;
+}
+
+.reg-step-item.completed {
+    color: #0f172a;
+}
+
+.reg-step-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.reg-step-item.active .reg-step-circle {
+    background: #15803d;
+    color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.2);
+}
+
+.reg-step-item.completed .reg-step-circle {
+    background: #22c55e;
+    color: #ffffff;
+}
+
+.reg-step-line {
+    width: 32px;
+    height: 2px;
+    background: #e2e8f0;
 }
 
 /* Role Selector Cards */

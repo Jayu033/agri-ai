@@ -73,15 +73,15 @@
                     
                     @if (TempData["SuccessMessage"] != null)
                     {
-                        <div class="alert alert-success alert-dismissible fade show rounded-4 border-success p-3 mb-4 shadow-sm" role="alert">
-                            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+                        <div class="alert alert-success alert-dismissible fade show rounded-4 p-3 mb-4 shadow-sm border-0" style="background-color: #d1fae5; color: #065f46;" role="alert">
+                            <i class="bi bi-check-circle-fill me-2 fs-5"></i> <strong>Success:</strong> @TempData["SuccessMessage"]
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     }
                     @if (TempData["ErrorMessage"] != null)
                     {
-                        <div class="alert alert-danger alert-dismissible fade show rounded-4 border-danger p-3 mb-4 shadow-sm" role="alert">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+                        <div class="alert alert-danger alert-dismissible fade show rounded-4 p-3 mb-4 shadow-sm border-0" style="background-color: #fee2e2; color: #991b1b;" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i> <strong>Notice:</strong> @TempData["ErrorMessage"]
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     }
@@ -224,9 +224,16 @@
                                         <tr>
                                             <td>
                                                 <div class="d-flex align-items-center gap-2">
-                                                    <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 34px; height: 34px; font-size: 0.85rem; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">
-                                                        @init
-                                                    </div>
+                                                    @if (!string.IsNullOrEmpty(user.ProfilePicturePath))
+                                                    {
+                                                        <img src="@user.ProfilePicturePath" class="rounded-circle shadow-sm border border-2 border-success" style="width: 36px; height: 36px; object-fit: cover;" alt="@user.FullName" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 36px; height: 36px; font-size: 0.85rem; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">
+                                                            @init
+                                                        </div>
+                                                    }
                                                     <div>
                                                         <strong class="text-dark d-block">@(string.IsNullOrEmpty(user.FirstName) && string.IsNullOrEmpty(user.LastName) ? user.Username : $"{user.FirstName} {user.LastName}")</strong>
                                                         <small class="text-muted">@@@user.Username</small>
@@ -237,6 +244,14 @@
                                                 @if (user.Role == "Farmer")
                                                 {
                                                     <span class="badge bg-success bg-opacity-10 text-success fw-bold">Farmer</span>
+                                                    @if (!string.IsNullOrEmpty(user.KycDocumentPath))
+                                                    {
+                                                        <div class="mt-1">
+                                                            <a href="@user.KycDocumentPath" target="_blank" class="badge bg-light text-primary border text-decoration-none" style="font-size: 0.70rem;">
+                                                                <i class="bi bi-file-earmark-text me-1"></i>@(user.KycDocumentType ?? "7/12 Doc")
+                                                            </a>
+                                                        </div>
+                                                    }
                                                 }
                                                 else
                                                 {
@@ -248,15 +263,29 @@
                                             <td>
                                                 @if (user.IsBlocked)
                                                 {
-                                                    <span class="badge bg-danger">Blocked 🔴</span>
+                                                    <span class="badge bg-danger rounded-pill px-2.5 py-1">Blocked 🔴</span>
+                                                }
+                                                else if (user.Role == "Farmer" && !user.IsApprovedByAdmin)
+                                                {
+                                                    <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1 fw-bold"><i class="bi bi-clock-history me-1"></i>Pending KYC</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge bg-success">Active 🟢</span>
+                                                    <span class="badge bg-success rounded-pill px-2.5 py-1">Active 🟢</span>
                                                 }
                                             </td>
                                             <td class="text-end">
-                                                <div class="d-inline-flex gap-1.5">
+                                                <div class="d-inline-flex gap-1.5 align-items-center">
+                                                    @if (user.Role == "Farmer")
+                                                    {
+                                                        <!-- Review KYC Inspector Modal Button -->
+                                                        <button type="button" class="btn btn-sm @(user.IsApprovedByAdmin ? "btn-outline-success" : "btn-success") rounded-pill px-2.5 py-1 fw-bold shadow-sm" 
+                                                                onclick="openKycReviewModal('@user.Id', '@user.FullName', '@user.Email', '@(user.City ?? "")', '@(user.Address ?? "")', '@(user.BankName ?? "")', '@(user.BankAccountNumber ?? "")', '@(user.BankIfscCode ?? "")', '@(user.UpiId ?? "")', '@(user.KycDocumentType ?? "7/12 (Satbara)")', '@(user.KycDocumentPath ?? "")', @(user.IsApprovedByAdmin ? "true" : "false"), '@(user.KycRejectionReason ?? "")', '@(user.ProfilePicturePath ?? "")')"
+                                                                title="Inspect Document & Bank KYC">
+                                                            <i class="bi bi-shield-check me-1"></i>@(user.IsApprovedByAdmin ? "KYC Details" : "Review KYC")
+                                                        </button>
+                                                    }
+
                                                     <form asp-controller="Admin" asp-action="ToggleBlockUser" method="post" class="m-0 d-inline">
                                                         <input type="hidden" name="id" value="@user.Id" />
                                                         <button type="submit" class="btn btn-sm @(user.IsBlocked ? "btn-outline-success" : "btn-outline-warning") rounded-pill px-2.5 py-1" title="@(user.IsBlocked ? "Unblock User" : "Block User")">
@@ -417,6 +446,135 @@
     </div>
 </div>
 
+<!-- Farmer KYC Review Inspector Modal -->
+<div class="modal fade" id="kycReviewModal" tabindex="-1" aria-labelledby="kycReviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-dark text-white p-3.5 px-4 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="bi bi-shield-check fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0" id="kycReviewModalLabel">Farmer KYC &amp; Anti-Fraud Inspector</h5>
+                        <small class="text-light opacity-75">Verify 7/12 (Satbara) &amp; Bank Payout Details</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    <!-- Left: Document Preview -->
+                    <div class="col-md-6">
+                        <div class="border rounded-4 p-3 bg-light text-center h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <span class="badge bg-success bg-opacity-10 text-success border fw-bold px-3 py-1.5 rounded-pill mb-2" id="kycDocTypeBadge">
+                                    7/12 (Satbara)
+                                </span>
+                                <h6 class="fw-bold text-dark mb-2">Uploaded Document Proof</h6>
+                            </div>
+                            
+                            <div class="my-3 d-flex align-items-center justify-content-center overflow-hidden rounded-3 border bg-white" style="min-height: 240px; max-height: 320px;">
+                                <img id="kycDocImg" src="" class="img-fluid rounded" alt="KYC Document" style="max-height: 300px; object-fit: contain; display: none;" />
+                                <iframe id="kycDocPdf" src="" class="w-100" style="height: 300px; border: none; display: none;"></iframe>
+                                <div id="kycNoDoc" class="text-muted p-4">
+                                    <i class="bi bi-file-earmark-x display-4 text-secondary opacity-50 d-block mb-2"></i>
+                                    <p class="small mb-0">No document uploaded yet</p>
+                                </div>
+                            </div>
+
+                            <a id="kycDocFullLink" href="#" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill w-100 fw-bold">
+                                <i class="bi bi-arrows-fullscreen me-1"></i> Open Original Document
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Right: Farmer & Bank Verification Details -->
+                    <div class="col-md-6">
+                        <div class="h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-3">
+                                    <img id="kycFarmerAvatar" src="" class="rounded-circle border border-2 border-success shadow-sm" style="width: 54px; height: 54px; object-fit: cover;" alt="Farmer Face Photo" />
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0 fs-6" id="kycFarmerName"></h6>
+                                        <small class="text-muted d-block" id="kycFarmerEmail"></small>
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-0.5 rounded-pill" style="font-size: 0.70rem;">
+                                            <i class="bi bi-person-check-fill me-1"></i> Registered Farmer
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">Farm Location</small>
+                                    <span class="fw-semibold text-dark" id="kycFarmerLocation"></span>
+                                </div>
+
+                                <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Bank Account &amp; UPI Details</h6>
+
+                                <div class="row g-2 mb-2">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Bank Name</small>
+                                        <span class="fw-bold text-dark" id="kycBankName"></span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Account Number</small>
+                                        <span class="fw-bold text-success font-monospace" id="kycBankAcc"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">IFSC Code</small>
+                                        <span class="fw-bold text-dark font-monospace" id="kycBankIfsc"></span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">UPI ID</small>
+                                        <span class="fw-semibold text-dark font-monospace" id="kycUpiId"></span>
+                                    </div>
+                                </div>
+
+                                <div id="kycRejectionAlert" class="alert alert-danger p-2.5 rounded-3 small mb-2 d-none">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>Rejection Reason:</strong> <span id="kycRejectionMsg"></span>
+                                </div>
+                            </div>
+
+                            <!-- Approval / Rejection Action Controls -->
+                            <div class="border-top pt-3">
+                                <div class="d-flex gap-2 mb-2">
+                                    <form asp-action="ApproveFarmer" method="post" class="flex-grow-1">
+                                        <input type="hidden" name="id" id="kycApproveUserId" value="" />
+                                        <button type="submit" class="btn btn-success rounded-pill fw-bold w-100 py-2 shadow-sm" style="background-color: #006653; border-color: #006653;">
+                                            <i class="bi bi-check-circle-fill me-1"></i> Approve &amp; Activate Farmer
+                                        </button>
+                                    </form>
+
+                                    <button type="button" class="btn btn-outline-danger rounded-pill px-3 fw-bold" onclick="toggleRejectBox()">
+                                        <i class="bi bi-x-circle me-1"></i> Reject
+                                    </button>
+                                </div>
+
+                                <!-- Collapsible Reject with Reason Form -->
+                                <div id="rejectReasonBox" class="mt-2 p-3 bg-light rounded-3 border" style="display: none;">
+                                    <form asp-action="RejectFarmer" method="post">
+                                        <input type="hidden" name="id" id="kycRejectUserId" value="" />
+                                        <label class="form-label small fw-bold text-danger mb-1">State Reason for Rejection:</label>
+                                        <textarea name="reason" class="form-control rounded-3 mb-2 small shadow-none" rows="2" placeholder="e.g. 7/12 document photo is blurred / Name does not match bank account..." required></textarea>
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" onclick="toggleRejectBox()">Cancel</button>
+                                            <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold">Submit Rejection</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         function switchDashTab(tabId, btn) {
@@ -436,5 +594,86 @@
                 btn.classList.add('active');
             }
         }
+
+        function openKycReviewModal(id, name, email, city, address, bankName, bankAcc, bankIfsc, upi, docType, docPath, isApproved, rejectionReason, profilePic) {
+            document.getElementById('kycApproveUserId').value = id;
+            document.getElementById('kycRejectUserId').value = id;
+            document.getElementById('kycFarmerName').textContent = name || 'N/A';
+            document.getElementById('kycFarmerEmail').textContent = email || 'N/A';
+            document.getElementById('kycFarmerLocation').textContent = (address ? address + ', ' : '') + (city || 'Gujarat');
+            document.getElementById('kycBankName').textContent = bankName || 'Not Provided';
+            document.getElementById('kycBankAcc').textContent = bankAcc || 'Not Provided';
+            document.getElementById('kycBankIfsc').textContent = bankIfsc || 'Not Provided';
+            document.getElementById('kycUpiId').textContent = upi || 'None';
+            document.getElementById('kycDocTypeBadge').textContent = docType || '7/12 (Satbara)';
+
+            const avatarImg = document.getElementById('kycFarmerAvatar');
+            if (profilePic && profilePic.trim() !== '') {
+                avatarImg.src = profilePic;
+            } else {
+                avatarImg.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name || 'Farmer') + '&background=15803d&color=fff&size=128';
+            }
+
+            const docImg = document.getElementById('kycDocImg');
+            const docPdf = document.getElementById('kycDocPdf');
+            const noDoc = document.getElementById('kycNoDoc');
+            const fullLink = document.getElementById('kycDocFullLink');
+
+            docImg.style.display = 'none';
+            docPdf.style.display = 'none';
+            noDoc.style.display = 'none';
+
+            if (docPath && docPath.trim() !== '') {
+                fullLink.href = docPath;
+                fullLink.style.display = 'block';
+                if (docPath.toLowerCase().endsWith('.pdf')) {
+                    docPdf.src = docPath;
+                    docPdf.style.display = 'block';
+                } else {
+                    docImg.src = docPath;
+                    docImg.style.display = 'block';
+                }
+            } else {
+                noDoc.style.display = 'block';
+                fullLink.style.display = 'none';
+            }
+
+            const rejAlert = document.getElementById('kycRejectionAlert');
+            const rejMsg = document.getElementById('kycRejectionMsg');
+            if (rejectionReason && rejectionReason.trim() !== '') {
+                rejMsg.textContent = rejectionReason;
+                rejAlert.classList.remove('d-none');
+            } else {
+                rejAlert.classList.add('d-none');
+            }
+
+            document.getElementById('rejectReasonBox').style.display = 'none';
+
+            const modal = new bootstrap.Modal(document.getElementById('kycReviewModal'));
+            modal.show();
+        }
+
+        function toggleRejectBox() {
+            const box = document.getElementById('rejectReasonBox');
+            box.style.display = box.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Auto-dismiss alert banners smoothly after 3.5 seconds
+        document.addEventListener("DOMContentLoaded", function () {
+            const alerts = document.querySelectorAll('.alert-dismissible');
+            alerts.forEach(function (alert) {
+                setTimeout(function () {
+                    alert.style.transition = 'opacity 0.6s ease, max-height 0.6s ease, margin 0.6s ease, padding 0.6s ease';
+                    alert.style.opacity = '0';
+                    alert.style.maxHeight = '0';
+                    alert.style.margin = '0';
+                    alert.style.padding = '0';
+                    alert.style.overflow = 'hidden';
+                    setTimeout(function () {
+                        alert.remove();
+                    }, 600);
+                }, 3500);
+            });
+        });
     </script>
 }

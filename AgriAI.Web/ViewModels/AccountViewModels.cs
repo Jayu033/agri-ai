@@ -51,6 +51,37 @@ namespace AgriAI.Web.ViewModels
         [Required(ErrorMessage = "Please select your role.")]
         [Display(Name = "Register As")]
         public string Role { get; set; } = "Customer"; // Customer or Farmer
+
+        // Optional / Farmer KYC & Payout Fields
+        [Display(Name = "Farm / Street Address")]
+        public string? Address { get; set; }
+
+        [Display(Name = "City / District / Village")]
+        public string? City { get; set; }
+
+        [Display(Name = "Bank Name")]
+        public string? BankName { get; set; }
+
+        [Display(Name = "Bank Account Number")]
+        [RegularExpression(@"^[0-9]{9,18}$", ErrorMessage = "Bank Account Number must be 9 to 18 numeric digits.")]
+        public string? BankAccountNumber { get; set; }
+
+        [Display(Name = "IFSC Code")]
+        [RegularExpression(@"^[A-Z]{4}0[A-Z0-9]{6}$", ErrorMessage = "Please enter a valid 11-character uppercase IFSC code (e.g. SBIN0001234).")]
+        public string? BankIfscCode { get; set; }
+
+        [Display(Name = "UPI ID (e.g. 9724560047@upi)")]
+        [RegularExpression(@"^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$", ErrorMessage = "Please enter a valid UPI ID (e.g. 9876543210@upi).")]
+        public string? UpiId { get; set; }
+
+        [Display(Name = "KYC Document Type")]
+        public string? KycDocumentType { get; set; } = "7/12 (Satbara)";
+
+        [Display(Name = "Upload 7/12 (Satbara) or Aadhaar Card")]
+        public IFormFile? KycDocumentFile { get; set; }
+
+        [Display(Name = "Profile Photo")]
+        public IFormFile? ProfilePictureFile { get; set; }
     }
 
     public class ProfileViewModel
@@ -108,8 +139,22 @@ namespace AgriAI.Web.ViewModels
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string FullName => string.IsNullOrWhiteSpace($"{FirstName} {LastName}") ? Username : $"{FirstName} {LastName}".Trim();
+        public string? ProfilePicturePath { get; set; }
         public string Role { get; set; } = string.Empty;
         public bool IsBlocked { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        // Farmer KYC & Verification
+        public bool IsApprovedByAdmin { get; set; } = true;
+        public string? KycRejectionReason { get; set; }
+        public string? City { get; set; }
+        public string? Address { get; set; }
+        public string? BankName { get; set; }
+        public string? BankAccountNumber { get; set; }
+        public string? BankIfscCode { get; set; }
+        public string? UpiId { get; set; }
+        public string? KycDocumentPath { get; set; }
+        public string? KycDocumentType { get; set; }
+        public DateTime? KycSubmittedAt { get; set; }
     }
 }

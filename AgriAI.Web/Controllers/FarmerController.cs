@@ -26,19 +26,36 @@ namespace AgriAI.Web.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userName = User.Identity?.Name;
             
-            // Get all products (or products for this farmer)
+            // Get only crops listed by THIS logged-in farmer
             var products = await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Images)
+                .Where(p => p.FarmerId == userId || (!string.IsNullOrEmpty(userName) && p.FarmerId == userName))
                 .ToListAsync();
 
-            // Query incoming orders for farm produce
-            var incomingOrders = await _context.Orders
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                        .ThenInclude(p => p.Images)
-                .OrderByDescending(o => o.OrderDate)
-                .ToListAsync();
+            var myProductIds = products.Select(p => p.Id).ToList();
+
+            // Query incoming orders containing crops of THIS farmer only
+            var incomingOrders = myProductIds.Any() 
+                ? await _context.Orders
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.Product)
+                            .ThenInclude(p => p.Images)
+                    .Where(o => o.OrderItems.Any(oi => myProductIds.Contains(oi.ProductId)))
+                    .OrderByDescending(o => o.OrderDate)
+                    .ToListAsync()
+                : new List<Order>();
+
+            // Calculate total farm revenue strictly for THIS farmer's sold items
+            decimal farmerRevenue = 0m;
+            if (myProductIds.Any())
+            {
+                farmerRevenue = incomingOrders
+                    .Where(o => o.Status == "Delivered & Settled" || o.Status == "Completed" || o.Status == "Ready for Pickup" || o.Status == "In Transit")
+                    .SelectMany(o => o.OrderItems)
+                    .Where(oi => myProductIds.Contains(oi.ProductId))
+                    .Sum(oi => oi.UnitPrice * oi.Quantity);
+            }
 
             // Load buyer details for every order
             var customerUserIds = incomingOrders.Select(o => o.CustomerId).Distinct().ToList();
@@ -54,8 +71,8 @@ namespace AgriAI.Web.Controllers
             }
 
             ViewBag.TotalProducts = products.Count;
-            ViewBag.TotalSales = incomingOrders.Sum(o => o.TotalAmount);
-            ViewBag.PendingOrdersCount = incomingOrders.Count(o => o.Status == "Pending");
+            ViewBag.TotalSales = farmerRevenue;
+            ViewBag.PendingOrdersCount = incomingOrders.Count(o => o.Status == "Pending" || o.Status == "Requested");
             ViewBag.Orders = incomingOrders;
             ViewBag.CustomerUsers = usersDict;
             

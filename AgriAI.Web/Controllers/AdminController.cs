@@ -52,8 +52,20 @@ namespace AgriAI.Web.Controllers
                         Email = user.Email ?? string.Empty,
                         FirstName = user.FirstName,
                         LastName = user.LastName,
+                        ProfilePicturePath = user.ProfilePicturePath,
                         Role = roleName,
                         IsBlocked = isBlocked,
+                        IsApprovedByAdmin = user.IsApprovedByAdmin,
+                        City = user.City,
+                        Address = user.Address,
+                        BankName = user.BankName,
+                        BankAccountNumber = user.BankAccountNumber,
+                        BankIfscCode = user.BankIfscCode,
+                        UpiId = user.UpiId,
+                        KycDocumentPath = user.KycDocumentPath,
+                        KycDocumentType = user.KycDocumentType,
+                        KycSubmittedAt = user.KycSubmittedAt,
+                        KycRejectionReason = user.KycRejectionReason,
                         CreatedAt = user.CreatedAt
                     });
                 }
@@ -106,14 +118,81 @@ namespace AgriAI.Web.Controllers
                     Email = user.Email ?? string.Empty,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
+                    ProfilePicturePath = user.ProfilePicturePath,
                     Role = roleName,
                     IsBlocked = isBlocked,
+                    IsApprovedByAdmin = user.IsApprovedByAdmin,
+                    City = user.City,
+                    Address = user.Address,
+                    BankName = user.BankName,
+                    BankAccountNumber = user.BankAccountNumber,
+                    BankIfscCode = user.BankIfscCode,
+                    UpiId = user.UpiId,
+                    KycDocumentPath = user.KycDocumentPath,
+                    KycDocumentType = user.KycDocumentType,
+                    KycSubmittedAt = user.KycSubmittedAt,
+                    KycRejectionReason = user.KycRejectionReason,
                     CreatedAt = user.CreatedAt
                 });
             }
 
             ViewBag.CurrentFilter = roleFilter;
             return View(userVMs);
+        }
+
+        // POST: /Admin/ApproveFarmer
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveFarmer(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                TempData["ErrorMessage"] = "Invalid user ID.";
+                return RedirectToAction(nameof(Users), new { roleFilter = "Farmer" });
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Farmer not found.";
+                return RedirectToAction(nameof(Users), new { roleFilter = "Farmer" });
+            }
+
+            user.IsApprovedByAdmin = true;
+            user.KycRejectionReason = null;
+            user.KycApprovedAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            TempData["SuccessMessage"] = $"Farmer '{user.UserName}' has been approved and activated successfully.";
+            return RedirectToAction(nameof(Users), new { roleFilter = "Farmer" });
+        }
+
+        // POST: /Admin/RejectFarmer
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectFarmer(string id, string? reason)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                TempData["ErrorMessage"] = "Invalid user ID.";
+                return RedirectToAction(nameof(Users), new { roleFilter = "Farmer" });
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Farmer not found.";
+                return RedirectToAction(nameof(Users), new { roleFilter = "Farmer" });
+            }
+
+            user.IsApprovedByAdmin = false;
+            user.KycRejectionReason = string.IsNullOrWhiteSpace(reason) 
+                ? "Document verification failed. Please re-upload a clear 7/12 (Satbara) or Aadhaar document." 
+                : reason.Trim();
+            await _userManager.UpdateAsync(user);
+
+            TempData["SuccessMessage"] = $"Farmer '{user.UserName}' verification has been rejected with reason: '{user.KycRejectionReason}'.";
+            return RedirectToAction(nameof(Users), new { roleFilter = "Farmer" });
         }
 
         // POST: /Admin/ToggleBlockUser

@@ -15,135 +15,300 @@
         <h2 class="register-card-title">Create an Account</h2>
         <p class="register-card-subtext">Join AgriAI to buy fresh farm produce or sell crops with smart AI tools</p>
 
-        <form asp-action="Register" method="post" id="registerForm">
+        <form asp-action="Register" method="post" id="registerForm" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2 mb-3 rounded-3"></div>
 
-            <!-- Native Interactive Role Selection Cards -->
-            <div class="role-selection-wrapper">
-                <label class="modern-label">Choose your account type:</label>
-                <div class="role-cards-grid">
-                    <!-- Customer Radio Card -->
-                    <input type="radio" asp-for="Role" value="Customer" id="roleCustomer" class="btn-check" checked />
-                    <label class="role-card-option" for="roleCustomer">
-                        <div class="role-icon-box">
-                            <i class="bi bi-cart-check-fill"></i>
+            <!-- Farmer 2-Step Progress Stepper (Visible when Farmer role is selected) -->
+            <div id="farmerWizardStepper" class="reg-stepper-container" style="display: none;">
+                <div class="reg-step-item active" id="stepIndicator1">
+                    <div class="reg-step-circle" id="stepCircle1">1</div>
+                    <span>Account Profile</span>
+                </div>
+                <div class="reg-step-line" id="stepLine1"></div>
+                <div class="reg-step-item" id="stepIndicator2">
+                    <div class="reg-step-circle" id="stepCircle2">2</div>
+                    <span>KYC &amp; Bank Details</span>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- STEP 1: Basic Account Profile Information -->
+            <!-- ========================================== -->
+            <div id="registerStep1">
+                <!-- Native Interactive Role Selection Cards -->
+                <div class="role-selection-wrapper">
+                    <label class="modern-label">Choose your account type:</label>
+                    <div class="role-cards-grid">
+                        <!-- Customer Radio Card -->
+                        <input type="radio" asp-for="Role" value="Customer" id="roleCustomer" class="btn-check" checked />
+                        <label class="role-card-option" for="roleCustomer">
+                            <div class="role-icon-box">
+                                <i class="bi bi-cart-check-fill"></i>
+                            </div>
+                            <div>
+                                <h6 class="role-title">Customer</h6>
+                                <p class="role-desc">Buy fresh farm produce</p>
+                            </div>
+                            <div class="role-radio-badge"></div>
+                        </label>
+
+                        <!-- Farmer Radio Card -->
+                        <input type="radio" asp-for="Role" value="Farmer" id="roleFarmer" class="btn-check" />
+                        <label class="role-card-option" for="roleFarmer">
+                            <div class="role-icon-box">
+                                <i class="bi bi-tree-fill"></i>
+                            </div>
+                            <div>
+                                <h6 class="role-title">Farmer</h6>
+                                <p class="role-desc">Sell crops &amp; use AI tools</p>
+                            </div>
+                            <div class="role-radio-badge"></div>
+                        </label>
+                    </div>
+                    <span asp-validation-for="Role" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <!-- Profile Photo Live Avatar Upload -->
+                <div class="text-center mb-3">
+                    <div class="position-relative d-inline-block">
+                        <img id="avatarPreview" src="https://ui-avatars.com/api/?name=User&background=15803d&color=fff&size=128" 
+                             class="rounded-circle border border-2 border-success shadow-sm" style="width: 68px; height: 68px; object-fit: cover;" alt="Profile Avatar" />
+                        <label for="profilePicInput" class="btn btn-sm btn-success rounded-circle position-absolute bottom-0 end-0 p-0 d-flex align-items-center justify-content-center shadow" 
+                               style="width: 26px; height: 26px; cursor: pointer; background-color: #15803d; border: 2px solid #ffffff;" title="Upload Face Photo">
+                            <i class="bi bi-camera-fill text-white" style="font-size: 0.70rem;"></i>
+                        </label>
+                        <input asp-for="ProfilePictureFile" type="file" id="profilePicInput" class="d-none" accept="image/*" onchange="previewUserAvatar(this)" />
+                    </div>
+                    <div class="text-muted mt-1" style="font-size: 0.72rem; font-weight: 500;">
+                        <i class="bi bi-person-bounding-box me-1 text-success"></i>Upload Face / Profile Photo (Optional)
+                    </div>
+                </div>
+
+                <!-- Name Row (2 Columns) -->
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <div class="modern-input-group">
+                            <label asp-for="FirstName" class="modern-label">First Name</label>
+                            <div class="input-icon-box">
+                                <input asp-for="FirstName" id="regFirstName" class="modern-form-control" placeholder="e.g. Ramesh" />
+                                <i class="bi bi-person input-leading-icon"></i>
+                            </div>
+                            <span asp-validation-for="FirstName" class="text-danger small mt-1 d-block"></span>
                         </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="modern-input-group">
+                            <label asp-for="LastName" class="modern-label">Last Name</label>
+                            <div class="input-icon-box">
+                                <input asp-for="LastName" id="regLastName" class="modern-form-control" placeholder="e.g. Patel" />
+                                <i class="bi bi-person input-leading-icon"></i>
+                            </div>
+                            <span asp-validation-for="LastName" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Username & Email Row -->
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <div class="modern-input-group">
+                            <label asp-for="Username" class="modern-label">Username</label>
+                            <div class="input-icon-box">
+                                <input asp-for="Username" id="regUsername" class="modern-form-control" placeholder="e.g. ramesh99" />
+                                <i class="bi bi-at input-leading-icon"></i>
+                            </div>
+                            <span asp-validation-for="Username" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="modern-input-group">
+                            <label asp-for="Email" class="modern-label">Email Address</label>
+                            <div class="input-icon-box">
+                                <input asp-for="Email" id="regEmail" class="modern-form-control" placeholder="e.g. name@example.com" />
+                                <i class="bi bi-envelope input-leading-icon"></i>
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone Number -->
+                <div class="modern-input-group">
+                    <label asp-for="PhoneNumber" class="modern-label">Phone Number</label>
+                    <div class="input-icon-box">
+                        <input asp-for="PhoneNumber" id="regPhone" class="modern-form-control" placeholder="e.g. +91 98765 43210" />
+                        <i class="bi bi-telephone input-leading-icon"></i>
+                    </div>
+                    <span asp-validation-for="PhoneNumber" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <!-- Passwords Row -->
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <div class="modern-input-group">
+                            <label asp-for="Password" class="modern-label">Password</label>
+                            <div class="input-icon-box">
+                                <input asp-for="Password" type="password" id="regPassword" class="modern-form-control pe-5" placeholder="Min. 6 chars" />
+                                <i class="bi bi-lock input-leading-icon"></i>
+                                <button type="button" class="password-toggle-btn toggle-pwd" data-target="regPassword" tabindex="-1" aria-label="Toggle password visibility">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="modern-input-group">
+                            <label asp-for="ConfirmPassword" class="modern-label">Confirm Password</label>
+                            <div class="input-icon-box">
+                                <input asp-for="ConfirmPassword" type="password" id="regConfirmPassword" class="modern-form-control pe-5" placeholder="Repeat password" />
+                                <i class="bi bi-shield-lock input-leading-icon"></i>
+                                <button type="button" class="password-toggle-btn toggle-pwd" data-target="regConfirmPassword" tabindex="-1" aria-label="Toggle password visibility">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="step1ErrorAlert" class="alert alert-danger small p-2 mb-3 rounded-3 d-none">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> <span id="step1ErrorMsg"></span>
+                </div>
+
+                <!-- Action Button: Customer Direct Submit -->
+                <button type="submit" id="btnCustomerSubmit" class="btn-register-submit">
+                    <span>Create Customer Account</span>
+                    <i class="bi bi-arrow-right-circle-fill fs-5"></i>
+                </button>
+
+                <!-- Action Button: Farmer Step 2 Trigger -->
+                <button type="button" id="btnGoToStep2" class="btn-register-submit" style="display: none;" onclick="goToStep2()">
+                    <span>Continue to Step 2: KYC &amp; Bank Details</span>
+                    <i class="bi bi-arrow-right-circle-fill fs-5"></i>
+                </button>
+            </div>
+
+            <!-- ==================================================== -->
+            <!-- STEP 2: Farmer Verification & Bank Payout (Step 2)   -->
+            <!-- ==================================================== -->
+            <div id="registerStep2" style="display: none;">
+                
+                <div class="d-flex align-items-center justify-content-between p-2.5 mb-3 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-success fs-5"></i>
                         <div>
-                            <h6 class="role-title">Customer</h6>
-                            <p class="role-desc">Buy fresh farm produce</p>
+                            <h6 class="fw-bold text-dark mb-0 small">Farmer Verification &amp; Bank Payout Setup</h6>
+                            <span class="text-muted" style="font-size: 0.72rem;">Bank account for sale payouts &amp; 7/12 land verification</span>
                         </div>
-                        <div class="role-radio-badge"></div>
-                    </label>
-
-                    <!-- Farmer Radio Card -->
-                    <input type="radio" asp-for="Role" value="Farmer" id="roleFarmer" class="btn-check" />
-                    <label class="role-card-option" for="roleFarmer">
-                        <div class="role-icon-box">
-                            <i class="bi bi-tree-fill"></i>
-                        </div>
-                        <div>
-                            <h6 class="role-title">Farmer</h6>
-                            <p class="role-desc">Sell crops &amp; use AI tools</p>
-                        </div>
-                        <div class="role-radio-badge"></div>
-                    </label>
+                    </div>
+                    <span class="badge bg-success text-white px-2.5 py-1 rounded-pill small">Step 2 of 2</span>
                 </div>
-                <span asp-validation-for="Role" class="text-danger small mt-1 d-block"></span>
+
+                <!-- Farm Location Row -->
+                <div class="row g-2 mb-2">
+                    <div class="col-md-6">
+                        <div class="modern-input-group">
+                            <label asp-for="City" class="modern-label">Village / Taluka / District</label>
+                            <div class="input-icon-box">
+                                <input asp-for="City" class="modern-form-control" placeholder="e.g. Gondal, Rajkot" />
+                                <i class="bi bi-geo-alt input-leading-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="modern-input-group">
+                            <label asp-for="Address" class="modern-label">Farm / Street Location</label>
+                            <div class="input-icon-box">
+                                <input asp-for="Address" class="modern-form-control" placeholder="e.g. Survey No. 42, Farm Road" />
+                                <i class="bi bi-pin-map input-leading-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bank Details Row -->
+                <div class="row g-2 mb-2">
+                    <div class="col-md-6">
+                        <div class="modern-input-group">
+                            <label asp-for="BankName" class="modern-label">Bank Name</label>
+                            <div class="input-icon-box">
+                                <input asp-for="BankName" class="modern-form-control" placeholder="e.g. State Bank of India / HDFC" />
+                                <i class="bi bi-bank input-leading-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="modern-input-group">
+                            <label asp-for="BankAccountNumber" class="modern-label">Bank Account Number</label>
+                            <div class="input-icon-box">
+                                <input asp-for="BankAccountNumber" class="modern-form-control" placeholder="e.g. 123456789012" />
+                                <i class="bi bi-credit-card input-leading-icon"></i>
+                            </div>
+                            <span asp-validation-for="BankAccountNumber" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IFSC & UPI Row -->
+                <div class="row g-2 mb-2">
+                    <div class="col-md-6">
+                        <div class="modern-input-group">
+                            <label asp-for="BankIfscCode" class="modern-label">IFSC Code</label>
+                            <div class="input-icon-box">
+                                <input asp-for="BankIfscCode" class="modern-form-control text-uppercase" placeholder="e.g. SBIN0001234" />
+                                <i class="bi bi-hash input-leading-icon"></i>
+                            </div>
+                            <span asp-validation-for="BankIfscCode" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="modern-input-group">
+                            <label asp-for="UpiId" class="modern-label">UPI ID (Optional)</label>
+                            <div class="input-icon-box">
+                                <input asp-for="UpiId" class="modern-form-control" placeholder="e.g. 9876543210@upi" />
+                                <i class="bi bi-qr-code input-leading-icon"></i>
+                            </div>
+                            <span asp-validation-for="UpiId" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Upload Row -->
+                <div class="row g-2 mb-3">
+                    <div class="col-md-5">
+                        <div class="modern-input-group">
+                            <label asp-for="KycDocumentType" class="modern-label">KYC Document Type</label>
+                            <select asp-for="KycDocumentType" class="modern-form-control pe-4" style="cursor: pointer;">
+                                <option value="7/12 (Satbara Utaro)">7/12 (Satbara Utaro)</option>
+                                <option value="Aadhaar Card">Aadhaar Card</option>
+                                <option value="Kisan Credit Card (KCC)">Kisan Credit Card (KCC)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="modern-input-group">
+                            <label asp-for="KycDocumentFile" class="modern-label">Upload 7/12 or Aadhaar Photo/PDF</label>
+                            <div class="input-icon-box">
+                                <input asp-for="KycDocumentFile" type="file" class="modern-form-control" accept="image/*,.pdf" />
+                                <i class="bi bi-file-earmark-arrow-up input-leading-icon"></i>
+                            </div>
+                            <span asp-validation-for="KycDocumentFile" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons: Back to Step 1 and Submit Registration -->
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill py-2.5 px-4 fw-bold small" onclick="goToStep1()">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Step 1
+                    </button>
+                    <button type="submit" class="btn-register-submit flex-grow-1 m-0">
+                        <span>Submit Farmer Registration</span>
+                        <i class="bi bi-check-circle-fill fs-5"></i>
+                    </button>
+                </div>
             </div>
-
-            <!-- Name Row (2 Columns) -->
-            <div class="row g-2">
-                <div class="col-md-6">
-                    <div class="modern-input-group">
-                        <label asp-for="FirstName" class="modern-label">First Name</label>
-                        <div class="input-icon-box">
-                            <input asp-for="FirstName" class="modern-form-control" placeholder="e.g. Ramesh" />
-                            <i class="bi bi-person input-leading-icon"></i>
-                        </div>
-                        <span asp-validation-for="FirstName" class="text-danger small mt-1 d-block"></span>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="modern-input-group">
-                        <label asp-for="LastName" class="modern-label">Last Name</label>
-                        <div class="input-icon-box">
-                            <input asp-for="LastName" class="modern-form-control" placeholder="e.g. Patel" />
-                            <i class="bi bi-person input-leading-icon"></i>
-                        </div>
-                        <span asp-validation-for="LastName" class="text-danger small mt-1 d-block"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Username & Email Row -->
-            <div class="row g-2">
-                <div class="col-md-6">
-                    <div class="modern-input-group">
-                        <label asp-for="Username" class="modern-label">Username</label>
-                        <div class="input-icon-box">
-                            <input asp-for="Username" class="modern-form-control" placeholder="e.g. ramesh99" />
-                            <i class="bi bi-at input-leading-icon"></i>
-                        </div>
-                        <span asp-validation-for="Username" class="text-danger small mt-1 d-block"></span>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="modern-input-group">
-                        <label asp-for="Email" class="modern-label">Email Address</label>
-                        <div class="input-icon-box">
-                            <input asp-for="Email" class="modern-form-control" placeholder="e.g. name@example.com" />
-                            <i class="bi bi-envelope input-leading-icon"></i>
-                        </div>
-                        <span asp-validation-for="Email" class="text-danger small mt-1 d-block"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Phone Number -->
-            <div class="modern-input-group">
-                <label asp-for="PhoneNumber" class="modern-label">Phone Number</label>
-                <div class="input-icon-box">
-                    <input asp-for="PhoneNumber" class="modern-form-control" placeholder="e.g. +91 98765 43210" />
-                    <i class="bi bi-telephone input-leading-icon"></i>
-                </div>
-                <span asp-validation-for="PhoneNumber" class="text-danger small mt-1 d-block"></span>
-            </div>
-
-            <!-- Passwords Row -->
-            <div class="row g-2">
-                <div class="col-md-6">
-                    <div class="modern-input-group">
-                        <label asp-for="Password" class="modern-label">Password</label>
-                        <div class="input-icon-box">
-                            <input asp-for="Password" type="password" id="regPassword" class="modern-form-control pe-5" placeholder="Min. 6 chars" />
-                            <i class="bi bi-lock input-leading-icon"></i>
-                            <button type="button" class="password-toggle-btn toggle-pwd" data-target="regPassword" tabindex="-1" aria-label="Toggle password visibility">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                        <span asp-validation-for="Password" class="text-danger small mt-1 d-block"></span>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="modern-input-group">
-                        <label asp-for="ConfirmPassword" class="modern-label">Confirm Password</label>
-                        <div class="input-icon-box">
-                            <input asp-for="ConfirmPassword" type="password" id="regConfirmPassword" class="modern-form-control pe-5" placeholder="Repeat password" />
-                            <i class="bi bi-shield-lock input-leading-icon"></i>
-                            <button type="button" class="password-toggle-btn toggle-pwd" data-target="regConfirmPassword" tabindex="-1" aria-label="Toggle password visibility">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                        <span asp-validation-for="ConfirmPassword" class="text-danger small mt-1 d-block"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Submit Button -->
-            <button type="submit" class="btn-register-submit">
-                <span>Create Account</span>
-                <i class="bi bi-arrow-right-circle-fill fs-5"></i>
-            </button>
 
             <!-- Bottom Link -->
             <div class="register-bottom-text">
@@ -158,6 +323,33 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // Update Role Display
+            function handleRoleChange() {
+                const isFarmer = document.getElementById('roleFarmer').checked;
+                const stepper = document.getElementById('farmerWizardStepper');
+                const btnCustomer = document.getElementById('btnCustomerSubmit');
+                const btnFarmer = document.getElementById('btnGoToStep2');
+
+                if (isFarmer) {
+                    stepper.style.display = 'flex';
+                    btnCustomer.style.display = 'none';
+                    btnFarmer.style.display = 'flex';
+                } else {
+                    stepper.style.display = 'none';
+                    btnCustomer.style.display = 'flex';
+                    btnFarmer.style.display = 'none';
+                    goToStep1(); // Reset to step 1 if switching back to Customer
+                }
+            }
+
+            const roleCustomer = document.getElementById('roleCustomer');
+            const roleFarmer = document.getElementById('roleFarmer');
+            if (roleCustomer && roleFarmer) {
+                roleCustomer.addEventListener('change', handleRoleChange);
+                roleFarmer.addEventListener('change', handleRoleChange);
+                handleRoleChange();
+            }
+
             // Password Toggle Buttons
             const toggleBtns = document.querySelectorAll('.toggle-pwd');
             toggleBtns.forEach(btn => {
@@ -179,5 +371,83 @@
                 });
             });
         });
+
+        function goToStep2() {
+            // Validate Step 1 mandatory fields before advancing
+            const firstName = document.getElementById('regFirstName').value.trim();
+            const lastName = document.getElementById('regLastName').value.trim();
+            const username = document.getElementById('regUsername').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirmPass = document.getElementById('regConfirmPassword').value;
+
+            const errorAlert = document.getElementById('step1ErrorAlert');
+            const errorMsg = document.getElementById('step1ErrorMsg');
+
+            if (!firstName || !lastName || !username || !email || !password || !confirmPass) {
+                errorMsg.textContent = 'Please fill in all mandatory account details (Name, Username, Email, Password) to proceed.';
+                errorAlert.classList.remove('d-none');
+                return;
+            }
+
+            if (password.length < 6) {
+                errorMsg.textContent = 'Password must be at least 6 characters long.';
+                errorAlert.classList.remove('d-none');
+                return;
+            }
+
+            if (password !== confirmPass) {
+                errorMsg.textContent = 'Password and Confirm Password do not match.';
+                errorAlert.classList.remove('d-none');
+                return;
+            }
+
+            errorAlert.classList.add('d-none');
+
+            // Switch to Step 2
+            document.getElementById('registerStep1').style.display = 'none';
+            document.getElementById('registerStep2').style.display = 'block';
+
+            // Update Stepper indicators
+            const ind1 = document.getElementById('stepIndicator1');
+            const ind2 = document.getElementById('stepIndicator2');
+            const circle1 = document.getElementById('stepCircle1');
+            const circle2 = document.getElementById('stepCircle2');
+
+            ind1.classList.remove('active');
+            ind1.classList.add('completed');
+            circle1.innerHTML = '<i class="bi bi-check-lg"></i>';
+
+            ind2.classList.add('active');
+            circle2.innerHTML = '2';
+        }
+
+        function goToStep1() {
+            document.getElementById('registerStep2').style.display = 'none';
+            document.getElementById('registerStep1').style.display = 'block';
+
+            const ind1 = document.getElementById('stepIndicator1');
+            const ind2 = document.getElementById('stepIndicator2');
+            const circle1 = document.getElementById('stepCircle1');
+            const circle2 = document.getElementById('stepCircle2');
+
+            ind1.classList.remove('completed');
+            ind1.classList.add('active');
+            circle1.innerHTML = '1';
+
+            ind2.classList.remove('active');
+            circle2.innerHTML = '2';
+        }
+
+        function previewUserAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('avatarPreview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
     </script>
 }

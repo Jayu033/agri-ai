@@ -1,74 +1,94 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 230" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 220" width="100%" height="100%">
   <defs>
-    <!-- Soft Drop Shadow Filter for Vector Elements -->
-    <filter id="bannerShadow" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.95" />
+    <!-- Soft Glow Filter -->
+    <filter id="logoGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.85" />
     </filter>
-    
-    <!-- Golden Gradient for Wheat -->
-    <linearGradient id="goldWheatGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f59e0b" />
-      <stop offset="50%" stop-color="#fbbf24" />
-      <stop offset="100%" stop-color="#d97706" />
+
+    <!-- Vibrant Emerald Leaf Gradient -->
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="50%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#059669" />
     </linearGradient>
 
-    <!-- Vibrant Green Gradient for AI Leaf -->
-    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#4ade80" />
-      <stop offset="100%" stop-color="#16a34a" />
+    <!-- Golden Sunlight Accent Gradient -->
+    <linearGradient id="sunGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+
+    <!-- Modern AI Neural Cyan Gradient -->
+    <linearGradient id="aiTechGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6ee7b7" />
+      <stop offset="100%" stop-color="#10b981" />
     </linearGradient>
   </defs>
 
-  <g filter="url(#bannerShadow)">
-    <!-- 1. Main Brand Typography: AgriAI -->
-    <!-- We render Agri & A & I with precise positioning so the leaf sits exactly centered over the final 'I' -->
-    <text x="80" y="142" 
-          font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" 
-          font-size="102" 
+  <g filter="url(#logoGlow)" transform="translate(40, 20)">
+    
+    <!-- 1. Sleek Modern Emblem: Sprout & Digital Neural Growth -->
+    <g transform="translate(20, 15)">
+      <!-- Outer Shield / Circle Glow -->
+      <circle cx="65" cy="65" r="62" fill="#064e3b" fill-opacity="0.85" stroke="url(#emeraldGrad)" stroke-width="3.5" />
+      
+      <!-- Golden Sun Arc Behind Plant -->
+      <path d="M 35 65 A 30 30 0 0 1 95 65" fill="none" stroke="url(#sunGoldGrad)" stroke-width="3" stroke-dasharray="4,4" opacity="0.85" />
+
+      <!-- Left Leaf (Organic Sprout) -->
+      <path d="M 65,95 C 40,85 30,55 45,35 C 55,48 65,65 65,95 Z" fill="url(#emeraldGrad)" opacity="0.95" />
+      
+      <!-- Right Leaf (AI Tech Leaf with Node) -->
+      <path d="M 65,95 C 90,85 100,55 85,35 C 75,48 65,65 65,95 Z" fill="url(#emeraldGrad)" />
+
+      <!-- Central Stem & Circuit Line -->
+      <path d="M 65,100 L 65,30" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+      
+      <!-- Digital AI Node & Leaf Circuit -->
+      <circle cx="65" cy="28" r="6" fill="url(#sunGoldGrad)" stroke="#ffffff" stroke-width="2" />
+      <circle cx="82" cy="50" r="4" fill="#ffffff" />
+      <circle cx="48" cy="50" r="4" fill="#ffffff" />
+      <path d="M 65,60 L 82,50 M 65,60 L 48,50" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+    </g>
+
+    <!-- 2. Typography: AgriAI -->
+    <!-- 'Agri' in Solid Pure White -->
+    <text x="175" y="105" 
+          font-family="system-ui, -apple-system, 'Montserrat', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" 
+          font-size="88" 
           font-weight="900" 
           letter-spacing="-1.5" 
           fill="#ffffff">
-      AgriA<tspan dx="2">I</tspan>
+      Agri
     </text>
 
-    <!-- 2. AI Leaf Icon - PRECISELY ALIGNED AND CENTERED DIRECTLY ABOVE THE 'I' (x=428, y=20) -->
-    <g transform="translate(416, 20)">
-      <!-- Leaf Outer Body -->
-      <path d="M18,0 C28,12 36,25 32,40 C28,50 18,54 18,54 C18,54 8,50 4,40 C0,25 8,12 18,0 Z" 
-            fill="url(#leafGrad)" stroke="#ffffff" stroke-width="1.8" />
-      <!-- Digital Circuit Nodes inside Leaf -->
-      <circle cx="18" cy="20" r="3.2" fill="#ffffff" />
-      <circle cx="11" cy="32" r="2.4" fill="#ffffff" />
-      <circle cx="25" cy="32" r="2.4" fill="#ffffff" />
-      <path d="M18,46 L18,20 M18,32 L11,32 M18,32 L25,32" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+    <!-- 'AI' in Vibrant Tech Emerald Gradient -->
+    <text x="390" y="105" 
+          font-family="system-ui, -apple-system, 'Montserrat', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" 
+          font-size="88" 
+          font-weight="900" 
+          letter-spacing="-1.5" 
+          fill="url(#aiTechGrad)">
+      AI
+    </text>
+
+    <!-- 3. Clean Modern Subtitle Tagline Pill -->
+    <g transform="translate(180, 130)">
+      <!-- Pill Backdrop -->
+      <rect x="0" y="0" width="410" height="28" rx="14" fill="#000000" fill-opacity="0.45" stroke="#10b981" stroke-width="1.2" />
+      <!-- Golden Seed Sparkle -->
+      <circle cx="16" cy="14" r="4" fill="url(#sunGoldGrad)" />
+      <!-- Text -->
+      <text x="30" y="19" 
+            font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" 
+            font-size="13" 
+            font-weight="700" 
+            letter-spacing="2.5" 
+            fill="#f8fafc"
+            text-transform="uppercase">
+        Smart Farm &amp; Market Platform
+      </text>
     </g>
 
-    <!-- 3. Elegant Wheat Flourish Underline Under AgriAI -->
-    <path d="M 70,160 Q 250,188 470,158" fill="none" stroke="url(#goldWheatGrad)" stroke-width="3.5" stroke-linecap="round" />
-    <path d="M 90,168 Q 270,198 490,168" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.9" />
-
-    <!-- Left Wheat Grains Group -->
-    <g transform="translate(75, 154) rotate(-14)">
-      <path d="M0,0 C-7,-5 -13,-2 -15,5 C-13,11 -7,9 0,0 Z" fill="url(#goldWheatGrad)" />
-      <path d="M-7,-4 C-14,-9 -20,-6 -22,2 C-20,7 -14,5 -7,-4 Z" fill="#ffffff" />
-      <path d="M-14,-8 C-21,-13 -27,-10 -29,-2 C-27,3 -21,1 -14,-8 Z" fill="url(#goldWheatGrad)" />
-      <path d="M-21,-12 C-28,-17 -34,-14 -36,-6 C-34,0 -28,-2 -21,-12 Z" fill="#ffffff" />
-      
-      <path d="M-4,4 C-9,11 -5,17 2,17 C7,13 5,7 -4,4 Z" fill="url(#goldWheatGrad)" />
-      <path d="M-11,0 C-16,7 -12,13 -5,13 C0,9 -2,3 -11,0 Z" fill="#ffffff" />
-      <path d="M-18,-4 C-23,3 -19,9 -12,9 C-7,5 -9,0 -18,-4 Z" fill="url(#goldWheatGrad)" />
-    </g>
-
-    <!-- Right Wheat Grains Group -->
-    <g transform="translate(460, 162) rotate(12)">
-      <path d="M0,0 C7,-5 13,-2 15,5 C13,11 7,9 0,0 Z" fill="url(#goldWheatGrad)" />
-      <path d="M7,-4 C14,-9 20,-6 22,2 C20,7 14,5 7,-4 Z" fill="#ffffff" />
-      <path d="M14,-8 C21,-13 27,-10 29,-2 C27,3 21,1 14,-8 Z" fill="url(#goldWheatGrad)" />
-      <path d="M21,-12 C28,-17 34,-14 36,-6 C34,0 28,-2 21,-12 Z" fill="#ffffff" />
-      
-      <path d="M4,4 C9,11 5,17 -2,17 C-7,13 -5,7 4,4 Z" fill="url(#goldWheatGrad)" />
-      <path d="M11,0 C16,7 12,13 5,13 C0,9 2,3 11,0 Z" fill="#ffffff" />
-      <path d="M18,-4 C23,3 19,9 12,9 C7,5 9,0 18,-4 Z" fill="url(#goldWheatGrad)" />
-    </g>
   </g>
 </svg>

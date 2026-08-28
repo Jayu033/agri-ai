@@ -10,12 +10,18 @@ namespace AgriAI.Web.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IWebHostEnvironment _env;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager)
+        public AccountController(
+            UserManager<ApplicationUser> userManager, 
+            SignInManager<ApplicationUser> signInManager, 
+            RoleManager<IdentityRole> roleManager,
+            IWebHostEnvironment env)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
+            _env = env;
         }
 
         [HttpGet]
@@ -27,15 +33,102 @@ namespace AgriAI.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            var isFarmer = model.Role == "Farmer";
+
+            // Strict Anti-Fraud Validation for Farmers
+            if (isFarmer)
+            {
+                if (string.IsNullOrWhiteSpace(model.BankAccountNumber) || string.IsNullOrWhiteSpace(model.BankIfscCode))
+                {
+                    ModelState.AddModelError(string.Empty, "Bank Account Number and IFSC Code are mandatory for Farmer payout verification.");
+                }
+
+                if (model.KycDocumentFile == null || model.KycDocumentFile.Length == 0)
+                {
+                    ModelState.AddModelError("KycDocumentFile", "Please upload a clear 7/12 (Satbara) or Aadhaar Card document photo or PDF.");
+                }
+                else
+                {
+                    var allowedExts = new[] { ".jpg", ".jpeg", ".png", ".pdf", ".webp" };
+                    var ext = Path.GetExtension(model.KycDocumentFile.FileName).ToLowerInvariant();
+                    if (!allowedExts.Contains(ext))
+                    {
+                        ModelState.AddModelError("KycDocumentFile", "Invalid document file type. Only JPG, PNG, WEBP, and PDF files are accepted.");
+                    }
+                    if (model.KycDocumentFile.Length < 5120) // Less than 5KB (empty/dummy)
+                    {
+                        ModelState.AddModelError("KycDocumentFile", "The uploaded document is too small or blank. Please upload a clear document image.");
+                    }
+                    if (model.KycDocumentFile.Length > 10 * 1024 * 1024) // Greater than 10MB
+                    {
+                        ModelState.AddModelError("KycDocumentFile", "Document size exceeds 10MB limit.");
+                    }
+                }
+            }
+
             if (ModelState.IsValid)
             {
+                string? profilePicPath = null;
+                string? kycDocPath = null;
+
+                // Handle Profile Photo Upload (Farmer or Customer)
+                if (model.ProfilePictureFile != null && model.ProfilePictureFile.Length > 0)
+                {
+                    var profilesDir = Path.Combine(_env.WebRootPath, "uploads", "profiles");
+                    if (!Directory.Exists(profilesDir))
+                    {
+                        Directory.CreateDirectory(profilesDir);
+                    }
+
+                    var profileFileName = $"{Guid.NewGuid()}_{Path.GetFileName(model.ProfilePictureFile.FileName)}";
+                    var profileFilePath = Path.Combine(profilesDir, profileFileName);
+
+                    using (var stream = new FileStream(profileFilePath, FileMode.Create))
+                    {
+                        await model.ProfilePictureFile.CopyToAsync(stream);
+                    }
+
+                    profilePicPath = $"/uploads/profiles/{profileFileName}";
+                }
+
+                // Handle KYC document upload for Farmers
+                if (isFarmer && model.KycDocumentFile != null && model.KycDocumentFile.Length > 0)
+                {
+                    var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "kyc");
+                    if (!Directory.Exists(uploadsDir))
+                    {
+                        Directory.CreateDirectory(uploadsDir);
+                    }
+
+                    var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(model.KycDocumentFile.FileName)}";
+                    var filePath = Path.Combine(uploadsDir, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await model.KycDocumentFile.CopyToAsync(stream);
+                    }
+
+                    kycDocPath = $"/uploads/kyc/{fileName}";
+                }
+
                 var user = new ApplicationUser 
                 { 
                     UserName = model.Username, 
                     Email = model.Email,
                     PhoneNumber = model.PhoneNumber,
                     FirstName = model.FirstName,
-                    LastName = model.LastName
+                    LastName = model.LastName,
+                    ProfilePicturePath = profilePicPath,
+                    City = model.City ?? string.Empty,
+                    Address = model.Address ?? string.Empty,
+                    BankName = model.BankName,
+                    BankAccountNumber = model.BankAccountNumber,
+                    BankIfscCode = model.BankIfscCode,
+                    UpiId = model.UpiId,
+                    KycDocumentType = model.KycDocumentType,
+                    KycDocumentPath = kycDocPath,
+                    KycSubmittedAt = isFarmer ? DateTime.UtcNow : null,
+                    IsApprovedByAdmin = !isFarmer // Customers are auto-approved, Farmers require Admin Verification
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
@@ -48,12 +141,17 @@ namespace AgriAI.Web.Controllers
                     }
                     
                     await _userManager.AddToRoleAsync(user, model.Role);
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    
-                    if (model.Role == "Farmer")
-                        return RedirectToAction("Dashboard", "Farmer");
+
+                    if (isFarmer)
+                    {
+                        TempData["SuccessMessage"] = "Farmer registration submitted successfully! Your account and 7/12 documents are under Admin verification. You will be able to log in once approved.";
+                        return RedirectToAction("Login");
+                    }
                     else
+                    {
+                        await _signInManager.SignInAsync(user, isPersistent: false);
                         return RedirectToAction("Dashboard", "Customer");
+                    }
                 }
                 foreach (var error in result.Errors)
                 {
@@ -80,10 +178,25 @@ namespace AgriAI.Web.Controllers
 
                 if (user != null)
                 {
+                    var roles = await _userManager.GetRolesAsync(user);
+
+                    // Check if Farmer is approved by Admin
+                    if (roles.Contains("Farmer") && !user.IsApprovedByAdmin)
+                    {
+                        if (!string.IsNullOrEmpty(user.KycRejectionReason))
+                        {
+                            ModelState.AddModelError(string.Empty, $"Your Farmer KYC verification was REJECTED by Admin. Reason: {user.KycRejectionReason}. Please contact support.");
+                        }
+                        else
+                        {
+                            ModelState.AddModelError(string.Empty, "Your Farmer account is currently under Admin verification. Please wait for Admin approval before logging in.");
+                        }
+                        return View(model);
+                    }
+
                     var result = await _signInManager.PasswordSignInAsync(user.UserName!, model.Password, model.RememberMe, lockoutOnFailure: false);
                     if (result.Succeeded)
                     {
-                        var roles = await _userManager.GetRolesAsync(user);
                         if (roles.Contains("Admin"))
                             return RedirectToAction("Dashboard", "Admin");
                         if (roles.Contains("Farmer"))
