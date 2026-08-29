@@ -186,6 +186,112 @@ namespace AgriAI.Web.Controllers
         private CropPredictionResult RunCropRecommendationModel(CropPredictorInputModel input)
         {
             var cropProfiles = GetCropMLProfiles();
+
+            // 1. Attempt Python ML Random Forest Classification inference
+            try
+            {
+                var candidatePaths = new[]
+                {
+                    Path.Combine(Directory.GetCurrentDirectory(), "ML_Models", "predict_crop_cli.py"),
+                    Path.Combine(Directory.GetCurrentDirectory(), "..", "ML_Models", "predict_crop_cli.py"),
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ML_Models", "predict_crop_cli.py"),
+                    @"C:\xampp\htdocs\agri ai\ML_Models\predict_crop_cli.py"
+                };
+
+                string scriptPath = candidatePaths.FirstOrDefault(p => System.IO.File.Exists(p)) ?? "";
+                if (!string.IsNullOrEmpty(scriptPath))
+                {
+                    var psi = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "py",
+                        Arguments = $"\"{scriptPath}\" {input.Nitrogen} {input.Phosphorus} {input.Potassium} {input.Temperature} {input.Humidity} {input.PhValue} {input.Rainfall}",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+
+                    using var process = System.Diagnostics.Process.Start(psi);
+                    if (process != null)
+                    {
+                        string output = process.StandardOutput.ReadToEnd();
+                        process.WaitForExit(3500);
+
+                        if (!string.IsNullOrWhiteSpace(output))
+                        {
+                            int jsonStart = output.IndexOf('{');
+                            int jsonEnd = output.LastIndexOf('}');
+                            if (jsonStart >= 0 && jsonEnd > jsonStart)
+                            {
+                                var jsonStr = output.Substring(jsonStart, jsonEnd - jsonStart + 1);
+                                using var doc = System.Text.Json.JsonDocument.Parse(jsonStr);
+                                var root = doc.RootElement;
+                                if (root.TryGetProperty("success", out var successElem) && successElem.GetBoolean())
+                                {
+                                    string predictedCrop = root.GetProperty("crop").GetString() ?? "Rice";
+                                    string confStr = root.TryGetProperty("confidence", out var cElem) ? cElem.GetString() ?? "95%" : "95%";
+                                    double matchScore = double.TryParse(confStr.Replace("%", "").Trim(), out var sVal) ? Math.Max(70.0, sVal) : 95.0;
+
+                                    var matchedProfile = cropProfiles.FirstOrDefault(p => p.Name.ToLower().Contains(predictedCrop.ToLower()) || predictedCrop.ToLower().Contains(p.Name.ToLower()))
+                                                         ?? cropProfiles.First();
+
+                                    var altList = new List<CropAlternative>();
+                                    if (root.TryGetProperty("alternatives", out var altArray) && altArray.ValueKind == System.Text.Json.JsonValueKind.Array)
+                                    {
+                                        foreach (var alt in altArray.EnumerateArray())
+                                        {
+                                            string aName = alt.GetProperty("crop").GetString() ?? "";
+                                            double aScore = alt.GetProperty("score").GetDouble();
+                                            var aProf = cropProfiles.FirstOrDefault(p => p.Name.ToLower().Contains(aName.ToLower())) ?? new CropMLProfile { Name = aName, Emoji = "🌱", Category = "Crop" };
+                                            altList.Add(new CropAlternative
+                                            {
+                                                CropName = aProf.Name,
+                                                Emoji = aProf.Emoji,
+                                                Category = aProf.Category,
+                                                MatchScore = Math.Round(Math.Max(50.0, aScore), 1)
+                                            });
+                                        }
+                                    }
+
+                                    if (!altList.Any())
+                                    {
+                                        altList = cropProfiles.Where(c => c.Name != matchedProfile.Name).Take(3).Select(c => new CropAlternative
+                                        {
+                                            CropName = c.Name,
+                                            Emoji = c.Emoji,
+                                            Category = c.Category,
+                                            MatchScore = 85.0
+                                        }).ToList();
+                                    }
+
+                                    return new CropPredictionResult
+                                    {
+                                        CropName = matchedProfile.Name,
+                                        GujaratiName = matchedProfile.GujaratiName,
+                                        Emoji = matchedProfile.Emoji,
+                                        Category = matchedProfile.Category,
+                                        MatchScore = Math.Round(matchScore, 1),
+                                        Season = matchedProfile.Season,
+                                        ExpectedYield = matchedProfile.ExpectedYield,
+                                        GrowthDuration = matchedProfile.GrowthDuration,
+                                        EstimatedPricePerQtl = matchedProfile.EstimatedPrice,
+                                        Description = matchedProfile.Description,
+                                        SoilAdvice = matchedProfile.SoilAdvice,
+                                        TopAlternatives = altList,
+                                        Input = input
+                                    };
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Fallback to internal statistical model if python fails
+            }
+
+            // 2. Statistical Profile Distance Matching Fallback
             var scoredCrops = new List<(CropMLProfile Profile, double Distance, double Score)>();
 
             foreach (var crop in cropProfiles)
