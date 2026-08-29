@@ -1,6 +1,7 @@
 using AgriAI.Domain.Entities;
 using AgriAI.Infrastructure.Data;
 using AgriAI.Infrastructure.Identity;
+using AgriAI.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -60,6 +61,28 @@ namespace AgriAI.Web.Controllers
                 .Where(o => o.Status != "Cancelled" && o.Status != "Declined")
                 .Sum(o => o.TotalAmount);
 
+            // Load shopping cart items from session or persistent cookie
+            var cartJson = HttpContext.Session.GetString("AgriAI_ShoppingCart_Session");
+            if (string.IsNullOrEmpty(cartJson) && HttpContext.Request.Cookies.TryGetValue("AgriAI_Cart_Cookie", out var cookieJson))
+            {
+                cartJson = cookieJson;
+                if (!string.IsNullOrEmpty(cartJson))
+                {
+                    HttpContext.Session.SetString("AgriAI_ShoppingCart_Session", cartJson);
+                }
+            }
+
+            var cartItems = new List<CartItemViewModel>();
+            if (!string.IsNullOrEmpty(cartJson))
+            {
+                try
+                {
+                    cartItems = System.Text.Json.JsonSerializer.Deserialize<List<CartItemViewModel>>(cartJson) ?? new List<CartItemViewModel>();
+                }
+                catch { }
+            }
+            var cartSummary = new CartSummaryViewModel { Items = cartItems };
+
             ViewBag.Orders = customerOrders;
             ViewBag.ActiveOrders = activeOrders;
             ViewBag.CompletedOrders = completedOrders;
@@ -68,6 +91,7 @@ namespace AgriAI.Web.Controllers
             ViewBag.CompletedOrdersCount = completedOrders.Count;
             ViewBag.TotalSpent = totalSpent;
             ViewBag.TotalKgPurchased = totalKgPurchased;
+            ViewBag.CartSummary = cartSummary;
 
             return View(products);
         }

@@ -255,7 +255,7 @@ namespace AgriAI.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult ResetPassword(string token = null, string email = null)
+        public IActionResult ResetPassword(string? token = null, string? email = null)
         {
             if (token == null || email == null)
             {

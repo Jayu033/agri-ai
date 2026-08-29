@@ -1,189 +1,377 @@
+@using AgriAI.Web.ViewModels
+
 @{
     ViewData["Title"] = "Direct Farm Checkout";
+    bool isCart = ViewBag.IsCart != null && (bool)ViewBag.IsCart;
+    var cartItems = ViewBag.CartItems as List<CartItemViewModel>;
     var product = ViewBag.Product as AgriAI.Domain.Entities.Product;
     int quantity = ViewBag.Quantity != null ? (int)ViewBag.Quantity : 1;
     decimal baseTotal = ViewBag.BaseTotal != null ? (decimal)ViewBag.BaseTotal : (product != null ? (product.Price * quantity) : 0m);
     decimal platformFee = ViewBag.PlatformFee != null ? (decimal)ViewBag.PlatformFee : Math.Round(baseTotal * 0.02m, 2);
     var imgUrl = product?.Images?.FirstOrDefault()?.ImageUrl;
+    var maundPrice = product != null ? product.Price * 20 : 0m;
+    bool hasItems = (isCart && cartItems != null && cartItems.Any()) || product != null;
 }
 
-<div class="container py-4 my-2" style="max-width: 960px;">
+<style>
+    .checkout-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 1.25rem;
+        padding: 1.5rem !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        margin-bottom: 1.5rem;
+        transition: all 0.2s ease;
+    }
+    .selection-box {
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 1rem;
+        padding: 1.25rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+    .selection-box:hover {
+        background: #f0fdf4;
+        border-color: #86efac;
+    }
+    .selection-box.active {
+        background: #f0fdf4;
+        border-color: #006653;
+        box-shadow: 0 0 0 1px #006653;
+    }
+    .selection-box.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+    .price-breakdown-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 1.25rem;
+        padding: 1.75rem !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+    }
+</style>
+
+<div class="container-fluid py-4 px-3 px-md-4 px-lg-5" style="max-width: 1360px;">
     
-    <!-- Breadcrumb & Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <!-- Top Header Bar -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1 small">
-                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-success text-decoration-none">Home</a></li>
-                    <li class="breadcrumb-item"><a asp-controller="Product" asp-action="Index" class="text-success text-decoration-none">Shop Products</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Direct Farm Checkout</li>
-                </ol>
-            </nav>
-            <h2 class="fw-extrabold text-dark mb-0">Direct Farm Checkout 🛒</h2>
+            <h2 class="fw-extrabold text-dark mb-1">
+                Direct Farm Checkout 🛒 @(isCart ? $"- Multi-Product Order ({cartItems?.Count} Varieties)" : "")
+            </h2>
+            <p class="text-muted small mb-0">Secure escrow-protected order placement directly from verified local Gujarat farmers.</p>
         </div>
-        <div>
-            <a asp-controller="Product" asp-action="Index" class="btn btn-outline-success rounded-pill px-3 py-1.5 fw-bold small">
-                <i class="bi bi-arrow-left me-1"></i> Back to Shop
+        <div class="d-flex gap-2">
+            @if (isCart)
+            {
+                <a href="/Customer/Dashboard?tab=cartTab" class="btn btn-outline-secondary rounded-pill px-3.5 py-2 fw-bold small shadow-sm">
+                    <i class="bi bi-cart3 me-1"></i> Edit Cart
+                </a>
+            }
+            <a asp-controller="Product" asp-action="Index" class="btn btn-outline-success rounded-pill px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5">
+                <i class="bi bi-arrow-left"></i> Back to Shop
             </a>
         </div>
     </div>
 
-    @if (product != null)
+    @if (hasItems)
     {
-        <form asp-action="ProcessPayment" method="post" id="checkoutForm">
-            <input type="hidden" name="productId" value="@product.Id" />
-            <input type="hidden" name="quantity" value="@quantity" />
+        <form asp-action="ProcessPayment" method="post" id="checkoutForm" onsubmit="return validateCheckoutForm()">
+            @if (isCart)
+            {
+                <input type="hidden" name="isCart" value="true" />
+            }
+            else
+            {
+                <input type="hidden" name="productId" value="@product?.Id" />
+                <input type="hidden" name="quantity" value="@quantity" />
+            }
 
-            <div class="row g-4">
-                <!-- Left Column: Produce Summary & Payment Options -->
+            <div class="row g-4 g-lg-5">
+                
+                <!-- Left Column: Produce Summary, Payment Method & Delivery Mode -->
                 <div class="col-lg-7">
                     
                     <!-- 1. Order Summary Card -->
-                    <div class="bg-white shadow-sm rounded-4 p-4 border mb-4">
-                        <h5 class="mb-3 text-dark fw-bold d-flex align-items-center gap-2">
-                            <i class="bi bi-receipt-cutoff text-success"></i> Produce Details
-                        </h5>
+                    <div class="checkout-card">
+                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                            <h5 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2">
+                                <i class="bi bi-receipt-cutoff text-success fs-5"></i> Produce Order Summary
+                            </h5>
+                            <span class="badge rounded-pill px-3 py-1 fw-bold shadow-sm" style="background-color: #ecfdf5; color: #047857; border: 1px solid #86efac; font-size: 0.78rem;">
+                                <i class="bi bi-patch-check-fill me-1 text-success"></i> Direct Farm Sourced
+                            </span>
+                        </div>
 
-                        <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 border mb-2">
-                            @if (!string.IsNullOrEmpty(imgUrl))
-                            {
-                                <img src="@imgUrl" class="rounded-3 shadow-sm" alt="@product.Name" style="width: 70px; height: 70px; object-fit: cover;" />
-                            }
-                            else
-                            {
-                                <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 70px; height: 70px;">
-                                    <i class="bi bi-tree text-success fs-2"></i>
+                        @if (isCart && cartItems != null && cartItems.Any())
+                        {
+                            <div class="d-flex flex-column gap-2 mb-2">
+                                @foreach (var item in cartItems)
+                                {
+                                    <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-4 border">
+                                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                        {
+                                            <img src="@item.ImageUrl" class="rounded-3 shadow-sm" alt="@item.ProductName" style="width: 70px; height: 70px; object-fit: cover;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 70px; height: 70px;">
+                                                <i class="bi bi-tree text-success fs-2"></i>
+                                            </div>
+                                        }
+                                        <div class="flex-grow-1">
+                                            <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-0.5 rounded-pill small mb-1 border border-success border-opacity-25" style="font-size: 0.70rem;">
+                                                @(item.CategoryName ?? "Farm Produce")
+                                            </span>
+                                            <h6 class="mb-1 fw-bold text-dark fs-6">@item.ProductName</h6>
+                                            <div class="text-muted small">
+                                                <span>Producer: <strong>@item.FarmerName</strong></span>
+                                                <span class="ms-2">&bull; Rate: ₹@item.UnitPrice.ToString("N2")/Kg</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-white text-dark border px-3 py-1 mb-1 d-inline-block fw-bold shadow-sm">
+                                                @item.Quantity Kg
+                                            </span>
+                                            <div class="fw-extrabold text-success fs-6">₹@item.TotalPrice.ToString("N2")</div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else if (product != null)
+                        {
+                            <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-4 border">
+                                @if (!string.IsNullOrEmpty(imgUrl))
+                                {
+                                    <img src="@imgUrl" class="rounded-3 shadow-sm" alt="@product.Name" style="width: 80px; height: 80px; object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 80px; height: 80px;">
+                                        <i class="bi bi-tree text-success fs-2"></i>
+                                    </div>
+                                }
+                                <div class="flex-grow-1">
+                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-0.5 rounded-pill small mb-1 border border-success border-opacity-25" style="font-size: 0.72rem;">
+                                        @(product.Category?.Name ?? "Farm Crop")
+                                    </span>
+                                    <h5 class="mb-1 fw-bold text-dark fs-6">@product.Name</h5>
+                                    <div class="text-muted small">
+                                        <span>Rate: <strong>₹@product.Price.ToString("N2")</strong> / Kg</span>
+                                        <span class="text-muted ms-2">(₹@maundPrice.ToString("N0") / Maund)</span>
+                                    </div>
                                 </div>
-                            }
-                            <div class="flex-grow-1">
-                                <span class="badge bg-success bg-opacity-10 text-success fw-bold small mb-1">
-                                    @(product.Category?.Name ?? "Farm Crop")
-                                </span>
-                                <h6 class="mb-0 fw-bold text-dark fs-6">@product.Name</h6>
-                                <small class="text-muted">Rate: ₹@product.Price.ToString("N2") / unit</small>
+                                <div class="text-end">
+                                    <span class="badge bg-white text-dark border px-3 py-1.5 mb-1 d-inline-block fw-bold shadow-sm">
+                                        Qty: @quantity Kg
+                                    </span>
+                                    <div class="fw-extrabold text-success fs-5">₹@baseTotal.ToString("N2")</div>
+                                </div>
                             </div>
-                            <div class="text-end">
-                                <span class="badge bg-white text-dark border px-2.5 py-1 mb-1 d-inline-block fw-bold">
-                                    Qty: @quantity unit(s)
-                                </span>
-                                <div class="fw-extrabold text-success fs-5">₹@baseTotal.ToString("N2")</div>
+                        }
+                    </div>
+
+                    <!-- 2. Payment Method Selection -->
+                    <div class="checkout-card">
+                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                            <h5 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2">
+                                <i class="bi bi-shield-check text-success fs-5"></i> 1. Choose Payment Method
+                            </h5>
+                            <small class="text-muted">Select payment preference</small>
+                        </div>
+
+                        <!-- Option A: Online Payment (Escrow Safe) -->
+                        <div class="selection-box active mb-3" id="boxPayOnline" onclick="selectPaymentMethod('Online')">
+                            <div class="d-flex align-items-start gap-3">
+                                <input class="form-check-input mt-1 shadow-none" type="radio" name="paymentMethod" id="payOnline" value="Online" checked onchange="onPaymentMethodChanged()">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong class="text-dark fs-6">
+                                            <i class="bi bi-shield-lock-fill text-success me-1"></i> Online UPI / Escrow Safe Payment
+                                        </strong>
+                                        <span class="badge bg-success text-white px-2.5 py-1 rounded-pill small">Recommended</span>
+                                    </div>
+                                    <p class="text-muted small mb-0">
+                                        Funds held securely in AgriAI Escrow. Released to farmer only after you verify produce and provide your 4-digit OTP. Allows both Self Pickup &amp; Parcel Delivery.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Option B: Cash on Delivery / Pay on Pickup (COD) -->
+                        <div class="selection-box" id="boxPayCOD" onclick="selectPaymentMethod('COD')">
+                            <div class="d-flex align-items-start gap-3">
+                                <input class="form-check-input mt-1 shadow-none" type="radio" name="paymentMethod" id="payCOD" value="COD" onchange="onPaymentMethodChanged()">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong class="text-dark fs-6">
+                                            <i class="bi bi-cash-stack text-warning me-1"></i> Cash on Delivery (Pay on Pickup)
+                                        </strong>
+                                        <span class="badge bg-secondary text-white px-2.5 py-1 rounded-pill small">Self Pickup Only</span>
+                                    </div>
+                                    <p class="text-muted small mb-0">
+                                        Pay cash directly to the farmer after inspecting produce at farm. <em>(Available only with Direct Farm Pickup)</em>.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 2. Logistics & Delivery Option (Blueprint Architecture) -->
-                    <div class="bg-white shadow-sm rounded-4 p-4 border mb-4">
-                        <h5 class="mb-3 text-dark fw-bold d-flex align-items-center gap-2">
-                            <i class="bi bi-truck text-success"></i> Choose Delivery / Logistics Mode
-                        </h5>
+                    <!-- 3. Delivery / Logistics Mode (Dynamic based on Payment Method) -->
+                    <div class="checkout-card">
+                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                            <h5 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2">
+                                <i class="bi bi-truck text-success fs-5"></i> 2. Choose Delivery / Logistics Mode
+                            </h5>
+                            <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1 small" id="deliveryModeBadge">
+                                2 Options Available
+                            </span>
+                        </div>
 
-                        <div class="form-check p-3 rounded-3 border mb-2 cursor-pointer bg-light">
-                            <input class="form-check-input ms-0 me-2" type="radio" name="transportType" id="transPickup" value="Direct Farm Pickup" checked onchange="updateBillTotal()">
-                            <label class="form-check-label fw-bold text-dark d-flex justify-content-between align-items-center w-100" for="transPickup">
-                                <span><i class="bi bi-geo-alt-fill text-success me-1"></i> 1. Direct Farm Pickup (Self Pickup)</span>
-                                <span class="badge bg-success text-white">FREE ₹0</span>
+                        <!-- Option 1: Direct Farm Pickup -->
+                        <div class="selection-box active mb-3" id="boxTransPickup" onclick="selectTransportMode('Direct Farm Pickup')">
+                            <div class="d-flex align-items-start gap-3">
+                                <input class="form-check-input mt-1 shadow-none" type="radio" name="transportType" id="transPickup" value="Direct Farm Pickup" checked onchange="onTransportModeChanged()">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong class="text-dark fs-6">
+                                            <i class="bi bi-geo-alt-fill text-success me-1"></i> 1. Direct Farm Pickup (Self Pickup)
+                                        </strong>
+                                        <span class="badge bg-success text-white px-2.5 py-1 rounded-pill small">FREE ₹0</span>
+                                    </div>
+                                    <p class="text-muted small mb-0">
+                                        Pick up produce directly from verified farmer's farm / godown in Gujarat. No delivery fee or transport address required.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Option 2: GSRTC / Bus Cargo -->
+                        <div class="selection-box mb-3" id="boxTransCargo" onclick="selectTransportMode('GSRTC / Private Cargo (To-Pay)')">
+                            <div class="d-flex align-items-start gap-3">
+                                <input class="form-check-input mt-1 shadow-none" type="radio" name="transportType" id="transCargo" value="GSRTC / Private Cargo (To-Pay)" onchange="onTransportModeChanged()">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong class="text-dark fs-6">
+                                            <i class="bi bi-bus-front-fill text-primary me-1"></i> 2. GSRTC / Private Cargo (Parcel Delivery)
+                                        </strong>
+                                        <span class="badge bg-primary text-white px-2.5 py-1 rounded-pill small">"To-Pay" Freight</span>
+                                    </div>
+                                    <p class="text-muted small mb-0">
+                                        Farmer books produce via GSRTC ST Bus parcel or private courier (Patel, Shrinath, Eagle) and uploads Bilty receipt. Pay nominal freight directly at parcel counter upon receipt.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delivery Address Input (Appears ONLY when Parcel Delivery is selected) -->
+                        <div id="deliveryAddressSection" style="display: none;" class="p-3 bg-light rounded-4 border mt-3">
+                            <label class="form-label fw-bold text-dark small mb-1.5 d-flex align-items-center gap-1.5">
+                                <i class="bi bi-geo-alt text-danger"></i> Destination City / Parcel Delivery Address <span class="text-danger">*</span>
                             </label>
-                            <small class="text-muted d-block ps-4 mt-1">Pick up harvest directly from the verified farmer's field or godown.</small>
+                            <input type="text" name="deliveryAddress" id="deliveryAddressInput" class="form-control bg-white shadow-none py-2.5" placeholder="e.g. GSRTC ST Bus Station Parcel Office, Surat / Rajkot / Ahmedabad" />
+                            <small class="text-muted d-block mt-1">
+                                Please specify the nearest ST bus station or parcel transport office where farmer should send the cargo bilty.
+                            </small>
                         </div>
 
-                        <div class="form-check p-3 rounded-3 border cursor-pointer bg-light">
-                            <input class="form-check-input ms-0 me-2" type="radio" name="transportType" id="transCargo" value="GSRTC / Private Cargo (To-Pay)" onchange="updateBillTotal()">
-                            <label class="form-check-label fw-bold text-dark d-flex justify-content-between align-items-center w-100" for="transCargo">
-                                <span><i class="bi bi-bus-front-fill text-primary me-1"></i> 2. GSRTC / Private Cargo (Parcel Delivery)</span>
-                                <span class="badge bg-primary text-white">"To-Pay" Model</span>
-                            </label>
-                            <small class="text-muted d-block ps-4 mt-1">Farmer books produce via GSRTC ST Bus parcel or private cargo (Patel, Shrinath, Eagle) and uploads Bilty receipt. Pay nominal parcel freight directly at counter upon pickup.</small>
+                        <!-- Self Pickup Note (Appears when Self Pickup is selected) -->
+                        <div id="selfPickupInfoSection" class="p-3 bg-success bg-opacity-10 border border-success border-opacity-25 rounded-4 mt-3">
+                            <div class="d-flex align-items-center gap-2 text-success">
+                                <i class="bi bi-info-circle-fill fs-5"></i>
+                                <div class="small">
+                                    <strong>Self Pickup Selected:</strong> No delivery address required. You will receive the farmer's exact farm location and contact number on the confirmation page.
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mt-3">
-                            <label class="form-label small fw-bold text-muted">Destination City / Delivery Address (Where to receive parcel)</label>
-                            <input type="text" name="deliveryAddress" class="form-control bg-white shadow-none" placeholder="e.g. ST Bus Station Parcel Office, Rajkot / Surat / Ahmedabad" />
-                        </div>
-                    </div>
-
-                    <!-- 3. Payment Method Selection -->
-                    <div class="bg-white shadow-sm rounded-4 p-4 border">
-                        <h5 class="mb-3 text-dark fw-bold d-flex align-items-center gap-2">
-                            <i class="bi bi-shield-check text-success"></i> Choose Payment Method
-                        </h5>
-
-                        <div class="form-check p-3 rounded-3 border mb-2 cursor-pointer bg-success bg-opacity-10 border-success">
-                            <input class="form-check-input ms-0 me-2" type="radio" name="paymentMethod" id="payOnline" value="Online" checked>
-                            <label class="form-check-label fw-bold text-dark d-flex justify-content-between align-items-center w-100" for="payOnline">
-                                <span><i class="bi bi-shield-lock-fill text-success me-1"></i> Online UPI / Escrow Safe Payment</span>
-                                <span class="badge bg-success text-white">Recommended</span>
-                            </label>
-                            <small class="text-muted d-block ps-4 mt-1">Payment is held securely in AgriAI Escrow. Funds are released to farmer only after you give your 4-digit Delivery OTP.</small>
-                        </div>
-
-                        <div class="form-check p-3 rounded-3 border cursor-pointer bg-light">
-                            <input class="form-check-input ms-0 me-2" type="radio" name="paymentMethod" id="payCOD" value="COD">
-                            <label class="form-check-label fw-bold text-dark d-flex justify-content-between align-items-center w-100" for="payCOD">
-                                <span><i class="bi bi-cash-stack text-warning me-1"></i> Cash on Delivery / Pay on Pickup</span>
-                                <span class="badge bg-secondary text-white">COD</span>
-                            </label>
-                            <small class="text-muted d-block ps-4 mt-1">Pay 100% cash directly to the farmer after inspecting crop quality.</small>
-                        </div>
                     </div>
 
                 </div>
 
                 <!-- Right Column: Final Bill Breakdown & Place Order -->
                 <div class="col-lg-5">
-                    <div class="bg-white shadow-sm rounded-4 p-4 border sticky-top" style="top: 20px;">
-                        <h5 class="fw-bold text-dark mb-3">Price Breakdown</h5>
+                    <div class="price-breakdown-card sticky-top" style="top: 20px;">
+                        <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom d-flex align-items-center gap-2">
+                            <i class="bi bi-calculator text-success"></i> Price Breakdown
+                        </h5>
 
-                        <div class="d-flex justify-content-between text-muted mb-2 small">
-                            <span>Base Produce Price (@quantity units)</span>
-                            <span class="fw-bold text-dark">₹@baseTotal.ToString("N2")</span>
+                        <div class="d-flex justify-content-between text-muted mb-2.5 small">
+                            <span>Base Produce Price (@(isCart ? $"{cartItems?.Count} Varieties ({quantity} Kg)" : $"{quantity} Kg"))</span>
+                            <span class="fw-bold text-dark fs-6">₹@baseTotal.ToString("N2")</span>
                         </div>
 
-                        <div class="d-flex justify-content-between text-muted mb-2 small">
-                            <span>Transport / Logistics</span>
-                            <span class="fw-bold text-dark" id="billTransport">₹0.00</span>
+                        <div class="d-flex justify-content-between text-muted mb-2.5 small">
+                            <span>Transport / Logistics Mode</span>
+                            <span class="fw-bold text-success" id="billTransport">₹0.00 (Self Pickup)</span>
                         </div>
 
                         <div class="d-flex justify-content-between text-muted mb-3 small">
                             <span>
-                                Platform Safety Fee (2%)
-                                <i class="bi bi-info-circle text-muted" title="Covers Escrow guarantee, buyer protection, and 24/7 resolution."></i>
+                                Platform Safety &amp; Escrow Fee (2%)
+                                <i class="bi bi-info-circle text-muted" title="Covers Escrow guarantee, buyer OTP protection, and dispute resolution."></i>
                             </span>
                             <span class="fw-bold text-dark">₹@platformFee.ToString("N2")</span>
                         </div>
 
-                        <hr class="my-3">
-
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <span class="fs-6 fw-bold text-dark">Total Amount Payable</span>
-                            <span class="fs-4 fw-extrabold text-success" id="billGrandTotal">
-                                ₹@((baseTotal + platformFee).ToString("N2"))
-                            </span>
+                        <div class="p-3 bg-light rounded-3 border mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fs-6 fw-bold text-dark">Total Amount Payable</span>
+                                <span class="fs-4 fw-extrabold text-success" id="billGrandTotal">
+                                    ₹@((baseTotal + platformFee).ToString("N2"))
+                                </span>
+                            </div>
                         </div>
 
-                        <div class="alert alert-success bg-success bg-opacity-10 border-success border-opacity-25 rounded-3 mb-4 p-2.5 small">
-                            <i class="bi bi-shield-fill-check text-success me-1"></i>
-                            <strong>100% Money-Back Guarantee:</strong> 4-digit Delivery OTP protects your payment until you verify the harvest.
+                        <div class="alert alert-success bg-success bg-opacity-10 border-success border-opacity-25 rounded-3 mb-4 p-3 small">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-shield-fill-check text-success fs-5 mt-0.5"></i>
+                                <div>
+                                    <strong>100% Escrow Protection:</strong>
+                                    <span class="d-block text-muted mt-0.5" id="guaranteeNoteText">
+                                        Payment is held safe until you inspect the harvest and share your 4-digit Delivery OTP.
+                                    </span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-success btn-lg py-3 fw-bold rounded-pill shadow-sm" style="background-color: #006653; border-color: #006653;">
-                                <i class="bi bi-check-circle-fill me-2"></i> Confirm &amp; Place Order
+                        <div class="d-grid gap-2">
+                            <button type="submit" id="btnPlaceOrder" class="btn btn-success btn-lg py-3 fw-bold rounded-pill shadow d-flex align-items-center justify-content-center gap-2" style="background-color: #006653; border-color: #006653;">
+                                <i class="bi bi-check-circle-fill fs-5"></i> Confirm &amp; Place Order (<span id="btnPayAmount">₹@((baseTotal + platformFee).ToString("N2"))</span>)
                             </button>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                <i class="bi bi-lock-fill text-success me-1"></i> SSL 256-Bit Encrypted &bull; Direct Gujarat Farmer Trade
+                            </small>
                         </div>
                     </div>
                 </div>
+
             </div>
         </form>
     }
     else
     {
-        <div class="alert alert-warning rounded-4 p-5 text-center my-4">
+        <div class="alert alert-warning rounded-4 p-5 text-center my-4 bg-white border shadow-sm">
             <i class="bi bi-cart-x display-4 text-warning mb-3 d-block"></i>
             <h5 class="fw-bold text-dark mb-2">No items selected for checkout</h5>
-            <p class="text-muted small mb-4">Please explore available farm crops from Gujarat farmers and select your required quantity.</p>
-            <a asp-controller="Product" asp-action="Index" class="btn btn-success rounded-pill px-4 py-2 fw-bold">
-                <i class="bi bi-shop me-1"></i> Browse Farm Produce
-            </a>
+            <p class="text-muted small mb-4">Please explore available farm crops from Gujarat farmers and add items to your cart or choose a direct crop.</p>
+            <div class="d-flex justify-content-center gap-2">
+                <a asp-controller="Product" asp-action="Index" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;">
+                    <i class="bi bi-shop me-1"></i> Browse Farm Produce
+                </a>
+                <a href="/Customer/Dashboard?tab=cartTab" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-bold">
+                    <i class="bi bi-cart3 me-1"></i> View My Cart
+                </a>
+            </div>
         </div>
     }
 </div>
@@ -193,17 +381,107 @@
         const baseTotal = @baseTotal;
         const platformFee = @platformFee;
 
-        function updateBillTotal() {
-            const isCargo = document.getElementById("transCargo")?.checked;
-            const billTrans = document.getElementById("billTransport");
-            if (billTrans) {
-                billTrans.textContent = isCargo ? "To-Pay (At Counter)" : "₹0.00 (Free)";
+        function selectPaymentMethod(method) {
+            if (method === 'Online') {
+                document.getElementById('payOnline').checked = true;
+            } else {
+                document.getElementById('payCOD').checked = true;
             }
-            const grandTotal = baseTotal + platformFee;
-            const grandEl = document.getElementById("billGrandTotal");
-            if (grandEl) {
-                grandEl.textContent = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(grandTotal);
+            onPaymentMethodChanged();
+        }
+
+        function selectTransportMode(mode) {
+            const isCOD = document.getElementById('payCOD')?.checked;
+            if (isCOD && mode.includes('Cargo')) {
+                return;
+            }
+
+            if (mode.includes('Cargo')) {
+                document.getElementById('transCargo').checked = true;
+            } else {
+                document.getElementById('transPickup').checked = true;
+            }
+            onTransportModeChanged();
+        }
+
+        function onPaymentMethodChanged() {
+            const isOnline = document.getElementById('payOnline')?.checked;
+            const boxOnline = document.getElementById('boxPayOnline');
+            const boxCOD = document.getElementById('boxPayCOD');
+            const boxCargo = document.getElementById('boxTransCargo');
+            const transCargo = document.getElementById('transCargo');
+            const transPickup = document.getElementById('transPickup');
+            const deliveryBadge = document.getElementById('deliveryModeBadge');
+            const guaranteeNote = document.getElementById('guaranteeNoteText');
+
+            if (isOnline) {
+                boxOnline.classList.add('active');
+                boxCOD.classList.remove('active');
+
+                boxCargo.classList.remove('disabled');
+                transCargo.disabled = false;
+                if (deliveryBadge) deliveryBadge.textContent = "2 Options Available";
+                if (guaranteeNote) guaranteeNote.textContent = "Payment is held safe in AgriAI Escrow until you inspect harvest and share your 4-digit Delivery OTP.";
+            } else {
+                boxCOD.classList.add('active');
+                boxOnline.classList.remove('active');
+
+                boxCargo.classList.add('disabled');
+                transCargo.disabled = true;
+
+                transPickup.checked = true;
+                if (deliveryBadge) deliveryBadge.textContent = "Self Pickup Only (COD)";
+                if (guaranteeNote) guaranteeNote.textContent = "Pay cash directly to farmer after inspecting produce at farm.";
+            }
+
+            onTransportModeChanged();
+        }
+
+        function onTransportModeChanged() {
+            const isCargo = document.getElementById('transCargo')?.checked && !document.getElementById('transCargo')?.disabled;
+            const boxPickup = document.getElementById('boxTransPickup');
+            const boxCargo = document.getElementById('boxTransCargo');
+            const addressSec = document.getElementById('deliveryAddressSection');
+            const pickupInfo = document.getElementById('selfPickupInfoSection');
+            const billTrans = document.getElementById('billTransport');
+            const addressInput = document.getElementById('deliveryAddressInput');
+
+            if (isCargo) {
+                boxCargo.classList.add('active');
+                boxPickup.classList.remove('active');
+                addressSec.style.display = 'block';
+                pickupInfo.style.display = 'none';
+                if (addressInput) addressInput.required = true;
+                if (billTrans) billTrans.textContent = "To-Pay (At Counter)";
+            } else {
+                boxPickup.classList.add('active');
+                boxCargo.classList.remove('active');
+                addressSec.style.display = 'none';
+                pickupInfo.style.display = 'block';
+                if (addressInput) {
+                    addressInput.required = false;
+                    addressInput.value = '';
+                }
+                if (billTrans) billTrans.textContent = "₹0.00 (Self Pickup)";
             }
         }
+
+        function validateCheckoutForm() {
+            const isCargo = document.getElementById('transCargo')?.checked && !document.getElementById('transCargo')?.disabled;
+            if (isCargo) {
+                const address = document.getElementById('deliveryAddressInput')?.value.trim();
+                if (!address) {
+                    alert('Please enter your destination city or parcel delivery address.');
+                    document.getElementById('deliveryAddressInput')?.focus();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function () {
+            onPaymentMethodChanged();
+        });
     </script>
 }

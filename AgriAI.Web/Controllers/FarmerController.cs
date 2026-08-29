@@ -62,7 +62,7 @@ namespace AgriAI.Web.Controllers
             // Load buyer details for every order
             var customerUserIds = incomingOrders.Select(o => o.CustomerId).Distinct().ToList();
             var usersList = await _userManager.Users
-                .Where(u => customerUserIds.Contains(u.Id) || customerUserIds.Contains(u.UserName))
+                .Where(u => customerUserIds.Contains(u.Id) || (u.UserName != null && customerUserIds.Contains(u.UserName)))
                 .ToListAsync();
 
             var usersDict = new Dictionary<string, ApplicationUser>();

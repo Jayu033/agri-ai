@@ -29,8 +29,8 @@ namespace AgriAI.Web.Controllers
 
             var model = new ProfileViewModel
             {
-                Username = user.UserName,
-                Email = user.Email,
+                Username = user.UserName ?? string.Empty,
+                Email = user.Email ?? string.Empty,
                 FirstName = user.FirstName,
                 LastName = user.LastName
             };
@@ -58,7 +58,7 @@ namespace AgriAI.Web.Controllers
             {
                 ModelState.AddModelError("CurrentPassword", "Incorrect current password. Changes not saved.");
                 // Restore values
-                model.Email = user.Email;
+                model.Email = user.Email ?? string.Empty;
                 return View(model);
             }
 
@@ -81,7 +81,7 @@ namespace AgriAI.Web.Controllers
                 ModelState.AddModelError(string.Empty, error.Description);
             }
 
-            model.Email = user.Email;
+            model.Email = user.Email ?? string.Empty;
             return View(model);
         }
     }

@@ -1,4 +1,5 @@
 @model IEnumerable<AgriAI.Domain.Entities.Product>
+@using AgriAI.Web.ViewModels
 
 @{
     ViewData["Title"] = "Customer Dashboard";
@@ -10,6 +11,7 @@
     var customerOrders = ViewBag.Orders as List<AgriAI.Domain.Entities.Order> ?? new List<AgriAI.Domain.Entities.Order>();
     var activeOrders = ViewBag.ActiveOrders as List<AgriAI.Domain.Entities.Order> ?? new List<AgriAI.Domain.Entities.Order>();
     var completedOrders = ViewBag.CompletedOrders as List<AgriAI.Domain.Entities.Order> ?? new List<AgriAI.Domain.Entities.Order>();
+    var cartSummary = ViewBag.CartSummary as CartSummaryViewModel ?? new CartSummaryViewModel();
     int totalOrdersCount = ViewBag.TotalOrdersCount != null ? (int)ViewBag.TotalOrdersCount : customerOrders.Count;
     int activeOrdersCount = ViewBag.ActiveOrdersCount != null ? (int)ViewBag.ActiveOrdersCount : activeOrders.Count;
     int completedOrdersCount = ViewBag.CompletedOrdersCount != null ? (int)ViewBag.CompletedOrdersCount : completedOrders.Count;
@@ -26,6 +28,67 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/Dashboard.css" asp-append-version="true" />
+    <style>
+        .cart-item-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.25rem;
+            padding: 1.5rem !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+            margin-bottom: 1.25rem;
+            transition: all 0.2s ease;
+        }
+        .cart-item-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+        .cart-stepper-container {
+            display: inline-flex;
+            align-items: center;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 50rem;
+            padding: 4px 8px;
+            gap: 6px;
+        }
+        .cart-stepper-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 0;
+        }
+        .cart-stepper-btn:hover {
+            background: #006653;
+            border-color: #006653;
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+        .cart-stepper-value {
+            font-weight: 800;
+            color: #0f172a;
+            font-size: 1rem;
+            min-width: 60px;
+            text-align: center;
+        }
+        .cart-summary-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.25rem;
+            padding: 1.75rem !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+        }
+    </style>
 }
 
 <div class="dashboard-page-bg">
@@ -80,6 +143,9 @@
                         <button type="button" class="dash-tab-link @(activeTab == "cartTab" ? "active" : "")" onclick="switchDashTab('cartTab', this)">
                             <i class="bi bi-cart3"></i>
                             <span>My Cart</span>
+                            <span class="badge bg-success text-white ms-auto fw-bold" id="sidebarCartCountBadge" style="display: @(cartSummary.TotalItemsCount > 0 ? "inline-block" : "none")">
+                                @cartSummary.TotalItemsCount
+                            </span>
                         </button>
 
                         <!-- 6. Order History -->
@@ -326,9 +392,12 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="mt-auto pt-1">
-                                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" asp-route-returnUrl="/Customer/Dashboard?tab=shopTab" class="btn btn-success rounded-pill w-100 fw-bold py-2.5 shadow-sm d-flex align-items-center justify-content-center gap-2" style="background-color: #006653; border-color: #006653;">
-                                                        <i class="bi bi-cart-check-fill fs-6"></i> View &amp; Buy Now
+                                                <div class="mt-auto pt-1 d-flex gap-2 align-items-center">
+                                                    <button type="button" class="btn btn-outline-success rounded-pill fw-bold px-3 py-2 shadow-sm d-flex align-items-center justify-content-center gap-1.5 flex-grow-1" onclick="addToCartAjax(@item.Id, 1, '@item.Name')">
+                                                        <i class="bi bi-cart-plus fs-6"></i> Add to Cart
+                                                    </button>
+                                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" asp-route-returnUrl="/Customer/Dashboard?tab=shopTab" class="btn btn-success rounded-pill fw-bold px-3 py-2 shadow-sm d-flex align-items-center justify-content-center gap-1.5 flex-grow-1" style="background-color: #006653; border-color: #006653;">
+                                                        <i class="bi bi-lightning-charge-fill fs-6"></i> Buy Now
                                                     </a>
                                                 </div>
                                             </div>
@@ -354,18 +423,133 @@
                     <div id="cartTab" class="dash-tab-panel @(activeTab == "cartTab" ? "active" : "")">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">My Cart</h3>
-                                <p class="text-muted small mb-0">Review items in your shopping bag and proceed to checkout.</p>
+                                <h3 class="dash-section-title">My Cart 🛒</h3>
+                                <p class="text-muted small mb-0">Review your selected farm produce, adjust quantities, and proceed to unified checkout.</p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1.5 fw-bold" id="btnClearCartBtn" onclick="clearCart()" style="display: @(cartSummary.Items.Any() ? "inline-block" : "none")">
+                                    <i class="bi bi-trash3 me-1"></i> Clear Cart
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3.5 py-1.5 fw-bold" onclick="switchDashTab('shopTab', document.querySelectorAll('.dash-tab-link')[1])">
+                                    <i class="bi bi-plus-circle me-1"></i> Add More Crops
+                                </button>
                             </div>
                         </div>
 
-                        <div class="p-5 rounded-4 border bg-white shadow-sm text-center my-3">
+                        <!-- Empty State -->
+                        <div id="cartEmptyState" class="p-5 rounded-4 border bg-white shadow-sm text-center my-3" style="display: @(cartSummary.Items.Any() ? "none" : "block")">
                             <i class="bi bi-cart-x display-4 text-success opacity-50 d-block mb-3"></i>
                             <h5 class="fw-bold text-dark mb-2">Your Shopping Cart is empty</h5>
                             <p class="text-muted small mb-4">You have not added any farm produce to your cart yet. Explore fresh crops directly from Gujarat farmers.</p>
-                            <button type="button" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm" onclick="switchDashTab('shopTab', document.querySelectorAll('.dash-tab-link')[1])">
+                            <button type="button" class="btn btn-success rounded-pill px-4 py-2.5 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;" onclick="switchDashTab('shopTab', document.querySelectorAll('.dash-tab-link')[1])">
                                 <i class="bi bi-shop me-1"></i> Explore Farm Produce
                             </button>
+                        </div>
+
+                        <!-- Cart Items Grid and Checkout Summary -->
+                        <div id="cartContentWrapper" style="display: @(cartSummary.Items.Any() ? "block" : "none")">
+                            <div class="row g-4">
+                                <!-- Left: List of Cart Items -->
+                                <div class="col-lg-7">
+                                    <div class="d-flex flex-column gap-3" id="cartItemsList">
+                                        @foreach (var item in cartSummary.Items)
+                                        {
+                                            <div class="cart-item-card" id="cartItemRow_@item.ProductId">
+                                                <div class="d-flex align-items-start gap-3">
+                                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                                    {
+                                                        <img src="@item.ImageUrl" class="rounded-4 shadow-sm" alt="@item.ProductName" style="width: 85px; height: 85px; object-fit: cover; border: 1px solid #f1f5f9;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="bg-light rounded-4 d-flex align-items-center justify-content-center border" style="width: 85px; height: 85px;">
+                                                            <i class="bi bi-tree text-success fs-2"></i>
+                                                        </div>
+                                                    }
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                                            <div>
+                                                                <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill small mb-1 border border-success border-opacity-25" style="font-size: 0.72rem;">
+                                                                    @(item.CategoryName ?? "Farm Produce")
+                                                                </span>
+                                                                <h5 class="fw-extrabold text-dark mb-1 fs-5">@item.ProductName</h5>
+                                                                <div class="text-muted small">
+                                                                    <span>Producer: <strong class="text-dark">@item.FarmerName</strong></span>
+                                                                    <span class="ms-2 text-success fw-semibold">&bull; ₹@item.UnitPrice.ToString("N2") / Kg</span>
+                                                                </div>
+                                                            </div>
+                                                            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-1.5 shadow-sm" title="Remove Item" onclick="removeCartItem(@item.ProductId)">
+                                                                <i class="bi bi-trash3"></i> <span class="d-none d-sm-inline">Remove</span>
+                                                            </button>
+                                                        </div>
+
+                                                        <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-3 border-top">
+                                                            <div class="d-flex align-items-center gap-2">
+                                                                <span class="text-muted small fw-bold">Quantity:</span>
+                                                                <div class="cart-stepper-container">
+                                                                    <button type="button" class="cart-stepper-btn" onclick="updateCartQty(@item.ProductId, @(item.Quantity - 1))">
+                                                                        <i class="bi bi-dash"></i>
+                                                                    </button>
+                                                                    <span class="cart-stepper-value" id="cartItemQty_@item.ProductId">@item.Quantity Kg</span>
+                                                                    <button type="button" class="cart-stepper-btn" onclick="updateCartQty(@item.ProductId, @(item.Quantity + 1))">
+                                                                        <i class="bi bi-plus"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <div class="text-end mt-2 mt-sm-0">
+                                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Item Total</small>
+                                                                <span class="fs-4 fw-extrabold text-success" id="cartItemTotal_@item.ProductId">₹@item.TotalPrice.ToString("N2")</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Right: Order Breakdown & Checkout Button -->
+                                <div class="col-lg-5">
+                                    <div class="card bg-white rounded-4 border shadow-sm p-4 sticky-top" style="top: 20px;">
+                                        <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom d-flex align-items-center gap-2">
+                                            <i class="bi bi-receipt text-success"></i> Cart Order Summary
+                                        </h5>
+
+                                        <div class="d-flex justify-content-between text-muted mb-2.5 small">
+                                            <span>Total Items</span>
+                                            <strong class="text-dark" id="cartSummaryItemCount">@cartSummary.TotalItemsCount Kg (@cartSummary.Items.Count Varieties)</strong>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between text-muted mb-2.5 small">
+                                            <span>Base Produce Price</span>
+                                            <strong class="text-dark fs-6" id="cartSummaryBaseTotal">₹@cartSummary.BaseTotal.ToString("N2")</strong>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between text-muted mb-3 small">
+                                            <span>Platform Escrow Fee (2%)</span>
+                                            <strong class="text-dark" id="cartSummaryPlatformFee">₹@cartSummary.PlatformFee.ToString("N2")</strong>
+                                        </div>
+
+                                        <div class="p-3 bg-light rounded-3 border mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="fs-6 fw-bold text-dark">Estimated Total</span>
+                                                <span class="fs-4 fw-extrabold text-success" id="cartSummaryGrandTotal">
+                                                    ₹@cartSummary.GrandTotal.ToString("N2")
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="alert alert-success bg-success bg-opacity-10 border-success border-opacity-25 rounded-3 mb-4 p-2.5 small">
+                                            <i class="bi bi-shield-lock-fill text-success me-1"></i>
+                                            <strong>100% Escrow Protected:</strong> Unified direct payment held safe until delivery OTP.
+                                        </div>
+
+                                        <a href="/Checkout?isCart=true" class="btn btn-success btn-lg py-3 fw-bold rounded-pill shadow-sm w-100 d-flex align-items-center justify-content-center gap-2" style="background-color: #006653; border-color: #006653;">
+                                            <i class="bi bi-cart-check-fill fs-5"></i> Proceed to Checkout
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -477,7 +661,7 @@
                                                 </div>
                                             }
 
-                                            @if (!string.IsNullOrEmpty(order.BiltyNumber))
+                                            @if (order.TransportType != null && (order.TransportType.Contains("Cargo") || order.TransportType.Contains("GSRTC") || order.TransportType.Contains("Parcel")) && !string.IsNullOrEmpty(order.BiltyNumber))
                                             {
                                                 <div class="mt-3 p-2.5 rounded-3 bg-light border d-flex align-items-center justify-content-between">
                                                     <div>
@@ -1028,6 +1212,201 @@
             printWindow.document.open();
             printWindow.document.write(invoiceHtml);
             printWindow.document.close();
+        }
+
+        // ==========================================
+        // MULTI-PRODUCT SHOPPING CART ENGINE (AJAX)
+        // ==========================================
+        function showFloatingToast(message, isSuccess = true) {
+            let toast = document.getElementById('agriai-floating-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'agriai-floating-toast';
+                toast.style.position = 'fixed';
+                toast.style.bottom = '28px';
+                toast.style.right = '28px';
+                toast.style.zIndex = '999999';
+                toast.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = `
+                <div class="alert ${isSuccess ? 'alert-success border-success' : 'alert-danger border-danger'} shadow-lg rounded-4 p-3 d-flex align-items-center gap-2 mb-0" style="min-width: 280px; background-color: #ffffff;">
+                    <i class="bi ${isSuccess ? 'bi-check-circle-fill text-success' : 'bi-exclamation-circle-fill text-danger'} fs-5"></i>
+                    <div class="flex-grow-1 small fw-bold text-dark">${message}</div>
+                    <button type="button" class="btn-close btn-sm shadow-none" onclick="this.closest('#agriai-floating-toast').style.display='none'"></button>
+                </div>
+            `;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                if (toast) toast.style.display = 'none';
+            }, 4000);
+        }
+
+        function addToCartAjax(productId, qty, name) {
+            fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productId=${productId}&quantity=${qty || 1}`
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showFloatingToast(data.message || `🌾 ${name} added to cart!`);
+                    updateCartBadgeCount(data.count);
+                    loadCartItems();
+                } else {
+                    showFloatingToast(data.message || 'Could not add to cart', false);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showFloatingToast('Error adding to cart', false);
+            });
+        }
+
+        function updateCartBadgeCount(count) {
+            const badge = document.getElementById('sidebarCartCountBadge');
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'inline-block' : 'none';
+            }
+        }
+
+        function updateCartQty(productId, qty) {
+            fetch('/Cart/UpdateQuantity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productId=${productId}&quantity=${qty}`
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    renderCartUI(data);
+                    updateCartBadgeCount(data.totalItemsCount);
+                }
+            });
+        }
+
+        function removeCartItem(productId) {
+            if (!confirm('Are you sure you want to remove this item from your cart?')) return;
+            fetch('/Cart/RemoveItem', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productId=${productId}`
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    renderCartUI(data);
+                    updateCartBadgeCount(data.totalItemsCount);
+                    showFloatingToast('Item removed from cart');
+                }
+            });
+        }
+
+        function clearCart() {
+            if (!confirm('Are you sure you want to clear all items in your cart?')) return;
+            fetch('/Cart/ClearCart', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    updateCartBadgeCount(0);
+                    renderCartUI({ items: [], totalItemsCount: 0, baseTotal: 0, platformFee: 0, grandTotal: 0 });
+                    showFloatingToast('Cart cleared');
+                }
+            });
+        }
+
+        function loadCartItems() {
+            fetch('/Cart/GetCart')
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    renderCartUI(data);
+                    updateCartBadgeCount(data.totalItemsCount);
+                }
+            });
+        }
+
+        function renderCartUI(data) {
+            const emptyState = document.getElementById('cartEmptyState');
+            const contentWrapper = document.getElementById('cartContentWrapper');
+            const clearBtn = document.getElementById('btnClearCartBtn');
+            const itemsList = document.getElementById('cartItemsList');
+
+            if (!data.items || data.items.length === 0) {
+                if (emptyState) emptyState.style.display = 'block';
+                if (contentWrapper) contentWrapper.style.display = 'none';
+                if (clearBtn) clearBtn.style.display = 'none';
+                return;
+            }
+
+            if (emptyState) emptyState.style.display = 'none';
+            if (contentWrapper) contentWrapper.style.display = 'block';
+            if (clearBtn) clearBtn.style.display = 'inline-block';
+
+            if (itemsList) {
+                let html = '';
+                data.items.forEach(item => {
+                    const img = item.imageUrl ? `<img src="${item.imageUrl}" class="rounded-4 shadow-sm" alt="${item.productName}" style="width: 85px; height: 85px; object-fit: cover; border: 1px solid #f1f5f9;" />`
+                                             : `<div class="bg-light rounded-4 d-flex align-items-center justify-content-center border" style="width: 85px; height: 85px;"><i class="bi bi-tree text-success fs-2"></i></div>`;
+                    html += `
+                        <div class="cart-item-card" id="cartItemRow_${item.productId}">
+                            <div class="d-flex align-items-start gap-3">
+                                ${img}
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill small mb-1 border border-success border-opacity-25" style="font-size: 0.72rem;">
+                                                ${item.categoryName || 'Farm Produce'}
+                                            </span>
+                                            <h5 class="fw-extrabold text-dark mb-1 fs-5">${item.productName}</h5>
+                                            <div class="text-muted small">
+                                                <span>Producer: <strong class="text-dark">${item.farmerName || 'Verified Farmer'}</strong></span>
+                                                <span class="ms-2 text-success fw-semibold">&bull; ₹${Number(item.unitPrice).toFixed(2)} / Kg</span>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-1.5 shadow-sm" title="Remove Item" onclick="removeCartItem(${item.productId})">
+                                            <i class="bi bi-trash3"></i> <span class="d-none d-sm-inline">Remove</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-3 border-top">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="text-muted small fw-bold">Quantity:</span>
+                                            <div class="cart-stepper-container">
+                                                <button type="button" class="cart-stepper-btn" onclick="updateCartQty(${item.productId}, ${item.quantity - 1})">
+                                                    <i class="bi bi-dash"></i>
+                                                </button>
+                                                <span class="cart-stepper-value" id="cartItemQty_${item.productId}">${item.quantity} Kg</span>
+                                                <button type="button" class="cart-stepper-btn" onclick="updateCartQty(${item.productId}, ${item.quantity + 1})">
+                                                    <i class="bi bi-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="text-end mt-2 mt-sm-0">
+                                            <small class="text-muted d-block" style="font-size: 0.75rem;">Item Total</small>
+                                            <span class="fs-4 fw-extrabold text-success" id="cartItemTotal_${item.productId}">₹${Number(item.totalPrice).toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                itemsList.innerHTML = html;
+            }
+
+            // Update Totals
+            const countEl = document.getElementById('cartSummaryItemCount');
+            const baseEl = document.getElementById('cartSummaryBaseTotal');
+            const feeEl = document.getElementById('cartSummaryPlatformFee');
+            const grandEl = document.getElementById('cartSummaryGrandTotal');
+
+            if (countEl) countEl.textContent = `${data.totalItemsCount} Kg (${data.items.length} Varieties)`;
+            if (baseEl) baseEl.textContent = `₹${Number(data.baseTotal).toFixed(2)}`;
+            if (feeEl) feeEl.textContent = `₹${Number(data.platformFee).toFixed(2)}`;
+            if (grandEl) grandEl.textContent = `₹${Number(data.grandTotal).toFixed(2)}`;
         }
     </script>
 }

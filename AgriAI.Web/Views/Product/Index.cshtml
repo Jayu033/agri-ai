@@ -282,8 +282,11 @@
 
                         <!-- Card Action Buttons with proper margins -->
                         <div class="mt-auto pt-1 d-flex gap-2 align-items-center">
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-success rounded-pill fw-bold w-100 py-2.5 shadow-sm d-flex align-items-center justify-content-center gap-2" style="background-color: #006653; border-color: #006653;">
-                                <i class="bi bi-cart-check-fill fs-6"></i> View &amp; Buy Now
+                            <button type="button" class="btn btn-outline-success rounded-pill fw-bold px-3 py-2 shadow-sm d-flex align-items-center justify-content-center gap-1.5 flex-grow-1" onclick="addToCartAjax(@item.Id, 1, '@item.Name')">
+                                <i class="bi bi-cart-plus fs-6"></i> Add to Cart
+                            </button>
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-success rounded-pill fw-bold px-3 py-2 shadow-sm d-flex align-items-center justify-content-center gap-1.5 flex-grow-1" style="background-color: #006653; border-color: #006653;">
+                                <i class="bi bi-lightning-charge-fill fs-6"></i> Buy Now
                             </a>
                             @if (User.IsInRole("Admin") || User.IsInRole("Farmer"))
                             {
@@ -328,6 +331,52 @@
             } else {
                 card.style.display = 'none';
             }
+        });
+    }
+
+    function showFloatingToast(message, isSuccess = true) {
+        let toast = document.getElementById('agriai-floating-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'agriai-floating-toast';
+            toast.style.position = 'fixed';
+            toast.style.bottom = '28px';
+            toast.style.right = '28px';
+            toast.style.zIndex = '999999';
+            toast.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+            document.body.appendChild(toast);
+        }
+        toast.innerHTML = `
+            <div class="alert ${isSuccess ? 'alert-success border-success' : 'alert-danger border-danger'} shadow-lg rounded-4 p-3 d-flex align-items-center gap-2 mb-0" style="min-width: 290px; background-color: #ffffff;">
+                <i class="bi ${isSuccess ? 'bi-check-circle-fill text-success' : 'bi-exclamation-circle-fill text-danger'} fs-5"></i>
+                <div class="flex-grow-1 small fw-bold text-dark">${message}</div>
+                <a href="/Customer/Dashboard?tab=cartTab" class="btn btn-xs btn-outline-success rounded-pill px-2.5 py-1 fw-bold text-nowrap">View Cart</a>
+                <button type="button" class="btn-close btn-sm shadow-none" onclick="this.closest('#agriai-floating-toast').style.display='none'"></button>
+            </div>
+        `;
+        toast.style.display = 'block';
+        setTimeout(() => {
+            if (toast) toast.style.display = 'none';
+        }, 4500);
+    }
+
+    function addToCartAjax(productId, qty, name) {
+        fetch('/Cart/AddToCart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `productId=${productId}&quantity=${qty || 1}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showFloatingToast(data.message || `🌾 ${name} added to cart!`);
+            } else {
+                showFloatingToast(data.message || 'Could not add to cart', false);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showFloatingToast('Error adding to cart', false);
         });
     }
 </script>

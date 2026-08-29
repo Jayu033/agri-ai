@@ -303,10 +303,14 @@
                                     <span class="fs-3 fw-extrabold text-success" id="totalPricePreview">₹@Model.Price.ToString("N2")</span>
                                 </div>
                             </div>
-
-                            <button type="submit" class="btn btn-success btn-lg py-3 fw-bold rounded-pill shadow w-100 d-flex align-items-center justify-content-center gap-2" style="background-color: #006653; border-color: #006653;">
-                                <i class="bi bi-cart-check-fill fs-5"></i> Buy Selected Produce (<span id="btnAmountPreview">₹@Model.Price.ToString("N2")</span>)
-                            </button>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-success btn-lg py-3 fw-bold rounded-pill shadow-sm flex-grow-1 d-flex align-items-center justify-content-center gap-2" onclick="addToCartFromDetails()">
+                                    <i class="bi bi-cart-plus fs-5"></i> Add to Cart
+                                </button>
+                                <button type="submit" class="btn btn-success btn-lg py-3 fw-bold rounded-pill shadow flex-grow-1 d-flex align-items-center justify-content-center gap-2" style="background-color: #006653; border-color: #006653;">
+                                    <i class="bi bi-lightning-charge-fill fs-5"></i> Buy Now (<span id="btnAmountPreview">₹@Model.Price.ToString("N2")</span>)
+                                </button>
+                            </div>
                             <div class="text-center mt-2.5">
                                 <small class="text-muted" style="font-size: 0.75rem;">
                                     <i class="bi bi-shield-check text-success me-1"></i> 100% Escrow Protected Trade &bull; Quality Checked at Farm
@@ -318,8 +322,8 @@
                     {
                         <div class="p-4 bg-light rounded-4 border text-center">
                             <i class="bi bi-exclamation-circle text-warning fs-2 d-block mb-2"></i>
-                            <h6 class="fw-bold text-dark mb-1">Currently Out of Stock</h6>
-                            <p class="text-muted small mb-0">This farm produce is currently not available for purchase. Please check back after the next harvest.</p>
+                            <h6 class="fw-bold text-dark mb-1">Harvest Currently Out of Stock</h6>
+                            <p class="text-muted small mb-0">The farmer is preparing the next fresh harvest lot. Please check back soon or explore other verified crops.</p>
                         </div>
                     }
                 </div>
@@ -373,5 +377,52 @@
                 qtyInput.addEventListener("input", updatePrice);
             }
         });
+
+        function showFloatingToast(message, isSuccess = true) {
+            let toast = document.getElementById('agriai-floating-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'agriai-floating-toast';
+                toast.style.position = 'fixed';
+                toast.style.bottom = '28px';
+                toast.style.right = '28px';
+                toast.style.zIndex = '999999';
+                toast.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = `
+                <div class="alert ${isSuccess ? 'alert-success border-success' : 'alert-danger border-danger'} shadow-lg rounded-4 p-3 d-flex align-items-center gap-2 mb-0" style="min-width: 290px; background-color: #ffffff;">
+                    <i class="bi ${isSuccess ? 'bi-check-circle-fill text-success' : 'bi-exclamation-circle-fill text-danger'} fs-5"></i>
+                    <div class="flex-grow-1 small fw-bold text-dark">${message}</div>
+                    <a href="/Customer/Dashboard?tab=cartTab" class="btn btn-xs btn-outline-success rounded-pill px-2.5 py-1 fw-bold text-nowrap">View Cart</a>
+                    <button type="button" class="btn-close btn-sm shadow-none" onclick="this.closest('#agriai-floating-toast').style.display='none'"></button>
+                </div>
+            `;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                if (toast) toast.style.display = 'none';
+            }, 4500);
+        }
+
+        function addToCartFromDetails() {
+            const qty = parseInt(document.getElementById("qtyInput")?.value) || 1;
+            fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productId=@Model.Id&quantity=${qty}`
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showFloatingToast(data.message || `🌾 ${qty} Kg of @Model.Name added to cart!`);
+                } else {
+                    showFloatingToast(data.message || 'Could not add to cart', false);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showFloatingToast('Error adding to cart', false);
+            });
+        }
     </script>
 }

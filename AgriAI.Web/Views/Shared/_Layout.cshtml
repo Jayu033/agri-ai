@@ -451,6 +451,20 @@
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('/Cart/GetCartCount')
+                .then(r => r.json())
+                .then(d => {
+                    const badge = document.getElementById('navbarCartBadge');
+                    if (badge && d.count > 0) {
+                        badge.textContent = d.count;
+                        badge.style.display = 'inline-block';
+                    }
+                })
+                .catch(() => {});
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -27,13 +27,17 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 // Live Mandi Govt API Services & Caching
 builder.Services.AddMemoryCache();
+builder.Services.AddDistributedMemoryCache();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<AgriAI.Web.Services.ILiveMandiService, AgriAI.Web.Services.LiveMandiService>();
 
 builder.Services.AddSession(options => {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.IdleTimeout = TimeSpan.FromDays(7);
+    options.Cookie.Name = ".AgriAI.Session";
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
 builder.Services.AddControllersWithViews();
@@ -50,9 +54,9 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseSession();
 
 app.MapStaticAssets();
 
