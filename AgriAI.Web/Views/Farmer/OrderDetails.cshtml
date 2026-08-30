@@ -1,0 +1,653 @@
+@model AgriAI.Domain.Entities.Order
+@using AgriAI.Infrastructure.Identity
+
+@{
+    ViewData["Title"] = $"Order #{Model.Id:D5} Management";
+    var buyer = ViewBag.CustomerUser as ApplicationUser;
+    var buyerName = buyer != null 
+        ? (!string.IsNullOrEmpty(buyer.FirstName) || !string.IsNullOrEmpty(buyer.LastName) 
+            ? $"{buyer.FirstName} {buyer.LastName}".Trim() 
+            : buyer.UserName) 
+        : (!string.IsNullOrEmpty(Model.CustomerId) && Model.CustomerId.Length < 20 ? Model.CustomerId : "Retail Customer");
+    var buyerPhone = buyer?.PhoneNumber ?? "+91 97245 60047";
+    var buyerEmail = buyer?.Email ?? "customer@agriai.com";
+    var buyerInitial = !string.IsNullOrEmpty(buyerName) ? buyerName.Substring(0, 1).ToUpper() : "C";
+
+    var baseAmount = Model.TotalAmount - Model.LogisticsFee - Model.PlatformFee;
+    var orderNoStr = "AG-" + Model.Id.ToString("D5");
+    var dateFormatted = Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt");
+    var firstItem = Model.OrderItems.FirstOrDefault();
+    var produceName = firstItem?.Product?.Name ?? "Farm Crop Harvest";
+    var itemQty = firstItem?.Quantity ?? 1;
+    var unitPrice = firstItem?.UnitPrice ?? Model.TotalAmount;
+    var remainingSeconds = Model.CancellationDeadline.HasValue ? (int)Math.Max(0, (Model.CancellationDeadline.Value - DateTime.UtcNow).TotalSeconds) : 0;
+    var isParcel = Model.TransportType != null && (Model.TransportType.Contains("Cargo") || Model.TransportType.Contains("GSRTC") || Model.TransportType.Contains("Parcel"));
+    var isSettled = Model.Status.Contains("Delivered") || Model.Status.Contains("Settled") || Model.Status == "Completed" || Model.Status == "Cash Received & Delivered";
+}
+
+<div class="container-fluid py-4 my-2 px-3 px-md-4 px-lg-5" style="max-width: 1380px;">
+    
+    <!-- Top Header Bar with Clean Navigation -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-action="Dashboard" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 fw-bold small">
+                <i class="bi bi-arrow-left me-1"></i> Back to Orders
+            </a>
+            <h2 class="fw-extrabold text-dark mb-0">Order #@Model.Id.ToString("D5")</h2>
+            @if (Model.Status == "Requested")
+            {
+                <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                    <i class="bi bi-hourglass-top me-1"></i>New Request ⏳
+                </span>
+            }
+            else if (Model.Status == "Accepted")
+            {
+                @if (Model.CancellationDeadline.HasValue && DateTime.UtcNow < Model.CancellationDeadline.Value)
+                {
+                    <span class="badge bg-info text-dark fw-bold px-3 py-1.5 rounded-pill">
+                        <i class="bi bi-clock-history me-1"></i>Accepted (Review Window Active)
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill">
+                        <i class="bi bi-lock-fill me-1"></i>Locked for Dispatch
+                    </span>
+                }
+            }
+            else if (Model.Status == "Ready for Pickup")
+            {
+                <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                    <i class="bi bi-check-circle-fill me-1"></i>Ready for Pickup 🟢
+                </span>
+            }
+            else if (Model.Status == "In Transit")
+            {
+                <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                    <i class="bi bi-truck me-1"></i>In Transit
+                </span>
+            }
+            else if (Model.Status == "Declined")
+            {
+                <span class="badge bg-danger text-white fw-bold px-3 py-1.5 rounded-pill">
+                    <i class="bi bi-x-circle-fill me-1"></i>Declined
+                </span>
+            }
+            else if (Model.Status == "Cancelled")
+            {
+                <span class="badge bg-secondary text-white fw-bold px-3 py-1.5 rounded-pill">
+                    <i class="bi bi-slash-circle me-1"></i>Cancelled by Buyer
+                </span>
+            }
+            else if (isSettled)
+            {
+                <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill">
+                    <i class="bi bi-check-circle-fill me-1"></i>Delivered &amp; Settled 🟢
+                </span>
+            }
+            else
+            {
+                <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill">
+                    <i class="bi bi-box-seam me-1"></i>@Model.Status
+                </span>
+            }
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-success rounded-pill px-3.5 py-2 fw-bold small shadow-sm" style="background-color: #006653; border-color: #006653;" onclick="printOrderInvoice('@orderNoStr', '@dateFormatted', '@buyerName', '@produceName', @itemQty, @unitPrice, @baseAmount, @Model.LogisticsFee, @Model.PlatformFee, @Model.TotalAmount, '@(Model.PaymentMethod ?? "Online (Escrow)")', '@(Model.TransportType ?? "Direct Farm Pickup")', '@(string.IsNullOrEmpty(Model.ShippingAddress) ? "Gujarat Farm Location" : Model.ShippingAddress)')">
+                <i class="bi bi-printer me-1"></i> Print Tax Invoice
+            </button>
+        </div>
+    </div>
+
+    <!-- Alert Banner: Contextual Farmer Action & Status Message -->
+    @if (Model.Status == "Requested")
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-dark bg-warning bg-opacity-10 border border-warning border-opacity-25">
+            <div class="row align-items-center g-3">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
+                            <i class="bi bi-inbox-fill me-1"></i>NEW BUYER PURCHASE REQUEST
+                        </span>
+                        <span class="text-muted small">₹@Model.TotalAmount.ToString("N2") Secured in Escrow</span>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">Incoming Crop Order Request from @buyerName</h5>
+                    <p class="text-muted small mb-0">
+                        Please review the requested crop quantities and accept this order to start harvest packing.
+                    </p>
+                </div>
+                <div class="col-md-5 text-md-end d-flex flex-wrap justify-content-md-end gap-2">
+                    <form asp-action="AcceptOrder" method="post" class="d-inline m-0">
+                        <input type="hidden" name="orderId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-success rounded-pill px-3.5 py-2 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;">
+                            <i class="bi bi-check-circle-fill me-1"></i> Accept Order
+                        </button>
+                    </form>
+                    <form asp-action="UpdateOrderStatus" method="post" class="d-inline m-0">
+                        <input type="hidden" name="orderId" value="@Model.Id" />
+                        <input type="hidden" name="status" value="Ready for Pickup" />
+                        <button type="submit" class="btn btn-warning text-dark rounded-pill px-3 py-2 fw-bold shadow-sm" title="Instant College Demo Bypass">
+                            <i class="bi bi-lightning-charge-fill me-1"></i> ⚡ Instant Ready (Demo)
+                        </button>
+                    </form>
+                    <button type="button" class="btn btn-outline-danger rounded-pill px-3 py-2 fw-bold" onclick="toggleDeclineDetailsBox()">
+                        <i class="bi bi-x-circle me-1"></i> Decline
+                    </button>
+                </div>
+            </div>
+
+            <div id="declineDetailsBox" class="mt-3 p-3 bg-white rounded-3 border" style="display: none;">
+                <form asp-action="DeclineOrder" method="post">
+                    <input type="hidden" name="orderId" value="@Model.Id" />
+                    <label class="form-label small fw-bold text-danger mb-1">Reason for declining order request:</label>
+                    <textarea name="reason" class="form-control rounded-3 mb-2 small shadow-none" rows="2" placeholder="e.g. Current crop harvest exhausted / logistics unserviceable..." required></textarea>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" onclick="toggleDeclineDetailsBox()">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold">Confirm Decline &amp; Refund Buyer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+    else if (Model.Status == "Accepted")
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-white" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%);">
+            <div class="row align-items-center g-3">
+                <div class="col-md-7">
+                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
+                            <i class="bi bi-check2-circle me-1"></i>ORDER ACCEPTED BY PRODUCER
+                        </span>
+                        @if (remainingSeconds > 0)
+                        {
+                            var fh = remainingSeconds / 3600;
+                            var fm = (remainingSeconds % 3600) / 60;
+                            var fs = remainingSeconds % 60;
+                            <span class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 px-2.5 py-1 rounded-pill small" id="farmerReviewCountdown" data-remaining="@remainingSeconds">
+                                ⏳ @($"{fh:D2}h {fm:D2}m {fs:D2}s") Review Window
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success bg-opacity-75 text-white border px-2.5 py-1 rounded-pill small">
+                                🔒 Locked for Dispatch
+                            </span>
+                        }
+                    </div>
+                    <h4 class="fw-bold text-white mb-1">Harvest &amp; Packaging in Progress</h4>
+                    <p class="text-white-50 small mb-0">
+                        @(isParcel ? "Prepare the parcel and hand it over to GSRTC/Cargo logistics. Upload the stamped Bilty receipt slip below." : "Harvest and package the produce for direct buyer farm pickup. Mark it ready once packed.")
+                    </p>
+                </div>
+                <div class="col-md-5 text-md-end d-flex flex-column align-items-md-end gap-2">
+                    <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                        @if (isParcel)
+                        {
+                            <button type="button" class="btn btn-warning rounded-pill px-4 py-2 fw-bold shadow" data-bs-toggle="modal" data-bs-target="#farmerBiltyModal">
+                                <i class="bi bi-bus-front-fill me-1"></i> Dispatch &amp; Upload Bilty
+                            </button>
+                        }
+                        else
+                        {
+                            <form asp-action="UpdateOrderStatus" method="post" class="d-inline m-0">
+                                <input type="hidden" name="orderId" value="@Model.Id" />
+                                <input type="hidden" name="status" value="Ready for Pickup" />
+                                <button type="submit" class="btn btn-warning rounded-pill px-4 py-2 fw-bold shadow">
+                                    <i class="bi bi-box-seam me-1"></i> ⚡ Mark Ready for Pickup
+                                </button>
+                            </form>
+                        }
+                    </div>
+                    <small class="text-white-50" style="font-size: 0.76rem;">
+                        <i class="bi bi-lightning-fill text-warning me-0.5"></i> Demo Shortcut: Click above to lock &amp; mark ready instantly without waiting 3 hours.
+                    </small>
+                </div>
+            </div>
+        </div>
+    }
+    else if (Model.Status == "Ready for Pickup")
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-success bg-opacity-10 border border-success border-opacity-25">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-success text-white fw-bold px-2.5 py-1 rounded-pill small">
+                            <i class="bi bi-check-circle-fill me-1"></i>READY FOR FARM PICKUP
+                        </span>
+                        <span class="text-muted small">Customer Notified</span>
+                    </div>
+                    <h5 class="fw-bold text-success mb-1">Produce is Packed &amp; Waiting for Buyer Collection</h5>
+                    <p class="text-muted small mb-0">
+                        Ask the customer for their 4-digit confidential delivery OTP when they arrive at the farm to release payment.
+                    </p>
+                </div>
+                <div>
+                    <a href="#otpVerificationCard" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;">
+                        <i class="bi bi-shield-check me-1"></i> Verify Customer OTP
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+    else if (Model.Status == "In Transit")
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-primary bg-opacity-10 border border-primary border-opacity-25">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-primary text-white fw-bold px-2.5 py-1 rounded-pill small">
+                            <i class="bi bi-truck me-1"></i>IN TRANSIT VIA CARGO
+                        </span>
+                        <span class="text-muted small">Bilty / LR: <strong class="text-dark font-monospace">@Model.BiltyNumber</strong></span>
+                    </div>
+                    <h5 class="fw-bold text-primary mb-1">Dispatched via @(string.IsNullOrEmpty(Model.CargoServiceName) ? "GSRTC ST Bus Parcel" : Model.CargoServiceName)</h5>
+                    <p class="text-muted small mb-0">
+                        When the buyer receives the parcel at their destination, enter the 4-digit OTP or wait for automatic escrow release.
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    @if (!string.IsNullOrEmpty(Model.BiltyImageUrl))
+                    {
+                        <a href="@Model.BiltyImageUrl" target="_blank" class="btn btn-outline-primary rounded-pill px-3.5 py-2 fw-bold small">
+                            <i class="bi bi-receipt me-1"></i> View Bilty Slip
+                        </a>
+                    }
+                    <a href="#otpVerificationCard" class="btn btn-primary rounded-pill px-3.5 py-2 fw-bold small shadow-sm">
+                        <i class="bi bi-shield-check me-1"></i> Enter OTP
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- 2-Column Main Content Layout -->
+    <div class="row g-4">
+        
+        <!-- Left Column: Ordered Crop Produce & Order Details -->
+        <div class="col-lg-8">
+            
+            <!-- Ordered Produce Items Card -->
+            <div class="card border rounded-4 bg-white shadow-sm overflow-hidden mb-4">
+                <div class="card-header bg-white border-bottom p-3.5 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-box-seam text-success me-2"></i>Ordered Farm Produce Items
+                    </h5>
+                    <span class="badge bg-light text-dark border">@Model.OrderItems.Count Items</span>
+                </div>
+                <div class="card-body p-3.5">
+                    @foreach (var item in Model.OrderItems)
+                    {
+                        var itemImg = item.Product?.Images?.FirstOrDefault()?.ImageUrl;
+                        <div class="d-flex flex-wrap align-items-center justify-content-between py-2 border-bottom last-border-0 gap-3">
+                            <div class="d-flex align-items-center gap-3">
+                                @if (!string.IsNullOrEmpty(itemImg))
+                                {
+                                    <img src="@itemImg" class="rounded-3 shadow-sm" alt="@(item.Product?.Name ?? "Crop")" style="width: 70px; height: 70px; object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <div class="bg-light rounded-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                        <i class="bi bi-tree text-success fs-3"></i>
+                                    </div>
+                                }
+                                <div>
+                                    <span class="badge bg-light text-success border small mb-1">@(item.Product?.Category?.Name ?? "Farm Produce")</span>
+                                    <h6 class="fw-bold text-dark mb-0 fs-6">@(item.Product?.Name ?? "Harvest Crop")</h6>
+                                    <small class="text-muted">Quantity: <strong class="text-dark">@item.Quantity Kg</strong> @@ ₹@item.UnitPrice.ToString("N2") / Kg</small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="text-muted small d-block">Subtotal</span>
+                                <span class="fw-extrabold text-success fs-5">₹@((item.UnitPrice * item.Quantity).ToString("N2"))</span>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Pricing Micro-Breakdown -->
+                    <div class="pt-3">
+                        <div class="d-flex justify-content-between small text-muted mb-1.5">
+                            <span>Farmer Produce Value:</span>
+                            <span class="fw-bold text-success fs-6">₹@baseAmount.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted mb-1.5">
+                            <span>Transport / Logistics (Customer paid):</span>
+                            <span class="text-dark">₹@Model.LogisticsFee.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted mb-2">
+                            <span>Platform Escrow Fee (Customer paid tax):</span>
+                            <span class="text-dark">₹@Model.PlatformFee.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between border-top pt-2 small text-muted mb-1.5">
+                            <span>Total Paid by Customer:</span>
+                            <span class="text-dark fw-bold">₹@Model.TotalAmount.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between border-top pt-2 fs-5">
+                            <strong class="text-dark">Net Farmer Payout (Your Earning):</strong>
+                            <strong class="text-success fw-extrabold">₹@baseAmount.ToString("N2")</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Verification & Settlement Card (OTP Form) -->
+            <div id="otpVerificationCard" class="card border rounded-4 bg-white shadow-sm overflow-hidden mb-4">
+                <div class="card-header bg-white border-bottom p-3.5">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-shield-check text-success me-2"></i>Delivery Verification &amp; Payment Settlement
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    @if (isSettled)
+                    {
+                        <div class="alert alert-success p-3 rounded-4 mb-0 d-flex align-items-center gap-3">
+                            <i class="bi bi-patch-check-fill text-success fs-1"></i>
+                            <div>
+                                <h6 class="fw-bold text-success mb-1">Order Completed &amp; Payout Released!</h6>
+                                <p class="text-muted small mb-0">
+                                    Delivery OTP was successfully verified. ₹@baseAmount.ToString("N2") net produce earnings have been credited to your farmer account wallet.
+                                </p>
+                            </div>
+                        </div>
+                    }
+                    else if (Model.PaymentMethod == "Cash on Delivery")
+                    {
+                        <div class="p-3 bg-warning bg-opacity-10 rounded-4 border border-warning border-opacity-25">
+                            <h6 class="fw-bold text-dark mb-1">Cash on Delivery Collection</h6>
+                            <p class="text-muted small mb-3">
+                                Collect the cash payment directly from the customer upon handing over the harvested produce.
+                            </p>
+                            <form asp-action="UpdateOrderStatus" method="post" class="m-0">
+                                <input type="hidden" name="orderId" value="@Model.Id" />
+                                <input type="hidden" name="status" value="Cash Received & Delivered" />
+                                <button type="submit" class="btn btn-warning text-dark rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                    <i class="bi bi-cash-stack me-1"></i> Mark Cash Received (₹@baseAmount.ToString("N2"))
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-3 bg-light rounded-4 border">
+                            <h6 class="fw-bold text-dark mb-1">Enter Customer's 4-Digit Delivery OTP</h6>
+                            <p class="text-muted small mb-3">
+                                When you hand over the crop produce to the buyer or cargo, ask the customer for their confidential 4-digit OTP shown in their app.
+                            </p>
+
+                            <form asp-action="VerifyDeliveryOtp" method="post" class="row g-2 align-items-center">
+                                <input type="hidden" name="orderId" value="@Model.Id" />
+                                <div class="col-sm-6 col-md-5">
+                                    <input type="text" name="enteredOtp" placeholder="e.g. 4821" maxlength="4" class="form-control text-center fw-bold fs-4 bg-white shadow-none" style="letter-spacing: 4px;" required />
+                                </div>
+                                <div class="col-sm-6 col-md-7">
+                                    <button type="submit" class="btn btn-success fw-bold rounded-pill px-4 py-2.5 w-100 shadow-sm" style="background-color: #006653; border-color: #006653;">
+                                        <i class="bi bi-shield-check me-1"></i> Verify OTP &amp; Release Payout
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Buyer Profile, Transport & Escrow Info -->
+        <div class="col-lg-4">
+            
+            <!-- Customer / Buyer Profile Card -->
+            <div class="card border rounded-4 bg-white shadow-sm overflow-hidden mb-4">
+                <div class="card-header bg-white border-bottom p-3.5">
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-person-circle text-success me-2"></i>Customer / Buyer Profile
+                    </h6>
+                </div>
+                <div class="card-body p-3.5">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold fs-5 shadow-sm" style="width: 50px; height: 50px; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">
+                            @buyerInitial
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-0">@buyerName</h6>
+                            <span class="badge bg-success bg-opacity-10 text-success fw-bold small">Verified Buyer</span>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-3 border mb-3">
+                        <div class="mb-2">
+                            <small class="text-muted d-block">Phone Number:</small>
+                            <strong class="text-dark">@buyerPhone</strong>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Email Address:</small>
+                            <strong class="text-dark">@buyerEmail</strong>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="tel:@buyerPhone" class="btn btn-outline-success rounded-pill fw-bold py-2">
+                            <i class="bi bi-telephone-fill me-1"></i> Call Customer
+                        </a>
+                        <a href="https://wa.me/@(buyerPhone.Replace("+","").Replace(" ",""))?text=Hello%20@buyerName,%20regarding%20your%20AgriAI%20order%20#@Model.Id:D5%20for%20crop%20produce..." target="_blank" class="btn btn-success rounded-pill fw-bold py-2 shadow-sm" style="background-color: #25D366; border-color: #25D366;">
+                            <i class="bi bi-whatsapp me-1"></i> WhatsApp Message
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transport & Logistics Card -->
+            <div class="card border rounded-4 bg-white shadow-sm overflow-hidden mb-4">
+                <div class="card-header bg-white border-bottom p-3.5">
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-truck text-success me-2"></i>Logistics &amp; Transport
+                    </h6>
+                </div>
+                <div class="card-body p-3.5">
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Selected Delivery Mode:</small>
+                        <span class="badge bg-light text-dark border fw-bold fs-6 mt-1">
+                            <i class="bi bi-truck me-1"></i>@(Model.TransportType ?? "Direct Farm Pickup")
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Delivery / Pickup Address:</small>
+                        <p class="text-dark small mb-0 fw-semibold">
+                            @(string.IsNullOrEmpty(Model.ShippingAddress) ? "Gujarat Farm Location / Direct APMC Mandi Collection" : Model.ShippingAddress)
+                        </p>
+                    </div>
+
+                    @if (isParcel && !string.IsNullOrEmpty(Model.BiltyNumber))
+                    {
+                        <div class="p-3 bg-light rounded-3 border">
+                            <small class="text-muted d-block">Cargo Service:</small>
+                            <strong class="text-dark d-block mb-1">@(string.IsNullOrEmpty(Model.CargoServiceName) ? "GSRTC ST Bus Parcel" : Model.CargoServiceName)</strong>
+                            
+                            <small class="text-muted d-block">Bilty / LR Number:</small>
+                            <strong class="text-primary font-monospace fs-6">@Model.BiltyNumber</strong>
+
+                            @if (!string.IsNullOrEmpty(Model.BiltyImageUrl))
+                            {
+                                <div class="mt-2">
+                                    <a href="@Model.BiltyImageUrl" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill w-100 fw-bold">
+                                        <i class="bi bi-receipt me-1"></i> View Uploaded Bilty
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Modal: Upload GSRTC / Cargo Bilty Slip -->
+<div class="modal fade" id="farmerBiltyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
+            <div class="modal-header bg-primary text-white p-3.5 px-4">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-bus-front-fill me-1"></i> GSRTC / Cargo Bilty Dispatch (Order #@Model.Id:D5)
+                </h5>
+                <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="UploadBiltyAndDispatch" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="orderId" value="@Model.Id" />
+                <div class="modal-body p-4">
+                    <div class="alert alert-info p-2.5 rounded-3 mb-3 small">
+                        <i class="bi bi-info-circle-fill me-1"></i> <strong>Proof of Dispatch:</strong> Uploading the official Bilty / LR receipt guarantees your escrow payout release within 24h.
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Transport / Cargo Service Name *</label>
+                        <select name="cargoServiceName" class="form-select rounded-3 small shadow-none" required>
+                            <option value="GSRTC ST Bus Parcel">GSRTC ST Bus Parcel (State Transport)</option>
+                            <option value="Patel Cargo Logistics">Patel Cargo Logistics</option>
+                            <option value="Shrinath Travels Cargo">Shrinath Travels Cargo</option>
+                            <option value="Eagle Cargo Express">Eagle Cargo Express</option>
+                            <option value="Direct Mini-Truck / Transport Vehicle">Direct Mini-Truck / Transport Vehicle</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Bilty / LR / Parcel Receipt Number *</label>
+                        <input type="text" name="biltyNumber" class="form-control rounded-3 small shadow-none" placeholder="e.g. GSRTC-RAJ-94821" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Bilty Receipt Slip Photo *</label>
+                        <input type="file" name="biltyFile" class="form-control rounded-3 small shadow-none" accept="image/*,.pdf" required />
+                        <small class="text-muted d-block mt-1">Take a clear photo of the stamped parcel receipt given by the transport counter.</small>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light p-3 px-4 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
+                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Upload &amp; Mark Dispatched
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleDeclineDetailsBox() {
+            const box = document.getElementById('declineDetailsBox');
+            if (box) {
+                box.style.display = box.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        function printOrderInvoice(orderNo, orderDate, customerName, produceName, qty, unitPrice, subtotal, logisticsFee, platformFee, grandTotal, paymentMethod, transportType, shippingAddress) {
+            const printWindow = window.open('', '_blank', 'width=850,height=900');
+            const formattedTotal = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(grandTotal);
+            const formattedSubtotal = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(subtotal);
+            const formattedLogistics = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(logisticsFee);
+            const formattedFee = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(platformFee);
+            const formattedUnit = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(unitPrice);
+
+            let invoiceHtml = '<!DOCTYPE html>' +
+                '<html><head><meta charset="utf-8">' +
+                '<title>Tax Invoice - ' + orderNo + ' - AgriAI Farm Portal</title>' +
+                '<style>' +
+                'body { font-family: "Segoe UI", Arial, sans-serif; margin: 0; padding: 25px; color: #1e293b; line-height: 1.4; }' +
+                '.invoice-card { max-width: 780px; margin: auto; border: 1px solid #cbd5e1; border-radius: 12px; padding: 30px; background: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }' +
+                '.header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #006653; padding-bottom: 15px; margin-bottom: 20px; }' +
+                '.logo-title { color: #006653; font-size: 24px; font-weight: 800; margin: 0; }' +
+                '.logo-sub { color: #64748b; font-size: 12px; margin: 2px 0 0 0; }' +
+                '.badge-inv { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px; }' +
+                '.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }' +
+                '.info-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 15px; }' +
+                '.info-box h4 { margin: 0 0 6px 0; font-size: 13px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; }' +
+                '.info-box p { margin: 3px 0; font-size: 12.5px; color: #475569; }' +
+                'table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }' +
+                'th { background: #f1f5f9; text-align: left; padding: 10px 12px; font-size: 12.5px; color: #334155; border-bottom: 2px solid #cbd5e1; }' +
+                'td { padding: 12px; font-size: 13px; border-bottom: 1px solid #e2e8f0; }' +
+                '.totals-table { width: 320px; margin-left: auto; margin-bottom: 20px; }' +
+                '.totals-table td { padding: 5px 8px; border: none; font-size: 12.5px; }' +
+                '.grand-row { border-top: 2px solid #006653 !important; font-size: 16px !important; font-weight: 800; color: #006653; padding-top: 8px !important; }' +
+                '.footer { border-top: 1px solid #e2e8f0; padding-top: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: #64748b; }' +
+                '.stamp { border: 2px dashed #86efac; background: #f0fdf4; padding: 6px 12px; border-radius: 6px; color: #15803d; font-weight: bold; font-size: 12px; }' +
+                '@@media print { body { padding: 0; } .invoice-card { border: none; padding: 10px; } }' +
+                '</style></head><body>' +
+                '<div class="invoice-card">' +
+                '<div class="header">' +
+                '<div><h1 class="logo-title">🌾 AgriAI Farm Portal</h1>' +
+                '<p class="logo-sub">Direct Farm-to-Buyer Agricultural Marketplace &bull; Gujarat, India</p></div>' +
+                '<div style="text-align: right;"><span class="badge-inv">PRODUCER TAX INVOICE</span>' +
+                '<p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b;"><strong>Order No:</strong> ' + orderNo + '</p>' +
+                '<p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;"><strong>Date &amp; Time:</strong> ' + orderDate + '</p></div>' +
+                '</div>' +
+                '<div class="info-grid">' +
+                '<div class="info-box">' +
+                '<h4>Buyer / Customer Details</h4>' +
+                '<p><strong>Name:</strong> ' + customerName + '</p>' +
+                '<p><strong>Account Type:</strong> Verified Buyer</p>' +
+                '<p><strong>Location:</strong> ' + shippingAddress + '</p>' +
+                '</div>' +
+                '<div class="info-box">' +
+                '<h4>Fulfillment &amp; Payment</h4>' +
+                '<p><strong>Payment Method:</strong> ' + paymentMethod + '</p>' +
+                '<p><strong>Transport Mode:</strong> ' + transportType + '</p>' +
+                '<p><strong>Settlement:</strong> 100% Escrow Protected</p>' +
+                '</div>' +
+                '</div>' +
+                '<table><thead><tr>' +
+                '<th>#</th>' +
+                '<th>Produce Item Description</th>' +
+                '<th>Quantity</th>' +
+                '<th>Unit Rate</th>' +
+                '<th style="text-align: right;">Amount (INR)</th>' +
+                '</tr></thead><tbody>' +
+                '<tr>' +
+                '<td>1</td>' +
+                '<td><strong>' + produceName + '</strong><br><small style="color: #64748b;">100% Farm Fresh Harvest</small></td>' +
+                '<td>' + qty + ' Kg</td>' +
+                '<td>' + formattedUnit + ' / Kg</td>' +
+                '<td style="text-align: right; font-weight: bold;">' + formattedSubtotal + '</td>' +
+                '</tr></tbody></table>' +
+                '<table class="totals-table">' +
+                '<tr><td style="color: #64748b;">Produce Subtotal:</td><td style="text-align: right; font-weight: 600;">' + formattedSubtotal + '</td></tr>' +
+                '<tr><td style="color: #64748b;">Logistics &amp; Transport:</td><td style="text-align: right; font-weight: 600;">' + formattedLogistics + '</td></tr>' +
+                '<tr><td style="color: #64748b;">Platform Escrow Fee:</td><td style="text-align: right; font-weight: 600;">' + formattedFee + '</td></tr>' +
+                '<tr class="grand-row"><td>Gross Total:</td><td style="text-align: right;">' + formattedTotal + '</td></tr>' +
+                '</table>' +
+                '<div class="footer">' +
+                '<div><p style="margin: 0;"><strong>Direct Agricultural Marketplace Document</strong></p>' +
+                '<p style="margin: 3px 0 0 0;">Generated electronically via AgriAI Direct Farm Management Platform.</p></div>' +
+                '<div class="stamp">✓ ESCROW VERIFIED</div>' +
+                '</div></div>' +
+                '<script>' +
+                'window.onload = function() { setTimeout(function() { window.print(); }, 300); };' +
+                '<\/script></body></html>';
+
+            printWindow.document.open();
+            printWindow.document.write(invoiceHtml);
+            printWindow.document.close();
+        }
+
+        // Live countdown timer for 3-Hour Review Window
+        let farmerRemSec = parseInt(document.getElementById('farmerReviewCountdown')?.getAttribute('data-remaining') || '0', 10);
+        if (farmerRemSec > 0) {
+            setInterval(function () {
+                const timerEl = document.getElementById('farmerReviewCountdown');
+                if (!timerEl) return;
+                if (farmerRemSec <= 0) {
+                    timerEl.textContent = "🔒 Locked for Dispatch";
+                    return;
+                }
+                const h = Math.floor(farmerRemSec / 3600);
+                const m = Math.floor((farmerRemSec % 3600) / 60);
+                const s = farmerRemSec % 60;
+                timerEl.textContent = "⏳ " + h.toString().padStart(2, '0') + "h " + m.toString().padStart(2, '0') + "m " + s.toString().padStart(2, '0') + "s Review Window";
+                farmerRemSec--;
+            }, 1000);
+        }
+    </script>
+}

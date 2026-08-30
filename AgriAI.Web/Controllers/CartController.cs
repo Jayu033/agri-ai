@@ -113,6 +113,23 @@ namespace AgriAI.Web.Controllers
                 return Json(new { success = false, message = "Product not found." });
             }
 
+            // Prevent farmer from purchasing their own listed crops
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser != null && !string.IsNullOrEmpty(product.FarmerId))
+                {
+                    if (product.FarmerId == currentUser.Id || product.FarmerId == currentUser.UserName)
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            message = "⚠️ તમે તમારો પોતાનો લિસ્ટેડ પાક ખરીદી શકતા નથી / You cannot purchase your own listed produce."
+                        });
+                    }
+                }
+            }
+
             if (product.StockQuantity <= 0)
             {
                 return Json(new { success = false, message = "Sorry, this product is currently out of stock." });

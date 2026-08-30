@@ -1,7 +1,10 @@
 @model IEnumerable<AgriAI.Domain.Entities.Product>
+@inject Microsoft.AspNetCore.Identity.UserManager<AgriAI.Infrastructure.Identity.ApplicationUser> UserManager
 
 @{
     ViewData["Title"] = "Farm Fresh Produce Marketplace";
+    var currentUserId = UserManager.GetUserId(User);
+    var currentUserName = User.Identity?.Name;
 }
 
 <style>
@@ -220,6 +223,7 @@
             var catNormalized = catName.ToLower();
             var stockQty = item.StockQuantity;
             var maundPrice = item.Price * 20;
+            var isOwnCrop = !string.IsNullOrEmpty(currentUserId) && (item.FarmerId == currentUserId || item.FarmerId == currentUserName);
 
             <div class="col-md-6 col-lg-4 col-xl-3 crop-card-item" data-category="@catNormalized" data-name="@item.Name.ToLower()">
                 <div class="product-card-modern">
@@ -235,9 +239,18 @@
                                 <i class="bi bi-tree display-4 opacity-50"></i>
                             </div>
                         }
-                        <span class="badge-organic-float">
-                            <i class="bi bi-patch-check-fill me-1"></i>100% Farm Fresh
-                        </span>
+                        @if (isOwnCrop)
+                        {
+                            <span class="badge-organic-float" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);">
+                                <i class="bi bi-person-check-fill me-1"></i>Your Listed Crop
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge-organic-float">
+                                <i class="bi bi-patch-check-fill me-1"></i>100% Farm Fresh
+                            </span>
+                        }
                         <span class="badge-stock-float">
                             @if (stockQty > 0)
                             {
@@ -282,12 +295,24 @@
 
                         <!-- Card Action Buttons with proper margins -->
                         <div class="mt-auto pt-1 d-flex gap-2 align-items-center">
-                            <button type="button" class="btn btn-outline-success rounded-pill fw-bold px-3 py-2 shadow-sm d-flex align-items-center justify-content-center gap-1.5 flex-grow-1" onclick="addToCartAjax(@item.Id, 1, '@item.Name')">
-                                <i class="bi bi-cart-plus fs-6"></i> Add to Cart
-                            </button>
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-success rounded-pill fw-bold px-3 py-2 shadow-sm d-flex align-items-center justify-content-center gap-1.5 flex-grow-1" style="background-color: #006653; border-color: #006653;">
-                                <i class="bi bi-lightning-charge-fill fs-6"></i> Buy Now
-                            </a>
+                            @if (isOwnCrop)
+                            {
+                                <a asp-controller="Farmer" asp-action="EditProduct" asp-route-id="@item.Id" class="btn btn-outline-primary rounded-pill fw-bold px-3 py-2 shadow-sm d-flex align-items-center justify-content-center gap-1.5 flex-grow-1" style="font-size: 0.85rem;">
+                                    <i class="bi bi-pencil-square fs-6"></i> Manage Listing
+                                </a>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-light border rounded-pill fw-bold px-3 py-2 shadow-sm d-flex align-items-center justify-content-center gap-1.5 flex-grow-1" style="font-size: 0.85rem;">
+                                    <i class="bi bi-eye fs-6"></i> Preview
+                                </a>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-outline-success rounded-pill fw-bold px-3 py-2 shadow-sm d-flex align-items-center justify-content-center gap-1.5 flex-grow-1" onclick="addToCartAjax(@item.Id, 1, '@item.Name')">
+                                    <i class="bi bi-cart-plus fs-6"></i> Add to Cart
+                                </button>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-success rounded-pill fw-bold px-3 py-2 shadow-sm d-flex align-items-center justify-content-center gap-1.5 flex-grow-1" style="background-color: #006653; border-color: #006653;">
+                                    <i class="bi bi-lightning-charge-fill fs-6"></i> Buy Now
+                                </a>
+                            }
                             @if (User.IsInRole("Admin") || User.IsInRole("Farmer"))
                             {
                                 <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">

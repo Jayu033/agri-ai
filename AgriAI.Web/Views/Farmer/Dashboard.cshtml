@@ -6,8 +6,35 @@
     var userInitial = userName.Substring(0, 1).ToUpper();
     var productCount = Model?.Count() ?? 0;
     var incomingOrders = ViewBag.Orders as List<AgriAI.Domain.Entities.Order> ?? new List<AgriAI.Domain.Entities.Order>();
-    decimal totalSales = ViewBag.TotalSales != null ? (decimal)ViewBag.TotalSales : incomingOrders.Sum(o => o.TotalAmount);
-    int pendingOrdersCount = ViewBag.PendingOrdersCount != null ? (int)ViewBag.PendingOrdersCount : incomingOrders.Count;
+    var customerUsers = ViewBag.CustomerUsers as Dictionary<string, AgriAI.Infrastructure.Identity.ApplicationUser> ?? new Dictionary<string, AgriAI.Infrastructure.Identity.ApplicationUser>();
+    
+    var activeOrders = incomingOrders
+        .Where(o => o.Status == "Requested" || o.Status == "Accepted" || o.Status == "Ready for Pickup" || o.Status == "In Transit")
+        .ToList();
+
+    var completedOrders = incomingOrders
+        .Where(o => o.Status.Contains("Delivered") || o.Status.Contains("Settled") || o.Status == "Completed" || o.Status == "Cash Received & Delivered" || o.Status == "Declined" || o.Status == "Cancelled")
+        .ToList();
+
+    var myProductIds = Model?.Select(p => p.Id).ToList() ?? new List<int>();
+
+    decimal settledIncome = completedOrders
+        .Where(o => !o.Status.Contains("Declined") && !o.Status.Contains("Cancelled"))
+        .SelectMany(o => o.OrderItems)
+        .Where(oi => myProductIds.Contains(oi.ProductId))
+        .Sum(oi => oi.UnitPrice * oi.Quantity);
+
+    decimal pendingEscrowIncome = activeOrders
+        .SelectMany(o => o.OrderItems)
+        .Where(oi => myProductIds.Contains(oi.ProductId))
+        .Sum(oi => oi.UnitPrice * oi.Quantity);
+
+    decimal totalSales = settledIncome + pendingEscrowIncome;
+    int totalKgSold = completedOrders
+        .Where(o => !o.Status.Contains("Declined") && !o.Status.Contains("Cancelled"))
+        .SelectMany(o => o.OrderItems)
+        .Where(oi => myProductIds.Contains(oi.ProductId))
+        .Sum(oi => oi.Quantity);
 }
 
 @section Styles {
@@ -32,31 +59,57 @@
                         </span>
                     </div>
 
-                    <!-- Navigation Tab Buttons -->
+                    <!-- Navigation Tab Buttons (Exact 7 Requested Tabs) -->
                     <div class="dash-nav-pills">
+                        <!-- 1. Dashboard Overview -->
                         <button type="button" class="dash-tab-link active" onclick="switchDashTab('farmerOverviewTab', this)">
                             <i class="bi bi-speedometer2"></i>
                             <span>Dashboard Overview</span>
                         </button>
                         
+                        <!-- 2. My Listed Products -->
                         <button type="button" class="dash-tab-link" onclick="switchDashTab('farmerProductsTab', this)">
                             <i class="bi bi-tree"></i>
-                            <span>My Listed Produce</span>
+                            <span>My Listed Products</span>
+                            <span class="badge bg-light text-success border ms-auto fw-bold">@productCount</span>
                         </button>
 
+                        <!-- 3. Customer Orders -->
                         <button type="button" class="dash-tab-link" onclick="switchDashTab('farmerOrdersTab', this)">
-                            <i class="bi bi-receipt"></i>
-                            <span>Manage Customer Orders</span>
+                            <i class="bi bi-box-seam"></i>
+                            <span>Customer Orders</span>
+                            @if (activeOrders.Count > 0)
+                            {
+                                <span class="badge bg-warning text-dark ms-auto fw-bold">@activeOrders.Count</span>
+                            }
                         </button>
 
+                        <!-- 4. Income -->
+                        <button type="button" class="dash-tab-link" onclick="switchDashTab('farmerIncomeTab', this)">
+                            <i class="bi bi-wallet2"></i>
+                            <span>Income</span>
+                        </button>
+
+                        <!-- 5. AI Price Predictor -->
                         <button type="button" class="dash-tab-link" onclick="switchDashTab('aiPredictorTab', this)">
                             <i class="bi bi-stars"></i>
                             <span>AI Price Predictor</span>
                         </button>
 
+                        <!-- 6. Completed Orders -->
+                        <button type="button" class="dash-tab-link" onclick="switchDashTab('farmerCompletedOrdersTab', this)">
+                            <i class="bi bi-check2-all"></i>
+                            <span>Completed Orders</span>
+                            @if (completedOrders.Count > 0)
+                            {
+                                <span class="badge bg-success text-white ms-auto fw-bold">@completedOrders.Count</span>
+                            }
+                        </button>
+
+                        <!-- 7. Settings -->
                         <button type="button" class="dash-tab-link" onclick="switchDashTab('farmerProfileTab', this)">
-                            <i class="bi bi-person-gear"></i>
-                            <span>Farm &amp; Profile Settings</span>
+                            <i class="bi bi-gear"></i>
+                            <span>Settings</span>
                         </button>
 
                         <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
@@ -73,7 +126,9 @@
             <div class="col-lg-9 col-md-8">
                 <div class="dash-main-card">
                     
-                    <!-- TAB 1: Dashboard Overview -->
+                    <!-- ========================================== -->
+                    <!-- TAB 1: Dashboard Overview                  -->
+                    <!-- ========================================== -->
                     <div id="farmerOverviewTab" class="dash-tab-panel active">
                         <div class="dash-section-header">
                             <div>
@@ -115,8 +170,8 @@
                                         <i class="bi bi-inbox-fill"></i>
                                     </div>
                                     <div>
-                                        <div class="dash-metric-num">@pendingOrdersCount</div>
-                                        <div class="dash-metric-label">Pending Orders</div>
+                                        <div class="dash-metric-num">@activeOrders.Count</div>
+                                        <div class="dash-metric-label">Active Orders</div>
                                     </div>
                                 </div>
                             </div>
@@ -139,18 +194,37 @@
                                 <div class="p-4 rounded-4 border bg-light bg-opacity-50 h-100 d-flex flex-column justify-content-between">
                                     <div>
                                         <div class="d-flex align-items-center justify-content-between mb-3">
-                                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-bag-check text-success me-2"></i>Incoming Produce Orders</h5>
-                                            <span class="badge bg-secondary bg-opacity-10 text-secondary fw-bold px-2.5 py-1 rounded-pill">0 New Inquiries</span>
+                                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-bag-check text-success me-2"></i>Active Customer Orders</h5>
+                                            <span class="badge @(activeOrders.Any() ? "bg-warning text-dark" : "bg-secondary bg-opacity-10 text-secondary") fw-bold px-2.5 py-1 rounded-pill">
+                                                @activeOrders.Count Ongoing
+                                            </span>
                                         </div>
-                                        <div class="p-4 bg-white rounded-3 border text-center my-2">
-                                            <i class="bi bi-inbox text-muted fs-2 d-block mb-2 opacity-50"></i>
-                                            <p class="text-muted small mb-0">No pending buyer orders right now. List fresh produce with high resolution pictures to get direct buyer inquiries.</p>
-                                        </div>
+                                        @if (activeOrders.Any())
+                                        {
+                                            var nextOrder = activeOrders.First();
+                                            <div class="p-3 bg-white rounded-3 border my-2">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <strong class="text-dark">Order #@nextOrder.Id.ToString("D5")</strong>
+                                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold">@nextOrder.Status</span>
+                                                </div>
+                                                <small class="text-muted d-block">Ordered @nextOrder.OrderDate.ToString("dd MMM yyyy, hh:mm tt") &bull; ₹@nextOrder.TotalAmount.ToString("N2")</small>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="p-4 bg-white rounded-3 border text-center my-2">
+                                                <i class="bi bi-inbox text-muted fs-2 d-block mb-2 opacity-50"></i>
+                                                <p class="text-muted small mb-0">No pending buyer orders right now. List fresh produce with high resolution pictures to get direct buyer inquiries.</p>
+                                            </div>
+                                        }
                                     </div>
-                                    <div class="pt-2">
+                                    <div class="pt-2 d-flex gap-2">
                                         <a asp-controller="Product" asp-action="Create" class="btn btn-sm btn-success fw-bold rounded-pill px-4">
                                             <i class="bi bi-plus-lg me-1"></i> Add Produce for Sale
                                         </a>
+                                        <button type="button" class="btn btn-sm btn-outline-success fw-bold rounded-pill px-3" onclick="switchDashTab('farmerOrdersTab', document.querySelectorAll('.dash-tab-link')[2])">
+                                            View Orders →
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -161,7 +235,7 @@
                                         <h6 class="fw-bold text-dark mb-1">AI Crop Price Forecasting</h6>
                                         <p class="text-muted small mb-3">Check accurate mandi modal rate forecasts for Gujarat crops (Cotton, Groundnut, Wheat, Jeera, Mustard).</p>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-success rounded-pill fw-bold w-100" onclick="switchDashTab('aiPredictorTab', document.querySelectorAll('.dash-tab-link')[3])">
+                                    <button type="button" class="btn btn-sm btn-success rounded-pill fw-bold w-100" onclick="switchDashTab('aiPredictorTab', document.querySelectorAll('.dash-tab-link')[4])">
                                         <i class="bi bi-stars me-1"></i> Open AI Predictor Tool
                                     </button>
                                 </div>
@@ -169,7 +243,9 @@
                         </div>
                     </div>
 
-                    <!-- TAB 2: My Listed Produce -->
+                    <!-- ========================================== -->
+                    <!-- TAB 2: My Listed Products                  -->
+                    <!-- ========================================== -->
                     <div id="farmerProductsTab" class="dash-tab-panel">
                         <div class="dash-section-header">
                             <div>
@@ -247,21 +323,21 @@
                         }
                     </div>
 
-                    <!-- TAB 3: Manage Customer Orders -->
+                    <!-- ========================================== -->
+                    <!-- TAB 3: Customer Orders (Active Orders)     -->
+                    <!-- ========================================== -->
                     <div id="farmerOrdersTab" class="dash-tab-panel">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">Customer Orders &amp; Direct Buyer Contact</h3>
-                                <p class="text-muted small mb-0">View incoming purchase requests, customer contact details, and arrange direct farm pickup/dispatch.</p>
+                                <h3 class="dash-section-title">Active Customer Orders &amp; Dispatch 🚚</h3>
+                                <p class="text-muted small mb-0">Manage incoming buyer purchase requests, prepare harvest, upload Bilty, and verify OTP.</p>
                             </div>
                         </div>
 
-                        @if (incomingOrders.Any())
+                        @if (activeOrders.Any())
                         {
-                            var customerUsers = ViewBag.CustomerUsers as Dictionary<string, AgriAI.Infrastructure.Identity.ApplicationUser> ?? new Dictionary<string, AgriAI.Infrastructure.Identity.ApplicationUser>();
-
                             <div class="d-flex flex-column gap-3 mb-3">
-                                @foreach (var order in incomingOrders)
+                                @foreach (var order in activeOrders)
                                 {
                                     var buyer = customerUsers.ContainsKey(order.CustomerId) ? customerUsers[order.CustomerId] : null;
                                     var buyerName = buyer != null 
@@ -295,35 +371,20 @@
                                                 }
                                                 else if (order.Status == "Accepted")
                                                 {
-                                                    @if (order.CancellationDeadline.HasValue && DateTime.UtcNow < order.CancellationDeadline.Value)
-                                                    {
-                                                        <span class="badge bg-info text-dark fw-bold px-3 py-1.5 rounded-pill">
-                                                            <i class="bi bi-clock-history me-1"></i>Accepted (3h Review Window)
-                                                        </span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill">
-                                                            <i class="bi bi-lock-fill me-1"></i>Locked for Dispatch
-                                                        </span>
-                                                    }
-                                                }
-                                                else if (order.Status == "Declined")
-                                                {
-                                                    <span class="badge bg-danger text-white fw-bold px-3 py-1.5 rounded-pill">
-                                                        <i class="bi bi-x-circle-fill me-1"></i>Declined by Farmer
+                                                    <span class="badge bg-info text-dark fw-bold px-3 py-1.5 rounded-pill">
+                                                        <i class="bi bi-clock-history me-1"></i>Accepted
                                                     </span>
                                                 }
-                                                else if (order.Status == "Cancelled")
+                                                else if (order.Status == "Ready for Pickup")
                                                 {
-                                                    <span class="badge bg-secondary text-white fw-bold px-3 py-1.5 rounded-pill">
-                                                        <i class="bi bi-slash-circle me-1"></i>Cancelled by Buyer
+                                                    <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                                                        <i class="bi bi-check-circle-fill me-1"></i>Ready for Pickup 🟢
                                                     </span>
                                                 }
-                                                else if (order.Status.Contains("Delivered") || order.Status.Contains("Settled"))
+                                                else if (order.Status == "In Transit")
                                                 {
-                                                    <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill">
-                                                        <i class="bi bi-check-circle-fill me-1"></i>Delivered &amp; Settled 🟢
+                                                    <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                                                        <i class="bi bi-truck me-1"></i>In Transit
                                                     </span>
                                                 }
                                                 else
@@ -335,7 +396,7 @@
                                             </div>
                                         </div>
 
-                                        <!-- Card Body: Clean Produce Summary -->
+                                        <!-- Card Body: Produce Items Summary -->
                                         <div class="card-body p-3.5">
                                             @foreach (var item in order.OrderItems)
                                             {
@@ -355,7 +416,7 @@
                                                         <div>
                                                             <span class="badge bg-light text-success border small mb-1">@(item.Product?.Category?.Name ?? "Grains")</span>
                                                             <h6 class="fw-bold text-dark mb-0">@(item.Product?.Name ?? "Farm Produce")</h6>
-                                                            <small class="text-muted">Ordered: <strong>@item.Quantity unit(s)</strong> @@ ₹@item.UnitPrice.ToString("N2")</small>
+                                                            <small class="text-muted">Ordered: <strong>@item.Quantity Kg</strong> @@ ₹@item.UnitPrice.ToString("N2")/Kg</small>
                                                         </div>
                                                     </div>
 
@@ -364,276 +425,26 @@
                                                     </div>
                                                 </div>
                                             }
-
-                                            @if (order.Status == "Declined" && !string.IsNullOrEmpty(order.FarmerDeclineReason))
-                                            {
-                                                <div class="alert alert-danger p-2.5 rounded-3 mt-3 mb-0 small">
-                                                    <i class="bi bi-info-circle-fill me-1"></i> <strong>Decline Reason:</strong> @order.FarmerDeclineReason
-                                                </div>
-                                            }
-                                            @if (order.Status == "Cancelled" && !string.IsNullOrEmpty(order.CustomerCancelReason))
-                                            {
-                                                <div class="alert alert-secondary p-2.5 rounded-3 mt-3 mb-0 small">
-                                                    <i class="bi bi-info-circle-fill me-1"></i> <strong>Buyer Cancellation Reason:</strong> @order.CustomerCancelReason
-                                                </div>
-                                            }
-
-                                            <!-- Collapsible Inline Decline Reason Box -->
-                                            <div id="declineBox_@order.Id" class="mt-3 p-3 bg-light rounded-3 border" style="display: none;">
-                                                <form asp-controller="Farmer" asp-action="DeclineOrder" method="post">
-                                                    <input type="hidden" name="orderId" value="@order.Id" />
-                                                    <label class="form-label small fw-bold text-danger mb-1">Reason for declining this order request:</label>
-                                                    <textarea name="reason" class="form-control rounded-3 mb-2 small shadow-none" rows="2" placeholder="e.g. Current harvest out of stock / logistics unserviceable..." required></textarea>
-                                                    <div class="d-flex justify-content-end gap-2">
-                                                        <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" onclick="toggleDeclineBox('@order.Id')">Cancel</button>
-                                                        <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold">Confirm Decline</button>
-                                                    </div>
-                                                </form>
-                                            </div>
                                         </div>
 
-                                        <!-- Collapsible Drawer: Buyer Contact & Structured OTP Form -->
-                                        <div class="collapse border-top bg-light bg-opacity-50" id="@farmerCollapseId">
-                                            <div class="p-3.5">
-                                                <div class="row g-3">
-                                                    
-                                                    <!-- Left: Customer Details & Contact Actions -->
-                                                    <div class="col-lg-6">
-                                                        <div class="p-3 bg-white rounded-3 border h-100">
-                                                            <h6 class="fw-bold text-dark mb-2.5 small"><i class="bi bi-person-circle text-success me-1"></i> Customer / Buyer Profile</h6>
-                                                            
-                                                            <div class="d-flex align-items-center gap-2.5 mb-3">
-                                                                <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 40px; height: 40px; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">
-                                                                    @buyerInitial
-                                                                </div>
-                                                                <div>
-                                                                    <strong class="text-dark d-block">@buyerName</strong>
-                                                                    <span class="text-muted small d-block">
-                                                                        <i class="bi bi-telephone text-success me-1"></i>@buyerPhone &bull; <i class="bi bi-envelope text-primary me-1"></i>@buyerEmail
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="d-flex gap-2">
-                                                                <a href="tel:@buyerPhone" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold" title="Call Customer">
-                                                                    <i class="bi bi-telephone-fill me-1"></i> Call Buyer
-                                                                </a>
-                                                                <a href="https://wa.me/@(buyerPhone.Replace("+","").Replace(" ",""))?text=Hello%20@buyerName,%20regarding%20your%20AgriAI%20order%20#@order.Id:D5%20for%20crop%20produce..." target="_blank" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #25D366; border-color: #25D366;">
-                                                                    <i class="bi bi-whatsapp me-1"></i> WhatsApp
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Right: Delivery Verification / OTP Form -->
-                                                    <div class="col-lg-6">
-                                                        <div class="p-3 bg-white rounded-3 border h-100">
-                                                            <h6 class="fw-bold text-dark mb-2.5 small"><i class="bi bi-shield-check text-success me-1"></i> Delivery &amp; Settlement Verification</h6>
-
-                                                            @if (order.PaymentMethod == "Cash on Delivery")
-                                                            {
-                                                                if (order.Status != "Cash Received & Delivered")
-                                                                {
-                                                                    <div class="p-2.5 bg-warning bg-opacity-10 rounded-3 border border-warning border-opacity-25 mb-2">
-                                                                        <strong class="small text-dark d-block mb-1">Cash on Delivery Pending</strong>
-                                                                        <span class="small text-muted d-block mb-2">Collect cash directly from the customer upon handing over the produce.</span>
-                                                                        
-                                                                        <form asp-controller="Farmer" asp-action="UpdateOrderStatus" method="post" class="m-0">
-                                                                            <input type="hidden" name="orderId" value="@order.Id" />
-                                                                            <input type="hidden" name="status" value="Cash Received & Delivered" />
-                                                                            <button type="submit" class="btn btn-sm btn-warning text-dark rounded-pill px-3 py-1.5 fw-bold shadow-sm">
-                                                                                <i class="bi bi-cash-stack me-1"></i> Mark Cash Received (₹@order.TotalAmount.ToString("N2"))
-                                                                            </button>
-                                                                        </form>
-                                                                    </div>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <div class="alert alert-success p-2.5 rounded-3 mb-0 small">
-                                                                        <i class="bi bi-check-circle-fill me-1"></i> <strong>Cash Received &amp; Order Fulfilled</strong>
-                                                                    </div>
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                if (!order.Status.Contains("Delivered") && !order.Status.Contains("Settled") && order.Status != "Declined" && order.Status != "Cancelled")
-                                                                {
-                                                                    <form asp-controller="Farmer" asp-action="VerifyDeliveryOtp" method="post" class="m-0">
-                                                                        <input type="hidden" name="orderId" value="@order.Id" />
-                                                                        <label class="form-label small fw-bold text-dark mb-1">Enter Customer's 4-Digit Delivery OTP:</label>
-                                                                        <div class="input-group mb-1.5" style="max-width: 320px;">
-                                                                            <input type="text" name="enteredOtp" placeholder="e.g. 4859" maxlength="4" class="form-control text-center fw-bold fs-5 shadow-none bg-light" style="letter-spacing: 4px;" required />
-                                                                            <button type="submit" class="btn btn-success fw-bold px-3">
-                                                                                <i class="bi bi-shield-check me-1"></i> Verify OTP
-                                                                            </button>
-                                                                        </div>
-                                                                        <small class="text-muted d-block" style="font-size: 0.76rem;">Ask the customer for their confidential 4-digit OTP shown in their app upon delivery.</small>
-                                                                    </form>
-                                                                }
-                                                                else if (order.Status.Contains("Delivered") || order.Status.Contains("Settled"))
-                                                                {
-                                                                    <div class="alert alert-success p-2.5 rounded-3 mb-0 small">
-                                                                        <i class="bi bi-shield-fill-check me-1"></i> <strong>OTP Verified &amp; Payment Credited to Farmer</strong>
-                                                                    </div>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <div class="alert alert-secondary p-2.5 rounded-3 mb-0 small">
-                                                                        <i class="bi bi-info-circle-fill me-1"></i> Order @order.Status.
-                                                                    </div>
-                                                                }
-                                                            }
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Card Footer: Payment Badge, Revenue & Action Buttons -->
+                                        <!-- Card Footer: Payment Badge, Revenue & Dedicated View More Details Button -->
                                         <div class="card-footer bg-white border-top p-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
                                             <div class="d-flex align-items-center gap-2">
                                                 <span class="badge bg-light text-dark border"><i class="bi bi-credit-card me-1"></i>@(order.PaymentMethod ?? "Online")</span>
                                                 <span class="badge bg-light text-dark border"><i class="bi bi-truck me-1"></i>@(order.TransportType ?? "Direct Farm Pickup")</span>
-                                                <span class="text-muted small ms-1">Gross Revenue:</span>
-                                                <span class="fw-extrabold text-success fs-5">₹@order.TotalAmount.ToString("N2")</span>
+                                                <span class="text-muted small ms-1">Farmer Earning:</span>
+                                                @{
+                                                    var activeOrdFarmerEarning = order.OrderItems.Where(oi => myProductIds.Contains(oi.ProductId)).Sum(oi => oi.UnitPrice * oi.Quantity);
+                                                }
+                                                <span class="fw-extrabold text-success fs-5">₹@activeOrdFarmerEarning.ToString("N2")</span>
                                             </div>
 
                                             <div class="d-flex align-items-center gap-2">
-                                                @if (order.Status == "Requested")
-                                                {
-                                                    <!-- Step 2 Farmer Acceptance Controls -->
-                                                    <form asp-controller="Farmer" asp-action="AcceptOrder" method="post" class="d-inline m-0">
-                                                        <input type="hidden" name="orderId" value="@order.Id" />
-                                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;">
-                                                            <i class="bi bi-check-circle-fill me-1"></i> Accept Order
-                                                        </button>
-                                                    </form>
-
-                                                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1.5 fw-bold" onclick="toggleDeclineBox('@order.Id')">
-                                                        <i class="bi bi-x-circle me-1"></i> Decline
-                                                    </button>
-                                                }
-                                                else if (order.Status == "Accepted")
-                                                {
-                                                    @if (order.CancellationDeadline.HasValue && DateTime.UtcNow < order.CancellationDeadline.Value)
-                                                    {
-                                                        var farmerRemSec = (int)Math.Max(0, (order.CancellationDeadline.Value - DateTime.UtcNow).TotalSeconds);
-                                                        int fh = farmerRemSec / 3600;
-                                                        int fm = (farmerRemSec % 3600) / 60;
-                                                        int fs = farmerRemSec % 60;
-                                                        <span class="badge bg-light text-primary border px-2.5 py-1.5 small">
-                                                            <i class="bi bi-hourglass-split me-1"></i><span class="farmer-order-timer" data-remaining="@farmerRemSec">⏳ @($"{fh:D2}h {fm:D2}m {fs:D2}s") review window</span>
-                                                        </span>
-                                                    }
-                                                    else
-                                                    {
-                                                        if (order.TransportType != null && (order.TransportType.Contains("Cargo") || order.TransportType.Contains("GSRTC")))
-                                                        {
-                                                            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#biltyModal_@order.Id">
-                                                                <i class="bi bi-bus-front-fill me-1"></i> Dispatch GSRTC / Cargo &amp; Upload Bilty
-                                                            </button>
-                                                        }
-                                                        else
-                                                        {
-                                                            <form asp-controller="Farmer" asp-action="UpdateOrderStatus" method="post" class="d-inline m-0">
-                                                                <input type="hidden" name="orderId" value="@order.Id" />
-                                                                <input type="hidden" name="status" value="Ready for Pickup" />
-                                                                <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 fw-bold">
-                                                                    <i class="bi bi-box-seam me-1"></i> Mark Ready for Pickup
-                                                                </button>
-                                                            </form>
-                                                        }
-                                                    }
-                                                }
-                                                else if (order.Status == "Ready for Pickup")
-                                                {
-                                                    if (order.TransportType != null && (order.TransportType.Contains("Cargo") || order.TransportType.Contains("GSRTC")))
-                                                    {
-                                                        <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#biltyModal_@order.Id">
-                                                            <i class="bi bi-bus-front-fill me-1"></i> Dispatch &amp; Upload Bilty
-                                                        </button>
-                                                    }
-                                                    else
-                                                    {
-                                                        <form asp-controller="Farmer" asp-action="UpdateOrderStatus" method="post" class="d-inline m-0">
-                                                            <input type="hidden" name="orderId" value="@order.Id" />
-                                                            <input type="hidden" name="status" value="In Transit" />
-                                                            <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 fw-bold">
-                                                                <i class="bi bi-truck me-1"></i> Mark In Transit
-                                                            </button>
-                                                        </form>
-                                                    }
-                                                }
-                                                else if (order.Status == "In Transit")
-                                                {
-                                                    @if (!string.IsNullOrEmpty(order.BiltyImageUrl))
-                                                    {
-                                                        <a href="@order.BiltyImageUrl" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-2.5 py-1 fw-bold small">
-                                                            <i class="bi bi-file-earmark-image me-1"></i> View Bilty (@order.BiltyNumber)
-                                                        </a>
-                                                    }
-                                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1.5 small">
-                                                        <i class="bi bi-truck me-1"></i>In Transit
-                                                    </span>
-                                                }
-
-                                                <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold" data-bs-toggle="collapse" data-bs-target="#@farmerCollapseId" aria-expanded="false">
-                                                    <i class="bi bi-person-lines-fill me-1"></i> Buyer Details &amp; OTP
-                                                </button>
+                                                <a asp-controller="Farmer" asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-success rounded-pill px-3.5 py-1.5 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;">
+                                                    <i class="bi bi-eye-fill me-1"></i> View More Details &amp; Actions
+                                                </a>
                                             </div>
                                         </div>
-
-                                        <!-- Modal: Upload GSRTC / Cargo Bilty Slip -->
-                                        <div class="modal fade" id="biltyModal_@order.Id" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
-                                                    <div class="modal-header bg-primary text-white p-3.5 px-4">
-                                                        <h5 class="modal-title fw-bold">
-                                                            <i class="bi bi-bus-front-fill me-1"></i> GSRTC / Cargo Bilty Dispatch (Order #@order.Id:D5)
-                                                        </h5>
-                                                        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <form asp-controller="Farmer" asp-action="UploadBiltyAndDispatch" method="post" enctype="multipart/form-data">
-                                                        <input type="hidden" name="orderId" value="@order.Id" />
-                                                        <div class="modal-body p-4">
-                                                            <div class="alert alert-info p-2.5 rounded-3 mb-3 small">
-                                                                <i class="bi bi-info-circle-fill me-1"></i> <strong>Proof of Dispatch:</strong> Uploading the official Bilty / LR receipt guarantees your escrow payout release within 24h even if buyer delays OTP.
-                                                            </div>
-
-                                                            <div class="mb-3">
-                                                                <label class="form-label small fw-bold text-dark">Transport / Cargo Service Name *</label>
-                                                                <select name="cargoServiceName" class="form-select rounded-3 small shadow-none" required>
-                                                                    <option value="GSRTC ST Bus Parcel">GSRTC ST Bus Parcel (State Transport)</option>
-                                                                    <option value="Patel Cargo Logistics">Patel Cargo Logistics</option>
-                                                                    <option value="Shrinath Travels Cargo">Shrinath Travels Cargo</option>
-                                                                    <option value="Eagle Cargo Express">Eagle Cargo Express</option>
-                                                                    <option value="Direct Mini-Truck / Transport Vehicle">Direct Mini-Truck / Transport Vehicle</option>
-                                                                </select>
-                                                            </div>
-
-                                                            <div class="mb-3">
-                                                                <label class="form-label small fw-bold text-dark">Bilty / LR / Parcel Receipt Number *</label>
-                                                                <input type="text" name="biltyNumber" class="form-control rounded-3 small shadow-none" placeholder="e.g. GSRTC-RAJ-94821" required />
-                                                            </div>
-
-                                                            <div class="mb-3">
-                                                                <label class="form-label small fw-bold text-dark">Bilty Receipt Slip Photo *</label>
-                                                                <input type="file" name="biltyFile" class="form-control rounded-3 small shadow-none" accept="image/*,.pdf" required />
-                                                                <small class="text-muted d-block mt-1">Take a clear photo of the stamped parcel receipt given by the transport counter.</small>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer bg-light p-3 px-4 d-flex justify-content-end gap-2">
-                                                            <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-                                                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
-                                                                <i class="bi bi-cloud-arrow-up-fill me-1"></i> Upload &amp; Mark Dispatched
-                                                            </button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-
                                     </div>
                                 }
                             </div>
@@ -642,7 +453,7 @@
                         {
                             <div class="p-5 rounded-4 border bg-white shadow-sm text-center my-3">
                                 <i class="bi bi-receipt display-4 text-success opacity-50 d-block mb-3"></i>
-                                <h5 class="fw-bold text-dark mb-2">No Customer Orders Received Yet</h5>
+                                <h5 class="fw-bold text-dark mb-2">No Active Customer Orders Currently</h5>
                                 <p class="text-muted small mb-4">When retail buyers order your farm produce, the customer contact details, quantity, and payment confirmation will appear here.</p>
                                 <button type="button" class="btn btn-outline-success rounded-pill px-4 py-2 fw-bold" onclick="switchDashTab('farmerProductsTab', document.querySelectorAll('.dash-tab-link')[1])">
                                     <i class="bi bi-tree me-1"></i> Manage Listed Produce
@@ -651,11 +462,138 @@
                         }
                     </div>
 
-                    <!-- TAB 4: AI Price Predictor Tool -->
+                    <!-- ========================================== -->
+                    <!-- TAB 4: Income (Financial Summary)          -->
+                    <!-- ========================================== -->
+                    <div id="farmerIncomeTab" class="dash-tab-panel">
+                        <div class="dash-section-header">
+                            <div>
+                                <h3 class="dash-section-title">Farm Income &amp; Payout Statement 💰</h3>
+                                <p class="text-muted small mb-0">Overview of completed earnings, escrow settlements, and financial ledger.</p>
+                            </div>
+                        </div>
+
+                        <!-- 3 Income Metric Cards -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="p-4 rounded-4 border bg-white shadow-sm h-100">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <span class="text-muted small fw-bold text-uppercase">Settled Earnings</span>
+                                        <div class="rounded-circle p-2 bg-success bg-opacity-10 text-success">
+                                            <i class="bi bi-check-circle-fill fs-5"></i>
+                                        </div>
+                                    </div>
+                                    <h3 class="fw-extrabold text-success mb-1">₹@settledIncome.ToString("N2")</h3>
+                                    <small class="text-muted">Transferred &amp; Released via Escrow</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-4 rounded-4 border bg-white shadow-sm h-100">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <span class="text-muted small fw-bold text-uppercase">In Escrow (Pending)</span>
+                                        <div class="rounded-circle p-2 bg-warning bg-opacity-10 text-warning">
+                                            <i class="bi bi-hourglass-split fs-5"></i>
+                                        </div>
+                                    </div>
+                                    <h3 class="fw-extrabold text-dark mb-1">₹@pendingEscrowIncome.ToString("N2")</h3>
+                                    <small class="text-muted">Held safe until OTP verification</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-4 rounded-4 border bg-white shadow-sm h-100">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <span class="text-muted small fw-bold text-uppercase">Total Quantity Sold</span>
+                                        <div class="rounded-circle p-2 bg-primary bg-opacity-10 text-primary">
+                                            <i class="bi bi-box-seam fs-5"></i>
+                                        </div>
+                                    </div>
+                                    <h3 class="fw-extrabold text-primary mb-1">@totalKgSold Kg</h3>
+                                    <small class="text-muted">Total produce delivered to buyers</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Income Ledger Table -->
+                        <div class="card border rounded-4 bg-white shadow-sm overflow-hidden mb-3">
+                            <div class="card-header bg-white border-bottom p-3.5 d-flex justify-content-between align-items-center">
+                                <h6 class="fw-bold text-dark mb-0"><i class="bi bi-journal-text text-success me-2"></i>Sales &amp; Earnings Ledger</h6>
+                                <span class="badge bg-light text-dark border">@completedOrders.Count Records</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="bg-light">
+                                        <tr class="small text-muted text-uppercase">
+                                            <th class="ps-4">Date</th>
+                                            <th>Order #</th>
+                                            <th>Produce Sold</th>
+                                            <th>Payment Method</th>
+                                            <th>Status</th>
+                                            <th class="pe-4 text-end">Net Earned</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (completedOrders.Any())
+                                        {
+                                            @foreach (var ord in completedOrders)
+                                            {
+                                                var firstProd = ord.OrderItems.FirstOrDefault();
+                                                var cropName = firstProd?.Product?.Name ?? "Farm Produce";
+                                                var cropQty = firstProd?.Quantity ?? 1;
+                                                var isDeclined = ord.Status.Contains("Declined") || ord.Status.Contains("Cancelled");
+
+                                                <tr>
+                                                    <td class="ps-4 text-muted small">@ord.OrderDate.ToString("dd MMM yyyy")</td>
+                                                    <td><strong class="text-dark">#@ord.Id.ToString("D5")</strong></td>
+                                                    <td>
+                                                        <strong class="text-dark">@cropName</strong>
+                                                        <small class="text-muted d-block">@cropQty Kg</small>
+                                                    </td>
+                                                    <td><span class="badge bg-light text-dark border small">@ord.PaymentMethod</span></td>
+                                                    <td>
+                                                        @if (isDeclined)
+                                                        {
+                                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 small">@ord.Status</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 small">Settled</span>
+                                                        }
+                                                    </td>
+                                                    <td class="pe-4 text-end">
+                                                        @if (isDeclined)
+                                                        {
+                                                            <span class="text-muted small">₹0.00</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            var farmerProduceEarnings = ord.OrderItems.Where(oi => myProductIds.Contains(oi.ProductId)).Sum(oi => oi.UnitPrice * oi.Quantity);
+                                                            <strong class="text-success fs-6">₹@farmerProduceEarnings.ToString("N2")</strong>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4 text-muted small">
+                                                    No completed transactions yet. Completed orders will appear in your ledger.
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========================================== -->
+                    <!-- TAB 5: AI Price Predictor Tool             -->
+                    <!-- ========================================== -->
                     <div id="aiPredictorTab" class="dash-tab-panel">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">AI Price Predictor &amp; Analysis</h3>
+                                <h3 class="dash-section-title">AI Price Predictor &amp; Analysis 📈</h3>
                                 <p class="text-muted small mb-0">Get AI-driven price intelligence before selling your harvest at APMC markets.</p>
                             </div>
                             <div class="d-flex gap-2">
@@ -726,11 +664,129 @@
                         </div>
                     </div>
 
-                    <!-- TAB 5: Farmer Profile Settings -->
+                    <!-- ========================================== -->
+                    <!-- TAB 6: Completed Orders (Fulfilled Orders)  -->
+                    <!-- ========================================== -->
+                    <div id="farmerCompletedOrdersTab" class="dash-tab-panel">
+                        <div class="dash-section-header">
+                            <div>
+                                <h3 class="dash-section-title">Completed Orders &amp; Past Sales 📋</h3>
+                                <p class="text-muted small mb-0">Record of all fulfilled, delivered and completed orders.</p>
+                            </div>
+                        </div>
+
+                        @if (completedOrders.Any())
+                        {
+                            <div class="d-flex flex-column gap-3 mb-3">
+                                @foreach (var order in completedOrders)
+                                {
+                                    var buyer = customerUsers.ContainsKey(order.CustomerId) ? customerUsers[order.CustomerId] : null;
+                                    var buyerName = buyer != null 
+                                        ? (!string.IsNullOrEmpty(buyer.FirstName) || !string.IsNullOrEmpty(buyer.LastName) 
+                                            ? $"{buyer.FirstName} {buyer.LastName}".Trim() 
+                                            : buyer.UserName) 
+                                        : (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId.Length < 20 ? order.CustomerId : "Retail Customer");
+
+                                    <div class="card border rounded-4 bg-white shadow-sm overflow-hidden mb-2">
+                                        <div class="card-header bg-white border-bottom p-3.5 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="badge bg-secondary bg-opacity-10 text-dark fw-bold px-2.5 py-1 rounded-pill small">
+                                                    Order #@order.Id.ToString("D5")
+                                                </span>
+                                                <span class="text-muted small">
+                                                    <i class="bi bi-calendar-check me-1"></i>@order.OrderDate.ToString("dd MMM yyyy, hh:mm tt")
+                                                </span>
+                                            </div>
+                                            <div>
+                                                @if (order.Status.Contains("Delivered") || order.Status.Contains("Settled") || order.Status == "Completed" || order.Status == "Cash Received & Delivered")
+                                                {
+                                                    <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill">
+                                                        <i class="bi bi-check-circle-fill me-1"></i>Delivered &amp; Settled 🟢
+                                                    </span>
+                                                }
+                                                else if (order.Status == "Declined")
+                                                {
+                                                    <span class="badge bg-danger text-white fw-bold px-3 py-1.5 rounded-pill">
+                                                        <i class="bi bi-x-circle-fill me-1"></i>Declined
+                                                    </span>
+                                                }
+                                                else if (order.Status == "Cancelled")
+                                                {
+                                                    <span class="badge bg-secondary text-white fw-bold px-3 py-1.5 rounded-pill">
+                                                        <i class="bi bi-slash-circle me-1"></i>Cancelled
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-light text-dark border fw-bold px-3 py-1.5 rounded-pill">
+                                                        @order.Status
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div class="card-body p-3.5">
+                                            @foreach (var item in order.OrderItems)
+                                            {
+                                                var itemImg = item.Product?.Images?.FirstOrDefault()?.ImageUrl;
+                                                <div class="d-flex flex-wrap align-items-center justify-content-between py-1 gap-3">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        @if (!string.IsNullOrEmpty(itemImg))
+                                                        {
+                                                            <img src="@itemImg" class="rounded-3 shadow-sm" alt="@(item.Product?.Name ?? "Produce")" style="width: 50px; height: 50px; object-fit: cover;" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="bg-light rounded-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                                <i class="bi bi-tree text-success fs-4"></i>
+                                                            </div>
+                                                        }
+                                                        <div>
+                                                            <h6 class="fw-bold text-dark mb-0">@(item.Product?.Name ?? "Farm Produce")</h6>
+                                                            <small class="text-muted">Quantity: <strong>@item.Quantity Kg</strong> @@ ₹@item.UnitPrice.ToString("N2")/Kg &bull; Buyer: <strong class="text-dark">@buyerName</strong></small>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="text-end">
+                                                        <span class="fw-extrabold text-success fs-5">₹@((item.UnitPrice * item.Quantity).ToString("N2"))</span>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <div class="card-footer bg-light p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                            <small class="text-muted">Payment: <strong>@(order.PaymentMethod ?? "Online")</strong> &bull; Transport: <strong>@(order.TransportType ?? "Direct Farm Pickup")</strong></small>
+                                            <div class="d-flex align-items-center gap-2">
+                                                @{
+                                                    var compOrdFarmerEarning = order.OrderItems.Where(oi => myProductIds.Contains(oi.ProductId)).Sum(oi => oi.UnitPrice * oi.Quantity);
+                                                }
+                                                <strong class="text-success fs-6 me-2">Farmer Net Payout: ₹@compOrdFarmerEarning.ToString("N2")</strong>
+                                                <a asp-controller="Farmer" asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-xs btn-outline-success rounded-pill px-3 py-1 fw-bold small">
+                                                    <i class="bi bi-eye me-1"></i> View Order Details
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="p-5 rounded-4 border bg-white shadow-sm text-center my-3">
+                                <i class="bi bi-check2-all display-4 text-success opacity-50 d-block mb-3"></i>
+                                <h5 class="fw-bold text-dark mb-2">No Completed Orders Yet</h5>
+                                <p class="text-muted small mb-4">When orders are fulfilled and delivery OTP is verified, they will be archived here in your permanent sales record.</p>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- ========================================== -->
+                    <!-- TAB 7: Settings (Profile Settings)         -->
+                    <!-- ========================================== -->
                     <div id="farmerProfileTab" class="dash-tab-panel">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">Farm &amp; Producer Settings</h3>
+                                <h3 class="dash-section-title">Farm &amp; Producer Settings ⚙️</h3>
                                 <p class="text-muted small mb-0">Update your farming location, producer credentials, and login security.</p>
                             </div>
                         </div>

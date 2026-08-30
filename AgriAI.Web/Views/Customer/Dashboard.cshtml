@@ -616,6 +616,12 @@
                                                         </span>
                                                     }
                                                 }
+                                                else if (order.Status == "Ready for Pickup")
+                                                {
+                                                    <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                                                        <i class="bi bi-check-circle-fill me-1"></i>Ready for Pickup 🟢
+                                                    </span>
+                                                }
                                                 else if (order.Status == "In Transit")
                                                 {
                                                     <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
@@ -661,21 +667,6 @@
                                                 </div>
                                             }
 
-                                            @if (order.TransportType != null && (order.TransportType.Contains("Cargo") || order.TransportType.Contains("GSRTC") || order.TransportType.Contains("Parcel")) && !string.IsNullOrEmpty(order.BiltyNumber))
-                                            {
-                                                <div class="mt-3 p-2.5 rounded-3 bg-light border d-flex align-items-center justify-content-between">
-                                                    <div>
-                                                        <small class="text-muted d-block">GSRTC / Cargo Bilty LR Number:</small>
-                                                        <strong class="text-primary font-monospace">@order.BiltyNumber</strong>
-                                                    </div>
-                                                    @if (!string.IsNullOrEmpty(order.BiltyImageUrl))
-                                                    {
-                                                        <a href="@order.BiltyImageUrl" target="_blank" class="btn btn-xs btn-outline-primary rounded-pill px-3 py-1 fw-bold small">
-                                                            <i class="bi bi-receipt me-1"></i> View Bilty Slip
-                                                        </a>
-                                                    }
-                                                </div>
-                                            }
                                         </div>
 
                                         <!-- Card Footer: Total Paid & Security Protected Action Buttons -->

@@ -197,6 +197,31 @@ namespace AgriAI.Web.Controllers
             return View(product);
         }
 
+        // GET: Product/Edit/5
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            if (User.IsInRole("Farmer"))
+            {
+                return RedirectToAction("EditProduct", "Farmer", new { id });
+            }
+
+            var product = await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (product == null)
+            {
+                TempData["ErrorMessage"] = "Product not found.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var categories = await _context.Categories.ToListAsync();
+            ViewData["CategoryId"] = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(categories, "Id", "Name", product.CategoryId);
+            return View(product);
+        }
+
         // POST: Product/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]

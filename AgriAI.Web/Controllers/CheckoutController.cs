@@ -56,6 +56,22 @@ namespace AgriAI.Web.Controllers
         {
             if (quantity < 1) quantity = 1;
 
+            // Check if farmer is attempting to buy own product
+            if (User.Identity != null && User.Identity.IsAuthenticated && productId.HasValue)
+            {
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser != null)
+                {
+                    var singleProd = await _context.Products.FindAsync(productId.Value);
+                    if (singleProd != null && !string.IsNullOrEmpty(singleProd.FarmerId) &&
+                        (singleProd.FarmerId == currentUser.Id || singleProd.FarmerId == currentUser.UserName))
+                    {
+                        TempData["ErrorMessage"] = "⚠️ તમે તમારો પોતાનો લિસ્ટેડ પાક ખરીદી શકતા નથી / You cannot purchase your own listed produce.";
+                        return RedirectToAction("Details", "Product", new { id = productId.Value });
+                    }
+                }
+            }
+
             // Check if cart checkout is requested
             var cart = GetSessionCart();
             if (isCart || (!productId.HasValue && cart.Any()))
