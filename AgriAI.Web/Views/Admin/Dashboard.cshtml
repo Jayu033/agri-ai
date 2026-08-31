@@ -6,17 +6,29 @@
     var userInitial = userName.Substring(0, 1).ToUpper();
     var allUsers = ViewBag.AllUsers as List<AgriAI.Web.ViewModels.UserManagementViewModel> ?? new List<AgriAI.Web.ViewModels.UserManagementViewModel>();
     var allProducts = ViewBag.AllProducts as List<AgriAI.Domain.Entities.Product> ?? new List<AgriAI.Domain.Entities.Product>();
+
+    decimal totalRevenue = ViewBag.TotalRevenue ?? 0m;
+    decimal escrowBalance = ViewBag.EscrowBalance ?? 0m;
+    decimal releasedPayouts = ViewBag.ReleasedPayouts ?? 0m;
+    int pendingKycCount = ViewBag.PendingKycCount ?? 0;
+    int inTransitCount = ViewBag.InTransitCount ?? 0;
+    int deliveredCount = ViewBag.DeliveredCount ?? 0;
+    int requestedCount = ViewBag.RequestedCount ?? 0;
+    int totalUsers = ViewBag.TotalUsers ?? allUsers.Count;
+    int totalFarmers = ViewBag.TotalFarmers ?? allUsers.Count(u => u.Role == "Farmer");
+    int totalCustomers = ViewBag.TotalCustomers ?? allUsers.Count(u => u.Role == "Customer");
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/Dashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Admin.css" asp-append-version="true" />
 }
 
 <div class="dashboard-page-bg">
     <div class="container-fluid px-lg-4 px-md-3" style="max-width: 1440px;">
         <div class="row g-3 g-lg-4">
             
-            <!-- Left Sidebar Navigation (Admin Portal) -->
+            <!-- Left Sidebar Navigation (Admin Portal - 7 Key Modules) -->
             <div class="col-lg-3 col-md-4">
                 <div class="dashboard-sidebar-card">
                     <!-- Admin Avatar Header -->
@@ -30,26 +42,49 @@
                         </span>
                     </div>
 
-                    <!-- Navigation Tab Buttons -->
+                    <!-- Navigation Tab Buttons (7 Essential Modules) -->
                     <div class="dash-nav-pills">
                         <button type="button" class="dash-tab-link active" onclick="switchDashTab('adminOverviewTab', this)">
                             <i class="bi bi-speedometer2"></i>
-                            <span>Platform Overview</span>
+                            <span>1. Executive KPI Overview</span>
                         </button>
                         
                         <button type="button" class="dash-tab-link" onclick="switchDashTab('adminUsersTab', this)">
                             <i class="bi bi-people-fill"></i>
-                            <span>Manage All Users</span>
+                            <span>2. Farmer 7/12 KYC &amp; Users</span>
+                            @if (pendingKycCount > 0)
+                            {
+                                <span class="badge bg-warning text-dark rounded-pill ms-auto small" style="font-size: 0.70rem;">@pendingKycCount New</span>
+                            }
+                        </button>
+
+                        <button type="button" class="dash-tab-link" onclick="switchDashTab('adminEscrowTab', this)">
+                            <i class="bi bi-shield-check"></i>
+                            <span>3. Escrow &amp; Bilty Payouts</span>
+                            @if (inTransitCount > 0)
+                            {
+                                <span class="badge bg-primary text-white rounded-pill ms-auto small" style="font-size: 0.70rem;">@inTransitCount Dispatched</span>
+                            }
                         </button>
 
                         <button type="button" class="dash-tab-link" onclick="switchDashTab('adminProductsTab', this)">
                             <i class="bi bi-tree"></i>
-                            <span>All Listed Produce</span>
+                            <span>4. Listed Crops &amp; Categories</span>
                         </button>
 
                         <button type="button" class="dash-tab-link" onclick="switchDashTab('adminOrdersTab', this)">
                             <i class="bi bi-receipt"></i>
-                            <span>Orders &amp; Financials</span>
+                            <span>5. Orders &amp; Transactions</span>
+                        </button>
+
+                        <button type="button" class="dash-tab-link" onclick="switchDashTab('adminAiTab', this)">
+                            <i class="bi bi-cpu-fill text-success"></i>
+                            <span>6. AI &amp; Mandi Intelligence</span>
+                        </button>
+
+                        <button type="button" class="dash-tab-link" onclick="switchDashTab('adminReportsTab', this)">
+                            <i class="bi bi-file-earmark-spreadsheet-fill text-primary"></i>
+                            <span>7. Reports &amp; Financials</span>
                         </button>
 
                         <button type="button" class="dash-tab-link" onclick="switchDashTab('adminProfileTab', this)">
@@ -86,93 +121,119 @@
                         </div>
                     }
 
-                    <!-- TAB 1: Platform Overview -->
+                    <!-- 1. MODULE: Executive KPI Overview Dashboard -->
                     <div id="adminOverviewTab" class="dash-tab-panel active">
                         <div class="dash-section-header">
                             <div>
                                 <h3 class="dash-section-title">Platform Master Dashboard 🛡️</h3>
-                                <p class="text-muted small mb-0">System-wide monitoring for Gujarat APMC market rates, direct farmer transactions, and user accounts.</p>
+                                <p class="text-muted small mb-0">System-wide monitoring for Gujarat APMC market rates, Escrow settlements, and Farmer network.</p>
                             </div>
-                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold" onclick="window.print()">
-                                <i class="bi bi-printer me-1"></i> Print System Report
-                            </button>
+                            <div class="d-flex gap-2">
+                                <a asp-action="ExportOrdersCsv" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm">
+                                    <i class="bi bi-download me-1"></i> Export Data
+                                </a>
+                                <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 py-1.5 fw-bold shadow-sm" onclick="window.print()">
+                                    <i class="bi bi-printer me-1"></i> Print Summary
+                                </button>
+                            </div>
                         </div>
 
-                        <!-- 4 Real Dynamic Stat Cards -->
+                        <!-- 4 Financial & Operational Hero Metric Cards -->
                         <div class="row g-3 mb-4">
                             <div class="col-sm-6 col-xl-3">
-                                <div class="dash-metric-card">
+                                <div class="dash-metric-card border-success border-opacity-25">
                                     <div class="dash-metric-icon bg-success bg-opacity-10 text-success">
                                         <i class="bi bi-currency-rupee"></i>
                                     </div>
                                     <div>
-                                        <div class="dash-metric-num">₹@ViewBag.TotalRevenue.ToString("N2")</div>
-                                        <div class="dash-metric-label">Platform Gross Sales</div>
+                                        <div class="dash-metric-num text-success">₹@totalRevenue.ToString("N2")</div>
+                                        <div class="dash-metric-label">Gross Platform Sales</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-sm-6 col-xl-3">
-                                <div class="dash-metric-card">
+                                <div class="dash-metric-card border-primary border-opacity-25">
                                     <div class="dash-metric-icon bg-primary bg-opacity-10 text-primary">
+                                        <i class="bi bi-shield-lock-fill"></i>
+                                    </div>
+                                    <div>
+                                        <div class="dash-metric-num text-primary">₹@escrowBalance.ToString("N2")</div>
+                                        <div class="dash-metric-label">Escrow Vault Balance</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-xl-3">
+                                <div class="dash-metric-card border-warning border-opacity-25">
+                                    <div class="dash-metric-icon bg-warning bg-opacity-10 text-warning">
+                                        <i class="bi bi-bank2"></i>
+                                    </div>
+                                    <div>
+                                        <div class="dash-metric-num text-dark">₹@releasedPayouts.ToString("N2")</div>
+                                        <div class="dash-metric-label">Released to Farmers</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-xl-3">
+                                <div class="dash-metric-card border-info border-opacity-25">
+                                    <div class="dash-metric-icon bg-info bg-opacity-10 text-info">
                                         <i class="bi bi-bag-check-fill"></i>
                                     </div>
                                     <div>
-                                        <div class="dash-metric-num">@ViewBag.TotalOrders</div>
-                                        <div class="dash-metric-label">Total Transactions</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6 col-xl-3">
-                                <div class="dash-metric-card">
-                                    <div class="dash-metric-icon bg-warning bg-opacity-10 text-warning">
-                                        <i class="bi bi-tree-fill"></i>
-                                    </div>
-                                    <div>
-                                        <div class="dash-metric-num">@ViewBag.TotalProducts</div>
-                                        <div class="dash-metric-label">Active Listed Crops</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6 col-xl-3">
-                                <div class="dash-metric-card">
-                                    <div class="dash-metric-icon bg-info bg-opacity-10 text-info">
-                                        <i class="bi bi-people-fill"></i>
-                                    </div>
-                                    <div>
-                                        <div class="dash-metric-num">@ViewBag.TotalUsers</div>
-                                        <div class="dash-metric-label">Total Accounts</div>
+                                        <div class="dash-metric-num text-dark">@deliveredCount <span class="text-muted fs-6 fw-normal">/ @Model.Count()</span></div>
+                                        <div class="dash-metric-label">Completed Orders</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- System Breakdown Cards -->
+                        <!-- 4 Network Metrics Row -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-6 col-md-3">
+                                <div class="p-3 bg-light rounded-4 border text-center">
+                                    <span class="fs-4 fw-extrabold text-dark d-block">@totalUsers</span>
+                                    <span class="text-muted small fw-bold" style="font-size: 0.76rem;">Total Platform Users</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-3 bg-success bg-opacity-10 rounded-4 border border-success border-opacity-25 text-center">
+                                    <span class="fs-4 fw-extrabold text-success d-block">@totalFarmers</span>
+                                    <span class="text-success small fw-bold" style="font-size: 0.76rem;">Registered Farmers</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-3 @(pendingKycCount > 0 ? "bg-warning bg-opacity-10 border-warning border-opacity-50" : "bg-light") rounded-4 border text-center">
+                                    <span class="fs-4 fw-extrabold text-warning d-block">@pendingKycCount</span>
+                                    <span class="text-dark small fw-bold" style="font-size: 0.76rem;">Pending 7/12 KYC</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-3 bg-primary bg-opacity-10 rounded-4 border border-primary border-opacity-25 text-center">
+                                    <span class="fs-4 fw-extrabold text-primary d-block">@totalCustomers</span>
+                                    <span class="text-primary small fw-bold" style="font-size: 0.76rem;">Retail Buyers</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Status & Quick Launcher -->
                         <div class="row g-3 g-lg-4 mb-3">
                             <div class="col-lg-7">
                                 <div class="p-4 rounded-4 border bg-light bg-opacity-50 h-100 d-flex flex-column justify-content-between">
                                     <div>
                                         <div class="d-flex align-items-center justify-content-between mb-3">
-                                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-pie-chart text-success me-2"></i>User Base Demographics</h5>
-                                            <span class="badge bg-success text-white fw-bold px-2.5 py-1 rounded-pill">Real Database Data</span>
+                                            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-shield-check text-success me-2"></i>Escrow Anti-Fraud Protection Status</h6>
+                                            <span class="badge bg-success text-white fw-bold px-2.5 py-1 rounded-pill">100% Active</span>
                                         </div>
-                                        <div class="row g-3">
-                                            <div class="col-6">
-                                                <div class="p-3 bg-white rounded-3 border text-center">
-                                                    <span class="fs-4 fw-extrabold text-success d-block">@ViewBag.FarmersCount</span>
-                                                    <span class="text-muted small fw-bold">Registered Farmers</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="p-3 bg-white rounded-3 border text-center">
-                                                    <span class="fs-4 fw-extrabold text-primary d-block">@ViewBag.CustomersCount</span>
-                                                    <span class="text-muted small fw-bold">Retail &amp; Direct Buyers</span>
-                                                </div>
-                                            </div>
+                                        <p class="text-muted small mb-3">
+                                            Buyer payments are held securely in the AgriAI Escrow Vault. Funds are only released to the Farmer upon Admin Bilty verification or Customer OTP verification.
+                                        </p>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <span class="badge bg-white text-dark border p-2"><i class="bi bi-truck me-1 text-primary"></i>In-Transit Cargo: <strong>@inTransitCount</strong></span>
+                                            <span class="badge bg-white text-dark border p-2"><i class="bi bi-hourglass-split me-1 text-warning"></i>Farmer Acceptance Pending: <strong>@requestedCount</strong></span>
                                         </div>
                                     </div>
                                     <div class="pt-3">
-                                        <button type="button" class="btn btn-sm btn-outline-success fw-bold rounded-pill" onclick="switchDashTab('adminUsersTab', document.querySelectorAll('.dash-tab-link')[1])">
-                                            Manage Accounts &amp; Permissions →
+                                        <button type="button" class="btn btn-sm btn-outline-success fw-bold rounded-pill" onclick="switchDashTab('adminEscrowTab', document.querySelectorAll('.dash-tab-link')[2])">
+                                            Audit Escrow &amp; Bilty Payouts →
                                         </button>
                                     </div>
                                 </div>
@@ -181,47 +242,55 @@
                                 <div class="p-4 rounded-4 border bg-success bg-opacity-10 h-100 d-flex flex-column justify-content-between">
                                     <div>
                                         <span class="badge bg-success text-white fw-bold mb-2">Live Agmarknet Sync</span>
-                                        <h6 class="fw-bold text-dark mb-1">APMC Market Gateway</h6>
-                                        <p class="text-muted small mb-3">Gujarat daily mandi rates and MSP benchmarks are active and synchronizing in real time.</p>
+                                        <h6 class="fw-bold text-dark mb-1">Gujarat APMC Market Mandi</h6>
+                                        <p class="text-muted small mb-3">Rajkot, Gondal, Unjha, Surat &amp; Ahmedabad mandi benchmarks are active and synchronizing live.</p>
                                     </div>
-                                    <a asp-controller="Home" asp-action="LiveMandi" class="btn btn-sm btn-success rounded-pill fw-bold w-100">
-                                        <i class="bi bi-broadcast me-1"></i> View Live Market Feed
-                                    </a>
+                                    <button type="button" class="btn btn-sm btn-success rounded-pill fw-bold w-100" onclick="switchDashTab('adminAiTab', document.querySelectorAll('.dash-tab-link')[5])">
+                                        <i class="bi bi-cpu me-1"></i> View AI &amp; Mandi Analytics
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- TAB 2: User Management (Embedded directly in Admin Dashboard) -->
+                    <!-- 2. MODULE: Farmer 7/12 KYC & User Directory -->
                     <div id="adminUsersTab" class="dash-tab-panel">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">User Accounts &amp; Security Moderation</h3>
-                                <p class="text-muted small mb-0">View registered farmers &amp; buyers, block fraudulent accounts, or remove rule violators.</p>
+                                <h3 class="dash-section-title">Farmer 7/12 KYC &amp; User Directory</h3>
+                                <p class="text-muted small mb-0">Inspect 7/12 Satbara &amp; Aadhaar document proof, verify bank payout accounts, and manage platform permissions.</p>
+                            </div>
+                            <a asp-action="Users" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm">
+                                <i class="bi bi-arrows-fullscreen me-1"></i> Full Directory Page
+                            </a>
+                        </div>
+
+                        <!-- Live Search and Role Filters -->
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 bg-light p-2.5 rounded-4 border">
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-dark text-white active shadow-sm" data-filter="all" onclick="filterUsersTable('all', this)">
+                                    All Users (@allUsers.Count)
+                                </button>
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-success" data-filter="Farmer" onclick="filterUsersTable('Farmer', this)">
+                                    <i class="bi bi-tree-fill me-1"></i> Farmers (@allUsers.Count(u => u.Role == "Farmer"))
+                                </button>
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-primary" data-filter="Customer" onclick="filterUsersTable('Customer', this)">
+                                    <i class="bi bi-bag-heart me-1"></i> Customers (@allUsers.Count(u => u.Role == "Customer"))
+                                </button>
+                            </div>
+                            <div class="admin-search-input-box" style="max-width: 280px;">
+                                <i class="bi bi-search admin-search-icon"></i>
+                                <input type="text" id="dashUserSearchInput" class="admin-search-input" placeholder="Quick search users..." />
                             </div>
                         </div>
 
-                        <!-- Role Filter Action Buttons -->
-                        <div class="d-flex flex-wrap align-items-center gap-2 mb-3 bg-light p-2 rounded-4 border">
-                            <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-dark text-white active shadow-sm" data-filter="all" onclick="filterUsersTable('all', this)">
-                                <i class="bi bi-people-fill me-1"></i> All Users (@allUsers.Count)
-                            </button>
-                            <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-success" data-filter="Farmer" onclick="filterUsersTable('Farmer', this)">
-                                <i class="bi bi-tree-fill me-1"></i> Farmers (@allUsers.Count(u => u.Role == "Farmer"))
-                            </button>
-                            <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-primary" data-filter="Customer" onclick="filterUsersTable('Customer', this)">
-                                <i class="bi bi-person-fill me-1"></i> Customers / Buyers (@allUsers.Count(u => u.Role == "Customer"))
-                            </button>
-                        </div>
-
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle border rounded-4 overflow-hidden mb-0">
-                                <thead class="table-light">
+                            <table class="table table-hover align-middle border rounded-4 overflow-hidden mb-0" id="dashUsersTable">
+                                <thead class="table-light small text-uppercase">
                                     <tr>
-                                        <th>User</th>
+                                        <th>User Profile</th>
                                         <th>Role</th>
-                                        <th>Email Address</th>
-                                        <th>Joined Date</th>
+                                        <th>KYC &amp; Bank Details</th>
                                         <th>Status</th>
                                         <th class="text-end">Actions</th>
                                     </tr>
@@ -229,127 +298,259 @@
                                 <tbody>
                                     @if (!allUsers.Any())
                                     {
-                                        <tr><td colspan="6" class="text-center text-muted py-4">No non-admin users registered yet.</td></tr>
+                                        <tr><td colspan="5" class="text-center text-muted py-4">No users registered yet.</td></tr>
                                     }
                                     @foreach (var user in allUsers)
                                     {
                                         var init = !string.IsNullOrEmpty(user.Username) ? user.Username.Substring(0, 1).ToUpper() : "U";
-                                        <tr class="user-table-row" data-role="@user.Role">
+                                        <tr class="user-table-row dash-user-row" data-role="@user.Role" data-search="@user.FullName.ToLower() @user.Username.ToLower() @user.Email.ToLower() @(user.City ?? "").ToLower()">
                                             <td>
-                                                <div class="d-flex align-items-center gap-2">
+                                                <div class="d-flex align-items-center gap-2.5">
                                                     @if (!string.IsNullOrEmpty(user.ProfilePicturePath))
                                                     {
-                                                        <img src="@user.ProfilePicturePath" class="rounded-circle shadow-sm border border-2 border-success" style="width: 36px; height: 36px; object-fit: cover;" alt="@user.FullName" />
+                                                        <img src="@user.ProfilePicturePath" class="rounded-circle shadow-sm border border-2 border-success" style="width: 38px; height: 38px; object-fit: cover;" alt="@user.FullName" />
                                                     }
                                                     else
                                                     {
-                                                        <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 36px; height: 36px; font-size: 0.85rem; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">
+                                                        <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 38px; height: 38px; font-size: 0.90rem; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">
                                                             @init
                                                         </div>
                                                     }
                                                     <div>
-                                                        <strong class="text-dark d-block">@(string.IsNullOrEmpty(user.FirstName) && string.IsNullOrEmpty(user.LastName) ? user.Username : $"{user.FirstName} {user.LastName}")</strong>
-                                                        <small class="text-muted">@@@user.Username</small>
+                                                        <strong class="text-dark d-block small fw-bold">@user.FullName</strong>
+                                                        <small class="text-muted" style="font-size: 0.72rem;">@@@user.Username • @user.Email</small>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>
                                                 @if (user.Role == "Farmer")
                                                 {
-                                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold">Farmer</span>
-                                                    @if (!string.IsNullOrEmpty(user.KycDocumentPath))
+                                                    <span class="admin-badge-role-farmer"><i class="bi bi-tree-fill"></i> Farmer</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="admin-badge-role-customer"><i class="bi bi-bag-heart-fill"></i> Customer</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (user.Role == "Farmer")
+                                                {
+                                                    @if (!user.IsApprovedByAdmin)
                                                     {
-                                                        <div class="mt-1">
-                                                            <a href="@user.KycDocumentPath" target="_blank" class="badge bg-light text-primary border text-decoration-none" style="font-size: 0.70rem;">
-                                                                <i class="bi bi-file-earmark-text me-1"></i>@(user.KycDocumentType ?? "7/12 Doc")
-                                                            </a>
+                                                        <span class="admin-badge-kyc-pending"><i class="bi bi-clock-history"></i> Pending Review</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="admin-badge-kyc-verified"><i class="bi bi-patch-check-fill"></i> KYC Verified</span>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(user.BankAccountNumber))
+                                                    {
+                                                        <div class="text-muted font-monospace mt-0.5" style="font-size: 0.72rem;">
+                                                            @user.BankName: @user.BankAccountNumber
                                                         </div>
                                                     }
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge bg-primary bg-opacity-10 text-primary fw-bold">Customer</span>
+                                                    <span class="text-muted small" style="font-size: 0.74rem;">— Retail Buyer —</span>
                                                 }
                                             </td>
-                                            <td>@user.Email</td>
-                                            <td class="small text-muted">@user.CreatedAt.ToString("MMM dd, yyyy")</td>
                                             <td>
                                                 @if (user.IsBlocked)
                                                 {
-                                                    <span class="badge bg-danger rounded-pill px-2.5 py-1">Blocked 🔴</span>
+                                                    <span class="admin-status-dot-blocked"><i class="bi bi-slash-circle-fill"></i> Blocked</span>
                                                 }
                                                 else if (user.Role == "Farmer" && !user.IsApprovedByAdmin)
                                                 {
-                                                    <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1 fw-bold"><i class="bi bi-clock-history me-1"></i>Pending KYC</span>
+                                                    <span class="admin-status-dot-review"><i class="bi bi-hourglass-split"></i> Under Review</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge bg-success rounded-pill px-2.5 py-1">Active 🟢</span>
+                                                    <span class="admin-status-dot-active"><i class="bi bi-check-circle-fill"></i> Active</span>
                                                 }
                                             </td>
                                             <td class="text-end">
                                                 <div class="d-inline-flex gap-1.5 align-items-center">
                                                     @if (user.Role == "Farmer")
                                                     {
-                                                        <!-- Review KYC Inspector Modal Button -->
-                                                        <button type="button" class="btn btn-sm @(user.IsApprovedByAdmin ? "btn-outline-success" : "btn-success") rounded-pill px-2.5 py-1 fw-bold shadow-sm" 
+                                                        <button type="button" class="@(user.IsApprovedByAdmin ? "btn-action-kyc" : "btn-action-kyc-review")" 
                                                                 onclick="openKycReviewModal('@user.Id', '@user.FullName', '@user.Email', '@(user.City ?? "")', '@(user.Address ?? "")', '@(user.BankName ?? "")', '@(user.BankAccountNumber ?? "")', '@(user.BankIfscCode ?? "")', '@(user.UpiId ?? "")', '@(user.KycDocumentType ?? "7/12 (Satbara)")', '@(user.KycDocumentPath ?? "")', @(user.IsApprovedByAdmin ? "true" : "false"), '@(user.KycRejectionReason ?? "")', '@(user.ProfilePicturePath ?? "")')"
-                                                                title="Inspect Document & Bank KYC">
-                                                            <i class="bi bi-shield-check me-1"></i>@(user.IsApprovedByAdmin ? "KYC Details" : "Review KYC")
+                                                                title="Inspect Document &amp; Bank KYC">
+                                                            <i class="bi bi-shield-check"></i>
+                                                            <span>@(user.IsApprovedByAdmin ? "KYC Details" : "Review KYC")</span>
                                                         </button>
                                                     }
 
                                                     <form asp-controller="Admin" asp-action="ToggleBlockUser" method="post" class="m-0 d-inline">
                                                         <input type="hidden" name="id" value="@user.Id" />
-                                                        <button type="submit" class="btn btn-sm @(user.IsBlocked ? "btn-outline-success" : "btn-outline-warning") rounded-pill px-2.5 py-1" title="@(user.IsBlocked ? "Unblock User" : "Block User")">
+                                                        <button type="submit" class="btn-action-circle @(user.IsBlocked ? "text-success" : "btn-block-action")" title="@(user.IsBlocked ? "Unblock User" : "Block User")" onclick="return confirm('Change block status for @user.Email?');">
                                                             <i class="bi @(user.IsBlocked ? "bi-unlock-fill" : "bi-lock-fill")"></i>
                                                         </button>
                                                     </form>
 
-                                                    <form asp-controller="Admin" asp-action="DeleteUser" method="post" class="m-0 d-inline" onsubmit="return confirm('Are you sure you want to permanently delete user @user.Email?');">
+                                                    <form asp-controller="Admin" asp-action="DeleteUser" method="post" class="m-0 d-inline" onsubmit="return confirm('Permanently delete user @user.Email? This cannot be undone.');">
                                                         <input type="hidden" name="id" value="@user.Id" />
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1" title="Delete User">
-                                                            <i class="bi bi-trash"></i>
+                                                        <button type="submit" class="btn-action-circle btn-delete-action" title="Delete User">
+                                                            <i class="bi bi-trash3-fill"></i>
                                                         </button>
                                                     </form>
                                                 </div>
                                             </td>
                                         </tr>
                                     }
-                                    <tr id="noFilteredUsersRow" style="display: none;">
-                                        <td colspan="6" class="text-center text-muted py-4">
-                                            <i class="bi bi-people display-6 d-block mb-1 text-secondary opacity-50"></i>
-                                            No users found for this selected role.
-                                        </td>
-                                    </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <!-- TAB 3: All Listed Produce -->
+                    <!-- 3. MODULE: Escrow & Bilty Payout Verification -->
+                    <div id="adminEscrowTab" class="dash-tab-panel">
+                        <div class="dash-section-header">
+                            <div>
+                                <h3 class="dash-section-title">Escrow Vault &amp; Bilty Payout Release</h3>
+                                <p class="text-muted small mb-0">Audit GSRTC/Cargo transport bilty receipts uploaded by Farmers and release escrow funds directly to their bank accounts.</p>
+                            </div>
+                        </div>
+
+                        <!-- Escrow Stats Strip -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="p-3 bg-primary bg-opacity-10 rounded-4 border border-primary border-opacity-25">
+                                    <small class="text-primary fw-bold text-uppercase d-block" style="font-size: 0.70rem;">Escrow Vault Balance</small>
+                                    <span class="fs-4 fw-extrabold text-primary">₹@escrowBalance.ToString("N2")</span>
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">Held safely for active orders</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 bg-warning bg-opacity-10 rounded-4 border border-warning border-opacity-25">
+                                    <small class="text-warning fw-bold text-uppercase d-block" style="font-size: 0.70rem;">Awaiting Bilty Verification</small>
+                                    <span class="fs-4 fw-extrabold text-warning">@inTransitCount Orders</span>
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">Dispatched cargo in-transit</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 bg-success bg-opacity-10 rounded-4 border border-success border-opacity-25">
+                                    <small class="text-success fw-bold text-uppercase d-block" style="font-size: 0.70rem;">Total Released Payouts</small>
+                                    <span class="fs-4 fw-extrabold text-success">₹@releasedPayouts.ToString("N2")</span>
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">Transferred to Farmer banks</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle border rounded-4 overflow-hidden mb-0">
+                                <thead class="table-light small text-uppercase">
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Amount</th>
+                                        <th>Transport Bilty Proof</th>
+                                        <th>Escrow Status</th>
+                                        <th class="text-end">Payout Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (!Model.Any(o => !string.IsNullOrEmpty(o.BiltyImageUrl) || o.Status == "In Transit"))
+                                    {
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted py-5">
+                                                <i class="bi bi-shield-check display-5 d-block mb-2 text-success opacity-50"></i>
+                                                <p class="mb-0 fw-semibold">No pending Bilty payout approvals. All escrow orders are up to date!</p>
+                                            </td>
+                                        </tr>
+                                    }
+                                    @foreach (var order in Model.Where(o => !string.IsNullOrEmpty(o.BiltyImageUrl) || o.Status == "In Transit"))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong class="text-dark d-block">#@order.Id.ToString("D5")</strong>
+                                                <small class="text-muted" style="font-size: 0.72rem;">@order.OrderDate.ToString("MMM dd, yyyy")</small>
+                                            </td>
+                                            <td>
+                                                <span class="fw-extrabold text-success fs-6">₹@order.TotalAmount.ToString("N2")</span>
+                                                <small class="text-muted d-block" style="font-size: 0.70rem;">@order.PaymentMethod</small>
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(order.BiltyImageUrl))
+                                                {
+                                                    <a href="@order.BiltyImageUrl" target="_blank" class="btn btn-xs btn-outline-primary rounded-pill px-2.5 py-1 fw-bold shadow-sm d-inline-flex align-items-center gap-1">
+                                                        <i class="bi bi-file-earmark-image"></i> View Bilty #@(string.IsNullOrEmpty(order.BiltyNumber) ? "Receipt" : order.BiltyNumber)
+                                                    </a>
+                                                    @if (!string.IsNullOrEmpty(order.CargoServiceName))
+                                                    {
+                                                        <small class="text-muted d-block mt-0.5" style="font-size: 0.70rem;"><i class="bi bi-truck me-1"></i>@order.CargoServiceName</small>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border">Awaiting Upload</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (order.Status == "In Transit")
+                                                {
+                                                    <span class="badge bg-primary rounded-pill px-3 py-1.5 fw-bold"><i class="bi bi-truck me-1"></i> In Transit (Held)</span>
+                                                }
+                                                else if (order.Status.Contains("Delivered") || order.Status.Contains("Settled"))
+                                                {
+                                                    <span class="badge bg-success rounded-pill px-3 py-1.5 fw-bold"><i class="bi bi-check-circle me-1"></i> Settled &amp; Paid</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 fw-bold">@order.Status</span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                @if (order.Status == "In Transit" && !string.IsNullOrEmpty(order.BiltyImageUrl))
+                                                {
+                                                    <form asp-controller="Admin" asp-action="ReleaseEscrowPayoutViaBilty" method="post" class="d-inline" onsubmit="return confirm('Release ₹@order.TotalAmount from Escrow to Farmer Bank Account based on verified Bilty proof?');">
+                                                        <input type="hidden" name="orderId" value="@order.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
+                                                            <i class="bi bi-shield-check me-1"></i> Release Payout
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else
+                                                {
+                                                    <a asp-controller="Admin" asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-bold">
+                                                        <i class="bi bi-eye"></i> View Order
+                                                    </a>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 4. MODULE: Listed Crops & Categories Oversight -->
                     <div id="adminProductsTab" class="dash-tab-panel">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">All Platform Listed Farm Produce</h3>
-                                <p class="text-muted small mb-0">Review all farm products listed across Gujarat by verified farmers.</p>
+                                <h3 class="dash-section-title">All Listed Farm Produce &amp; Categories</h3>
+                                <p class="text-muted small mb-0">Monitor crop inventory listed across Gujarat by verified farmers and manage category taxonomy.</p>
                             </div>
-                            <a asp-controller="Product" asp-action="Index" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold">
-                                <i class="bi bi-shop me-1"></i> Public Storefront
-                            </a>
+                            <div class="d-flex gap-2">
+                                <a asp-controller="Category" asp-action="Index" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm">
+                                    <i class="bi bi-grid-fill me-1"></i> Manage Categories
+                                </a>
+                                <a asp-controller="Product" asp-action="Index" class="btn btn-sm btn-dark rounded-pill px-3 py-1.5 fw-bold shadow-sm">
+                                    <i class="bi bi-shop me-1"></i> Public Market
+                                </a>
+                            </div>
                         </div>
 
                         @if (allProducts.Any())
                         {
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle border rounded-4 overflow-hidden mb-0">
-                                    <thead class="table-light">
+                                    <thead class="table-light small text-uppercase">
                                         <tr>
                                             <th>Produce Name</th>
                                             <th>Category</th>
                                             <th>Direct Price (₹)</th>
-                                            <th>Stock (Kg/Qtl)</th>
-                                            <th>Farmer ID</th>
+                                            <th>Stock Quantity</th>
+                                            <th>Farmer Identity</th>
                                             <th class="text-end">Action</th>
                                         </tr>
                                     </thead>
@@ -358,18 +559,18 @@
                                         {
                                             <tr>
                                                 <td>
-                                                    <strong>@prod.Name</strong>
+                                                    <strong class="text-dark d-block">@prod.Name</strong>
                                                 </td>
                                                 <td><span class="badge bg-light text-dark border">@(prod.Category?.Name ?? "General Produce")</span></td>
-                                                <td class="fw-bold text-success">₹@prod.Price.ToString("N2")</td>
+                                                <td class="fw-bold text-success fs-6">₹@prod.Price.ToString("N2")</td>
                                                 <td>
                                                     <span class="badge @(prod.StockQuantity > 0 ? "bg-success bg-opacity-10 text-success border border-success border-opacity-25" : "bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25") fw-bold px-2.5 py-1 rounded-pill">
                                                         @prod.StockQuantity units
                                                     </span>
                                                 </td>
                                                 <td class="small text-muted" title="@prod.FarmerId">
-                                                    <span style="max-width: 140px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;">
-                                                        @prod.FarmerId
+                                                    <span class="badge bg-light text-dark border font-monospace">
+                                                        @prod.FarmerId.Substring(0, Math.Min(10, prod.FarmerId.Length))...
                                                     </span>
                                                 </td>
                                                 <td class="text-end">
@@ -393,18 +594,21 @@
                         }
                     </div>
 
-                    <!-- TAB 4: Orders & Financials -->
+                    <!-- 5. MODULE: Orders & Transaction Feed -->
                     <div id="adminOrdersTab" class="dash-tab-panel">
                         <div class="dash-section-header">
                             <div>
                                 <h3 class="dash-section-title">Transactions &amp; Order Feed</h3>
                                 <p class="text-muted small mb-0">Master record of all purchases between retail buyers and farmers.</p>
                             </div>
+                            <a asp-action="ExportOrdersCsv" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm">
+                                <i class="bi bi-download me-1"></i> Export Orders CSV
+                            </a>
                         </div>
 
                         <div class="table-responsive">
                             <table class="table table-hover align-middle border rounded-4 overflow-hidden mb-0">
-                                <thead class="table-light">
+                                <thead class="table-light small text-uppercase">
                                     <tr>
                                         <th>Order ID</th>
                                         <th>Order Date</th>
@@ -450,27 +654,9 @@
                                                 {
                                                     <span class="badge bg-secondary text-white">@order.Status</span>
                                                 }
-
-                                                @if (!string.IsNullOrEmpty(order.BiltyImageUrl))
-                                                {
-                                                    <div class="mt-1">
-                                                        <a href="@order.BiltyImageUrl" target="_blank" class="badge bg-light text-primary border text-decoration-none">
-                                                            <i class="bi bi-file-earmark-image me-1"></i>Bilty #@(string.IsNullOrEmpty(order.BiltyNumber) ? "Slip" : order.BiltyNumber)
-                                                        </a>
-                                                    </div>
-                                                }
                                             </td>
                                             <td class="small text-muted">@order.CustomerId</td>
                                             <td class="text-end">
-                                                @if (order.Status == "In Transit" && !string.IsNullOrEmpty(order.BiltyImageUrl))
-                                                {
-                                                    <form asp-controller="Admin" asp-action="ReleaseEscrowPayoutViaBilty" method="post" class="d-inline me-1" onsubmit="return confirm('Release escrow payout of ₹@order.TotalAmount to farmer bank account based on verified Bilty proof?');">
-                                                        <input type="hidden" name="orderId" value="@order.Id" />
-                                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-2.5 py-1 fw-bold shadow-sm" title="Release Escrow to Farmer">
-                                                            <i class="bi bi-shield-check me-1"></i> Release Payout
-                                                        </button>
-                                                    </form>
-                                                }
                                                 <a asp-controller="Admin" asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold">
                                                     <i class="bi bi-eye-fill me-1"></i> View Details
                                                 </a>
@@ -482,7 +668,150 @@
                         </div>
                     </div>
 
-                    <!-- TAB 5: Admin Profile Settings -->
+                    <!-- 6. MODULE: AI & APMC Market Intelligence -->
+                    <div id="adminAiTab" class="dash-tab-panel">
+                        <div class="dash-section-header">
+                            <div>
+                                <h3 class="dash-section-title">AI Engine &amp; Gujarat Mandi Intelligence 🤖</h3>
+                                <p class="text-muted small mb-0">Real-time market analytics, crop demand trends, and AI prediction models.</p>
+                            </div>
+                            <a asp-controller="Home" asp-action="LiveMandi" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm">
+                                <i class="bi bi-broadcast me-1"></i> Live Mandi Board
+                            </a>
+                        </div>
+
+                        <!-- Gujarat Mandi Benchmark Grid -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="p-3 bg-light rounded-4 border">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="fw-bold text-dark">🌾 Wheat (Tukdi)</span>
+                                        <span class="badge bg-success text-white">Rajkot APMC</span>
+                                    </div>
+                                    <div class="fs-5 fw-extrabold text-success">₹2,480 - ₹2,750 <small class="text-muted fs-6">/ Qtl</small></div>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Demand: High • Trend: Bullish 📈</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 bg-light rounded-4 border">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="fw-bold text-dark">☁️ Cotton (Kapas)</span>
+                                        <span class="badge bg-success text-white">Gondal APMC</span>
+                                    </div>
+                                    <div class="fs-5 fw-extrabold text-success">₹7,200 - ₹7,850 <small class="text-muted fs-6">/ Qtl</small></div>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Demand: Moderate • Trend: Stable</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 bg-light rounded-4 border">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="fw-bold text-dark">🌿 Cumin (Jeera)</span>
+                                        <span class="badge bg-success text-white">Unjha APMC</span>
+                                    </div>
+                                    <div class="fs-5 fw-extrabold text-success">₹24,500 - ₹28,000 <small class="text-muted fs-6">/ Qtl</small></div>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Demand: Very High • Trend: Bullish 📈</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3 AI Predictor Engines Launchpad -->
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="p-3.5 bg-white rounded-4 border shadow-sm text-center h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="rounded-circle bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 48px; height: 48px; font-size: 1.4rem;">
+                                            <i class="bi bi-flower1"></i>
+                                        </div>
+                                        <h6 class="fw-bold text-dark mb-1">Crop Recommendation</h6>
+                                        <p class="text-muted small mb-3">AI algorithm evaluating Soil NPK, Rainfall &amp; Temperature for Gujarat districts.</p>
+                                    </div>
+                                    <a asp-controller="Ai" asp-action="CropRecommend" class="btn btn-sm btn-outline-success rounded-pill fw-bold w-100">Test Crop AI</a>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3.5 bg-white rounded-4 border shadow-sm text-center h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 48px; height: 48px; font-size: 1.4rem;">
+                                            <i class="bi bi-shield-virus"></i>
+                                        </div>
+                                        <h6 class="fw-bold text-dark mb-1">Leaf Disease Detection</h6>
+                                        <p class="text-muted small mb-3">Computer Vision CNN model for instant leaf pathology diagnosis.</p>
+                                    </div>
+                                    <a asp-controller="Ai" asp-action="DiseasePredict" class="btn btn-sm btn-outline-danger rounded-pill fw-bold w-100">Test Disease AI</a>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3.5 bg-white rounded-4 border shadow-sm text-center h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 48px; height: 48px; font-size: 1.4rem;">
+                                            <i class="bi bi-graph-up-arrow"></i>
+                                        </div>
+                                        <h6 class="fw-bold text-dark mb-1">Mandi Price Predictor</h6>
+                                        <p class="text-muted small mb-3">Time-series forecasting model estimating mandi price fluctuations.</p>
+                                    </div>
+                                    <a asp-controller="Ai" asp-action="PriceForecast" class="btn btn-sm btn-outline-primary rounded-pill fw-bold w-100">Test Price AI</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 7. MODULE: Accounting & Financial Export Reports -->
+                    <div id="adminReportsTab" class="dash-tab-panel">
+                        <div class="dash-section-header">
+                            <div>
+                                <h3 class="dash-section-title">Reports &amp; Financial Auditing 📑</h3>
+                                <p class="text-muted small mb-0">Generate and download official CSV and PDF audit logs for transactions, escrow payouts, and GST reconciliation.</p>
+                            </div>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <div class="p-4 bg-light rounded-4 border h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <i class="bi bi-file-earmark-spreadsheet-fill text-success fs-4"></i>
+                                            <h5 class="fw-bold text-dark mb-0">Orders &amp; Sales Master Export</h5>
+                                        </div>
+                                        <p class="text-muted small mb-3">
+                                            Comprehensive ledger containing Order IDs, Customer IDs, Gross Values, Delivery Addresses, Bilty Reference Numbers, and Admin Escrow approval flags.
+                                        </p>
+                                    </div>
+                                    <a asp-action="ExportOrdersCsv" class="btn btn-success rounded-pill fw-bold w-100 py-2.5 shadow-sm" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
+                                        <i class="bi bi-cloud-arrow-down-fill me-1"></i> Download Orders Report (.CSV)
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="p-4 bg-light rounded-4 border h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <i class="bi bi-bank text-primary fs-4"></i>
+                                            <h5 class="fw-bold text-dark mb-0">Farmer Payouts &amp; Banking Audit</h5>
+                                        </div>
+                                        <p class="text-muted small mb-3">
+                                            Banking report listing all Farmer names, Bank account numbers, IFSC codes, UPI handles, KYC verification status, and account activity.
+                                        </p>
+                                    </div>
+                                    <a asp-action="ExportPayoutsCsv" class="btn btn-primary rounded-pill fw-bold w-100 py-2.5 shadow-sm" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); border: none;">
+                                        <i class="bi bi-cloud-arrow-down-fill me-1"></i> Download Payouts Report (.CSV)
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-white rounded-4 border shadow-sm d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0"><i class="bi bi-printer-fill text-dark me-2"></i>Official Executive System Summary (PDF View)</h6>
+                                <small class="text-muted">Generate a printer-ready summary of platform performance for stakeholder review.</small>
+                            </div>
+                            <button type="button" class="btn btn-outline-dark rounded-pill px-4 py-2 fw-bold small" onclick="window.print()">
+                                <i class="bi bi-printer me-1"></i> Print / Save PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Admin Profile Settings -->
                     <div id="adminProfileTab" class="dash-tab-panel">
                         <div class="dash-section-header">
                             <div>
@@ -524,14 +853,14 @@
 <div class="modal fade" id="kycReviewModal" tabindex="-1" aria-labelledby="kycReviewModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-            <div class="modal-header bg-dark text-white p-3.5 px-4 d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                        <i class="bi bi-shield-check fs-5"></i>
+            <div class="modal-header bg-dark text-white p-3.5 px-4 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;">
+                <div class="d-flex align-items-center gap-2.5">
+                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                        <i class="bi bi-shield-check"></i>
                     </div>
                     <div>
-                        <h5 class="modal-title fw-bold mb-0" id="kycReviewModalLabel">Farmer KYC &amp; Anti-Fraud Inspector</h5>
-                        <small class="text-light opacity-75">Verify 7/12 (Satbara) &amp; Bank Payout Details</small>
+                        <h5 class="modal-title fw-bold mb-0 text-white" id="kycReviewModalLabel">Farmer 7/12 KYC &amp; Bank Inspector</h5>
+                        <small class="text-light opacity-75" style="font-size: 0.74rem;">Verify 7/12 Land Record &amp; Bank Payout Account</small>
                     </div>
                 </div>
                 <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -541,15 +870,15 @@
                 <div class="row g-4">
                     <!-- Left: Document Preview -->
                     <div class="col-md-6">
-                        <div class="border rounded-4 p-3 bg-light text-center h-100 d-flex flex-column justify-content-between">
+                        <div class="border rounded-4 p-3.5 bg-light text-center h-100 d-flex flex-column justify-content-between">
                             <div>
-                                <span class="badge bg-success bg-opacity-10 text-success border fw-bold px-3 py-1.5 rounded-pill mb-2" id="kycDocTypeBadge">
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 fw-bold px-3 py-1.5 rounded-pill mb-2" id="kycDocTypeBadge">
                                     7/12 (Satbara)
                                 </span>
                                 <h6 class="fw-bold text-dark mb-2">Uploaded Document Proof</h6>
                             </div>
                             
-                            <div class="my-3 d-flex align-items-center justify-content-center overflow-hidden rounded-3 border bg-white" style="min-height: 240px; max-height: 320px;">
+                            <div class="my-3 d-flex align-items-center justify-content-center overflow-hidden rounded-3 border bg-white shadow-sm" style="min-height: 240px; max-height: 320px;">
                                 <img id="kycDocImg" src="" class="img-fluid rounded" alt="KYC Document" style="max-height: 300px; object-fit: contain; display: none;" />
                                 <iframe id="kycDocPdf" src="" class="w-100" style="height: 300px; border: none; display: none;"></iframe>
                                 <div id="kycNoDoc" class="text-muted p-4">
@@ -558,7 +887,7 @@
                                 </div>
                             </div>
 
-                            <a id="kycDocFullLink" href="#" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill w-100 fw-bold">
+                            <a id="kycDocFullLink" href="#" target="_blank" class="btn btn-sm btn-outline-success bg-white rounded-pill w-100 fw-bold shadow-sm">
                                 <i class="bi bi-arrows-fullscreen me-1"></i> Open Original Document
                             </a>
                         </div>
@@ -569,47 +898,55 @@
                         <div class="h-100 d-flex flex-column justify-content-between">
                             <div>
                                 <div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-3">
-                                    <img id="kycFarmerAvatar" src="" class="rounded-circle border border-2 border-success shadow-sm" style="width: 54px; height: 54px; object-fit: cover;" alt="Farmer Face Photo" />
+                                    <img id="kycFarmerAvatar" src="" class="rounded-circle border border-2 border-success shadow-sm" style="width: 52px; height: 52px; object-fit: cover;" alt="Farmer Photo" />
                                     <div>
                                         <h6 class="fw-bold text-dark mb-0 fs-6" id="kycFarmerName"></h6>
                                         <small class="text-muted d-block" id="kycFarmerEmail"></small>
-                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-0.5 rounded-pill" style="font-size: 0.70rem;">
-                                            <i class="bi bi-person-check-fill me-1"></i> Registered Farmer
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-0.5 rounded-pill mt-0.5" style="font-size: 0.70rem;">
+                                            <i class="bi bi-tree-fill me-1"></i> Registered Farmer
                                         </span>
                                     </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <small class="text-muted d-block">Farm Location</small>
-                                    <span class="fw-semibold text-dark" id="kycFarmerLocation"></span>
+                                <div class="mb-3 p-2.5 rounded-3 bg-light border">
+                                    <small class="text-muted d-block" style="font-size: 0.70rem; font-weight: 700; text-transform: uppercase;">Farm Location</small>
+                                    <span class="fw-bold text-dark small" id="kycFarmerLocation"></span>
                                 </div>
 
-                                <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Bank Account &amp; UPI Details</h6>
+                                <h6 class="fw-bold text-dark border-bottom pb-2 mb-2.5 small text-uppercase" style="letter-spacing: 0.5px;">Bank Account &amp; UPI Details</h6>
 
                                 <div class="row g-2 mb-2">
                                     <div class="col-6">
-                                        <small class="text-muted d-block">Bank Name</small>
-                                        <span class="fw-bold text-dark" id="kycBankName"></span>
+                                        <div class="p-2 bg-light rounded-3 border">
+                                            <small class="text-muted d-block" style="font-size: 0.68rem; text-transform: uppercase; font-weight: 700;">Bank Name</small>
+                                            <span class="fw-bold text-dark small" id="kycBankName"></span>
+                                        </div>
                                     </div>
                                     <div class="col-6">
-                                        <small class="text-muted d-block">Account Number</small>
-                                        <span class="fw-bold text-success font-monospace" id="kycBankAcc"></span>
+                                        <div class="p-2 bg-light rounded-3 border">
+                                            <small class="text-muted d-block" style="font-size: 0.68rem; text-transform: uppercase; font-weight: 700;">Account Number</small>
+                                            <span class="fw-bold text-success font-monospace small" id="kycBankAcc"></span>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div class="row g-2 mb-3">
                                     <div class="col-6">
-                                        <small class="text-muted d-block">IFSC Code</small>
-                                        <span class="fw-bold text-dark font-monospace" id="kycBankIfsc"></span>
+                                        <div class="p-2 bg-light rounded-3 border">
+                                            <small class="text-muted d-block" style="font-size: 0.68rem; text-transform: uppercase; font-weight: 700;">IFSC Code</small>
+                                            <span class="fw-bold text-dark font-monospace small" id="kycBankIfsc"></span>
+                                        </div>
                                     </div>
                                     <div class="col-6">
-                                        <small class="text-muted d-block">UPI ID</small>
-                                        <span class="fw-semibold text-dark font-monospace" id="kycUpiId"></span>
+                                        <div class="p-2 bg-light rounded-3 border">
+                                            <small class="text-muted d-block" style="font-size: 0.68rem; text-transform: uppercase; font-weight: 700;">UPI ID</small>
+                                            <span class="fw-semibold text-dark font-monospace small" id="kycUpiId"></span>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div id="kycRejectionAlert" class="alert alert-danger p-2.5 rounded-3 small mb-2 d-none">
-                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>Rejection Reason:</strong> <span id="kycRejectionMsg"></span>
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>Previous Reason:</strong> <span id="kycRejectionMsg"></span>
                                 </div>
                             </div>
 
@@ -618,12 +955,12 @@
                                 <div class="d-flex gap-2 mb-2">
                                     <form asp-action="ApproveFarmer" method="post" class="flex-grow-1">
                                         <input type="hidden" name="id" id="kycApproveUserId" value="" />
-                                        <button type="submit" class="btn btn-success rounded-pill fw-bold w-100 py-2 shadow-sm" style="background-color: #006653; border-color: #006653;">
+                                        <button type="submit" class="btn btn-success rounded-pill fw-bold w-100 py-2.5 shadow-sm" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
                                             <i class="bi bi-check-circle-fill me-1"></i> Approve &amp; Activate Farmer
                                         </button>
                                     </form>
 
-                                    <button type="button" class="btn btn-outline-danger rounded-pill px-3 fw-bold" onclick="toggleRejectBox()">
+                                    <button type="button" class="btn btn-outline-danger rounded-pill px-3.5 fw-bold" onclick="toggleRejectBox()">
                                         <i class="bi bi-x-circle me-1"></i> Reject
                                     </button>
                                 </div>
@@ -636,7 +973,7 @@
                                         <textarea name="reason" class="form-control rounded-3 mb-2 small shadow-none" rows="2" placeholder="e.g. 7/12 document photo is blurred / Name does not match bank account..." required></textarea>
                                         <div class="d-flex justify-content-end gap-2">
                                             <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" onclick="toggleRejectBox()">Cancel</button>
-                                            <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold">Submit Rejection</button>
+                                            <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold">Confirm &amp; Delete Data</button>
                                         </div>
                                     </form>
                                 </div>
@@ -651,37 +988,64 @@
 
 @section Scripts {
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            const tabParam = urlParams.get('tab');
-            if (tabParam) {
-                const targetBtn = Array.from(document.querySelectorAll('.dash-tab-link')).find(btn => {
-                    const onclickAttr = btn.getAttribute('onclick') || '';
-                    return onclickAttr.includes(tabParam);
-                });
-                if (targetBtn) {
-                    switchDashTab(tabParam, targetBtn);
-                }
-            }
-        });
-
-        function switchDashTab(tabId, btn) {
-            document.querySelectorAll('.dash-tab-panel').forEach(panel => {
+        function switchDashTab(tabId, element) {
+            document.querySelectorAll('.dash-tab-panel').forEach(function (panel) {
                 panel.classList.remove('active');
             });
-
-            const selectedPanel = document.getElementById(tabId);
-            if (selectedPanel) {
-                selectedPanel.classList.add('active');
-            }
-
-            document.querySelectorAll('.dash-tab-link').forEach(b => {
-                b.classList.remove('active');
+            document.querySelectorAll('.dash-tab-link').forEach(function (link) {
+                link.classList.remove('active');
             });
-            if (btn) {
-                btn.classList.add('active');
+
+            const targetPanel = document.getElementById(tabId);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+            if (element) {
+                element.classList.add('active');
             }
         }
+
+        function filterUsersTable(role, element) {
+            document.querySelectorAll('.user-filter-btn').forEach(function (btn) {
+                btn.classList.remove('active', 'btn-dark', 'text-white');
+                if (btn.getAttribute('data-filter') === 'Farmer') {
+                    btn.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-success';
+                } else if (btn.getAttribute('data-filter') === 'Customer') {
+                    btn.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-primary';
+                } else {
+                    btn.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-secondary';
+                }
+            });
+
+            element.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-dark text-white active shadow-sm';
+
+            const rows = document.querySelectorAll('.dash-user-row');
+            rows.forEach(function (row) {
+                if (role === 'all' || row.getAttribute('data-role') === role) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Live search filter inside dashboard user tab
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchInput = document.getElementById('dashUserSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    const q = this.value.toLowerCase().trim();
+                    document.querySelectorAll('.dash-user-row').forEach(function (row) {
+                        const content = row.getAttribute('data-search') || '';
+                        if (!q || content.includes(q)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
 
         function openKycReviewModal(id, name, email, city, address, bankName, bankAcc, bankIfsc, upi, docType, docPath, isApproved, rejectionReason, profilePic) {
             document.getElementById('kycApproveUserId').value = id;
@@ -745,64 +1109,5 @@
             const box = document.getElementById('rejectReasonBox');
             box.style.display = box.style.display === 'none' ? 'block' : 'none';
         }
-
-        function filterUsersTable(role, btn) {
-            document.querySelectorAll('.user-filter-btn').forEach(b => {
-                b.classList.remove('active', 'bg-dark', 'text-white', 'bg-success', 'bg-primary', 'shadow-sm');
-                const filter = b.getAttribute('data-filter');
-                if (filter === 'Farmer') {
-                    b.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-success';
-                } else if (filter === 'Customer') {
-                    b.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-primary';
-                } else {
-                    b.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-secondary';
-                }
-            });
-
-            if (btn) {
-                if (role === 'Farmer') {
-                    btn.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-success text-white active shadow-sm';
-                } else if (role === 'Customer') {
-                    btn.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-primary text-white active shadow-sm';
-                } else {
-                    btn.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-dark text-white active shadow-sm';
-                }
-            }
-
-            const rows = document.querySelectorAll('.user-table-row');
-            let visibleCount = 0;
-            rows.forEach(row => {
-                const userRole = row.getAttribute('data-role');
-                if (role === 'all' || userRole === role) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            const noUsersRow = document.getElementById('noFilteredUsersRow');
-            if (noUsersRow) {
-                noUsersRow.style.display = visibleCount === 0 ? '' : 'none';
-            }
-        }
-
-        // Auto-dismiss alert banners smoothly after 3.5 seconds
-        document.addEventListener("DOMContentLoaded", function () {
-            const alerts = document.querySelectorAll('.alert-dismissible');
-            alerts.forEach(function (alert) {
-                setTimeout(function () {
-                    alert.style.transition = 'opacity 0.6s ease, max-height 0.6s ease, margin 0.6s ease, padding 0.6s ease';
-                    alert.style.opacity = '0';
-                    alert.style.maxHeight = '0';
-                    alert.style.margin = '0';
-                    alert.style.padding = '0';
-                    alert.style.overflow = 'hidden';
-                    setTimeout(function () {
-                        alert.remove();
-                    }, 600);
-                }, 3500);
-            });
-        });
     </script>
 }

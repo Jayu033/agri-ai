@@ -90,16 +90,82 @@ namespace AgriAI.Web.Controllers
                 }
             }
 
+            decimal totalRevenue = orders.Sum(o => o.TotalAmount);
+            decimal escrowBalance = orders.Where(o => o.Status == "Requested" || o.Status == "Accepted" || o.Status == "In Transit").Sum(o => o.TotalAmount);
+            decimal releasedPayouts = orders.Where(o => o.Status.Contains("Delivered") || o.Status.Contains("Settled")).Sum(o => o.TotalAmount);
+            int pendingKycCount = userVMs.Count(u => u.Role == "Farmer" && !u.IsApprovedByAdmin);
+            int inTransitCount = orders.Count(o => o.Status == "In Transit");
+            int deliveredCount = orders.Count(o => o.Status.Contains("Delivered") || o.Status.Contains("Settled"));
+            int requestedCount = orders.Count(o => o.Status == "Requested");
+
             ViewBag.TotalProducts = products.Count;
             ViewBag.TotalFarmers = farmersCount;
             ViewBag.TotalCustomers = customersCount;
+            ViewBag.TotalUsers = allUsers.Count;
             ViewBag.TotalOrders = orders.Count;
-            ViewBag.TotalRevenue = orders.Sum(o => o.TotalAmount);
+            ViewBag.TotalRevenue = totalRevenue;
+            ViewBag.EscrowBalance = escrowBalance;
+            ViewBag.ReleasedPayouts = releasedPayouts;
+            ViewBag.PendingKycCount = pendingKycCount;
+            ViewBag.InTransitCount = inTransitCount;
+            ViewBag.DeliveredCount = deliveredCount;
+            ViewBag.RequestedCount = requestedCount;
             ViewBag.AllUsers = userVMs;
             ViewBag.AllProducts = products;
             ViewBag.AllCategories = categories;
 
             return View(orders);
+        }
+
+        // GET: /Admin/ExportOrdersCsv
+        [HttpGet]
+        public async Task<IActionResult> ExportOrdersCsv()
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(i => i.Product)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine("Order ID,Order Date,Customer ID,Total Amount (INR),Status,Payment Method,Bilty Number,Delivery Address,Admin Approved Payout");
+
+            foreach (var order in orders)
+            {
+                var addr = (order.ShippingAddress ?? "").Replace(",", " ");
+                var bilty = string.IsNullOrEmpty(order.BiltyNumber) ? "N/A" : order.BiltyNumber;
+                builder.AppendLine($"#{order.Id:D5},{order.OrderDate:yyyy-MM-dd HH:mm},{order.CustomerId},{order.TotalAmount:F2},{order.Status},{order.PaymentMethod},{bilty},{addr},{(order.AdminApprovedPayout ? "Yes" : "No")}");
+            }
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(builder.ToString());
+            var fileName = $"AgriAI_Orders_Report_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv";
+            return File(bytes, "text/csv", fileName);
+        }
+
+        // GET: /Admin/ExportPayoutsCsv
+        [HttpGet]
+        public async Task<IActionResult> ExportPayoutsCsv()
+        {
+            var allUsers = _userManager.Users.ToList();
+
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine("User ID,Full Name,Username,Email,Role,KYC Status,Bank Name,Account Number,IFSC Code,UPI ID,Account Status");
+
+            foreach (var user in allUsers)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                var role = roles.FirstOrDefault() ?? "Customer";
+                var kycStatus = role == "Farmer" ? (user.IsApprovedByAdmin ? "KYC Verified" : "Pending Review") : "N/A (Buyer)";
+                var accStatus = (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow) ? "Blocked" : "Active";
+                var name = $"{user.FirstName} {user.LastName}".Trim();
+                if (string.IsNullOrEmpty(name)) name = user.UserName ?? "User";
+
+                builder.AppendLine($"{user.Id},{name},{user.UserName},{user.Email},{role},{kycStatus},{user.BankName},{user.BankAccountNumber},{user.BankIfscCode},{user.UpiId},{accStatus}");
+            }
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(builder.ToString());
+            var fileName = $"AgriAI_Users_And_Banking_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv";
+            return File(bytes, "text/csv", fileName);
         }
 
         // GET: /Admin/OrderDetails/5
