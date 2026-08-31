@@ -84,7 +84,7 @@
                 font-size: 10pt;
                 color: #000000;
             }
-            .no-print, header, footer, .navbar, .btn, .filter-toolbar-card, .btn-back-custom {
+            .no-print, header, footer, .navbar, .btn, .filter-toolbar-card, .btn-back-custom, .admin-header-card, #openChatBtn, #agriAiChatbot, .floating-chatbot, .gov-top-bar, .gov-main-header, .app-footer, .toast-container, .global-notification-container {
                 display: none !important;
             }
             .statement-sheet {
@@ -221,29 +221,21 @@
     <!-- 3. Official Printable Statement Sheet (PDF Body) -->
     <div class="statement-sheet">
         
-        <!-- Statement Letterhead Header -->
-        <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
-            <div>
-                <div class="d-flex align-items-center gap-2.5 mb-1">
-                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-extrabold fs-4 shadow-sm" style="width: 44px; height: 44px;">
-                        🌱
-                    </div>
-                    <div>
-                        <h3 class="fw-extrabold text-dark mb-0 letter-spacing-1">AgriAI Digital Market Platform</h3>
-                        <small class="text-muted fw-bold">Official Escrow Vault &amp; Payout Audit Ledger</small>
-                    </div>
+        <!-- Clean Simple Statement Header -->
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-extrabold fs-4 shadow-sm" style="width: 44px; height: 44px;">
+                    🌱
                 </div>
-                <div class="small text-muted mt-2">
-                    <span>Govt. Reg APMC Gujarat Gateway</span> &bull; 
-                    <span>Vault Security: 100% Escrow Insured</span>
+                <div>
+                    <h4 class="fw-extrabold text-dark mb-0">AgriAI Escrow &amp; Payout Statement</h4>
+                    <span class="text-muted small">Period: <strong class="text-dark">@periodLabel</strong></span>
                 </div>
             </div>
 
             <div class="text-end">
-                <span class="badge bg-danger rounded-pill px-3 py-1.5 fw-bold mb-2">OFFICIAL AUDIT STATEMENT</span>
-                <div class="small text-muted">Statement Date: <strong>@DateTime.UtcNow.ToString("dd MMM yyyy, hh:mm tt") UTC</strong></div>
-                <div class="small text-muted">Audited Period: <strong class="text-dark">@periodLabel</strong></div>
-                <div class="small text-muted">Audit Serial: <code class="text-dark font-monospace">AGRI-ESC-@(DateTime.UtcNow.ToString("yyyyMMdd"))-@Model.Transactions.Count</code></div>
+                <div class="text-muted small">Date: <strong class="text-dark">@DateTime.UtcNow.ToString("dd MMM yyyy, hh:mm tt")</strong></div>
+                <div class="text-muted small">Total Records: <strong class="text-dark">@Model.Transactions.Count</strong></div>
             </div>
         </div>
 
