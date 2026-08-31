@@ -271,8 +271,62 @@
                         <div class="modern-input-group">
                             <label asp-for="BankName" class="modern-label">Bank Name</label>
                             <div class="input-icon-box">
-                                <input asp-for="BankName" class="modern-form-control" placeholder="e.g. State Bank of India / HDFC" />
+                                <input asp-for="BankName" list="indianBankNamesList" class="modern-form-control" placeholder="Select or type bank name..." autocomplete="off" />
                                 <i class="bi bi-bank input-leading-icon"></i>
+                                <datalist id="indianBankNamesList">
+                                    <!-- Public Sector Banks -->
+                                    <option value="State Bank of India (SBI)">State Bank of India (SBI)</option>
+                                    <option value="Bank of Baroda (BOB)">Bank of Baroda (BOB)</option>
+                                    <option value="Punjab National Bank (PNB)">Punjab National Bank (PNB)</option>
+                                    <option value="Canara Bank">Canara Bank</option>
+                                    <option value="Union Bank of India">Union Bank of India</option>
+                                    <option value="Bank of India (BOI)">Bank of India (BOI)</option>
+                                    <option value="Central Bank of India">Central Bank of India</option>
+                                    <option value="Indian Bank">Indian Bank</option>
+                                    <option value="Indian Overseas Bank">Indian Overseas Bank</option>
+                                    <option value="UCO Bank">UCO Bank</option>
+                                    <option value="Bank of Maharashtra">Bank of Maharashtra</option>
+                                    <option value="Punjab & Sind Bank">Punjab &amp; Sind Bank</option>
+
+                                    <!-- Major Private Sector Banks -->
+                                    <option value="HDFC Bank">HDFC Bank</option>
+                                    <option value="ICICI Bank">ICICI Bank</option>
+                                    <option value="Axis Bank">Axis Bank</option>
+                                    <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+                                    <option value="IndusInd Bank">IndusInd Bank</option>
+                                    <option value="Federal Bank">Federal Bank</option>
+                                    <option value="IDBI Bank">IDBI Bank</option>
+                                    <option value="Yes Bank">Yes Bank</option>
+                                    <option value="Bandhan Bank">Bandhan Bank</option>
+                                    <option value="AU Small Finance Bank">AU Small Finance Bank</option>
+
+                                    <!-- Regional Rural & Gramin Banks (Farmers) -->
+                                    <option value="Saurashtra Gramin Bank">Saurashtra Gramin Bank</option>
+                                    <option value="Baroda Gujarat Gramin Bank (BGGB)">Baroda Gujarat Gramin Bank (BGGB)</option>
+
+                                    <!-- Gujarat District Co-operative Banks -->
+                                    <option value="Gujarat State Co-operative Bank (GSC Bank)">Gujarat State Co-operative Bank (GSC Bank)</option>
+                                    <option value="Rajkot District Co-operative Bank (RDC Bank)">Rajkot District Co-operative Bank (RDC Bank)</option>
+                                    <option value="Ahmedabad District Co-operative Bank (ADC Bank)">Ahmedabad District Co-operative Bank (ADC Bank)</option>
+                                    <option value="Surat District Co-operative Bank">Surat District Co-operative Bank</option>
+                                    <option value="Mehsana Urban Co-operative Bank">Mehsana Urban Co-operative Bank</option>
+                                    <option value="Banaskantha District Central Co-op Bank">Banaskantha District Central Co-op Bank</option>
+                                    <option value="Sabarkantha District Central Co-op Bank">Sabarkantha District Central Co-op Bank</option>
+                                    <option value="Kheda District Central Co-operative Bank">Kheda District Central Co-operative Bank</option>
+                                    <option value="Vadodara District Central Co-op Bank">Vadodara District Central Co-op Bank</option>
+                                    <option value="Amreli Jilla Madhyastha Sahakari Bank">Amreli Jilla Madhyastha Sahakari Bank</option>
+                                    <option value="Bhavnagar District Co-operative Bank">Bhavnagar District Co-operative Bank</option>
+                                    <option value="Junagadh Jilla Sahakari Bank">Junagadh Jilla Sahakari Bank</option>
+                                    <option value="Jamnagar District Co-operative Bank">Jamnagar District Co-operative Bank</option>
+                                    <option value="Bharuch District Central Co-op Bank">Bharuch District Central Co-op Bank</option>
+                                    <option value="Panchmahal District Co-op Bank">Panchmahal District Co-op Bank</option>
+
+                                    <!-- Payment Banks -->
+                                    <option value="India Post Payments Bank (IPPB)">India Post Payments Bank (IPPB)</option>
+                                    <option value="Airtel Payments Bank">Airtel Payments Bank</option>
+                                    <option value="Paytm Payments Bank">Paytm Payments Bank</option>
+                                    <option value="Fino Payments Bank">Fino Payments Bank</option>
+                                </datalist>
                             </div>
                         </div>
                     </div>
