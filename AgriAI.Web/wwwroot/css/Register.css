@@ -369,5 +369,85 @@ input.btn-check:checked + .role-card-option .role-radio-badge::after,
     text-decoration: underline;
 }
 
+/* Custom Styled Bank Searchable Dropdown */
+.bank-custom-dropdown {
+    background: #ffffff;
+    border: 1px solid rgba(22, 101, 52, 0.25);
+    border-radius: 12px;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.16);
+    max-height: 230px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #15803d #f1f5f9;
+}
+
+.bank-custom-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.bank-custom-dropdown::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+
+.bank-custom-dropdown::-webkit-scrollbar-thumb {
+    background: #15803d;
+    border-radius: 8px;
+}
+
+.bank-opt-group-header {
+    padding: 6px 12px;
+    font-size: 0.70rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #166534;
+    background: #f0fdf4;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.bank-opt-group-header:first-child {
+    border-top: none;
+}
+
+.bank-opt-item {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    color: #1e293b;
+    cursor: pointer;
+    border-bottom: 1px solid #f8fafc;
+    transition: background 0.15s ease, color 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bank-opt-item:last-child {
+    border-bottom: none;
+}
+
+.bank-opt-item:hover, .bank-opt-item.active {
+    background-color: #f0fdf4;
+    color: #15803d;
+    font-weight: 600;
+}
+
+.bank-opt-item .bank-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.bank-opt-item:hover .bank-badge {
+    background: #dcfce7;
+    color: #166534;
+}
+
 
 

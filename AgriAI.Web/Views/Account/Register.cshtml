@@ -268,65 +268,70 @@
                 <!-- Bank Details Row -->
                 <div class="row g-2 mb-2">
                     <div class="col-md-6">
-                        <div class="modern-input-group">
+                        <div class="modern-input-group position-relative" id="bankSelectWrapper">
                             <label asp-for="BankName" class="modern-label">Bank Name</label>
-                            <div class="input-icon-box">
-                                <input asp-for="BankName" list="indianBankNamesList" class="modern-form-control" placeholder="Select or type bank name..." autocomplete="off" />
+                            <div class="input-icon-box position-relative">
+                                <input asp-for="BankName" id="regBankNameInput" class="modern-form-control pe-4" placeholder="Select or search bank..." autocomplete="off" />
                                 <i class="bi bi-bank input-leading-icon"></i>
-                                <datalist id="indianBankNamesList">
-                                    <!-- Public Sector Banks -->
-                                    <option value="State Bank of India (SBI)">State Bank of India (SBI)</option>
-                                    <option value="Bank of Baroda (BOB)">Bank of Baroda (BOB)</option>
-                                    <option value="Punjab National Bank (PNB)">Punjab National Bank (PNB)</option>
-                                    <option value="Canara Bank">Canara Bank</option>
-                                    <option value="Union Bank of India">Union Bank of India</option>
-                                    <option value="Bank of India (BOI)">Bank of India (BOI)</option>
-                                    <option value="Central Bank of India">Central Bank of India</option>
-                                    <option value="Indian Bank">Indian Bank</option>
-                                    <option value="Indian Overseas Bank">Indian Overseas Bank</option>
-                                    <option value="UCO Bank">UCO Bank</option>
-                                    <option value="Bank of Maharashtra">Bank of Maharashtra</option>
-                                    <option value="Punjab & Sind Bank">Punjab &amp; Sind Bank</option>
+                                <button type="button" class="password-toggle-btn p-0 me-2" id="btnToggleBankDropdown" tabindex="-1" aria-label="Toggle bank list" style="width: 24px; height: 24px;">
+                                    <i class="bi bi-chevron-down text-muted" style="font-size: 0.75rem;"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Custom Styled Popup Menu attached directly under the input -->
+                            <div id="customBankMenu" class="bank-custom-dropdown position-absolute start-0 w-100 mt-1 d-none" style="z-index: 1060;">
+                                <div class="bank-opt-group-header">🏛️ Public Sector Banks</div>
+                                <div class="bank-opt-item" data-bank="State Bank of India (SBI)"><span>State Bank of India (SBI)</span><span class="bank-badge">Public</span></div>
+                                <div class="bank-opt-item" data-bank="Bank of Baroda (BOB)"><span>Bank of Baroda (BOB)</span><span class="bank-badge">Public</span></div>
+                                <div class="bank-opt-item" data-bank="Punjab National Bank (PNB)"><span>Punjab National Bank (PNB)</span><span class="bank-badge">Public</span></div>
+                                <div class="bank-opt-item" data-bank="Canara Bank"><span>Canara Bank</span><span class="bank-badge">Public</span></div>
+                                <div class="bank-opt-item" data-bank="Union Bank of India"><span>Union Bank of India</span><span class="bank-badge">Public</span></div>
+                                <div class="bank-opt-item" data-bank="Bank of India (BOI)"><span>Bank of India (BOI)</span><span class="bank-badge">Public</span></div>
+                                <div class="bank-opt-item" data-bank="Central Bank of India"><span>Central Bank of India</span><span class="bank-badge">Public</span></div>
+                                <div class="bank-opt-item" data-bank="Indian Bank"><span>Indian Bank</span><span class="bank-badge">Public</span></div>
+                                <div class="bank-opt-item" data-bank="Indian Overseas Bank"><span>Indian Overseas Bank</span><span class="bank-badge">Public</span></div>
+                                <div class="bank-opt-item" data-bank="UCO Bank"><span>UCO Bank</span><span class="bank-badge">Public</span></div>
+                                <div class="bank-opt-item" data-bank="Bank of Maharashtra"><span>Bank of Maharashtra</span><span class="bank-badge">Public</span></div>
+                                <div class="bank-opt-item" data-bank="Punjab & Sind Bank"><span>Punjab &amp; Sind Bank</span><span class="bank-badge">Public</span></div>
 
-                                    <!-- Major Private Sector Banks -->
-                                    <option value="HDFC Bank">HDFC Bank</option>
-                                    <option value="ICICI Bank">ICICI Bank</option>
-                                    <option value="Axis Bank">Axis Bank</option>
-                                    <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
-                                    <option value="IndusInd Bank">IndusInd Bank</option>
-                                    <option value="Federal Bank">Federal Bank</option>
-                                    <option value="IDBI Bank">IDBI Bank</option>
-                                    <option value="Yes Bank">Yes Bank</option>
-                                    <option value="Bandhan Bank">Bandhan Bank</option>
-                                    <option value="AU Small Finance Bank">AU Small Finance Bank</option>
+                                <div class="bank-opt-group-header">🏢 Private Sector Banks</div>
+                                <div class="bank-opt-item" data-bank="HDFC Bank"><span>HDFC Bank</span><span class="bank-badge">Private</span></div>
+                                <div class="bank-opt-item" data-bank="ICICI Bank"><span>ICICI Bank</span><span class="bank-badge">Private</span></div>
+                                <div class="bank-opt-item" data-bank="Axis Bank"><span>Axis Bank</span><span class="bank-badge">Private</span></div>
+                                <div class="bank-opt-item" data-bank="Kotak Mahindra Bank"><span>Kotak Mahindra Bank</span><span class="bank-badge">Private</span></div>
+                                <div class="bank-opt-item" data-bank="IndusInd Bank"><span>IndusInd Bank</span><span class="bank-badge">Private</span></div>
+                                <div class="bank-opt-item" data-bank="Federal Bank"><span>Federal Bank</span><span class="bank-badge">Private</span></div>
+                                <div class="bank-opt-item" data-bank="IDBI Bank"><span>IDBI Bank</span><span class="bank-badge">Private</span></div>
+                                <div class="bank-opt-item" data-bank="Yes Bank"><span>Yes Bank</span><span class="bank-badge">Private</span></div>
+                                <div class="bank-opt-item" data-bank="Bandhan Bank"><span>Bandhan Bank</span><span class="bank-badge">Private</span></div>
+                                <div class="bank-opt-item" data-bank="AU Small Finance Bank"><span>AU Small Finance Bank</span><span class="bank-badge">Private</span></div>
 
-                                    <!-- Regional Rural & Gramin Banks (Farmers) -->
-                                    <option value="Saurashtra Gramin Bank">Saurashtra Gramin Bank</option>
-                                    <option value="Baroda Gujarat Gramin Bank (BGGB)">Baroda Gujarat Gramin Bank (BGGB)</option>
+                                <div class="bank-opt-group-header">🌾 Regional Rural / Gramin Banks (Farmer)</div>
+                                <div class="bank-opt-item" data-bank="Saurashtra Gramin Bank"><span>Saurashtra Gramin Bank</span><span class="bank-badge text-success bg-success bg-opacity-10 fw-bold">Gramin</span></div>
+                                <div class="bank-opt-item" data-bank="Baroda Gujarat Gramin Bank (BGGB)"><span>Baroda Gujarat Gramin Bank (BGGB)</span><span class="bank-badge text-success bg-success bg-opacity-10 fw-bold">Gramin</span></div>
 
-                                    <!-- Gujarat District Co-operative Banks -->
-                                    <option value="Gujarat State Co-operative Bank (GSC Bank)">Gujarat State Co-operative Bank (GSC Bank)</option>
-                                    <option value="Rajkot District Co-operative Bank (RDC Bank)">Rajkot District Co-operative Bank (RDC Bank)</option>
-                                    <option value="Ahmedabad District Co-operative Bank (ADC Bank)">Ahmedabad District Co-operative Bank (ADC Bank)</option>
-                                    <option value="Surat District Co-operative Bank">Surat District Co-operative Bank</option>
-                                    <option value="Mehsana Urban Co-operative Bank">Mehsana Urban Co-operative Bank</option>
-                                    <option value="Banaskantha District Central Co-op Bank">Banaskantha District Central Co-op Bank</option>
-                                    <option value="Sabarkantha District Central Co-op Bank">Sabarkantha District Central Co-op Bank</option>
-                                    <option value="Kheda District Central Co-operative Bank">Kheda District Central Co-operative Bank</option>
-                                    <option value="Vadodara District Central Co-op Bank">Vadodara District Central Co-op Bank</option>
-                                    <option value="Amreli Jilla Madhyastha Sahakari Bank">Amreli Jilla Madhyastha Sahakari Bank</option>
-                                    <option value="Bhavnagar District Co-operative Bank">Bhavnagar District Co-operative Bank</option>
-                                    <option value="Junagadh Jilla Sahakari Bank">Junagadh Jilla Sahakari Bank</option>
-                                    <option value="Jamnagar District Co-operative Bank">Jamnagar District Co-operative Bank</option>
-                                    <option value="Bharuch District Central Co-op Bank">Bharuch District Central Co-op Bank</option>
-                                    <option value="Panchmahal District Co-op Bank">Panchmahal District Co-op Bank</option>
+                                <div class="bank-opt-group-header">🤝 Gujarat District Co-operative Banks</div>
+                                <div class="bank-opt-item" data-bank="Gujarat State Co-operative Bank (GSC Bank)"><span>Gujarat State Co-operative Bank</span><span class="bank-badge">Co-op</span></div>
+                                <div class="bank-opt-item" data-bank="Rajkot District Co-operative Bank (RDC Bank)"><span>Rajkot District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
+                                <div class="bank-opt-item" data-bank="Ahmedabad District Co-operative Bank (ADC Bank)"><span>Ahmedabad District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
+                                <div class="bank-opt-item" data-bank="Surat District Co-operative Bank"><span>Surat District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
+                                <div class="bank-opt-item" data-bank="Mehsana Urban Co-operative Bank"><span>Mehsana Urban Co-op Bank</span><span class="bank-badge">Co-op</span></div>
+                                <div class="bank-opt-item" data-bank="Banaskantha District Central Co-op Bank"><span>Banaskantha District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
+                                <div class="bank-opt-item" data-bank="Sabarkantha District Central Co-op Bank"><span>Sabarkantha District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
+                                <div class="bank-opt-item" data-bank="Kheda District Central Co-operative Bank"><span>Kheda District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
+                                <div class="bank-opt-item" data-bank="Vadodara District Central Co-op Bank"><span>Vadodara District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
+                                <div class="bank-opt-item" data-bank="Amreli Jilla Madhyastha Sahakari Bank"><span>Amreli Jilla Sahakari Bank</span><span class="bank-badge">Co-op</span></div>
+                                <div class="bank-opt-item" data-bank="Bhavnagar District Co-operative Bank"><span>Bhavnagar District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
+                                <div class="bank-opt-item" data-bank="Junagadh Jilla Sahakari Bank"><span>Junagadh Jilla Sahakari Bank</span><span class="bank-badge">Co-op</span></div>
+                                <div class="bank-opt-item" data-bank="Jamnagar District Co-operative Bank"><span>Jamnagar District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
+                                <div class="bank-opt-item" data-bank="Bharuch District Central Co-op Bank"><span>Bharuch District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
+                                <div class="bank-opt-item" data-bank="Panchmahal District Co-op Bank"><span>Panchmahal District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
 
-                                    <!-- Payment Banks -->
-                                    <option value="India Post Payments Bank (IPPB)">India Post Payments Bank (IPPB)</option>
-                                    <option value="Airtel Payments Bank">Airtel Payments Bank</option>
-                                    <option value="Paytm Payments Bank">Paytm Payments Bank</option>
-                                    <option value="Fino Payments Bank">Fino Payments Bank</option>
-                                </datalist>
+                                <div class="bank-opt-group-header">📮 Payment &amp; Post Banks</div>
+                                <div class="bank-opt-item" data-bank="India Post Payments Bank (IPPB)"><span>India Post Payments Bank (IPPB)</span><span class="bank-badge">Postal</span></div>
+                                <div class="bank-opt-item" data-bank="Airtel Payments Bank"><span>Airtel Payments Bank</span><span class="bank-badge">Payments</span></div>
+                                <div class="bank-opt-item" data-bank="Paytm Payments Bank"><span>Paytm Payments Bank</span><span class="bank-badge">Payments</span></div>
+                                <div class="bank-opt-item" data-bank="Fino Payments Bank"><span>Fino Payments Bank</span><span class="bank-badge">Payments</span></div>
                             </div>
                         </div>
                     </div>
@@ -572,6 +577,91 @@
                     }
                 }
             });
+        });
+
+        // ==========================================
+        // CUSTOM STYLED BANK SEARCHABLE DROPDOWN
+        // ==========================================
+        const bankInput = document.getElementById('regBankNameInput');
+        const bankMenu = document.getElementById('customBankMenu');
+        const bankToggleBtn = document.getElementById('btnToggleBankDropdown');
+        const bankWrapper = document.getElementById('bankSelectWrapper');
+
+        function openBankMenu() {
+            if (bankMenu) {
+                bankMenu.classList.remove('d-none');
+                filterBankItems(bankInput?.value || '');
+            }
+        }
+
+        function closeBankMenu() {
+            if (bankMenu) {
+                bankMenu.classList.add('d-none');
+            }
+        }
+
+        function filterBankItems(query) {
+            const q = query.toLowerCase().trim();
+            const items = bankMenu?.querySelectorAll('.bank-opt-item');
+            const headers = bankMenu?.querySelectorAll('.bank-opt-group-header');
+
+            items?.forEach(item => {
+                const text = item.getAttribute('data-bank')?.toLowerCase() || item.textContent.toLowerCase();
+                if (!q || text.includes(q)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            headers?.forEach(header => {
+                let sibling = header.nextElementSibling;
+                let hasVisible = false;
+                while (sibling && !sibling.classList.contains('bank-opt-group-header')) {
+                    if (sibling.style.display !== 'none') {
+                        hasVisible = true;
+                        break;
+                    }
+                    sibling = sibling.nextElementSibling;
+                }
+                header.style.display = hasVisible ? 'block' : 'none';
+            });
+        }
+
+        if (bankInput) {
+            bankInput.addEventListener('focus', openBankMenu);
+            bankInput.addEventListener('input', function () {
+                openBankMenu();
+                filterBankItems(this.value);
+            });
+        }
+
+        if (bankToggleBtn) {
+            bankToggleBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (bankMenu?.classList.contains('d-none')) {
+                    bankInput?.focus();
+                    openBankMenu();
+                } else {
+                    closeBankMenu();
+                }
+            });
+        }
+
+        bankMenu?.querySelectorAll('.bank-opt-item')?.forEach(item => {
+            item.addEventListener('click', function () {
+                const selectedBank = this.getAttribute('data-bank');
+                if (bankInput) {
+                    bankInput.value = selectedBank;
+                }
+                closeBankMenu();
+            });
+        });
+
+        document.addEventListener('click', function (e) {
+            if (bankWrapper && !bankWrapper.contains(e.target)) {
+                closeBankMenu();
+            }
         });
 
         function goToStep2() {
