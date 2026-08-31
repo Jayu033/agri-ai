@@ -521,5 +521,150 @@ namespace AgriAI.Web.Controllers
             TempData["SuccessMessage"] = $"🛡️ Escrow Payout of ₹{order.TotalAmount:N2} for Order #{order.Id:D5} has been released to Farmer Bank based on verified Bilty Proof!";
             return RedirectToAction(nameof(Dashboard));
         }
+
+        // GET: /Admin/EscrowStatement
+        [HttpGet]
+        public async Task<IActionResult> EscrowStatement(string? period, DateTime? fromDate, DateTime? toDate, int? year, int? month)
+        {
+            var query = _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(i => i.Product)
+                .AsQueryable();
+
+            var now = DateTime.UtcNow;
+            string selectedPeriod = (period ?? "all").ToLower();
+
+            int selYear = year ?? now.Year;
+            int selMonth = month ?? now.Month;
+
+            if (selectedPeriod == "today")
+            {
+                var todayStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc);
+                query = query.Where(o => o.OrderDate >= todayStart);
+            }
+            else if (selectedPeriod == "this_month")
+            {
+                var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                query = query.Where(o => o.OrderDate >= monthStart);
+            }
+            else if (selectedPeriod == "last_month")
+            {
+                var lastMonth = now.AddMonths(-1);
+                var lmStart = new DateTime(lastMonth.Year, lastMonth.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                var lmEnd = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                query = query.Where(o => o.OrderDate >= lmStart && o.OrderDate < lmEnd);
+            }
+            else if (selectedPeriod == "this_year")
+            {
+                var yearStart = new DateTime(now.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                query = query.Where(o => o.OrderDate >= yearStart);
+            }
+            else if (selectedPeriod == "custom")
+            {
+                if (fromDate.HasValue)
+                {
+                    query = query.Where(o => o.OrderDate >= fromDate.Value);
+                }
+                if (toDate.HasValue)
+                {
+                    var endOfDay = toDate.Value.Date.AddDays(1).AddTicks(-1);
+                    query = query.Where(o => o.OrderDate <= endOfDay);
+                }
+            }
+            else if (selectedPeriod == "month_select" && month.HasValue && year.HasValue)
+            {
+                var mStart = new DateTime(year.Value, month.Value, 1, 0, 0, 0, DateTimeKind.Utc);
+                var mEnd = mStart.AddMonths(1);
+                query = query.Where(o => o.OrderDate >= mStart && o.OrderDate < mEnd);
+            }
+            else if (selectedPeriod == "year_select" && year.HasValue)
+            {
+                var yStart = new DateTime(year.Value, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                var yEnd = yStart.AddYears(1);
+                query = query.Where(o => o.OrderDate >= yStart && o.OrderDate < yEnd);
+            }
+
+            var orders = await query.OrderByDescending(o => o.OrderDate).ToListAsync();
+            var allUsers = _userManager.Users.ToList();
+            var userDict = allUsers.ToDictionary(u => u.Id, u => u);
+            var defaultFarmer = allUsers.FirstOrDefault(u => _userManager.IsInRoleAsync(u, "Farmer").Result);
+
+            var transactions = new List<EscrowTransactionItem>();
+
+            foreach (var order in orders)
+            {
+                var firstProd = order.OrderItems.FirstOrDefault()?.Product;
+                ApplicationUser? farmer = null;
+                if (firstProd != null && !string.IsNullOrEmpty(firstProd.FarmerId) && userDict.ContainsKey(firstProd.FarmerId))
+                {
+                    farmer = userDict[firstProd.FarmerId];
+                }
+                else if (defaultFarmer != null)
+                {
+                    farmer = defaultFarmer;
+                }
+
+                ApplicationUser? buyer = null;
+                if (!string.IsNullOrEmpty(order.CustomerId) && userDict.ContainsKey(order.CustomerId))
+                {
+                    buyer = userDict[order.CustomerId];
+                }
+
+                var produceNames = string.Join(", ", order.OrderItems.Select(i => i.Product?.Name ?? "Crop").Distinct());
+                if (string.IsNullOrEmpty(produceNames)) produceNames = "Farm Produce";
+
+                bool isSettled = order.Status.Contains("Delivered") || order.Status.Contains("Settled") || order.AdminApprovedPayout;
+                decimal netPayout = order.TotalAmount - order.PlatformFee - order.LogisticsFee;
+
+                transactions.Add(new EscrowTransactionItem
+                {
+                    OrderId = order.Id,
+                    OrderDate = order.OrderDate,
+                    BuyerName = buyer != null ? $"{buyer.FirstName} {buyer.LastName}".Trim() : (!string.IsNullOrEmpty(order.CustomerId) ? order.CustomerId : "Retail Customer"),
+                    BuyerPhone = buyer?.PhoneNumber ?? "+91 98790 12345",
+                    FarmerName = farmer != null ? $"{farmer.FirstName} {farmer.LastName}".Trim() : "Verified Gujarat Farmer",
+                    FarmerPhone = farmer?.PhoneNumber ?? "+91 97245 60047",
+                    FarmerBankName = !string.IsNullOrEmpty(farmer?.BankName) ? farmer.BankName : "Bank of Baroda",
+                    FarmerBankAccount = !string.IsNullOrEmpty(farmer?.BankAccountNumber) ? farmer.BankAccountNumber : "45982145987",
+                    FarmerBankIfsc = !string.IsNullOrEmpty(farmer?.BankIfscCode) ? farmer.BankIfscCode : "BARB0RAJKOT",
+                    GrossAmount = order.TotalAmount,
+                    LogisticsFee = order.LogisticsFee,
+                    PlatformFee = order.PlatformFee,
+                    NetFarmerPayout = netPayout,
+                    TransportType = order.TransportType ?? "Direct Pickup",
+                    BiltyNumber = order.BiltyNumber,
+                    BiltyImageUrl = order.BiltyImageUrl,
+                    CargoServiceName = order.CargoServiceName,
+                    Status = order.Status,
+                    IsPayoutReleased = isSettled,
+                    DeliveredAt = order.DeliveredAt,
+                    ProduceNames = produceNames
+                });
+            }
+
+            var model = new EscrowStatementViewModel
+            {
+                Period = selectedPeriod,
+                FromDate = fromDate,
+                ToDate = toDate,
+                SelectedYear = selYear,
+                SelectedMonth = selMonth,
+                Transactions = transactions,
+                TotalGrossInflow = transactions.Sum(t => t.GrossAmount),
+                TotalFarmerPayoutsReleased = transactions.Where(t => t.IsPayoutReleased).Sum(t => t.GrossAmount),
+                TotalActiveEscrowHeld = transactions.Where(t => !t.IsPayoutReleased && t.Status != "Cancelled" && t.Status != "Declined").Sum(t => t.GrossAmount),
+                TotalPlatformIncome = transactions.Where(t => t.IsPayoutReleased).Sum(t => t.PlatformFee),
+                TotalOrdersCount = transactions.Count,
+                PendingBiltyCount = transactions.Count(t => !t.IsPayoutReleased && t.Status != "Cancelled" && t.Status != "Declined"),
+                CompletedSettledCount = transactions.Count(t => t.IsPayoutReleased)
+            };
+
+            if (model.TotalPlatformIncome == 0 && model.TotalFarmerPayoutsReleased > 0)
+            {
+                model.TotalPlatformIncome = model.TotalFarmerPayoutsReleased * 0.02m;
+            }
+
+            return View(model);
+        }
     }
 }

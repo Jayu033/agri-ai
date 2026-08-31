@@ -1,0 +1,419 @@
+@model AgriAI.Web.ViewModels.EscrowStatementViewModel
+
+@{
+    ViewData["Title"] = "Official Escrow & Payout Financial Statement (PDF)";
+    
+    var months = new[] {
+        new { Val = 1, Name = "January" },
+        new { Val = 2, Name = "February" },
+        new { Val = 3, Name = "March" },
+        new { Val = 4, Name = "April" },
+        new { Val = 5, Name = "May" },
+        new { Val = 6, Name = "June" },
+        new { Val = 7, Name = "July" },
+        new { Val = 8, Name = "August" },
+        new { Val = 9, Name = "September" },
+        new { Val = 10, Name = "October" },
+        new { Val = 11, Name = "November" },
+        new { Val = 12, Name = "December" }
+    };
+    
+    int currentYear = DateTime.UtcNow.Year;
+    var years = Enumerable.Range(currentYear - 2, 4).ToList();
+
+    string periodLabel = Model.Period switch
+    {
+        "today" => $"Today ({DateTime.UtcNow:dd MMM yyyy})",
+        "this_month" => $"This Month ({DateTime.UtcNow:MMMM yyyy})",
+        "last_month" => $"Last Month ({DateTime.UtcNow.AddMonths(-1):MMMM yyyy})",
+        "this_year" => $"This Year ({DateTime.UtcNow:yyyy})",
+        "month_select" => $"{months.FirstOrDefault(m => m.Val == Model.SelectedMonth)?.Name} {Model.SelectedYear}",
+        "year_select" => $"Full Year {Model.SelectedYear}",
+        "custom" => $"Custom Range ({(Model.FromDate.HasValue ? Model.FromDate.Value.ToString("dd MMM yyyy") : "Start")} to {(Model.ToDate.HasValue ? Model.ToDate.Value.ToString("dd MMM yyyy") : "Present")})",
+        _ => "All Historical Records (Comprehensive)"
+    };
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Admin.css" asp-append-version="true" />
+    <style>
+        .statement-sheet {
+            background: #ffffff;
+            border-radius: 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 36px 42px;
+            margin-bottom: 40px;
+        }
+
+        .filter-toolbar-card {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            padding: 20px 24px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            margin-bottom: 24px;
+        }
+
+        .statement-stat-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px 20px;
+            height: 100%;
+        }
+
+        .statement-table th {
+            background-color: #f1f5f9 !important;
+            font-size: 0.74rem !important;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #475569 !important;
+            padding: 12px 10px !important;
+        }
+
+        .statement-table td {
+            font-size: 0.82rem;
+            padding: 12px 10px !important;
+            vertical-align: middle;
+        }
+
+        @@media print {
+            body {
+                background: #ffffff !important;
+                font-size: 10pt;
+                color: #000000;
+            }
+            .no-print, header, footer, .navbar, .btn, .filter-toolbar-card, .btn-back-custom {
+                display: none !important;
+            }
+            .statement-sheet {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .container-fluid {
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+            .statement-table th {
+                background-color: #e2e8f0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .statement-stat-box {
+                border: 1px solid #000000 !important;
+            }
+            @@page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
+        }
+    </style>
+}
+
+<div class="container-fluid py-4 px-lg-4 px-md-3" style="max-width: 1440px; min-height: calc(100vh - 180px);">
+    
+    <!-- 1. Top Action Navigation Bar (Hidden in Print) -->
+    <div class="admin-header-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 shadow-sm no-print">
+        <div>
+            <h2 class="fw-extrabold text-dark mb-1 fs-3 d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+                Official Escrow &amp; Payout Audit Statement
+            </h2>
+            <p class="text-muted small mb-0">Audited financial statement showing buyer escrow deposits, Bilty consignments, released farmer payouts, and platform fee revenues.</p>
+        </div>
+
+        <div class="d-flex align-items-center gap-2.5">
+            <a asp-action="Dashboard" asp-route-tab="escrow" class="btn-back-custom shadow-sm">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Escrow &amp; Payouts</span>
+            </a>
+            <button type="button" class="btn btn-danger rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2" onclick="window.print();">
+                <i class="bi bi-printer-fill fs-5"></i>
+                <span>Download / Save as PDF</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. Interactive Date / Month / Year Filters Toolbar (Hidden in Print) -->
+    <div class="filter-toolbar-card no-print">
+        <div class="d-flex flex-column gap-3">
+            
+            <!-- Quick Preset Filter Buttons -->
+            <div class="d-flex align-items-center gap-2 flex-wrap pb-2 border-bottom">
+                <span class="small fw-extrabold text-muted text-uppercase me-2" style="font-size: 0.74rem;">Quick Filter:</span>
+                <a asp-action="EscrowStatement" asp-route-period="all" class="btn btn-sm @(Model.Period == "all" ? "btn-dark active" : "btn-outline-secondary") rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;">
+                    All-Time
+                </a>
+                <a asp-action="EscrowStatement" asp-route-period="today" class="btn btn-sm @(Model.Period == "today" ? "btn-dark active" : "btn-outline-secondary") rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;">
+                    Today
+                </a>
+                <a asp-action="EscrowStatement" asp-route-period="this_month" class="btn btn-sm @(Model.Period == "this_month" ? "btn-dark active" : "btn-outline-secondary") rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;">
+                    This Month (@DateTime.UtcNow.ToString("MMM yyyy"))
+                </a>
+                <a asp-action="EscrowStatement" asp-route-period="last_month" class="btn btn-sm @(Model.Period == "last_month" ? "btn-dark active" : "btn-outline-secondary") rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;">
+                    Last Month (@DateTime.UtcNow.AddMonths(-1).ToString("MMM yyyy"))
+                </a>
+                <a asp-action="EscrowStatement" asp-route-period="this_year" class="btn btn-sm @(Model.Period == "this_year" ? "btn-dark active" : "btn-outline-secondary") rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;">
+                    This Year (@DateTime.UtcNow.ToString("yyyy"))
+                </a>
+            </div>
+
+            <!-- Month / Year & Custom Date Range Form -->
+            <div class="row g-3 align-items-end">
+                
+                <!-- Month & Year Select -->
+                <div class="col-lg-5 col-md-6">
+                    <form asp-action="EscrowStatement" method="get" class="d-flex align-items-center gap-2">
+                        <input type="hidden" name="period" value="month_select" />
+                        <div class="flex-grow-1">
+                            <label class="form-label small fw-bold text-dark mb-1">Month Wise:</label>
+                            <select name="month" class="form-select form-select-sm rounded-3 shadow-none">
+                                @foreach (var m in months)
+                                {
+                                    <option value="@m.Val" selected="@(m.Val == Model.SelectedMonth)">@m.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div style="width: 100px;">
+                            <label class="form-label small fw-bold text-dark mb-1">Year:</label>
+                            <select name="year" class="form-select form-select-sm rounded-3 shadow-none">
+                                @foreach (var y in years)
+                                {
+                                    <option value="@y" selected="@(y == Model.SelectedYear)">@y</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="pt-4">
+                            <button type="submit" class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold">View Month</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Custom Date Range -->
+                <div class="col-lg-7 col-md-6">
+                    <form asp-action="EscrowStatement" method="get" class="d-flex align-items-center gap-2">
+                        <input type="hidden" name="period" value="custom" />
+                        <div class="flex-grow-1">
+                            <label class="form-label small fw-bold text-dark mb-1">From Date:</label>
+                            <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm rounded-3 shadow-none" required />
+                        </div>
+                        <div class="flex-grow-1">
+                            <label class="form-label small fw-bold text-dark mb-1">To Date:</label>
+                            <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm rounded-3 shadow-none" required />
+                        </div>
+                        <div class="pt-4">
+                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-3.5 fw-bold" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
+                                Apply Date Range
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Official Printable Statement Sheet (PDF Body) -->
+    <div class="statement-sheet">
+        
+        <!-- Statement Letterhead Header -->
+        <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+            <div>
+                <div class="d-flex align-items-center gap-2.5 mb-1">
+                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-extrabold fs-4 shadow-sm" style="width: 44px; height: 44px;">
+                        🌱
+                    </div>
+                    <div>
+                        <h3 class="fw-extrabold text-dark mb-0 letter-spacing-1">AgriAI Digital Market Platform</h3>
+                        <small class="text-muted fw-bold">Official Escrow Vault &amp; Payout Audit Ledger</small>
+                    </div>
+                </div>
+                <div class="small text-muted mt-2">
+                    <span>Govt. Reg APMC Gujarat Gateway</span> &bull; 
+                    <span>Vault Security: 100% Escrow Insured</span>
+                </div>
+            </div>
+
+            <div class="text-end">
+                <span class="badge bg-danger rounded-pill px-3 py-1.5 fw-bold mb-2">OFFICIAL AUDIT STATEMENT</span>
+                <div class="small text-muted">Statement Date: <strong>@DateTime.UtcNow.ToString("dd MMM yyyy, hh:mm tt") UTC</strong></div>
+                <div class="small text-muted">Audited Period: <strong class="text-dark">@periodLabel</strong></div>
+                <div class="small text-muted">Audit Serial: <code class="text-dark font-monospace">AGRI-ESC-@(DateTime.UtcNow.ToString("yyyyMMdd"))-@Model.Transactions.Count</code></div>
+            </div>
+        </div>
+
+        <!-- 4 Top Executive Stat Cards -->
+        <div class="row g-3 mb-4">
+            <!-- 1. Gross Inflow -->
+            <div class="col-md-3 col-6">
+                <div class="statement-stat-box">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted text-uppercase fw-bold small" style="font-size: 0.68rem;">Total Gross Inflow</span>
+                        <i class="bi bi-arrow-down-left-circle-fill text-primary"></i>
+                    </div>
+                    <h4 class="fw-extrabold text-primary mb-0 fs-5">₹@Model.TotalGrossInflow.ToString("N2")</h4>
+                    <small class="text-muted" style="font-size: 0.70rem;">Buyer deposits received</small>
+                </div>
+            </div>
+
+            <!-- 2. Released Payouts -->
+            <div class="col-md-3 col-6">
+                <div class="statement-stat-box">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted text-uppercase fw-bold small" style="font-size: 0.68rem;">Farmer Payouts Settled</span>
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                    </div>
+                    <h4 class="fw-extrabold text-success mb-0 fs-5">₹@Model.TotalFarmerPayoutsReleased.ToString("N2")</h4>
+                    <small class="text-muted" style="font-size: 0.70rem;">Transferred to Farmer Banks</small>
+                </div>
+            </div>
+
+            <!-- 3. Active Escrow Vault Balance -->
+            <div class="col-md-3 col-6">
+                <div class="statement-stat-box">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted text-uppercase fw-bold small" style="font-size: 0.68rem;">Active Escrow Vault</span>
+                        <i class="bi bi-shield-lock-fill text-warning"></i>
+                    </div>
+                    <h4 class="fw-extrabold text-warning mb-0 fs-5">₹@Model.TotalActiveEscrowHeld.ToString("N2")</h4>
+                    <small class="text-muted" style="font-size: 0.70rem;">Held for active/in-transit</small>
+                </div>
+            </div>
+
+            <!-- 4. Platform Revenue -->
+            <div class="col-md-3 col-6">
+                <div class="statement-stat-box">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted text-uppercase fw-bold small" style="font-size: 0.68rem;">Platform 2% Revenue</span>
+                        <i class="bi bi-coin text-dark"></i>
+                    </div>
+                    <h4 class="fw-extrabold text-dark mb-0 fs-5">₹@Model.TotalPlatformIncome.ToString("N2")</h4>
+                    <small class="text-muted" style="font-size: 0.70rem;">AgriAI commission earned</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comprehensive Audit Transactions Ledger Table -->
+        <div class="table-responsive border rounded-3 mb-4">
+            <table class="table table-bordered statement-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Date &amp; Order #</th>
+                        <th>Buyer (Customer)</th>
+                        <th>Farmer (Beneficiary Bank)</th>
+                        <th>Produce Commodity</th>
+                        <th>Bilty &amp; Transport Proof</th>
+                        <th class="text-end">Gross (₹)</th>
+                        <th class="text-end">Fee (2%)</th>
+                        <th class="text-end">Net Payout</th>
+                        <th>Escrow Status &amp; Release Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Transactions.Any())
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-4">
+                                No transactions recorded for the selected period (<strong>@periodLabel</strong>).
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var t in Model.Transactions)
+                    {
+                        <tr>
+                            <td>
+                                <strong class="text-dark d-block">#@t.OrderId.ToString("D5")</strong>
+                                <small class="text-muted font-monospace" style="font-size: 0.70rem;">@t.OrderDate.ToString("dd/MM/yyyy HH:mm")</small>
+                            </td>
+                            <td>
+                                <strong class="text-dark d-block">@t.BuyerName</strong>
+                                <small class="text-muted" style="font-size: 0.70rem;">@t.BuyerPhone</small>
+                            </td>
+                            <td>
+                                <strong class="text-dark d-block">@t.FarmerName</strong>
+                                <small class="text-success font-monospace d-block" style="font-size: 0.70rem;">
+                                    @t.FarmerBankName &bull; A/C: @(t.FarmerBankAccount.Length > 4 ? "..." + t.FarmerBankAccount.Substring(t.FarmerBankAccount.Length - 4) : t.FarmerBankAccount)
+                                </small>
+                                <small class="text-muted font-monospace" style="font-size: 0.68rem;">IFSC: @t.FarmerBankIfsc</small>
+                            </td>
+                            <td>
+                                <span class="fw-semibold text-dark">@t.ProduceNames</span>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(t.BiltyNumber))
+                                {
+                                    <strong class="text-primary font-monospace d-block" style="font-size: 0.72rem;">LR #@t.BiltyNumber</strong>
+                                }
+                                <small class="text-muted d-block" style="font-size: 0.70rem;">@(t.CargoServiceName ?? t.TransportType)</small>
+                            </td>
+                            <td class="text-end fw-bold text-dark">
+                                ₹@t.GrossAmount.ToString("N2")
+                            </td>
+                            <td class="text-end text-muted font-monospace">
+                                ₹@t.PlatformFee.ToString("N2")
+                            </td>
+                            <td class="text-end fw-extrabold text-success">
+                                ₹@t.NetFarmerPayout.ToString("N2")
+                            </td>
+                            <td>
+                                @if (t.IsPayoutReleased)
+                                {
+                                    <span class="badge bg-success rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.68rem;">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Settled &amp; Paid
+                                    </span>
+                                    <small class="text-muted d-block mt-0.5" style="font-size: 0.68rem;">
+                                        Paid: @(t.DeliveredAt.HasValue ? t.DeliveredAt.Value.ToString("dd/MM/yy HH:mm") : "Verified")
+                                    </small>
+                                }
+                                else if (t.Status == "In Transit")
+                                {
+                                    <span class="badge bg-primary rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.68rem;">
+                                        <i class="bi bi-truck me-1"></i>In Transit (Held)
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.68rem;">
+                                        @t.Status
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="table-light fw-extrabold">
+                        <td colspan="5" class="text-end text-uppercase ps-3">Period Grand Totals:</td>
+                        <td class="text-end text-primary">₹@Model.TotalGrossInflow.ToString("N2")</td>
+                        <td class="text-end text-dark">₹@Model.TotalPlatformIncome.ToString("N2")</td>
+                        <td class="text-end text-success">₹@Model.TotalFarmerPayoutsReleased.ToString("N2")</td>
+                        <td class="text-muted small">@Model.Transactions.Count Total Order(s)</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Official Signoff & Cryptographic Stamp -->
+        <div class="row align-items-end pt-3 border-top">
+            <div class="col-6">
+                <small class="text-muted d-block" style="font-size: 0.70rem;">
+                    This document is a computer-generated official financial statement from AgriAI Escrow Engine.
+                    All payouts have been cryptographically authenticated against farmer 7/12 KYC and bank verification tokens.
+                </small>
+            </div>
+            <div class="col-6 text-end">
+                <div class="d-inline-block text-center pe-3">
+                    <div class="fw-bold text-dark border-bottom pb-1 mb-1 font-monospace" style="font-size: 0.85rem;">[ Certified Digital Signature ]</div>
+                    <small class="text-muted" style="font-size: 0.72rem;">Super Administrator, AgriAI India</small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

@@ -168,4 +168,47 @@ namespace AgriAI.Web.ViewModels
         public decimal TotalSpentOrEarned { get; set; }
         public int TotalCompletedOrders { get; set; }
     }
+
+    public class EscrowTransactionItem
+    {
+        public int OrderId { get; set; }
+        public DateTime OrderDate { get; set; }
+        public string BuyerName { get; set; } = string.Empty;
+        public string BuyerPhone { get; set; } = string.Empty;
+        public string FarmerName { get; set; } = string.Empty;
+        public string FarmerPhone { get; set; } = string.Empty;
+        public string FarmerBankName { get; set; } = string.Empty;
+        public string FarmerBankAccount { get; set; } = string.Empty;
+        public string FarmerBankIfsc { get; set; } = string.Empty;
+        public decimal GrossAmount { get; set; }
+        public decimal LogisticsFee { get; set; }
+        public decimal PlatformFee { get; set; }
+        public decimal NetFarmerPayout { get; set; }
+        public string TransportType { get; set; } = string.Empty;
+        public string? BiltyNumber { get; set; }
+        public string? BiltyImageUrl { get; set; }
+        public string? CargoServiceName { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public bool IsPayoutReleased { get; set; }
+        public DateTime? DeliveredAt { get; set; }
+        public string ProduceNames { get; set; } = string.Empty;
+    }
+
+    public class EscrowStatementViewModel
+    {
+        public string Period { get; set; } = "all"; // "all", "today", "this_month", "last_month", "this_year", "custom"
+        public DateTime? FromDate { get; set; }
+        public DateTime? ToDate { get; set; }
+        public int SelectedYear { get; set; }
+        public int SelectedMonth { get; set; }
+        public List<EscrowTransactionItem> Transactions { get; set; } = new();
+        
+        public decimal TotalGrossInflow { get; set; }
+        public decimal TotalFarmerPayoutsReleased { get; set; }
+        public decimal TotalActiveEscrowHeld { get; set; }
+        public decimal TotalPlatformIncome { get; set; }
+        public int TotalOrdersCount { get; set; }
+        public int PendingBiltyCount { get; set; }
+        public int CompletedSettledCount { get; set; }
+    }
 }
