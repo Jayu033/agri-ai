@@ -13,25 +13,35 @@
 }
 
 <div class="container-fluid py-4 px-lg-4 px-md-3" style="max-width: 1440px; min-height: calc(100vh - 180px);">
-    
-    <!-- Top Header Navigation -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <!-- Top Header Navigation Banner Card -->
+    <div class="admin-header-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 shadow-sm">
         <div>
-            <div class="d-flex align-items-center gap-2 mb-1.5 flex-wrap">
-                <a asp-action="Dashboard" asp-route-tab="users" class="text-decoration-none text-muted small fw-bold d-inline-flex align-items-center gap-1">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-                <span class="text-muted small">/</span>
-                <a asp-action="Dashboard" asp-route-tab="users" class="text-decoration-none text-muted small fw-bold">
-                    Farmer &amp; Users
-                </a>
-                <span class="text-muted small">/</span>
-                <span class="text-dark small fw-bold">@user.FullName</span>
-            </div>
-            <h2 class="fw-extrabold text-dark mb-0 fs-3">@(isFarmer ? "Farmer KYC &amp; Farm Portfolio" : "Customer Account &amp; Order History")</h2>
+            <!-- Breadcrumb Trail -->
+            <nav aria-label="breadcrumb" class="mb-2">
+                <ol class="breadcrumb mb-0 small fw-bold" style="font-size: 0.82rem;">
+                    <li class="breadcrumb-item">
+                        <a asp-action="Dashboard" asp-route-tab="overview" class="text-decoration-none text-muted">
+                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a asp-action="Dashboard" asp-route-tab="users" class="text-decoration-none text-muted">
+                            Farmer &amp; Users
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active text-success fw-bold" aria-current="page">
+                        @user.FullName
+                    </li>
+                </ol>
+            </nav>
+            <h2 class="fw-extrabold text-dark mb-1 fs-3 d-flex align-items-center gap-2">
+                <i class="bi @(isFarmer ? "bi-tree-fill text-success" : "bi-person-badge-fill text-primary")"></i>
+                @(isFarmer ? "Farmer Profile & Farm Portfolio" : "Customer Profile & Order History")
+            </h2>
+            <p class="text-muted small mb-0">Detailed administrative view for profile verification, order fulfillment, and account controls.</p>
         </div>
         <div>
-            <a asp-action="Dashboard" asp-route-tab="users" class="btn-back-custom">
+            <a asp-action="Dashboard" asp-route-tab="users" class="btn-back-custom shadow-sm">
                 <i class="bi bi-arrow-left"></i>
                 <span>Back to Farmer &amp; Users</span>
             </a>
