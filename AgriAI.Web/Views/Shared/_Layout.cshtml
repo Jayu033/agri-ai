@@ -147,15 +147,13 @@
                 else
                 {
                     <li>
-                        <a asp-controller="AI" asp-action="CropPredictor" class="gov-nav-link text-muted d-inline-flex align-items-center gap-1" title="Login Required to access AI Crop Predictor">
-                            <i class="bi bi-lock-fill text-secondary" style="font-size: 0.78rem;"></i>
-                            <span>AI Crop Predictor</span>
+                        <a asp-controller="AI" asp-action="CropPredictor" class="gov-nav-link @(curCtrl == "AI" && curAct == "CropPredictor" ? "active" : "")">
+                            AI Crop Predictor
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="AI" asp-action="PricePredictor" class="gov-nav-link text-muted d-inline-flex align-items-center gap-1" title="Login Required to access AI Price Predictor">
-                            <i class="bi bi-lock-fill text-secondary" style="font-size: 0.78rem;"></i>
-                            <span>AI Price Predictor</span>
+                        <a asp-controller="AI" asp-action="PricePredictor" class="gov-nav-link @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
+                            AI Price Predictor
                         </a>
                     </li>
                 }
@@ -320,17 +318,17 @@
                 else
                 {
                     <li class="menu-item">
-                        <a asp-controller="AI" asp-action="CropPredictor" class="menu-link text-muted">
-                            <span class="menu-icon-box"><i class="bi bi-lock-fill"></i></span>
+                        <a asp-controller="AI" asp-action="CropPredictor" class="menu-link ai-highlight-link @(curCtrl == "AI" && curAct == "CropPredictor" ? "active" : "")">
+                            <span class="menu-icon-box"><i class="bi bi-cpu"></i></span>
                             <span>AI Crop Predictor</span>
-                            <span class="badge bg-secondary ms-auto" style="font-size: 0.65rem;">LOCK</span>
+                            <span class="ai-badge">NEW</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a asp-controller="AI" asp-action="PricePredictor" class="menu-link text-muted">
-                            <span class="menu-icon-box"><i class="bi bi-lock-fill"></i></span>
+                        <a asp-controller="AI" asp-action="PricePredictor" class="menu-link @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
+                            <span class="menu-icon-box"><i class="bi bi-stars"></i></span>
                             <span>AI Price Predictor</span>
-                            <span class="badge bg-secondary ms-auto" style="font-size: 0.65rem;">LOCK</span>
+                            <span class="ai-badge">AI PRO</span>
                         </a>
                     </li>
                 }

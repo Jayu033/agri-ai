@@ -1,13 +1,11 @@
 using AgriAI.Web.ViewModels;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AgriAI.Web.Controllers
 {
-    [Authorize]
     public class AIController : Controller
     {
-        // GET: /AI/CropPredictor
+        // GET: /AI/CropPredictor (Accessible to guests for previewing the interface)
         [HttpGet]
         public IActionResult CropPredictor()
         {
@@ -25,34 +23,57 @@ namespace AgriAI.Web.Controllers
             return View(defaultInput);
         }
 
-        // POST: /AI/PredictCrop
+        // POST: /AI/PredictCrop (Requires Login or Registration)
         [HttpPost]
         public IActionResult PredictCrop(CropPredictorInputModel input)
         {
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                TempData["ErrorMessage"] = "Please log in or create a free account to run AI Crop Predictions.";
+                return RedirectToAction("Login", "Account", new { returnUrl = "/AI/CropPredictor" });
+            }
+
             var result = RunCropRecommendationModel(input);
             ViewBag.PredictionResult = result;
             return View("CropPredictor", input);
         }
 
-        // POST: /AI/ApiPredictCrop (JSON API for dynamic predictions)
+        // POST: /AI/ApiPredictCrop (JSON API - Requires Login or Registration)
         [HttpPost]
         public IActionResult ApiPredictCrop([FromBody] CropPredictorInputModel input)
         {
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                return Json(new
+                {
+                    success = false,
+                    requireLogin = true,
+                    redirectUrl = "/Account/Login?returnUrl=/AI/CropPredictor",
+                    message = "Please login or register to generate AI crop predictions."
+                });
+            }
+
             var result = RunCropRecommendationModel(input);
             return Json(new { success = true, result });
         }
 
-        // GET: /AI/PricePredictor
+        // GET: /AI/PricePredictor (Accessible to guests for previewing the interface)
         [HttpGet]
         public IActionResult PricePredictor()
         {
             return View();
         }
 
-        // POST: /AI/PredictPrice
+        // POST: /AI/PredictPrice (Requires Login or Registration)
         [HttpPost]
         public IActionResult PredictPrice(string cropName, string season, double rainfall, double area)
         {
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                TempData["ErrorMessage"] = "Please log in or create a free account to run AI Price Predictions.";
+                return RedirectToAction("Login", "Account", new { returnUrl = "/AI/PricePredictor" });
+            }
+
             if (string.IsNullOrWhiteSpace(cropName)) cropName = "Wheat";
 
             var (predictedPrice, msp, confidence, modelSource, price20kg, priceKg) = ExecutePricePredictionModel(cropName, season, rainfall, area);
