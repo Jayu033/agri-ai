@@ -260,9 +260,6 @@
                                 <h3 class="dash-section-title">Farmer and Users Directory</h3>
                                 <p class="text-muted small mb-0">Manage registered farmers and retail customers, verify documents, bank payout accounts, and review profiles.</p>
                             </div>
-                            <a asp-action="Users" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm">
-                                <i class="bi bi-arrows-fullscreen me-1"></i> Full Directory Page
-                            </a>
                         </div>
 
                         <!-- Live Search and Role Filters -->
@@ -1024,8 +1021,33 @@
             });
         }
 
-        // Live search filter inside dashboard user tab
+        // Live search filter inside dashboard user tab & tab URL parameter selector
         document.addEventListener("DOMContentLoaded", function () {
+            // Check for tab query param e.g. ?tab=users or hash e.g. #adminUsersTab
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = (urlParams.get('tab') || '').toLowerCase();
+            const hash = window.location.hash;
+
+            if (tabParam === 'users' || hash === '#adminUsersTab') {
+                const usersTabBtn = document.querySelector(".dash-tab-link[onclick*='adminUsersTab']");
+                switchDashTab('adminUsersTab', usersTabBtn);
+            } else if (tabParam === 'escrow' || hash === '#adminEscrowTab') {
+                const escrowTabBtn = document.querySelector(".dash-tab-link[onclick*='adminEscrowTab']");
+                switchDashTab('adminEscrowTab', escrowTabBtn);
+            } else if (tabParam === 'products' || hash === '#adminProductsTab') {
+                const prodTabBtn = document.querySelector(".dash-tab-link[onclick*='adminProductsTab']");
+                switchDashTab('adminProductsTab', prodTabBtn);
+            } else if (tabParam === 'orders' || hash === '#adminOrdersTab') {
+                const orderTabBtn = document.querySelector(".dash-tab-link[onclick*='adminOrdersTab']");
+                switchDashTab('adminOrdersTab', orderTabBtn);
+            } else if (tabParam === 'ai' || hash === '#adminAiTab') {
+                const aiTabBtn = document.querySelector(".dash-tab-link[onclick*='adminAiTab']");
+                switchDashTab('adminAiTab', aiTabBtn);
+            } else if (tabParam === 'reports' || hash === '#adminReportsTab') {
+                const repTabBtn = document.querySelector(".dash-tab-link[onclick*='adminReportsTab']");
+                switchDashTab('adminReportsTab', repTabBtn);
+            }
+
             const searchInput = document.getElementById('dashUserSearchInput');
             if (searchInput) {
                 searchInput.addEventListener('input', function () {

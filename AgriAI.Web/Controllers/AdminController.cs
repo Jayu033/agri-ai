@@ -305,56 +305,9 @@ namespace AgriAI.Web.Controllers
         }
 
         // GET: /Admin/Users
-        public async Task<IActionResult> Users(string? roleFilter)
+        public IActionResult Users(string? roleFilter)
         {
-            var allUsers = _userManager.Users.ToList();
-            var userVMs = new List<UserManagementViewModel>();
-
-            foreach (var user in allUsers)
-            {
-                var roles = await _userManager.GetRolesAsync(user);
-                var roleName = roles.FirstOrDefault() ?? "Customer";
-
-                // Strictly exclude Admin from the User Management list per business rules
-                if (string.Equals(roleName, "Admin", StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                // Apply role filter if specified (e.g. Farmer, Customer)
-                if (!string.IsNullOrEmpty(roleFilter) && !string.Equals(roleFilter, "All", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!string.Equals(roleName, roleFilter, StringComparison.OrdinalIgnoreCase))
-                        continue;
-                }
-
-                bool isBlocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
-
-                userVMs.Add(new UserManagementViewModel
-                {
-                    Id = user.Id,
-                    Username = user.UserName ?? string.Empty,
-                    Email = user.Email ?? string.Empty,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    ProfilePicturePath = user.ProfilePicturePath,
-                    Role = roleName,
-                    IsBlocked = isBlocked,
-                    IsApprovedByAdmin = user.IsApprovedByAdmin,
-                    City = user.City,
-                    Address = user.Address,
-                    BankName = user.BankName,
-                    BankAccountNumber = user.BankAccountNumber,
-                    BankIfscCode = user.BankIfscCode,
-                    UpiId = user.UpiId,
-                    KycDocumentPath = user.KycDocumentPath,
-                    KycDocumentType = user.KycDocumentType,
-                    KycSubmittedAt = user.KycSubmittedAt,
-                    KycRejectionReason = user.KycRejectionReason,
-                    CreatedAt = user.CreatedAt
-                });
-            }
-
-            ViewBag.CurrentFilter = string.IsNullOrEmpty(roleFilter) ? "All" : roleFilter;
-            return View(userVMs);
+            return RedirectToAction(nameof(Dashboard), new { tab = "users" });
         }
 
         // POST: /Admin/ApproveFarmer
@@ -365,14 +318,14 @@ namespace AgriAI.Web.Controllers
             if (string.IsNullOrEmpty(id))
             {
                 TempData["ErrorMessage"] = "Invalid user ID.";
-                return RedirectToAction(nameof(Users), new { roleFilter = "Farmer" });
+                return RedirectToAction(nameof(Dashboard), new { tab = "users" });
             }
 
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
                 TempData["ErrorMessage"] = "Farmer not found.";
-                return RedirectToAction(nameof(Users), new { roleFilter = "Farmer" });
+                return RedirectToAction(nameof(Dashboard), new { tab = "users" });
             }
 
             user.IsApprovedByAdmin = true;
@@ -381,7 +334,7 @@ namespace AgriAI.Web.Controllers
             await _userManager.UpdateAsync(user);
 
             TempData["SuccessMessage"] = $"Farmer '{user.UserName}' has been approved and activated successfully.";
-            return RedirectToAction(nameof(Users), new { roleFilter = "Farmer" });
+            return RedirectToAction(nameof(Dashboard), new { tab = "users" });
         }
 
         // POST: /Admin/RejectFarmer
@@ -392,14 +345,14 @@ namespace AgriAI.Web.Controllers
             if (string.IsNullOrEmpty(id))
             {
                 TempData["ErrorMessage"] = "Invalid user ID.";
-                return RedirectToAction(nameof(Users), new { roleFilter = "Farmer" });
+                return RedirectToAction(nameof(Dashboard), new { tab = "users" });
             }
 
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
                 TempData["ErrorMessage"] = "Farmer not found.";
-                return RedirectToAction(nameof(Users), new { roleFilter = "Farmer" });
+                return RedirectToAction(nameof(Dashboard), new { tab = "users" });
             }
 
             var userName = user.UserName ?? user.Email;
@@ -455,7 +408,7 @@ namespace AgriAI.Web.Controllers
                 TempData["ErrorMessage"] = "Failed to completely delete rejected farmer: " + string.Join(", ", result.Errors.Select(e => e.Description));
             }
 
-            return RedirectToAction(nameof(Users), new { roleFilter = "Farmer" });
+            return RedirectToAction(nameof(Dashboard), new { tab = "users" });
         }
 
         // POST: /Admin/ToggleBlockUser
@@ -466,14 +419,14 @@ namespace AgriAI.Web.Controllers
             if (string.IsNullOrEmpty(id))
             {
                 TempData["ErrorMessage"] = "Invalid user ID.";
-                return RedirectToAction(nameof(Users));
+                return RedirectToAction(nameof(Dashboard), new { tab = "users" });
             }
 
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
                 TempData["ErrorMessage"] = "User not found.";
-                return RedirectToAction(nameof(Users));
+                return RedirectToAction(nameof(Dashboard), new { tab = "users" });
             }
 
             // Cannot block Admin
@@ -481,7 +434,7 @@ namespace AgriAI.Web.Controllers
             if (currentUser != null && currentUser.Id == user.Id)
             {
                 TempData["ErrorMessage"] = "You cannot block your own admin account!";
-                return RedirectToAction(nameof(Users));
+                return RedirectToAction(nameof(Dashboard), new { tab = "users" });
             }
 
             bool currentlyBlocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
@@ -498,7 +451,7 @@ namespace AgriAI.Web.Controllers
                 TempData["SuccessMessage"] = $"User '{user.Email}' has been blocked successfully.";
             }
 
-            return RedirectToAction(nameof(Users));
+            return RedirectToAction(nameof(Dashboard), new { tab = "users" });
         }
 
         // POST: /Admin/DeleteUser
@@ -509,34 +462,35 @@ namespace AgriAI.Web.Controllers
             if (string.IsNullOrEmpty(id))
             {
                 TempData["ErrorMessage"] = "Invalid user ID.";
-                return RedirectToAction(nameof(Users));
+                return RedirectToAction(nameof(Dashboard), new { tab = "users" });
             }
 
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
                 TempData["ErrorMessage"] = "User not found.";
-                return RedirectToAction(nameof(Users));
+                return RedirectToAction(nameof(Dashboard), new { tab = "users" });
             }
 
+            // Cannot delete Admin
             var currentUser = await _userManager.GetUserAsync(User);
             if (currentUser != null && currentUser.Id == user.Id)
             {
                 TempData["ErrorMessage"] = "You cannot delete your own admin account!";
-                return RedirectToAction(nameof(Users));
+                return RedirectToAction(nameof(Dashboard), new { tab = "users" });
             }
 
             var result = await _userManager.DeleteAsync(user);
             if (result.Succeeded)
             {
-                TempData["SuccessMessage"] = $"User '{user.Email}' has been deleted successfully.";
+                TempData["SuccessMessage"] = $"User '{user.Email}' has been deleted permanently.";
             }
             else
             {
                 TempData["ErrorMessage"] = "Failed to delete user: " + string.Join(", ", result.Errors.Select(e => e.Description));
             }
 
-            return RedirectToAction(nameof(Users));
+            return RedirectToAction(nameof(Dashboard), new { tab = "users" });
         }
 
         // POST: /Admin/ReleaseEscrowPayoutViaBilty (Step 6 Blueprint)
