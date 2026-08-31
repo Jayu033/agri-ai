@@ -215,5 +215,197 @@
     text-decoration: underline;
 }
 
+/* ==========================================================================
+   Luxury Status Notification Popup Modal
+   ========================================================================== */
+
+.modal-backdrop.show {
+    opacity: 0.65 !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+}
+
+.status-modal-dialog {
+    max-width: 410px;
+    margin: 1.75rem auto;
+}
+
+.status-modal-content {
+    background: #ffffff !important;
+    border: none !important;
+    border-radius: 24px !important;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.3), 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    padding: 32px 28px 28px 28px !important;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    animation: statusPopIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes statusPopIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.92) translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.status-modal-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.status-modal-close-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+    transform: rotate(90deg);
+}
+
+.status-modal-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 4px auto 16px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.status-modal-icon-wrapper i {
+    font-size: 2.2rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* Status variants */
+.status-modal-icon-wrapper.status-pending {
+    background: #fef3c7;
+    color: #d97706;
+    box-shadow: 0 0 0 8px #fffbeb;
+}
+
+.status-modal-icon-wrapper.status-error {
+    background: #fee2e2;
+    color: #dc2626;
+    box-shadow: 0 0 0 8px #fef2f2;
+}
+
+.status-modal-icon-wrapper.status-success {
+    background: #dcfce7;
+    color: #15803d;
+    box-shadow: 0 0 0 8px #f0fdf4;
+}
+
+.status-modal-badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.status-modal-badge.badge-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-modal-badge.badge-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-modal-badge.badge-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-modal-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 8px;
+    letter-spacing: -0.2px;
+}
+
+.status-modal-desc {
+    font-size: 0.90rem;
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    padding: 0 8px;
+}
+
+.status-modal-action-btn {
+    width: 100%;
+    padding: 13px 20px;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+}
+
+.status-modal-action-btn.btn-pending {
+    background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(217, 119, 6, 0.35);
+}
+
+.status-modal-action-btn.btn-pending:hover {
+    background: linear-gradient(135deg, #b45309 0%, #d97706 100%);
+    box-shadow: 0 8px 24px rgba(217, 119, 6, 0.5);
+    transform: translateY(-2px);
+}
+
+.status-modal-action-btn.btn-error {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(220, 38, 38, 0.35);
+}
+
+.status-modal-action-btn.btn-error:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.5);
+    transform: translateY(-2px);
+}
+
+.status-modal-action-btn.btn-success {
+    background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(22, 101, 52, 0.35);
+}
+
+.status-modal-action-btn.btn-success:hover {
+    background: linear-gradient(135deg, #14532d 0%, #15803d 100%);
+    box-shadow: 0 8px 24px rgba(22, 101, 52, 0.5);
+    transform: translateY(-2px);
+}
+
 
 

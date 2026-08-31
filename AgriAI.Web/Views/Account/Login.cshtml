@@ -4,7 +4,7 @@
     ViewData["Title"] = "Sign In";
 
     string? statusMessage = null;
-    string statusType = "info"; // "pending", "error", "success"
+    string statusType = "pending"; // "pending", "error", "success"
 
     if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
     {
@@ -33,61 +33,10 @@
         statusType = "error";
     }
 
-    // Modal Styling Configurations
-    string glowGradient = "linear-gradient(90deg, #15803d, #22c55e)";
-    string iconBg = "rgba(22, 101, 52, 0.12)";
-    string iconColor = "#15803d";
-    string iconBorder = "rgba(22, 101, 52, 0.25)";
-    string iconClass = "bi bi-info-circle-fill";
-    string badgeBg = "#dcfce7";
-    string badgeColor = "#166534";
-    string badgeText = "Notification";
-    string modalTitle = "Notice";
-    string btnGradient = "linear-gradient(135deg, #15803d 0%, #16a34a 100%)";
-    string btnLabel = "Understood";
-
-    if (statusType == "pending")
-    {
-        glowGradient = "linear-gradient(90deg, #d97706, #f59e0b, #fbbf24)";
-        iconBg = "rgba(245, 158, 11, 0.12)";
-        iconColor = "#d97706";
-        iconBorder = "rgba(245, 158, 11, 0.35)";
-        iconClass = "bi bi-hourglass-split";
-        badgeBg = "#fef3c7";
-        badgeColor = "#b45309";
-        badgeText = "Pending Verification";
-        modalTitle = "Account Under Review";
-        btnGradient = "linear-gradient(135deg, #d97706 0%, #f59e0b 100%)";
-        btnLabel = "Understood, I Will Wait";
-    }
-    else if (statusType == "success")
-    {
-        glowGradient = "linear-gradient(90deg, #15803d, #22c55e, #4ade80)";
-        iconBg = "rgba(22, 101, 52, 0.12)";
-        iconColor = "#15803d";
-        iconBorder = "rgba(22, 101, 52, 0.35)";
-        iconClass = "bi bi-check-circle-fill";
-        badgeBg = "#dcfce7";
-        badgeColor = "#166534";
-        badgeText = "Registration Successful";
-        modalTitle = "Welcome to AgriAI";
-        btnGradient = "linear-gradient(135deg, #15803d 0%, #16a34a 100%)";
-        btnLabel = "Continue to Login";
-    }
-    else if (statusType == "error")
-    {
-        glowGradient = "linear-gradient(90deg, #dc2626, #ef4444, #f87171)";
-        iconBg = "rgba(220, 38, 38, 0.12)";
-        iconColor = "#dc2626";
-        iconBorder = "rgba(220, 38, 38, 0.35)";
-        iconClass = "bi bi-shield-x";
-        badgeBg = "#fee2e2";
-        badgeColor = "#991b1b";
-        badgeText = "Authentication Alert";
-        modalTitle = "Unable to Sign In";
-        btnGradient = "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)";
-        btnLabel = "Try Again";
-    }
+    string iconClass = statusType == "pending" ? "bi bi-hourglass-split" : (statusType == "success" ? "bi bi-check-circle-fill" : "bi bi-shield-x");
+    string badgeText = statusType == "pending" ? "Pending Verification" : (statusType == "success" ? "Registration Successful" : "Authentication Alert");
+    string modalTitle = statusType == "pending" ? "Account Under Review" : (statusType == "success" ? "Welcome to AgriAI" : "Unable to Sign In");
+    string btnLabel = statusType == "pending" ? "Understood, I Will Wait" : (statusType == "success" ? "Continue to Login" : "Try Again");
 }
 
 <div class="login-page-bg">
@@ -154,38 +103,35 @@
 @if (!string.IsNullOrEmpty(statusMessage))
 {
     <!-- High-End Luxury Notification Popup Modal -->
-    <div class="modal fade" id="statusNotificationModal" tabindex="-1" aria-labelledby="statusNotificationModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
-            <div class="modal-content border-0 shadow-lg rounded-4 text-center position-relative overflow-hidden p-4" 
-                 style="background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);">
+    <div class="modal fade" id="statusNotificationModal" tabindex="-1" aria-labelledby="statusNotificationModalLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered status-modal-dialog">
+            <div class="modal-content status-modal-content">
                 
                 <!-- Top Right Close Button -->
-                <button type="button" class="btn-close position-absolute top-0 end-0 m-3.5 shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="status-modal-close-btn" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
 
-                <!-- Decorative Top Ambient Glow -->
-                <div class="position-absolute top-0 start-0 w-100" style="height: 5px; background: @glowGradient;"></div>
-
-                <!-- Animated Icon Circle -->
-                <div class="d-inline-flex align-items-center justify-content-center rounded-circle mx-auto mt-2 mb-3 shadow-sm" 
-                     style="width: 76px; height: 76px; font-size: 2.2rem; background: @iconBg; color: @iconColor; border: 2px solid @iconBorder;">
+                <!-- Status Icon Circle -->
+                <div class="status-modal-icon-wrapper status-@statusType">
                     <i class="@iconClass"></i>
                 </div>
 
-                <!-- Title & Badge -->
-                <div class="mb-2">
-                    <span class="badge rounded-pill px-3 py-1 mb-2 fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.6px; background: @badgeBg; color: @badgeColor;">
-                        @badgeText
-                    </span>
-                    <h4 class="fw-extrabold text-dark mb-1" id="statusNotificationModalLabel">@modalTitle</h4>
+                <!-- Badge -->
+                <div>
+                    <span class="status-modal-badge badge-@statusType">@badgeText</span>
                 </div>
 
-                <!-- Message Body -->
-                <p class="text-muted small px-2 mb-4" style="font-size: 0.88rem; line-height: 1.55;">
+                <!-- Title -->
+                <h4 class="status-modal-title" id="statusNotificationModalLabel">@modalTitle</h4>
+
+                <!-- Description Message -->
+                <p class="status-modal-desc">
                     @statusMessage
                 </p>
 
                 <!-- Action Button -->
-                <button type="button" class="btn btn-lg rounded-pill fw-bold py-2.5 px-4 shadow-sm w-100" style="background: @btnGradient; color: #ffffff; border: none;" data-bs-dismiss="modal">
+                <button type="button" class="status-modal-action-btn btn-@statusType" data-bs-dismiss="modal">
                     <span>@btnLabel</span>
                 </button>
             </div>
