@@ -68,35 +68,36 @@
                     <span asp-validation-for="Role" class="text-danger small mt-1 d-block"></span>
                 </div>
 
-                <!-- Profile Photo Live Avatar with Dual Options: Take Photo & Upload File -->
-                <div class="profile-photo-selection-box text-center mb-3 p-3 bg-light rounded-4 border">
-                    <div class="position-relative d-inline-block mb-2">
-                        <img id="avatarPreview" src="https://ui-avatars.com/api/?name=User&background=15803d&color=fff&size=128" 
-                             class="rounded-circle border border-3 border-success shadow-sm" style="width: 76px; height: 76px; object-fit: cover;" alt="Profile Avatar" />
-                        <span id="photoTypeBadge" class="badge bg-success position-absolute bottom-0 end-0 rounded-circle p-1 shadow border border-white" style="display: none;" title="Photo selected">
-                            <i class="bi bi-check-lg" style="font-size: 0.70rem;"></i>
-                        </span>
+                <!-- Super Compact Profile Photo Selector (Space-Saving Row) -->
+                <div class="d-flex align-items-center justify-content-between p-2 px-3 bg-light rounded-4 border mb-2.5">
+                    <div class="d-flex align-items-center gap-2.5">
+                        <div class="position-relative d-inline-block">
+                            <img id="avatarPreview" src="https://ui-avatars.com/api/?name=User&background=15803d&color=fff&size=128" 
+                                 class="rounded-circle border border-2 border-success shadow-sm" style="width: 44px; height: 44px; object-fit: cover;" alt="Profile Avatar" />
+                            <span id="photoTypeBadge" class="badge bg-success position-absolute bottom-0 end-0 rounded-circle p-0.5 shadow border border-white" style="display: none; width: 14px; height: 14px; font-size: 0.55rem;" title="Photo selected">
+                                <i class="bi bi-check"></i>
+                            </span>
+                        </div>
+                        <div class="lh-sm text-start">
+                            <strong class="text-dark small d-block" style="font-size: 0.82rem;">Profile Photo <span class="text-muted fw-normal" style="font-size: 0.70rem;">(Optional)</span></strong>
+                            <small class="text-muted" id="photoStatusText" style="font-size: 0.70rem;">Camera or local file upload</small>
+                        </div>
                     </div>
 
-                    <div class="d-block mb-2">
-                        <span class="text-dark small fw-bold d-block mb-0.5">Profile / Face Photo (Optional)</span>
-                        <small class="text-muted" id="photoStatusText" style="font-size: 0.72rem;">Choose your photo via live camera or local file</small>
-                    </div>
-
-                    <!-- Dual Option Buttons -->
-                    <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
-                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-3 py-1.5 shadow-sm d-inline-flex align-items-center gap-1.5" onclick="openLiveCameraModal()">
+                    <!-- Compact Action Buttons -->
+                    <div class="d-flex align-items-center gap-1.5">
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-2.5 py-1 shadow-sm d-inline-flex align-items-center gap-1" style="font-size: 0.76rem;" onclick="openLiveCameraModal()" title="Take Photo with Camera">
                             <i class="bi bi-camera-fill"></i>
-                            <span>Take Photo</span>
+                            <span>Camera</span>
                         </button>
 
-                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-3 py-1.5 shadow-sm d-inline-flex align-items-center gap-1.5" onclick="document.getElementById('profilePicInput').click()">
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-2.5 py-1 shadow-sm d-inline-flex align-items-center gap-1" style="font-size: 0.76rem;" onclick="document.getElementById('profilePicInput').click()" title="Upload File from Device">
                             <i class="bi bi-folder-fill"></i>
-                            <span>Upload File</span>
+                            <span>Upload</span>
                         </button>
 
-                        <button type="button" id="btnRemovePhoto" class="btn btn-sm btn-link text-danger text-decoration-none small p-0 ms-1" style="display: none; font-size: 0.75rem;" onclick="resetProfilePhoto()">
-                            <i class="bi bi-trash3"></i> Remove
+                        <button type="button" id="btnRemovePhoto" class="btn btn-sm text-danger p-0 ms-1" style="display: none; font-size: 0.90rem;" onclick="resetProfilePhoto()" title="Remove Photo">
+                            <i class="bi bi-x-circle-fill"></i>
                         </button>
                     </div>
 
