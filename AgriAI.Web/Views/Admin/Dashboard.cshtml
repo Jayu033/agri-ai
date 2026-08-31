@@ -399,6 +399,20 @@
 
                     <!-- 3. MODULE: Escrow & Bilty Payout Verification -->
                     <div id="adminEscrowTab" class="dash-tab-panel @(activeTab == "escrow" ? "active" : "")">
+                        @{
+                            var allEscrowOrders = Model.ToList();
+                            var pendingEscrowOrders = allEscrowOrders.Where(o => !o.AdminApprovedPayout && !o.Status.Contains("Delivered") && !o.Status.Contains("Settled") && o.Status != "Cancelled" && o.Status != "Declined").ToList();
+                            var settledEscrowOrders = allEscrowOrders.Where(o => o.AdminApprovedPayout || o.Status.Contains("Delivered") || o.Status.Contains("Settled")).ToList();
+                            
+                            decimal liveEscrowVaultBalance = pendingEscrowOrders.Sum(o => o.TotalAmount);
+                            int liveAwaitingAuditCount = pendingEscrowOrders.Count;
+                            decimal liveReleasedPayouts = settledEscrowOrders.Sum(o => o.TotalAmount);
+                            decimal livePlatformFee = settledEscrowOrders.Sum(o => o.PlatformFee);
+                            if (livePlatformFee == 0 && liveReleasedPayouts > 0)
+                            {
+                                livePlatformFee = liveReleasedPayouts * 0.02m;
+                            }
+                        }
                         
                         <!-- Header Banner -->
                         <div class="dash-section-header">
@@ -413,47 +427,7 @@
                             </div>
                         </div>
 
-                        <!-- 1. Visual Escrow Lifecycle Stepper Explainer Strip -->
-                        <div class="p-3.5 bg-white rounded-4 border shadow-xs mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="fw-extrabold text-dark small text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">
-                                    <i class="bi bi-shield-check text-success me-1"></i> How AgriAI Safe Escrow Works
-                                </span>
-                                <span class="badge bg-success bg-opacity-10 text-success fw-bold rounded-pill small">100% Anti-Fraud Protected</span>
-                            </div>
-                            <div class="row g-2 text-center small">
-                                <div class="col-md-3 col-6">
-                                    <div class="p-2.5 rounded-3 bg-light border h-100">
-                                        <i class="bi bi-cart-check-fill text-primary fs-5 d-block mb-1"></i>
-                                        <strong class="text-dark d-block" style="font-size: 0.80rem;">1. Buyer Pays</strong>
-                                        <span class="text-muted" style="font-size: 0.70rem;">Funds locked in Escrow Vault</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-3 col-6">
-                                    <div class="p-2.5 rounded-3 bg-light border h-100">
-                                        <i class="bi bi-truck text-warning fs-5 d-block mb-1"></i>
-                                        <strong class="text-dark d-block" style="font-size: 0.80rem;">2. Farmer Dispatches</strong>
-                                        <span class="text-muted" style="font-size: 0.70rem;">Transports via GSRTC/Cargo</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-3 col-6">
-                                    <div class="p-2.5 rounded-3 bg-light border h-100">
-                                        <i class="bi bi-file-earmark-image-fill text-info fs-5 d-block mb-1"></i>
-                                        <strong class="text-dark d-block" style="font-size: 0.80rem;">3. Bilty Uploaded</strong>
-                                        <span class="text-muted" style="font-size: 0.70rem;">Admin inspects receipt proof</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-3 col-6">
-                                    <div class="p-2.5 rounded-3 bg-light border h-100">
-                                        <i class="bi bi-bank text-success fs-5 d-block mb-1"></i>
-                                        <strong class="text-dark d-block" style="font-size: 0.80rem;">4. Payout Released</strong>
-                                        <span class="text-muted" style="font-size: 0.70rem;">Transferred to Farmer Bank</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 2. 4 Enhanced Financial KPI Metric Cards -->
+                        <!-- 4 Live Financial KPI Metric Cards with Real Database Values -->
                         <div class="row g-3 mb-4">
                             <div class="col-lg-3 col-sm-6">
                                 <div class="admin-stat-card">
@@ -462,7 +436,7 @@
                                     </div>
                                     <div>
                                         <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem;">Escrow Vault Balance</small>
-                                        <h4 class="fw-extrabold text-primary mb-0 fs-5">₹@escrowBalance.ToString("N2")</h4>
+                                        <h4 class="fw-extrabold text-primary mb-0 fs-5">₹@liveEscrowVaultBalance.ToString("N2")</h4>
                                         <small class="text-muted" style="font-size: 0.70rem;">Locked for active orders</small>
                                     </div>
                                 </div>
@@ -475,7 +449,7 @@
                                     </div>
                                     <div>
                                         <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem;">Awaiting Bilty Audit</small>
-                                        <h4 class="fw-extrabold text-dark mb-0 fs-5">@inTransitCount Orders</h4>
+                                        <h4 class="fw-extrabold text-dark mb-0 fs-5">@liveAwaitingAuditCount Orders</h4>
                                         <small class="text-warning fw-bold" style="font-size: 0.70rem;">Dispatched in transit</small>
                                     </div>
                                 </div>
@@ -488,7 +462,7 @@
                                     </div>
                                     <div>
                                         <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem;">Released Farmer Payouts</small>
-                                        <h4 class="fw-extrabold text-success mb-0 fs-5">₹@releasedPayouts.ToString("N2")</h4>
+                                        <h4 class="fw-extrabold text-success mb-0 fs-5">₹@liveReleasedPayouts.ToString("N2")</h4>
                                         <small class="text-muted" style="font-size: 0.70rem;">Settled to Farmer Banks</small>
                                     </div>
                                 </div>
@@ -501,36 +475,36 @@
                                     </div>
                                     <div>
                                         <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem;">Platform Escrow Fee</small>
-                                        <h4 class="fw-extrabold text-dark mb-0 fs-5">2.0% Fixed</h4>
-                                        <small class="text-muted" style="font-size: 0.70rem;">Guaranteed settlement</small>
+                                        <h4 class="fw-extrabold text-dark mb-0 fs-5">₹@livePlatformFee.ToString("N2")</h4>
+                                        <small class="text-muted" style="font-size: 0.70rem;">2.0% Fixed Fee Collected</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 3. Escrow Orders Table Header & Live Search Filters -->
-                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
-                            <!-- Filter Pill Buttons -->
-                            <div class="d-flex align-items-center gap-1.5 flex-wrap" id="escrowFilterPills">
-                                <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 py-1.5 fw-bold active" onclick="filterEscrowTable('all', this)">
-                                    All Escrow Orders (@Model.Count())
+                        <!-- Escrow Orders Filter Pills & Live Search Bar with Proper Spacing -->
+                        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+                            <!-- Filter Pill Buttons with Clear Margins -->
+                            <div class="d-flex align-items-center gap-2.5 flex-wrap" id="escrowFilterPills">
+                                <button type="button" class="btn btn-sm btn-dark rounded-pill px-3.5 py-2 fw-bold shadow-xs active escrow-filter-btn" style="font-size: 0.82rem;" onclick="filterEscrowTable('all', this)">
+                                    <i class="bi bi-collection-fill me-1.5"></i> All Escrow Orders (@allEscrowOrders.Count)
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-3 py-1.5 fw-bold" onclick="filterEscrowTable('pending', this)">
-                                    <i class="bi bi-hourglass-top me-1"></i> Awaiting Payout (@Model.Count(o => o.Status == "In Transit" || !string.IsNullOrEmpty(o.BiltyImageUrl) && !o.AdminApprovedPayout))
+                                <button type="button" class="btn btn-sm btn-outline-warning text-dark bg-white border rounded-pill px-3.5 py-2 fw-bold shadow-xs escrow-filter-btn" style="font-size: 0.82rem;" onclick="filterEscrowTable('pending', this)">
+                                    <i class="bi bi-hourglass-split text-warning me-1.5"></i> Awaiting Payout (@liveAwaitingAuditCount)
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold" onclick="filterEscrowTable('settled', this)">
-                                    <i class="bi bi-check2-circle me-1"></i> Settled &amp; Paid (@Model.Count(o => o.Status.Contains("Delivered") || o.Status.Contains("Settled") || o.AdminApprovedPayout))
+                                <button type="button" class="btn btn-sm btn-outline-success text-dark bg-white border rounded-pill px-3.5 py-2 fw-bold shadow-xs escrow-filter-btn" style="font-size: 0.82rem;" onclick="filterEscrowTable('settled', this)">
+                                    <i class="bi bi-check-circle-fill text-success me-1.5"></i> Settled &amp; Paid (@settledEscrowOrders.Count)
                                 </button>
                             </div>
 
                             <!-- Live Search Input -->
-                            <div class="position-relative" style="min-width: 260px;">
-                                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                                <input type="text" id="escrowSearchInput" class="form-control form-control-sm rounded-pill ps-5 bg-white shadow-none" placeholder="Search by Order #, Bilty LR, Farmer..." onkeyup="searchEscrowTable()" />
+                            <div class="position-relative" style="min-width: 320px;">
+                                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3.5 text-muted"></i>
+                                <input type="text" id="escrowSearchInput" class="form-control rounded-pill ps-5 bg-white border shadow-xs" style="padding-top: 8px; padding-bottom: 8px;" placeholder="Search by Order #, Bilty LR, Farmer..." onkeyup="searchEscrowTable()" />
                             </div>
                         </div>
 
-                        <!-- 4. Rich Escrow Moderation Table -->
+                        <!-- Rich Escrow Moderation Table -->
                         <div class="table-responsive bg-white rounded-4 border shadow-xs mb-4">
                             <table class="table table-hover align-middle mb-0" id="escrowModerationTable">
                                 <thead class="table-light small text-uppercase">
@@ -544,7 +518,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @if (!Model.Any())
+                                    @if (!allEscrowOrders.Any())
                                     {
                                         <tr>
                                             <td colspan="6" class="text-center text-muted py-5">
@@ -553,7 +527,7 @@
                                             </td>
                                         </tr>
                                     }
-                                    @foreach (var order in Model)
+                                    @foreach (var order in allEscrowOrders)
                                     {
                                         var firstProd = order.OrderItems.FirstOrDefault()?.Product;
                                         var farmerUser = allUsers.FirstOrDefault(u => u.Role == "Farmer" && (firstProd == null || u.Id == firstProd.FarmerId)) 
@@ -565,7 +539,7 @@
                                         
                                         bool isSettled = order.Status.Contains("Delivered") || order.Status.Contains("Settled") || order.AdminApprovedPayout;
                                         bool hasBilty = !string.IsNullOrEmpty(order.BiltyImageUrl);
-                                        bool isPendingPayout = order.Status == "In Transit" || (hasBilty && !isSettled);
+                                        bool isPendingPayout = !isSettled && (order.Status == "In Transit" || order.Status == "Ready for Pickup" || order.Status == "Accepted" || hasBilty);
                                         string rowFilterType = isSettled ? "settled" : (isPendingPayout ? "pending" : "all");
 
                                         <tr class="escrow-order-row" data-filter-type="@rowFilterType" data-search-text="#@order.Id.ToString("D5") @fName @fBank @(order.BiltyNumber ?? "") @(order.CargoServiceName ?? "")">
@@ -1298,15 +1272,12 @@
     
         // Escrow Table Live Filter & Search
         function filterEscrowTable(filterType, element) {
-            document.querySelectorAll('#escrowFilterPills button').forEach(function(btn) {
+            document.querySelectorAll('#escrowFilterPills .escrow-filter-btn').forEach(function(btn) {
                 btn.classList.remove('btn-dark', 'active');
-                if (btn.classList.contains('btn-outline-warning')) {
-                    btn.classList.remove('btn-warning');
-                } else if (btn.classList.contains('btn-outline-success')) {
-                    btn.classList.remove('btn-success');
-                }
+                btn.classList.add('bg-white');
             });
             if (element) {
+                element.classList.remove('bg-white');
                 element.classList.add('btn-dark', 'active');
             }
 
