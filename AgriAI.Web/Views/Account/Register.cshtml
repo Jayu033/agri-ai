@@ -97,7 +97,7 @@
 
                     <!-- Compact Action Buttons -->
                     <div class="d-flex align-items-center gap-1.5">
-                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-2.5 py-1 shadow-sm d-inline-flex align-items-center gap-1" style="font-size: 0.76rem;" data-bs-toggle="modal" data-bs-target="#cameraCaptureModal" onclick="openLiveCameraModal()" title="Take Photo with Camera">
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-2.5 py-1 shadow-sm d-inline-flex align-items-center gap-1" style="font-size: 0.76rem;" data-bs-toggle="modal" data-bs-target="#cameraCaptureModal" onclick="startCameraStream()" title="Take Photo with Camera">
                             <i class="bi bi-camera-fill"></i>
                             <span>Camera</span>
                         </button>
@@ -376,22 +376,44 @@
 
             <div class="modal-body p-3 p-md-4 text-center bg-light">
                 <!-- Camera Viewfinder Box -->
-                <div class="position-relative overflow-hidden rounded-4 shadow-sm bg-dark mx-auto" style="max-width: 360px; height: 270px;">
-                    <video id="cameraFeed" autoplay playsinline muted class="w-100 h-100" style="object-fit: cover; transform: scaleX(-1);"></video>
+                <div class="position-relative overflow-hidden rounded-4 shadow-sm bg-dark mx-auto d-flex align-items-center justify-content-center" style="max-width: 360px; height: 270px;">
+                    <video id="cameraFeed" autoplay playsinline muted class="w-100 h-100" style="object-fit: cover; transform: scaleX(-1); display: block;"></video>
                     <canvas id="photoCanvas" class="w-100 h-100 d-none" style="object-fit: cover;"></canvas>
                     
+                    <!-- Loading Spinner Overlay -->
+                    <div id="cameraLoadingBox" class="position-absolute top-50 start-50 translate-middle text-white text-center w-100 px-3">
+                        <div class="spinner-border text-success mb-2" role="status" style="width: 2.5rem; height: 2.5rem;">
+                            <span class="visually-hidden">Loading camera...</span>
+                        </div>
+                        <div class="small fw-semibold text-white">Starting Camera...</div>
+                        <div class="text-white-50 mt-1" style="font-size: 0.70rem;">(If browser asks, please click <strong>"Allow"</strong>)</div>
+                    </div>
+
                     <!-- Viewfinder Overlay Circle -->
-                    <div id="viewfinderOverlay" class="position-absolute top-50 start-50 translate-middle rounded-circle border border-2 border-white border-opacity-75" 
+                    <div id="viewfinderOverlay" class="position-absolute top-50 start-50 translate-middle rounded-circle border border-2 border-white border-opacity-75 d-none" 
                          style="width: 180px; height: 180px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35); pointer-events: none;">
                     </div>
 
-                    <!-- Camera Error Notice -->
+                    <!-- Camera Error Notice / Fallback Choice -->
                     <div id="cameraErrorBox" class="position-absolute top-50 start-50 translate-middle w-100 px-3 d-none text-white text-center">
-                        <i class="bi bi-camera-video-off display-6 text-danger mb-2 d-block"></i>
-                        <span class="small fw-semibold d-block mb-2" id="cameraErrorMessage">Camera permission denied or camera not found.</span>
-                        <button type="button" class="btn btn-sm btn-light rounded-pill px-3 py-1 fw-bold shadow-sm" onclick="document.getElementById('mobileCameraInput').click(); if (cameraModal) cameraModal.hide();">
-                            <i class="bi bi-camera me-1"></i> Use Device Camera
-                        </button>
+                        <div class="rounded-circle bg-danger bg-opacity-25 text-danger d-inline-flex p-2 mb-2">
+                            <i class="bi bi-camera-video-off fs-4"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1 text-white fs-6">Live Camera Not Accessible</h6>
+                        <p class="text-white-50 small mb-3" id="cameraErrorMessage" style="font-size: 0.74rem;">
+                            Webcam permission was blocked or camera is in use. You can take or choose a photo directly:
+                        </p>
+                        <div class="d-flex flex-column gap-2 align-items-center">
+                            <button type="button" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm w-100" style="background-color: #006653;" onclick="useDeviceCameraCapture()">
+                                <i class="bi bi-camera-fill me-1"></i> 📸 Take Photo (Device Camera)
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light rounded-pill px-3 py-1.5 fw-bold w-100" onclick="useDeviceFileUpload()">
+                                <i class="bi bi-folder-fill me-1"></i> 📁 Choose from Computer / Files
+                            </button>
+                            <button type="button" class="btn btn-link text-white-50 text-decoration-none p-0 mt-1" style="font-size: 0.72rem;" onclick="retryCamera()">
+                                <i class="bi bi-arrow-clockwise me-1"></i> Retry Live Webcam
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -604,68 +626,85 @@
         }
 
         const cameraModalEl = document.getElementById('cameraCaptureModal');
-        let cameraModal = null;
-
-        function openLiveCameraModal() {
-            if (!cameraModal && cameraModalEl) {
-                if (window.bootstrap && bootstrap.Modal) {
-                    cameraModal = bootstrap.Modal.getInstance(cameraModalEl) || new bootstrap.Modal(cameraModalEl);
-                }
-            }
-            if (cameraModal) {
-                cameraModal.show();
-            } else if (window.jQuery && cameraModalEl) {
-                $(cameraModalEl).modal('show');
-            }
-        }
 
         if (cameraModalEl) {
             cameraModalEl.addEventListener('shown.bs.modal', function () {
-                startCameraStream();
+                if (!cameraStream) {
+                    startCameraStream();
+                }
             });
             cameraModalEl.addEventListener('hidden.bs.modal', function () {
                 stopCameraStream();
             });
         }
 
+        function showCameraLoading() {
+            const loadingBox = document.getElementById('cameraLoadingBox');
+            const overlay = document.getElementById('viewfinderOverlay');
+            if (loadingBox) {
+                loadingBox.style.display = 'block';
+                loadingBox.classList.remove('d-none');
+            }
+            if (overlay) {
+                overlay.style.display = 'none';
+                overlay.classList.add('d-none');
+            }
+        }
+
+        function hideCameraLoading() {
+            const loadingBox = document.getElementById('cameraLoadingBox');
+            const overlay = document.getElementById('viewfinderOverlay');
+            if (loadingBox) {
+                loadingBox.style.display = 'none';
+                loadingBox.classList.add('d-none');
+            }
+            if (overlay) {
+                overlay.style.display = 'block';
+                overlay.classList.remove('d-none');
+            }
+        }
+
         async function startCameraStream() {
             const video = document.getElementById('cameraFeed');
             const canvas = document.getElementById('photoCanvas');
-            const overlay = document.getElementById('viewfinderOverlay');
             const errorBox = document.getElementById('cameraErrorBox');
-            const errorMsg = document.getElementById('cameraErrorMessage');
             const liveControls = document.getElementById('cameraLiveControls');
             const previewControls = document.getElementById('cameraPreviewControls');
+            const loadingBox = document.getElementById('cameraLoadingBox');
 
-            // Reset UI
+            if (!video) return;
+
+            // Reset UI states
             video.classList.remove('d-none');
-            canvas.classList.add('d-none');
-            overlay.classList.remove('d-none');
-            errorBox.classList.add('d-none');
-            liveControls.classList.remove('d-none');
-            previewControls.classList.add('d-none');
+            video.style.display = 'block';
+            if (canvas) canvas.classList.add('d-none');
+            if (errorBox) errorBox.classList.add('d-none');
+            if (liveControls) liveControls.classList.remove('d-none');
+            if (previewControls) previewControls.classList.add('d-none');
 
+            showCameraLoading();
             stopCameraStream();
+
+            let permissionTimer = setTimeout(() => {
+                if (loadingBox) {
+                    loadingBox.innerHTML = `
+                        <div class="spinner-border text-warning mb-2" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
+                        <div class="small fw-bold text-warning">Waiting for Permission...</div>
+                        <div class="text-white small px-2 mt-1" style="font-size: 0.72rem;">Please click <strong>"Allow"</strong> on the camera prompt in your browser.</div>
+                    `;
+                }
+            }, 1800);
 
             try {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    const legacyGetUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-                    if (legacyGetUserMedia) {
-                        navigator.mediaDevices = navigator.mediaDevices || {};
-                        navigator.mediaDevices.getUserMedia = function (constraints) {
-                            return new Promise(function (resolve, reject) {
-                                legacyGetUserMedia.call(navigator, constraints, resolve, reject);
-                            });
-                        };
-                    } else {
-                        throw new Error('Camera access is not supported by your browser or requires a secure context (HTTPS / localhost).');
-                    }
+                    throw new Error('Camera access is not supported by your browser or requires HTTPS / localhost.');
                 }
 
+                // 1. Try standard video constraint first for fastest startup
                 let stream = null;
                 try {
                     stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+                        video: { width: { ideal: 640 }, height: { ideal: 480 } },
                         audio: false
                     });
                 } catch (e1) {
@@ -675,38 +714,92 @@
                     });
                 }
 
+                clearTimeout(permissionTimer);
+
+                if (!stream) {
+                    throw new Error('Unable to connect to camera device.');
+                }
+
                 cameraStream = stream;
                 video.srcObject = stream;
                 video.muted = true;
-                
-                await new Promise((resolve) => {
-                    video.onloadedmetadata = () => {
-                        video.play().then(resolve).catch(resolve);
-                    };
-                });
+                video.autoplay = true;
+                video.playsInline = true;
+
+                // Event handlers to ensure frame playback
+                const onPlaySuccess = () => {
+                    hideCameraLoading();
+                };
+
+                video.onloadeddata = onPlaySuccess;
+                video.onloadedmetadata = () => {
+                    video.play().catch(e => console.warn('Play on metadata failed:', e));
+                    hideCameraLoading();
+                };
+                video.onplaying = onPlaySuccess;
+                video.oncanplay = onPlaySuccess;
+
+                // Immediate play call
+                try {
+                    await video.play();
+                } catch (playErr) {
+                    console.warn('Initial video.play() call:', playErr);
+                }
+
+                // Immediately hide loading box once stream object is assigned
+                hideCameraLoading();
+
             } catch (err) {
+                clearTimeout(permissionTimer);
                 console.error('Camera stream error:', err);
-                video.classList.add('d-none');
-                overlay.classList.add('d-none');
-                errorBox.classList.remove('d-none');
+                hideCameraLoading();
+                if (video) video.classList.add('d-none');
+                if (errorBox) errorBox.classList.remove('d-none');
 
                 let message = 'Camera access was blocked or unavailable.';
                 if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                    message = 'Camera permission was denied. Please allow camera access in your browser.';
+                    message = 'Camera permission was denied. Please click the camera/lock icon in your browser address bar and choose "Allow".';
                 } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
                     message = 'No webcam or camera device was found on this system.';
+                } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                    message = 'Camera is already in use by another application (like Zoom/Teams) or Windows privacy settings.';
                 } else if (err.message) {
                     message = err.message;
                 }
-                errorMsg.textContent = message;
-                liveControls.classList.add('d-none');
+                const errorMsg = document.getElementById('cameraErrorMessage');
+                if (errorMsg) errorMsg.textContent = message;
+                if (liveControls) liveControls.classList.add('d-none');
             }
+        }
+
+        function retryCamera() {
+            startCameraStream();
+        }
+
+        function useDeviceCameraCapture() {
+            stopCameraStream();
+            const modalInstance = bootstrap.Modal.getInstance(cameraModalEl);
+            if (modalInstance) modalInstance.hide();
+            document.getElementById('mobileCameraInput').click();
+        }
+
+        function useDeviceFileUpload() {
+            stopCameraStream();
+            const modalInstance = bootstrap.Modal.getInstance(cameraModalEl);
+            if (modalInstance) modalInstance.hide();
+            document.getElementById('profilePicInput').click();
         }
 
         function stopCameraStream() {
             if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream.getTracks().forEach(track => {
+                    track.stop();
+                });
                 cameraStream = null;
+            }
+            const video = document.getElementById('cameraFeed');
+            if (video) {
+                video.srcObject = null;
             }
         }
 
@@ -734,9 +827,9 @@
             // Freeze preview
             video.classList.add('d-none');
             canvas.classList.remove('d-none');
-            overlay.classList.add('d-none');
-            liveControls.classList.add('d-none');
-            previewControls.classList.remove('d-none');
+            if (overlay) overlay.classList.add('d-none');
+            if (liveControls) liveControls.classList.add('d-none');
+            if (previewControls) previewControls.classList.remove('d-none');
 
             capturedDataUrl = canvas.toDataURL('image/jpeg', 0.92);
         }
@@ -748,29 +841,68 @@
             const liveControls = document.getElementById('cameraLiveControls');
             const previewControls = document.getElementById('cameraPreviewControls');
 
-            video.classList.remove('d-none');
-            canvas.classList.add('d-none');
-            overlay.classList.remove('d-none');
-            liveControls.classList.remove('d-none');
-            previewControls.classList.add('d-none');
+            if (video) video.classList.remove('d-none');
+            if (canvas) canvas.classList.add('d-none');
+            if (overlay) overlay.classList.remove('d-none');
+            if (liveControls) liveControls.classList.remove('d-none');
+            if (previewControls) previewControls.classList.add('d-none');
             capturedDataUrl = null;
         }
 
         function confirmCapturedPhoto() {
             if (capturedDataUrl) {
-                avatarImg.src = capturedDataUrl;
-                document.getElementById('capturedPhotoInput').value = capturedDataUrl;
-                document.getElementById('profilePicInput').value = ''; // clear file input
-                document.getElementById('photoTypeBadge').style.display = 'block';
-                document.getElementById('btnRemovePhoto').style.display = 'inline-block';
-                document.getElementById('photoStatusText').textContent = '📸 Live Camera snapshot captured successfully!';
+                if (avatarImg) {
+                    avatarImg.src = capturedDataUrl;
+                }
+                const capInput = document.getElementById('capturedPhotoInput');
+                if (capInput) capInput.value = capturedDataUrl;
+
+                const picInput = document.getElementById('profilePicInput');
+                if (picInput) picInput.value = ''; // clear file input
+
+                const badge = document.getElementById('photoTypeBadge');
+                if (badge) badge.style.display = 'block';
+
+                const removeBtn = document.getElementById('btnRemovePhoto');
+                if (removeBtn) removeBtn.style.display = 'inline-block';
+
+                const statusText = document.getElementById('photoStatusText');
+                if (statusText) statusText.textContent = '📸 Live Camera snapshot captured successfully!';
 
                 stopCameraStream();
-                if (cameraModal) {
-                    cameraModal.hide();
-                } else if (window.jQuery && cameraModalEl) {
+
+                // 1. Try Bootstrap 5 getOrCreateInstance
+                try {
+                    if (window.bootstrap && bootstrap.Modal) {
+                        const modalInstance = bootstrap.Modal.getOrCreateInstance(cameraModalEl);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Bootstrap modal hide error:', e);
+                }
+
+                // 2. Trigger native close button click
+                const closeBtn = cameraModalEl.querySelector('.btn-close') || cameraModalEl.querySelector('[data-bs-dismiss="modal"]');
+                if (closeBtn) {
+                    closeBtn.click();
+                }
+
+                // 3. Try jQuery fallback
+                if (window.jQuery && cameraModalEl) {
                     $(cameraModalEl).modal('hide');
                 }
+
+                // 4. Force modal backdrop removal if needed
+                setTimeout(() => {
+                    cameraModalEl.classList.remove('show');
+                    cameraModalEl.style.display = 'none';
+                    document.body.classList.remove('modal-open');
+                    document.body.style.removeProperty('padding-right');
+                    document.body.style.removeProperty('overflow');
+                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                }, 300);
             }
         }
     </script>
