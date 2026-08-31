@@ -396,7 +396,14 @@
             if (data.success) {
                 showFloatingToast(data.message || `🌾 ${name} added to cart!`);
             } else {
-                showFloatingToast(data.message || 'Could not add to cart', false);
+                if (data.requireLogin) {
+                    showFloatingToast(data.message || 'Please log in to continue.', false);
+                    setTimeout(() => {
+                        window.location.href = data.redirectUrl || '/Account/Login';
+                    }, 1400);
+                } else {
+                    showFloatingToast(data.message || 'Could not add to cart', false);
+                }
             }
         })
         .catch(err => {

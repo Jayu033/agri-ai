@@ -113,6 +113,20 @@ namespace AgriAI.Web.Controllers
                 return Json(new { success = false, message = "Product not found." });
             }
 
+            // Require login before adding produce to cart / purchasing
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                var referer = Request.Headers["Referer"].ToString();
+                var redirectUrl = !string.IsNullOrEmpty(referer) ? "/Account/Login?returnUrl=" + Uri.EscapeDataString(referer) : "/Account/Login";
+                return Json(new
+                {
+                    success = false,
+                    requireLogin = true,
+                    redirectUrl = redirectUrl,
+                    message = "🔒 Please log in first to purchase or add crops to cart."
+                });
+            }
+
             // Prevent farmer from purchasing their own listed crops
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
@@ -124,7 +138,7 @@ namespace AgriAI.Web.Controllers
                         return Json(new
                         {
                             success = false,
-                            message = "⚠️ તમે તમારો પોતાનો લિસ્ટેડ પાક ખરીદી શકતા નથી / You cannot purchase your own listed produce."
+                            message = "⚠️ You cannot purchase your own listed produce. You can manage it from your Farmer Dashboard."
                         });
                     }
                 }

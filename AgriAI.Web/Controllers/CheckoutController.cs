@@ -2,6 +2,7 @@ using AgriAI.Domain.Entities;
 using AgriAI.Infrastructure.Data;
 using AgriAI.Infrastructure.Identity;
 using AgriAI.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using System.Text.Json;
 
 namespace AgriAI.Web.Controllers
 {
+    [Authorize]
     public class CheckoutController : Controller
     {
         private const string CartSessionKey = "AgriAI_ShoppingCart_Session";
@@ -66,7 +68,7 @@ namespace AgriAI.Web.Controllers
                     if (singleProd != null && !string.IsNullOrEmpty(singleProd.FarmerId) &&
                         (singleProd.FarmerId == currentUser.Id || singleProd.FarmerId == currentUser.UserName))
                     {
-                        TempData["ErrorMessage"] = "⚠️ તમે તમારો પોતાનો લિસ્ટેડ પાક ખરીદી શકતા નથી / You cannot purchase your own listed produce.";
+                        TempData["ErrorMessage"] = "⚠️ You cannot purchase your own listed produce. You can manage it from your Farmer Dashboard.";
                         return RedirectToAction("Details", "Product", new { id = productId.Value });
                     }
                 }
@@ -141,7 +143,17 @@ namespace AgriAI.Web.Controllers
         {
             if (quantity < 1) quantity = 1;
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "guest-user";
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                var currentUser = await _userManager.GetUserAsync(User);
+                userId = currentUser?.Id ?? User.Identity?.Name;
+            }
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Challenge();
+            }
+
             string generatedOtp = new Random().Next(1000, 9999).ToString();
 
             if (paymentMethod == "COD")

@@ -291,7 +291,7 @@
                                 <div>
                                     <h5 class="fw-bold text-dark mb-1">🌱 Your Listed Harvest Crop</h5>
                                     <p class="text-muted small mb-0">
-                                        તમે આ પાકના રજિસ્ટર્ડ ખેડૂત છો. તમે તમારો પોતાનો પાક ખરીદી શકતા નથી, પરંતુ તમે અન્ય ખેડૂતો પાસેથી ખરીદી શકો છો અથવા અહીંથી તમારો પાક મેનેજ કરી શકો છો.
+                                        You are the registered producer of this crop. You cannot purchase your own produce, but you can purchase from other farmers or manage your listing from the Farmer Dashboard.
                                     </p>
                                 </div>
                             </div>
@@ -301,6 +301,26 @@
                                 </a>
                                 <a asp-controller="Farmer" asp-action="Dashboard" class="btn btn-outline-dark rounded-pill px-4 py-2.5 fw-bold">
                                     <i class="bi bi-speedometer2 me-1"></i> Farmer Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    }
+                    else if (User.Identity == null || !User.Identity.IsAuthenticated)
+                    {
+                        <div class="details-box bg-white border border-success border-opacity-25 shadow-sm mb-0 p-4 rounded-4 text-center">
+                            <div class="d-inline-flex p-3 bg-success bg-opacity-10 text-success rounded-circle fs-2 mb-2">
+                                <i class="bi bi-shield-lock-fill"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-1">Login Required to Purchase Harvest</h5>
+                            <p class="text-muted small mb-3">
+                                Please log in with your Customer or Farmer account to place an order, unlock direct producer contact, and enjoy 100% Escrow Protection.
+                            </p>
+                            <div class="d-flex flex-wrap justify-content-center gap-2">
+                                <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)" class="btn btn-success rounded-pill px-4 py-2.5 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i> Login to Buy
+                                </a>
+                                <a asp-controller="Account" asp-action="Register" class="btn btn-outline-success rounded-pill px-4 py-2.5 fw-bold">
+                                    <i class="bi bi-person-plus me-1"></i> Register New Account
                                 </a>
                             </div>
                         </div>
@@ -445,7 +465,14 @@
                 if (data.success) {
                     showFloatingToast(data.message || `🌾 ${qty} Kg of @Model.Name added to cart!`);
                 } else {
-                    showFloatingToast(data.message || 'Could not add to cart', false);
+                    if (data.requireLogin) {
+                        showFloatingToast(data.message || 'Please log in to purchase produce.', false);
+                        setTimeout(() => {
+                            window.location.href = data.redirectUrl || '/Account/Login';
+                        }, 1400);
+                    } else {
+                        showFloatingToast(data.message || 'Could not add to cart', false);
+                    }
                 }
             })
             .catch(err => {
