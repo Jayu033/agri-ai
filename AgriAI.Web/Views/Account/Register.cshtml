@@ -441,20 +441,20 @@
         const roleCustomer = document.getElementById('roleCustomer');
         const roleFarmer = document.getElementById('roleFarmer');
         const stepper = document.getElementById('farmerWizardStepper');
-        const btnNextStep = document.getElementById('btnNextStep');
-        const btnSubmitDirect = document.getElementById('btnSubmitDirect');
+        const btnCustomerSubmit = document.getElementById('btnCustomerSubmit');
+        const btnGoToStep2 = document.getElementById('btnGoToStep2');
 
         function toggleRoleView() {
-            if (roleFarmer && roleFarmer.checked) {
-                stepper.style.display = 'flex';
-                btnNextStep.style.display = 'block';
-                btnSubmitDirect.style.display = 'none';
+            const isFarmer = roleFarmer && roleFarmer.checked;
+            if (isFarmer) {
+                if (stepper) stepper.style.display = 'flex';
+                if (btnGoToStep2) btnGoToStep2.style.display = 'flex';
+                if (btnCustomerSubmit) btnCustomerSubmit.style.display = 'none';
             } else {
-                stepper.style.display = 'none';
-                btnNextStep.style.display = 'none';
-                btnSubmitDirect.style.display = 'block';
-                document.getElementById('registerStep1').style.display = 'block';
-                document.getElementById('registerStep2').style.display = 'none';
+                if (stepper) stepper.style.display = 'none';
+                if (btnGoToStep2) btnGoToStep2.style.display = 'none';
+                if (btnCustomerSubmit) btnCustomerSubmit.style.display = 'flex';
+                goToStep1();
             }
         }
 
@@ -483,9 +483,9 @@
             });
         });
 
-        function validateAndGoToStep2() {
+        function goToStep2() {
             const errorAlert = document.getElementById('step1ErrorAlert');
-            const errorMsg = document.getElementById('step1ErrorMessage');
+            const errorMsg = document.getElementById('step1ErrorMsg');
             const fn = document.getElementById('regFirstName')?.value.trim();
             const ln = document.getElementById('regLastName')?.value.trim();
             const un = document.getElementById('regUsername')?.value.trim();
@@ -494,28 +494,30 @@
             const confirmPass = document.getElementById('regConfirmPassword')?.value;
 
             if (!fn || !ln || !un || !em || !password || !confirmPass) {
-                errorMsg.textContent = 'Please fill in all mandatory account details (Name, Username, Email, Password) to proceed.';
-                errorAlert.classList.remove('d-none');
+                if (errorMsg) errorMsg.textContent = 'Please fill in all mandatory account details (Name, Username, Email, Password) to proceed.';
+                if (errorAlert) errorAlert.classList.remove('d-none');
                 return;
             }
 
             if (password.length < 6) {
-                errorMsg.textContent = 'Password must be at least 6 characters long.';
-                errorAlert.classList.remove('d-none');
+                if (errorMsg) errorMsg.textContent = 'Password must be at least 6 characters long.';
+                if (errorAlert) errorAlert.classList.remove('d-none');
                 return;
             }
 
             if (password !== confirmPass) {
-                errorMsg.textContent = 'Password and Confirm Password do not match.';
-                errorAlert.classList.remove('d-none');
+                if (errorMsg) errorMsg.textContent = 'Password and Confirm Password do not match.';
+                if (errorAlert) errorAlert.classList.remove('d-none');
                 return;
             }
 
-            errorAlert.classList.add('d-none');
+            if (errorAlert) errorAlert.classList.add('d-none');
 
             // Switch to Step 2
-            document.getElementById('registerStep1').style.display = 'none';
-            document.getElementById('registerStep2').style.display = 'block';
+            const step1 = document.getElementById('registerStep1');
+            const step2 = document.getElementById('registerStep2');
+            if (step1) step1.style.display = 'none';
+            if (step2) step2.style.display = 'block';
 
             // Update Stepper indicators
             const ind1 = document.getElementById('stepIndicator1');
@@ -523,29 +525,38 @@
             const circle1 = document.getElementById('stepCircle1');
             const circle2 = document.getElementById('stepCircle2');
 
-            ind1.classList.remove('active');
-            ind1.classList.add('completed');
-            circle1.innerHTML = '<i class="bi bi-check-lg"></i>';
+            if (ind1) {
+                ind1.classList.remove('active');
+                ind1.classList.add('completed');
+            }
+            if (circle1) circle1.innerHTML = '<i class="bi bi-check-lg"></i>';
 
-            ind2.classList.add('active');
-            circle2.innerHTML = '2';
+            if (ind2) ind2.classList.add('active');
+            if (circle2) circle2.innerHTML = '2';
+
+            // Smooth scroll to top of card
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function goToStep1() {
-            document.getElementById('registerStep2').style.display = 'none';
-            document.getElementById('registerStep1').style.display = 'block';
+            const step1 = document.getElementById('registerStep1');
+            const step2 = document.getElementById('registerStep2');
+            if (step2) step2.style.display = 'none';
+            if (step1) step1.style.display = 'block';
 
             const ind1 = document.getElementById('stepIndicator1');
             const ind2 = document.getElementById('stepIndicator2');
             const circle1 = document.getElementById('stepCircle1');
             const circle2 = document.getElementById('stepCircle2');
 
-            ind1.classList.remove('completed');
-            ind1.classList.add('active');
-            circle1.innerHTML = '1';
+            if (ind1) {
+                ind1.classList.remove('completed');
+                ind1.classList.add('active');
+            }
+            if (circle1) circle1.innerHTML = '1';
 
-            ind2.classList.remove('active');
-            circle2.innerHTML = '2';
+            if (ind2) ind2.classList.remove('active');
+            if (circle2) circle2.innerHTML = '2';
         }
 
         // ==========================================
