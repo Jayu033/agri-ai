@@ -4,6 +4,8 @@
     ViewData["Title"] = $"{Model.User.FullName} - Profile Details";
     var user = Model.User;
     bool isFarmer = user.Role == "Farmer";
+    int activeOrdersCount = Model.Orders.Count(o => o.Status == "In Transit" || o.Status == "Requested" || o.Status == "Ready for Pickup");
+    int completedOrdersCount = Model.Orders.Count(o => o.Status.Contains("Delivered") || o.Status.Contains("Settled"));
 }
 
 @section Styles {
@@ -15,9 +17,9 @@
     <!-- Top Header Navigation -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <a asp-action="Dashboard" asp-route-tab="users" class="text-decoration-none text-muted small fw-bold">
-                    <i class="bi bi-speedometer2 me-1"></i> Dashboard
+            <div class="d-flex align-items-center gap-2 mb-1.5 flex-wrap">
+                <a asp-action="Dashboard" asp-route-tab="users" class="text-decoration-none text-muted small fw-bold d-inline-flex align-items-center gap-1">
+                    <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
                 <span class="text-muted small">/</span>
                 <a asp-action="Dashboard" asp-route-tab="users" class="text-decoration-none text-muted small fw-bold">
@@ -26,11 +28,12 @@
                 <span class="text-muted small">/</span>
                 <span class="text-dark small fw-bold">@user.FullName</span>
             </div>
-            <h2 class="fw-bold text-dark mb-0 fs-4">@(isFarmer ? "Farmer KYC & Business Profile" : "Customer Account & Orders")</h2>
+            <h2 class="fw-extrabold text-dark mb-0 fs-3">@(isFarmer ? "Farmer KYC &amp; Farm Portfolio" : "Customer Account &amp; Order History")</h2>
         </div>
         <div>
-            <a asp-action="Dashboard" asp-route-tab="users" class="btn btn-outline-success bg-white rounded-pill px-4 py-2 fw-bold small shadow-sm d-inline-flex align-items-center gap-1.5">
-                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            <a asp-action="Dashboard" asp-route-tab="users" class="btn-back-custom">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Farmer &amp; Users</span>
             </a>
         </div>
     </div>
@@ -41,7 +44,7 @@
         <div class="p-4 rounded-4 border border-warning mb-4 shadow-sm" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px; font-size: 1.4rem;">
+                    <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.4rem;">
                         <i class="bi bi-hourglass-split"></i>
                     </div>
                     <div>
@@ -77,25 +80,29 @@
         </div>
     }
 
-    <!-- Hero Profile Overview Card -->
-    <div class="bg-white rounded-4 shadow-sm border p-4 mb-4">
+    <!-- Hero Profile Overview Card (Modern Luxury Elevated Card) -->
+    <div class="user-profile-hero mb-4">
         <div class="row g-4 align-items-center">
-            <!-- Left Avatar & Name -->
-            <div class="col-md-7">
-                <div class="d-flex align-items-center gap-3.5">
-                    @if (!string.IsNullOrEmpty(user.ProfilePicturePath))
-                    {
-                        <img src="@user.ProfilePicturePath" class="rounded-circle border border-3 border-success shadow-sm" style="width: 76px; height: 76px; object-fit: cover;" alt="@user.FullName" />
-                    }
-                    else
-                    {
-                        <div class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center shadow-sm" style="width: 76px; height: 76px; font-size: 2rem; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);">
-                            @(string.IsNullOrEmpty(user.FullName) ? "U" : user.FullName.Substring(0, 1).ToUpper())
-                        </div>
-                    }
-                    <div>
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <h3 class="fw-extrabold text-dark mb-0 fs-4">@user.FullName</h3>
+            <!-- Left Avatar & Details -->
+            <div class="col-lg-7">
+                <div class="d-flex align-items-center gap-4 flex-wrap flex-sm-nowrap">
+                    <div class="user-hero-avatar-wrap">
+                        @if (!string.IsNullOrEmpty(user.ProfilePicturePath))
+                        {
+                            <img src="@user.ProfilePicturePath" class="user-hero-avatar-img" alt="@user.FullName" />
+                        }
+                        else
+                        {
+                            <div class="user-hero-avatar-fallback">
+                                @(string.IsNullOrEmpty(user.FullName) ? "U" : user.FullName.Substring(0, 1).ToUpper())
+                            </div>
+                        }
+                    </div>
+
+                    <div style="min-width: 0;">
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                            <h3 class="fw-extrabold text-dark mb-0 fs-4 text-truncate">@user.FullName</h3>
+                            
                             @if (isFarmer)
                             {
                                 <span class="admin-badge-role-farmer"><i class="bi bi-tree-fill"></i> Farmer</span>
@@ -118,13 +125,18 @@
                                 <span class="admin-status-dot-active"><i class="bi bi-check-circle-fill"></i> Active</span>
                             }
                         </div>
-                        <div class="text-muted small mt-1">
-                            <span>@@@user.Username</span> • 
-                            <a href="mailto:@user.Email" class="text-dark fw-semibold text-decoration-none">@user.Email</a>
+
+                        <div class="text-muted small d-flex align-items-center gap-2 flex-wrap mb-1">
+                            <span class="text-dark fw-semibold">@@@user.Username</span>
+                            <span>•</span>
+                            <a href="mailto:@user.Email" class="text-muted text-decoration-none hover-dark">
+                                <i class="bi bi-envelope me-1"></i>@user.Email
+                            </a>
                         </div>
+
                         @if (!string.IsNullOrEmpty(user.City) || !string.IsNullOrEmpty(user.Address))
                         {
-                            <div class="user-location-pill mt-1.5">
+                            <div class="user-location-pill mt-1">
                                 <i class="bi bi-geo-alt-fill text-success"></i>
                                 <span>@(string.IsNullOrEmpty(user.Address) ? "" : user.Address + ", ")@(user.City ?? "Gujarat")</span>
                             </div>
@@ -133,41 +145,157 @@
                 </div>
             </div>
 
-            <!-- Right Quick Stats & Controls -->
-            <div class="col-md-5">
-                <div class="d-flex flex-wrap align-items-center justify-content-md-end gap-2">
-                    <div class="text-md-end me-2">
-                        <small class="text-muted d-block" style="font-size: 0.72rem;">MEMBER SINCE</small>
-                        <span class="fw-bold text-dark small">@user.CreatedAt.ToString("MMMM dd, yyyy")</span>
+            <!-- Right Controls Bar -->
+            <div class="col-lg-5">
+                <div class="d-flex flex-column align-items-lg-end gap-3">
+                    <div class="text-lg-end">
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">Registered On</small>
+                        <span class="fw-bold text-dark fs-6">@user.CreatedAt.ToString("MMMM dd, yyyy")</span>
                     </div>
 
-                    <!-- Block / Unblock Button -->
-                    <form asp-action="ToggleBlockUser" method="post" class="d-inline m-0">
-                        <input type="hidden" name="id" value="@user.Id" />
-                        @if (user.IsBlocked)
-                        {
-                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold" onclick="return confirm('Unblock this user?');">
-                                <i class="bi bi-unlock-fill me-1"></i> Unblock Account
-                            </button>
-                        }
-                        else
-                        {
-                            <button type="submit" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-3 py-1.5 fw-bold" onclick="return confirm('Block this user?');">
-                                <i class="bi bi-lock-fill me-1"></i> Block Account
-                            </button>
-                        }
-                    </form>
+                    <div class="d-flex align-items-center gap-2 flex-wrap justify-content-lg-end">
+                        <!-- Block / Unblock Button -->
+                        <form asp-action="ToggleBlockUser" method="post" class="d-inline m-0">
+                            <input type="hidden" name="id" value="@user.Id" />
+                            @if (user.IsBlocked)
+                            {
+                                <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm" onclick="return confirm('Unblock this user?');">
+                                    <i class="bi bi-unlock-fill me-1"></i> Unblock Account
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-3 py-1.5 fw-bold shadow-sm" onclick="return confirm('Block this user?');">
+                                    <i class="bi bi-lock-fill me-1"></i> Block Account
+                                </button>
+                            }
+                        </form>
 
-                    <!-- Delete Button -->
-                    <form asp-action="DeleteUser" method="post" class="d-inline m-0" onsubmit="return confirm('PERMANENTLY DELETE user @user.Email? This action cannot be undone.');">
-                        <input type="hidden" name="id" value="@user.Id" />
-                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1.5 fw-bold">
-                            <i class="bi bi-trash3-fill me-1"></i> Delete
-                        </button>
-                    </form>
+                        <!-- Delete Button -->
+                        <form asp-action="DeleteUser" method="post" class="d-inline m-0" onsubmit="return confirm('PERMANENTLY DELETE user @user.Email? This action cannot be undone.');">
+                            <input type="hidden" name="id" value="@user.Id" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1.5 fw-bold shadow-sm">
+                                <i class="bi bi-trash3-fill me-1"></i> Delete
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- 4 KPI Stat Metric Cards -->
+    <div class="row g-3 mb-4">
+        @if (isFarmer)
+        {
+            <!-- 1. Total Settled Payouts -->
+            <div class="col-xl-3 col-sm-6">
+                <div class="user-stat-card">
+                    <div class="user-stat-icon-wrap" style="background: rgba(21, 128, 61, 0.12); color: #15803d;">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Settled Payouts</small>
+                        <h4 class="fw-extrabold text-success mb-0 fs-5">₹@Model.TotalSpentOrEarned.ToString("N2")</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Listed Crops -->
+            <div class="col-xl-3 col-sm-6">
+                <div class="user-stat-card">
+                    <div class="user-stat-icon-wrap" style="background: rgba(13, 148, 136, 0.12); color: #0d9488;">
+                        <i class="bi bi-tree"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Listed Produce</small>
+                        <h4 class="fw-extrabold text-dark mb-0 fs-5">@Model.Products.Count Crops</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Completed Orders -->
+            <div class="col-xl-3 col-sm-6">
+                <div class="user-stat-card">
+                    <div class="user-stat-icon-wrap" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;">
+                        <i class="bi bi-check2-circle"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Fulfilled Orders</small>
+                        <h4 class="fw-extrabold text-dark mb-0 fs-5">@completedOrdersCount Orders</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. KYC Status -->
+            <div class="col-xl-3 col-sm-6">
+                <div class="user-stat-card">
+                    <div class="user-stat-icon-wrap" style="background: @(user.IsApprovedByAdmin ? "rgba(22, 163, 74, 0.12)" : "rgba(217, 119, 6, 0.12)"); color: @(user.IsApprovedByAdmin ? "#16a34a" : "#d97706");">
+                        <i class="bi @(user.IsApprovedByAdmin ? "bi-shield-check" : "bi-hourglass-split")"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">KYC Verification</small>
+                        <h4 class="fw-extrabold @(user.IsApprovedByAdmin ? "text-success" : "text-warning") mb-0 fs-6">
+                            @(user.IsApprovedByAdmin ? "7/12 Verified" : "Pending Review")
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- 1. Total Spend -->
+            <div class="col-xl-3 col-sm-6">
+                <div class="user-stat-card">
+                    <div class="user-stat-icon-wrap" style="background: rgba(21, 128, 61, 0.12); color: #15803d;">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Total Spend</small>
+                        <h4 class="fw-extrabold text-success mb-0 fs-5">₹@Model.TotalSpentOrEarned.ToString("N2")</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Total Orders -->
+            <div class="col-xl-3 col-sm-6">
+                <div class="user-stat-card">
+                    <div class="user-stat-icon-wrap" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;">
+                        <i class="bi bi-bag-check"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Total Purchases</small>
+                        <h4 class="fw-extrabold text-dark mb-0 fs-5">@Model.Orders.Count Orders</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Completed Deliveries -->
+            <div class="col-xl-3 col-sm-6">
+                <div class="user-stat-card">
+                    <div class="user-stat-icon-wrap" style="background: rgba(13, 148, 136, 0.12); color: #0d9488;">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Settled Deliveries</small>
+                        <h4 class="fw-extrabold text-dark mb-0 fs-5">@completedOrdersCount Completed</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Active / In Transit -->
+            <div class="col-xl-3 col-sm-6">
+                <div class="user-stat-card">
+                    <div class="user-stat-icon-wrap" style="background: rgba(245, 158, 11, 0.12); color: #d97706;">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Active Orders</small>
+                        <h4 class="fw-extrabold text-dark mb-0 fs-5">@activeOrdersCount In-Progress</h4>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 
     <!-- Farmer Specific: 7/12 KYC Document & Bank Details Row -->
@@ -176,85 +304,92 @@
         <div class="row g-4 mb-4">
             <!-- 7/12 Satbara Document Proof -->
             <div class="col-lg-6">
-                <div class="bg-white rounded-4 shadow-sm border p-4 h-100 d-flex flex-column justify-content-between">
+                <div class="user-info-card h-100 d-flex flex-column justify-content-between">
                     <div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="user-info-header">
                             <h5 class="fw-bold text-dark mb-0"><i class="bi bi-file-earmark-check-fill text-success me-2"></i>7/12 Satbara &amp; KYC Proof</h5>
                             <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 fw-bold px-2.5 py-1 rounded-pill">
                                 @(user.KycDocumentType ?? "7/12 (Satbara)")
                             </span>
                         </div>
 
-                        <div class="p-2 border rounded-3 bg-light text-center d-flex align-items-center justify-content-center overflow-hidden mb-3" style="min-height: 260px; max-height: 340px;">
-                            @if (!string.IsNullOrEmpty(user.KycDocumentPath))
-                            {
-                                @if (user.KycDocumentPath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                        <div class="user-info-body">
+                            <div class="p-2 border rounded-3 bg-light text-center d-flex align-items-center justify-content-center overflow-hidden mb-3" style="min-height: 260px; max-height: 340px;">
+                                @if (!string.IsNullOrEmpty(user.KycDocumentPath))
                                 {
-                                    <iframe src="@user.KycDocumentPath" class="w-100" style="height: 320px; border: none;"></iframe>
+                                    @if (user.KycDocumentPath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <iframe src="@user.KycDocumentPath" class="w-100" style="height: 320px; border: none;"></iframe>
+                                    }
+                                    else
+                                    {
+                                        <img src="@user.KycDocumentPath" class="img-fluid rounded shadow-sm" alt="7/12 Satbara Document" style="max-height: 310px; object-fit: contain;" />
+                                    }
                                 }
                                 else
                                 {
-                                    <img src="@user.KycDocumentPath" class="img-fluid rounded shadow-sm" alt="7/12 Satbara Document" style="max-height: 310px; object-fit: contain;" />
+                                    <div class="text-muted p-4">
+                                        <i class="bi bi-file-earmark-x display-4 text-secondary opacity-50 d-block mb-2"></i>
+                                        <p class="small mb-0">No document uploaded yet</p>
+                                    </div>
                                 }
-                            }
-                            else
-                            {
-                                <div class="text-muted p-4">
-                                    <i class="bi bi-file-earmark-x display-4 text-secondary opacity-50 d-block mb-2"></i>
-                                    <p class="small mb-0">No document uploaded yet</p>
-                                </div>
-                            }
+                            </div>
                         </div>
                     </div>
 
                     @if (!string.IsNullOrEmpty(user.KycDocumentPath))
                     {
-                        <a href="@user.KycDocumentPath" target="_blank" class="btn btn-outline-success rounded-pill fw-bold w-100 py-2 shadow-sm">
-                            <i class="bi bi-arrows-fullscreen me-1"></i> Open / Download Original Document
-                        </a>
+                        <div class="px-4 pb-4">
+                            <a href="@user.KycDocumentPath" target="_blank" class="btn btn-outline-success rounded-pill fw-bold w-100 py-2 shadow-sm">
+                                <i class="bi bi-arrows-fullscreen me-1"></i> Open / Download Original Document
+                            </a>
+                        </div>
                     }
                 </div>
             </div>
 
             <!-- Bank & Payout Details -->
             <div class="col-lg-6">
-                <div class="bg-white rounded-4 shadow-sm border p-4 h-100 d-flex flex-column justify-content-between">
+                <div class="user-info-card h-100 d-flex flex-column justify-content-between">
                     <div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="user-info-header">
                             <h5 class="fw-bold text-dark mb-0"><i class="bi bi-bank text-primary me-2"></i>Bank Account &amp; Payout Setup</h5>
                             <span class="badge @(user.IsApprovedByAdmin ? "bg-success" : "bg-warning text-dark") fw-bold px-2.5 py-1 rounded-pill">
                                 @(user.IsApprovedByAdmin ? "Verified Bank" : "Pending Verification")
                             </span>
                         </div>
 
-                        <div class="row g-3 mb-3">
-                            <div class="col-6">
-                                <div class="p-3 bg-light rounded-3 border">
-                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Bank Name</small>
-                                    <span class="fw-bold text-dark fs-6">@(string.IsNullOrEmpty(user.BankName) ? "Not Provided" : user.BankName)</span>
+                        <div class="user-info-body">
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <div class="p-3 bg-light rounded-3 border">
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Bank Name</small>
+                                        <span class="fw-bold text-dark fs-6">@(string.IsNullOrEmpty(user.BankName) ? "Not Provided" : user.BankName)</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="p-3 bg-light rounded-3 border">
-                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Account Number</small>
-                                    <span class="fw-bold text-success font-monospace fs-6">@(string.IsNullOrEmpty(user.BankAccountNumber) ? "Not Provided" : user.BankAccountNumber)</span>
+                                <div class="col-6">
+                                    <div class="p-3 bg-light rounded-3 border">
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Account Number</small>
+                                        <span class="fw-bold text-success font-monospace fs-6">@(string.IsNullOrEmpty(user.BankAccountNumber) ? "Not Provided" : user.BankAccountNumber)</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="p-3 bg-light rounded-3 border">
-                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">IFSC Code</small>
-                                    <span class="fw-bold text-dark font-monospace fs-6">@(string.IsNullOrEmpty(user.BankIfscCode) ? "Not Provided" : user.BankIfscCode)</span>
+                                <div class="col-6">
+                                    <div class="p-3 bg-light rounded-3 border">
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">IFSC Code</small>
+                                        <span class="fw-bold text-dark font-monospace fs-6">@(string.IsNullOrEmpty(user.BankIfscCode) ? "Not Provided" : user.BankIfscCode)</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="p-3 bg-light rounded-3 border">
-                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">UPI Handle</small>
-                                    <span class="fw-bold text-dark font-monospace fs-6">@(string.IsNullOrEmpty(user.UpiId) ? "None" : user.UpiId)</span>
+                                <div class="col-6">
+                                    <div class="p-3 bg-light rounded-3 border">
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">UPI Handle</small>
+                                        <span class="fw-bold text-dark font-monospace fs-6">@(string.IsNullOrEmpty(user.UpiId) ? "None" : user.UpiId)</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Summary Earnings -->
+                    <div class="px-4 pb-4">
                         <div class="p-3 bg-success bg-opacity-10 rounded-3 border border-success border-opacity-25 d-flex justify-content-between align-items-center">
                             <div>
                                 <small class="text-success fw-bold text-uppercase d-block" style="font-size: 0.70rem;">Total Completed Payouts</small>
@@ -262,7 +397,7 @@
                             </div>
                             <div class="text-end">
                                 <small class="text-muted d-block" style="font-size: 0.70rem;">FULFILLED ORDERS</small>
-                                <span class="fw-bold text-dark fs-5">@Model.TotalCompletedOrders</span>
+                                <span class="fw-bold text-dark fs-5">@completedOrdersCount</span>
                             </div>
                         </div>
                     </div>
@@ -271,39 +406,125 @@
         </div>
 
         <!-- Listed Crop Produce Table -->
-        <div class="bg-white rounded-4 shadow-sm border p-4 mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="user-info-card mb-4">
+            <div class="user-info-header">
                 <h5 class="fw-bold text-dark mb-0"><i class="bi bi-tree text-success me-2"></i>Listed Farm Produce (@Model.Products.Count)</h5>
             </div>
 
-            @if (Model.Products.Any())
+            <div class="user-info-body p-0">
+                @if (Model.Products.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small text-uppercase">
+                                <tr>
+                                    <th class="ps-4">Crop Name</th>
+                                    <th>Category</th>
+                                    <th>Direct Price (₹)</th>
+                                    <th>Stock Level</th>
+                                    <th class="text-end pe-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var prod in Model.Products)
+                                {
+                                    <tr>
+                                        <td class="ps-4"><strong class="text-dark">@prod.Name</strong></td>
+                                        <td><span class="badge bg-light text-dark border">@(prod.Category?.Name ?? "Produce")</span></td>
+                                        <td class="fw-bold text-success">₹@prod.Price.ToString("N2")</td>
+                                        <td>
+                                            <span class="badge @(prod.StockQuantity > 0 ? "bg-success bg-opacity-10 text-success" : "bg-danger bg-opacity-10 text-danger") fw-bold px-2.5 py-1 rounded-pill">
+                                                @prod.StockQuantity units
+                                            </span>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <a asp-controller="Product" asp-action="Details" asp-route-id="@prod.Id" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 fw-bold" target="_blank">
+                                                <i class="bi bi-eye me-1"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-basket display-5 d-block mb-2 text-secondary opacity-50"></i>
+                        <p class="mb-0 fw-semibold">No products listed by this farmer yet.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Orders Feed (For both Farmers and Customers) -->
+    <div class="user-info-card mb-5">
+        <div class="user-info-header">
+            <h5 class="fw-bold text-dark mb-0">
+                <i class="bi bi-receipt text-primary me-2"></i>
+                @(isFarmer ? "Fulfillment & Orders Received" : "Purchase & Order History") (@Model.Orders.Count)
+            </h5>
+        </div>
+
+        <div class="user-info-body p-0">
+            @if (Model.Orders.Any())
             {
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle border rounded-3 overflow-hidden mb-0">
+                    <table class="table table-hover align-middle mb-0">
                         <thead class="table-light small text-uppercase">
                             <tr>
-                                <th>Crop Name</th>
-                                <th>Category</th>
-                                <th>Direct Price (₹)</th>
-                                <th>Stock (Units)</th>
-                                <th class="text-end">Action</th>
+                                <th class="ps-4">Order ID</th>
+                                <th>Date</th>
+                                <th>Gross Amount</th>
+                                <th>Status</th>
+                                <th>Transport &amp; Bilty</th>
+                                <th class="text-end pe-4">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var prod in Model.Products)
+                            @foreach (var order in Model.Orders)
                             {
                                 <tr>
-                                    <td><strong class="text-dark">@prod.Name</strong></td>
-                                    <td><span class="badge bg-light text-dark border">@(prod.Category?.Name ?? "Produce")</span></td>
-                                    <td class="fw-bold text-success">₹@prod.Price.ToString("N2")</td>
-                                    <td>
-                                        <span class="badge @(prod.StockQuantity > 0 ? "bg-success bg-opacity-10 text-success" : "bg-danger bg-opacity-10 text-danger") fw-bold px-2.5 py-1 rounded-pill">
-                                            @prod.StockQuantity units
-                                        </span>
+                                    <td class="ps-4">
+                                        <strong class="text-dark font-monospace">#@order.Id.ToString("D5")</strong>
                                     </td>
-                                    <td class="text-end">
-                                        <a asp-controller="Product" asp-action="Details" asp-route-id="@prod.Id" class="btn btn-xs btn-outline-secondary rounded-pill px-2.5 py-1" target="_blank">
-                                            <i class="bi bi-eye"></i> View
+                                    <td class="small text-muted">@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                                    <td class="fw-extrabold text-success fs-6">₹@order.TotalAmount.ToString("N2")</td>
+                                    <td>
+                                        @if (order.Status.Contains("Delivered") || order.Status.Contains("Settled"))
+                                        {
+                                            <span class="badge bg-success rounded-pill px-3 py-1.5 fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Delivered &amp; Settled</span>
+                                        }
+                                        else if (order.Status == "In Transit")
+                                        {
+                                            <span class="badge bg-primary rounded-pill px-3 py-1.5 fw-bold"><i class="bi bi-truck me-1"></i> In Transit</span>
+                                        }
+                                        else if (order.Status == "Cancelled" || order.Status == "Declined")
+                                        {
+                                            <span class="badge bg-danger rounded-pill px-3 py-1.5 fw-bold">@order.Status</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 fw-bold">@order.Status</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(order.BiltyImageUrl))
+                                        {
+                                            <a href="@order.BiltyImageUrl" target="_blank" class="badge bg-light text-primary border text-decoration-none px-2.5 py-1">
+                                                <i class="bi bi-file-earmark-image me-1"></i>Bilty #@(order.BiltyNumber ?? "Proof")
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">—</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <a asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm d-inline-flex align-items-center gap-1">
+                                            <i class="bi bi-eye"></i> View Order
                                         </a>
                                     </td>
                                 </tr>
@@ -314,92 +535,12 @@
             }
             else
             {
-                <div class="text-center text-muted py-4 bg-light rounded-3 border">
-                    <i class="bi bi-basket display-6 d-block mb-1 text-secondary opacity-50"></i>
-                    No products listed by this farmer yet.
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-bag-x display-5 d-block mb-2 text-secondary opacity-50"></i>
+                    <p class="mb-0 fw-semibold">No transaction records found for this account.</p>
                 </div>
             }
         </div>
-    }
-
-    <!-- Orders Feed (For both Farmers and Customers) -->
-    <div class="bg-white rounded-4 shadow-sm border p-4 mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold text-dark mb-0">
-                <i class="bi bi-receipt text-primary me-2"></i>
-                @(isFarmer ? "Fulfillment & Orders Received" : "Purchase & Order History") (@Model.Orders.Count)
-            </h5>
-        </div>
-
-        @if (Model.Orders.Any())
-        {
-            <div class="table-responsive">
-                <table class="table table-hover align-middle border rounded-3 overflow-hidden mb-0">
-                    <thead class="table-light small text-uppercase">
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Date</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Transport &amp; Bilty</th>
-                            <th class="text-end">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var order in Model.Orders)
-                        {
-                            <tr>
-                                <td><strong>#@order.Id.ToString("D5")</strong></td>
-                                <td class="small text-muted">@order.OrderDate.ToString("MMM dd, yyyy")</td>
-                                <td class="fw-bold text-success">₹@order.TotalAmount.ToString("N2")</td>
-                                <td>
-                                    @if (order.Status.Contains("Delivered") || order.Status.Contains("Settled"))
-                                    {
-                                        <span class="badge bg-success rounded-pill px-2.5 py-1">Delivered &amp; Settled 🟢</span>
-                                    }
-                                    else if (order.Status == "In Transit")
-                                    {
-                                        <span class="badge bg-primary rounded-pill px-2.5 py-1">In Transit 🚚</span>
-                                    }
-                                    else if (order.Status == "Cancelled" || order.Status == "Declined")
-                                    {
-                                        <span class="badge bg-danger rounded-pill px-2.5 py-1">@order.Status</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1">@order.Status</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (!string.IsNullOrEmpty(order.BiltyImageUrl))
-                                    {
-                                        <a href="@order.BiltyImageUrl" target="_blank" class="badge bg-light text-primary border text-decoration-none">
-                                            <i class="bi bi-file-earmark-image me-1"></i>Bilty #@(order.BiltyNumber ?? "Proof")
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted small">—</span>
-                                    }
-                                </td>
-                                <td class="text-end">
-                                    <a asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold">
-                                        <i class="bi bi-eye"></i> View Order
-                                    </a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-        else
-        {
-            <div class="text-center text-muted py-4 bg-light rounded-3 border">
-                <i class="bi bi-bag-x display-6 d-block mb-1 text-secondary opacity-50"></i>
-                No transaction records found for this account.
-            </div>
-        }
     </div>
 
 </div>
