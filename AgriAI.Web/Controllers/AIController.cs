@@ -1,8 +1,10 @@
 using AgriAI.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AgriAI.Web.Controllers
 {
+    [Authorize]
     public class AIController : Controller
     {
         // GET: /AI/CropPredictor

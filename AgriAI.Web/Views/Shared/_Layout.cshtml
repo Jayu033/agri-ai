@@ -93,7 +93,7 @@
                 </a>
             </div>
 
-            <!-- Middle Navigation Links (Clean & Essential with Dynamic Active Highlighting) -->
+            <!-- Middle Navigation Links (Role-Specific Dynamic Links) -->
             <ul class="gov-nav-menu d-none d-lg-flex">
                 <li>
                     <a asp-controller="Home" asp-action="Index" class="gov-nav-link @(curCtrl == "Home" && curAct == "Index" ? "active" : "")">
@@ -111,16 +111,55 @@
                         Shop Products
                     </a>
                 </li>
-                <li>
-                    <a asp-controller="AI" asp-action="CropPredictor" class="gov-nav-link text-success fw-bold @(curCtrl == "AI" && curAct == "CropPredictor" ? "active" : "")">
-                        <i class="bi bi-cpu"></i> AI Crop Predictor
-                    </a>
-                </li>
-                <li>
-                    <a asp-controller="AI" asp-action="PricePredictor" class="gov-nav-link @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
-                        <i class="bi bi-stars"></i> AI Price Predictor
-                    </a>
-                </li>
+
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    if (User.IsInRole("Farmer"))
+                    {
+                        <li>
+                            <a asp-controller="AI" asp-action="CropPredictor" class="gov-nav-link text-success fw-bold @(curCtrl == "AI" && curAct == "CropPredictor" ? "active" : "")">
+                                <i class="bi bi-cpu"></i> Crop Prediction
+                            </a>
+                        </li>
+                    }
+                    else if (User.IsInRole("Customer"))
+                    {
+                        <li>
+                            <a asp-controller="AI" asp-action="PricePredictor" class="gov-nav-link text-success fw-bold @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
+                                <i class="bi bi-stars"></i> Price Prediction
+                            </a>
+                        </li>
+                    }
+                    else if (User.IsInRole("Admin"))
+                    {
+                        <li>
+                            <a asp-controller="AI" asp-action="CropPredictor" class="gov-nav-link text-success fw-bold @(curCtrl == "AI" && curAct == "CropPredictor" ? "active" : "")">
+                                <i class="bi bi-cpu"></i> Crop Prediction
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="AI" asp-action="PricePredictor" class="gov-nav-link @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
+                                <i class="bi bi-stars"></i> Price Prediction
+                            </a>
+                        </li>
+                    }
+                }
+                else
+                {
+                    <li>
+                        <a asp-controller="AI" asp-action="CropPredictor" class="gov-nav-link text-muted d-inline-flex align-items-center gap-1" title="Login Required to access AI Crop Predictor">
+                            <i class="bi bi-lock-fill text-secondary" style="font-size: 0.78rem;"></i>
+                            <span>AI Crop Predictor</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="AI" asp-action="PricePredictor" class="gov-nav-link text-muted d-inline-flex align-items-center gap-1" title="Login Required to access AI Price Predictor">
+                            <i class="bi bi-lock-fill text-secondary" style="font-size: 0.78rem;"></i>
+                            <span>AI Price Predictor</span>
+                        </a>
+                    </li>
+                }
+
                 <li>
                     <a asp-controller="Home" asp-action="Helpdesk" class="gov-nav-link @(curCtrl == "Home" && curAct == "Helpdesk" ? "active" : "")">
                         Helpdesk
@@ -255,20 +294,46 @@
 
             <p class="sidebar-section-title">AI Intelligence</p>
             <ul class="menu-list">
-                <li class="menu-item">
-                    <a asp-controller="AI" asp-action="CropPredictor" class="menu-link ai-highlight-link @(curCtrl == "AI" && curAct == "CropPredictor" ? "active" : "")">
-                        <span class="menu-icon-box"><i class="bi bi-cpu"></i></span>
-                        <span>AgriAI Crop Predictor</span>
-                        <span class="ai-badge">NEW</span>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a asp-controller="AI" asp-action="PricePredictor" class="menu-link @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
-                        <span class="menu-icon-box"><i class="bi bi-stars"></i></span>
-                        <span>AI Price Predictor</span>
-                        <span class="ai-badge">AI PRO</span>
-                    </a>
-                </li>
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    if (User.IsInRole("Farmer") || User.IsInRole("Admin"))
+                    {
+                        <li class="menu-item">
+                            <a asp-controller="AI" asp-action="CropPredictor" class="menu-link ai-highlight-link @(curCtrl == "AI" && curAct == "CropPredictor" ? "active" : "")">
+                                <span class="menu-icon-box"><i class="bi bi-cpu"></i></span>
+                                <span>Crop Prediction</span>
+                                <span class="ai-badge">FARMER</span>
+                            </a>
+                        </li>
+                    }
+                    if (User.IsInRole("Customer") || User.IsInRole("Admin"))
+                    {
+                        <li class="menu-item">
+                            <a asp-controller="AI" asp-action="PricePredictor" class="menu-link @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
+                                <span class="menu-icon-box"><i class="bi bi-stars"></i></span>
+                                <span>Price Prediction</span>
+                                <span class="ai-badge">MARKET</span>
+                            </a>
+                        </li>
+                    }
+                }
+                else
+                {
+                    <li class="menu-item">
+                        <a asp-controller="AI" asp-action="CropPredictor" class="menu-link text-muted">
+                            <span class="menu-icon-box"><i class="bi bi-lock-fill"></i></span>
+                            <span>AI Crop Predictor</span>
+                            <span class="badge bg-secondary ms-auto" style="font-size: 0.65rem;">LOCK</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a asp-controller="AI" asp-action="PricePredictor" class="menu-link text-muted">
+                            <span class="menu-icon-box"><i class="bi bi-lock-fill"></i></span>
+                            <span>AI Price Predictor</span>
+                            <span class="badge bg-secondary ms-auto" style="font-size: 0.65rem;">LOCK</span>
+                        </a>
+                    </li>
+                }
             </ul>
 
             <p class="sidebar-section-title">Account & Info</p>
