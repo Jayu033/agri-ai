@@ -484,23 +484,26 @@
 
                         <!-- Escrow Orders Filter Pills & Live Search Bar with Proper Spacing -->
                         <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-                            <!-- Filter Pill Buttons with Clear Margins -->
-                            <div class="d-flex align-items-center gap-2.5 flex-wrap" id="escrowFilterPills">
-                                <button type="button" class="btn btn-sm btn-dark rounded-pill px-3.5 py-2 fw-bold shadow-xs active escrow-filter-btn" style="font-size: 0.82rem;" onclick="filterEscrowTable('all', this)">
-                                    <i class="bi bi-collection-fill me-1.5"></i> All Escrow Orders (@allEscrowOrders.Count)
+                            <!-- Filter Pill Buttons with Clear Margins and Non-colliding Classes -->
+                            <div class="escrow-filter-pills-wrap" id="escrowFilterPills">
+                                <button type="button" class="escrow-pill-btn active" onclick="filterEscrowTable('all', this)">
+                                    <i class="bi bi-collection-fill"></i>
+                                    <span>All Escrow Orders (@allEscrowOrders.Count)</span>
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-warning text-dark bg-white border rounded-pill px-3.5 py-2 fw-bold shadow-xs escrow-filter-btn" style="font-size: 0.82rem;" onclick="filterEscrowTable('pending', this)">
-                                    <i class="bi bi-hourglass-split text-warning me-1.5"></i> Awaiting Payout (@liveAwaitingAuditCount)
+                                <button type="button" class="escrow-pill-btn" onclick="filterEscrowTable('pending', this)">
+                                    <i class="bi bi-hourglass-split text-warning"></i>
+                                    <span>Awaiting Payout (@liveAwaitingAuditCount)</span>
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-success text-dark bg-white border rounded-pill px-3.5 py-2 fw-bold shadow-xs escrow-filter-btn" style="font-size: 0.82rem;" onclick="filterEscrowTable('settled', this)">
-                                    <i class="bi bi-check-circle-fill text-success me-1.5"></i> Settled &amp; Paid (@settledEscrowOrders.Count)
+                                <button type="button" class="escrow-pill-btn" onclick="filterEscrowTable('settled', this)">
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    <span>Settled &amp; Paid (@settledEscrowOrders.Count)</span>
                                 </button>
                             </div>
 
                             <!-- Live Search Input -->
                             <div class="position-relative" style="min-width: 320px;">
                                 <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3.5 text-muted"></i>
-                                <input type="text" id="escrowSearchInput" class="form-control rounded-pill ps-5 bg-white border shadow-xs" style="padding-top: 8px; padding-bottom: 8px;" placeholder="Search by Order #, Bilty LR, Farmer..." onkeyup="searchEscrowTable()" />
+                                <input type="text" id="escrowSearchInput" class="form-control rounded-pill ps-5 bg-white border shadow-xs" style="padding-top: 8.5px; padding-bottom: 8.5px;" placeholder="Search by Order #, Bilty LR, Farmer..." onkeyup="searchEscrowTable()" />
                             </div>
                         </div>
 
@@ -545,7 +548,7 @@
                                         <tr class="escrow-order-row" data-filter-type="@rowFilterType" data-search-text="#@order.Id.ToString("D5") @fName @fBank @(order.BiltyNumber ?? "") @(order.CargoServiceName ?? "")">
                                             <!-- Order ID & Date -->
                                             <td class="ps-3.5">
-                                                <a asp-action="OrderDetails" asp-route-id="@order.Id" class="text-decoration-none fw-bold text-dark d-block">
+                                                <a asp-action="OrderDetails" asp-route-id="@order.Id" asp-route-from="escrow" class="text-decoration-none fw-bold text-dark d-block">
                                                     #@order.Id.ToString("D5")
                                                 </a>
                                                 <small class="text-muted" style="font-size: 0.72rem;">@order.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</small>
@@ -631,8 +634,8 @@
                                                 }
                                                 else
                                                 {
-                                                    <a asp-controller="Admin" asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-xs btn-outline-secondary rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.75rem;">
-                                                        <i class="bi bi-eye me-1"></i> Audit
+                                                    <a asp-controller="Admin" asp-action="OrderDetails" asp-route-id="@order.Id" asp-route-from="escrow" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1.5 fw-bold shadow-xs" style="font-size: 0.78rem;">
+                                                        <i class="bi bi-shield-shaded me-1 text-primary"></i> Audit
                                                     </a>
                                                 }
                                             </td>
@@ -1272,13 +1275,11 @@
     
         // Escrow Table Live Filter & Search
         function filterEscrowTable(filterType, element) {
-            document.querySelectorAll('#escrowFilterPills .escrow-filter-btn').forEach(function(btn) {
-                btn.classList.remove('btn-dark', 'active');
-                btn.classList.add('bg-white');
+            document.querySelectorAll('#escrowFilterPills .escrow-pill-btn').forEach(function(btn) {
+                btn.classList.remove('active');
             });
             if (element) {
-                element.classList.remove('bg-white');
-                element.classList.add('btn-dark', 'active');
+                element.classList.add('active');
             }
 
             const rows = document.querySelectorAll('#escrowModerationTable tbody .escrow-order-row');

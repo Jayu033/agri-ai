@@ -2,7 +2,11 @@
 @using AgriAI.Infrastructure.Identity
 
 @{
-    ViewData["Title"] = $"Order #{Model.Id:D5} - Executive Inspection";
+    string from = (Context.Request.Query["from"].ToString() ?? "").ToLower();
+    string returnUrl = Context.Request.Query["returnUrl"].ToString();
+
+    bool isEscrowAudit = from == "escrow" || from == "bilty";
+    ViewData["Title"] = isEscrowAudit ? $"Order #{Model.Id:D5} - Financial Escrow & Bilty Audit" : $"Order #{Model.Id:D5} - Details & Moderation";
     
     var farmerUser = ViewBag.FarmerUser as ApplicationUser;
     var customerUser = ViewBag.CustomerUser as ApplicationUser;
@@ -16,6 +20,7 @@
     var farmerPhone = !string.IsNullOrEmpty(farmerUser?.PhoneNumber) ? farmerUser.PhoneNumber : "+91 97245 60047";
     var farmerLocation = !string.IsNullOrEmpty(farmerUser?.City) ? $"{farmerUser.City}, {farmerUser.State ?? "Gujarat"}" : "Gujarat Agricultural Farm Location";
     var farmerBank = !string.IsNullOrEmpty(farmerUser?.BankName) ? $"{farmerUser.BankName} (A/C: {farmerUser.BankAccountNumber})" : "Primary Bank Account";
+    var farmerIfsc = !string.IsNullOrEmpty(farmerUser?.BankIfscCode) ? farmerUser.BankIfscCode : "BARB0RAJKOT";
 
     var customerName = customerUser != null 
         ? (!string.IsNullOrEmpty(customerUser.FirstName) || !string.IsNullOrEmpty(customerUser.LastName) 
@@ -35,6 +40,26 @@
     bool step3_Dispatched = (Model.Status == "In Transit" || Model.Status.Contains("Delivered") || Model.Status.Contains("Settled") || !string.IsNullOrEmpty(Model.BiltyImageUrl)) && !isCancelled;
     bool step4_OtpVerified = (Model.Status.Contains("Delivered") || Model.Status.Contains("Settled") || Model.Status == "Ready for Pickup") && !isCancelled;
     bool step5_Settled = (Model.Status.Contains("Delivered") || Model.Status.Contains("Settled") || Model.AdminApprovedPayout) && !isCancelled;
+
+    // Dynamic Contextual Back Navigation
+    string backUrl = "/Admin/Dashboard?tab=orders";
+    string backLabel = "Back to Orders";
+
+    if (!string.IsNullOrEmpty(returnUrl))
+    {
+        backUrl = returnUrl;
+        backLabel = "Back";
+    }
+    else if (isEscrowAudit)
+    {
+        backUrl = "/Admin/Dashboard?tab=escrow";
+        backLabel = "Back to Escrow & Payouts";
+    }
+    else if (from == "users")
+    {
+        backUrl = "/Admin/Dashboard?tab=users";
+        backLabel = "Back to Farmer & Users";
+    }
 }
 
 @section Styles {
@@ -129,7 +154,16 @@
     <div class="admin-header-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 shadow-sm">
         <div>
             <div class="d-flex align-items-center gap-3 flex-wrap">
-                <h2 class="fw-extrabold text-dark mb-0 fs-3">Order #@Model.Id.ToString("D5")</h2>
+                <h2 class="fw-extrabold text-dark mb-0 fs-3">
+                    @if (isEscrowAudit)
+                    {
+                        <span><i class="bi bi-shield-check text-success me-1.5"></i>Escrow &amp; Bilty Audit #@Model.Id.ToString("D5")</span>
+                    }
+                    else
+                    {
+                        <span>Order #@Model.Id.ToString("D5")</span>
+                    }
+                </h2>
                 
                 @if (isCancelled)
                 {
@@ -160,18 +194,68 @@
                     <i class="bi bi-calendar3 me-1"></i>@dateFormatted
                 </span>
             </div>
+            @if (isEscrowAudit)
+            {
+                <p class="text-muted small mb-0 mt-1">Audit transport bilty proof, inspect farmer banking destination, and authorize escrow payout release.</p>
+            }
         </div>
 
         <div class="d-flex align-items-center gap-2">
-            <a asp-action="Dashboard" asp-route-tab="orders" class="btn-back-custom shadow-sm">
+            <a href="@backUrl" class="btn-back-custom shadow-sm">
                 <i class="bi bi-arrow-left"></i>
-                <span>Back to Orders</span>
+                <span>@backLabel</span>
             </a>
             <button type="button" class="btn btn-outline-dark rounded-pill px-3.5 py-2 fw-bold small shadow-sm" onclick="window.print();">
                 <i class="bi bi-printer me-1"></i> Print Audit
             </button>
         </div>
     </div>
+
+    <!-- Specialized Top Escrow Moderation Box (When in Audit mode) -->
+    @if (isEscrowAudit)
+    {
+        <div class="p-4 rounded-4 border @(step5_Settled ? "border-success bg-white" : "border-primary") shadow-sm mb-4" style="@(step5_Settled ? "" : "background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);")">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle @(step5_Settled ? "bg-success" : "bg-primary") text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 52px; height: 52px; font-size: 1.5rem;">
+                        <i class="bi @(step5_Settled ? "bi-patch-check-fill" : "bi-shield-shaded")"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge @(step5_Settled ? "bg-success" : "bg-primary") fw-bold rounded-pill px-2.5 py-1" style="font-size: 0.70rem;">
+                                @(step5_Settled ? "ESCROW SETTLED 🟢" : "PAYOUT MODERATION ACTIVE")
+                            </span>
+                            <span class="text-muted small">Escrow Vault: <strong>₹@Model.TotalAmount.ToString("N2")</strong></span>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-0.5 mt-1">
+                            @(step5_Settled ? "Farmer Payout Released to Bank Account" : "Verify Bilty & Release Farmer Payout")
+                        </h5>
+                        <p class="text-muted small mb-0">
+                            Farmer: <strong>@farmerName</strong> &bull; Bank: <strong class="text-dark">@farmerBank</strong> &bull; IFSC: <code>@farmerIfsc</code>
+                        </p>
+                    </div>
+                </div>
+
+                <div>
+                    @if (Model.Status == "In Transit" && !Model.AdminApprovedPayout)
+                    {
+                        <form asp-controller="Admin" asp-action="ReleaseEscrowPayoutViaBilty" method="post" class="d-inline" onsubmit="return confirm('Confirm release of ₹@Model.TotalAmount to @farmerName bank account?');">
+                            <input type="hidden" name="orderId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-success rounded-pill px-4 py-2.5 fw-bold shadow-sm" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
+                                <i class="bi bi-shield-check me-1"></i> Release ₹@Model.TotalAmount.ToString("N2") Payout Now
+                            </button>
+                        </form>
+                    }
+                    else if (step5_Settled)
+                    {
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2 fw-bold">
+                            <i class="bi bi-check-all me-1"></i> Funds Credited to Farmer
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    }
 
     <!-- 1. Executive Lifecycle Progress Stepper (Single-Glance Order Status) -->
     <div class="bg-white rounded-4 border p-4 mb-4 shadow-sm">
