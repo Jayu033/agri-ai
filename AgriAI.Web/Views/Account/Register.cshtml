@@ -86,7 +86,7 @@
 
                     <!-- Compact Action Buttons -->
                     <div class="d-flex align-items-center gap-1.5">
-                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-2.5 py-1 shadow-sm d-inline-flex align-items-center gap-1" style="font-size: 0.76rem;" onclick="openLiveCameraModal()" title="Take Photo with Camera">
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-2.5 py-1 shadow-sm d-inline-flex align-items-center gap-1" style="font-size: 0.76rem;" data-bs-toggle="modal" data-bs-target="#cameraCaptureModal" onclick="openLiveCameraModal()" title="Take Photo with Camera">
                             <i class="bi bi-camera-fill"></i>
                             <span>Camera</span>
                         </button>
@@ -101,8 +101,9 @@
                         </button>
                     </div>
 
-                    <!-- Hidden Inputs for File Upload & Camera Base64 -->
+                    <!-- Hidden Inputs for File Upload, Native Camera & Camera Base64 -->
                     <input asp-for="ProfilePictureFile" type="file" id="profilePicInput" class="d-none" accept="image/*" onchange="previewUserAvatar(this)" />
+                    <input type="file" id="mobileCameraInput" class="d-none" accept="image/*" capture="user" onchange="previewUserAvatar(this)" />
                     <input asp-for="CapturedProfilePictureBase64" type="hidden" id="capturedPhotoInput" />
                 </div>
 
@@ -361,7 +362,7 @@
             <div class="modal-body p-3 p-md-4 text-center bg-light">
                 <!-- Camera Viewfinder Box -->
                 <div class="position-relative overflow-hidden rounded-4 shadow-sm bg-dark mx-auto" style="max-width: 360px; height: 270px;">
-                    <video id="cameraFeed" autoplay playsinline class="w-100 h-100" style="object-fit: cover; transform: scaleX(-1);"></video>
+                    <video id="cameraFeed" autoplay playsinline muted class="w-100 h-100" style="object-fit: cover; transform: scaleX(-1);"></video>
                     <canvas id="photoCanvas" class="w-100 h-100 d-none" style="object-fit: cover;"></canvas>
                     
                     <!-- Viewfinder Overlay Circle -->
@@ -372,7 +373,10 @@
                     <!-- Camera Error Notice -->
                     <div id="cameraErrorBox" class="position-absolute top-50 start-50 translate-middle w-100 px-3 d-none text-white text-center">
                         <i class="bi bi-camera-video-off display-6 text-danger mb-2 d-block"></i>
-                        <span class="small fw-semibold d-block" id="cameraErrorMessage">Camera permission denied or camera not found.</span>
+                        <span class="small fw-semibold d-block mb-2" id="cameraErrorMessage">Camera permission denied or camera not found.</span>
+                        <button type="button" class="btn btn-sm btn-light rounded-pill px-3 py-1 fw-bold shadow-sm" onclick="document.getElementById('mobileCameraInput').click(); if (cameraModal) cameraModal.hide();">
+                            <i class="bi bi-camera me-1"></i> Use Device Camera
+                        </button>
                     </div>
                 </div>
 
@@ -578,15 +582,25 @@
 
         function openLiveCameraModal() {
             if (!cameraModal && cameraModalEl) {
-                cameraModal = new bootstrap.Modal(cameraModalEl);
+                if (window.bootstrap && bootstrap.Modal) {
+                    cameraModal = bootstrap.Modal.getInstance(cameraModalEl) || new bootstrap.Modal(cameraModalEl);
+                }
             }
-            cameraModal.show();
-            startCameraStream();
+            if (cameraModal) {
+                cameraModal.show();
+            } else if (window.jQuery && cameraModalEl) {
+                $(cameraModalEl).modal('show');
+            }
         }
 
-        cameraModalEl?.addEventListener('hidden.bs.modal', function () {
-            stopCameraStream();
-        });
+        if (cameraModalEl) {
+            cameraModalEl.addEventListener('shown.bs.modal', function () {
+                startCameraStream();
+            });
+            cameraModalEl.addEventListener('hidden.bs.modal', function () {
+                stopCameraStream();
+            });
+        }
 
         async function startCameraStream() {
             const video = document.getElementById('cameraFeed');
@@ -605,23 +619,60 @@
             liveControls.classList.remove('d-none');
             previewControls.classList.add('d-none');
 
+            stopCameraStream();
+
             try {
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    cameraStream = await navigator.mediaDevices.getUserMedia({
-                        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    const legacyGetUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+                    if (legacyGetUserMedia) {
+                        navigator.mediaDevices = navigator.mediaDevices || {};
+                        navigator.mediaDevices.getUserMedia = function (constraints) {
+                            return new Promise(function (resolve, reject) {
+                                legacyGetUserMedia.call(navigator, constraints, resolve, reject);
+                            });
+                        };
+                    } else {
+                        throw new Error('Camera access is not supported by your browser or requires a secure context (HTTPS / localhost).');
+                    }
+                }
+
+                let stream = null;
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
                         audio: false
                     });
-                    video.srcObject = cameraStream;
-                    await video.play();
-                } else {
-                    throw new Error('Camera media devices not supported in this browser.');
+                } catch (e1) {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: true,
+                        audio: false
+                    });
                 }
+
+                cameraStream = stream;
+                video.srcObject = stream;
+                video.muted = true;
+                
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        video.play().then(resolve).catch(resolve);
+                    };
+                });
             } catch (err) {
-                console.error('Camera error:', err);
+                console.error('Camera stream error:', err);
                 video.classList.add('d-none');
                 overlay.classList.add('d-none');
                 errorBox.classList.remove('d-none');
-                errorMsg.textContent = 'Camera access unavailable. Please check browser permissions or use "Upload File".';
+
+                let message = 'Camera access was blocked or unavailable.';
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    message = 'Camera permission was denied. Please allow camera access in your browser.';
+                } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                    message = 'No webcam or camera device was found on this system.';
+                } else if (err.message) {
+                    message = err.message;
+                }
+                errorMsg.textContent = message;
                 liveControls.classList.add('d-none');
             }
         }
@@ -689,7 +740,11 @@
                 document.getElementById('photoStatusText').textContent = '📸 Live Camera snapshot captured successfully!';
 
                 stopCameraStream();
-                if (cameraModal) cameraModal.hide();
+                if (cameraModal) {
+                    cameraModal.hide();
+                } else if (window.jQuery && cameraModalEl) {
+                    $(cameraModalEl).modal('hide');
+                }
             }
         }
     </script>
