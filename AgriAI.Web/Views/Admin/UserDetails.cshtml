@@ -16,24 +16,6 @@
     <!-- Top Header Navigation Banner Card -->
     <div class="admin-header-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 shadow-sm">
         <div>
-            <!-- Breadcrumb Trail -->
-            <nav aria-label="breadcrumb" class="mb-2">
-                <ol class="breadcrumb mb-0 small fw-bold" style="font-size: 0.82rem;">
-                    <li class="breadcrumb-item">
-                        <a asp-action="Dashboard" asp-route-tab="overview" class="text-decoration-none text-muted">
-                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a asp-action="Dashboard" asp-route-tab="users" class="text-decoration-none text-muted">
-                            Farmer &amp; Users
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active text-success fw-bold" aria-current="page">
-                        @user.FullName
-                    </li>
-                </ol>
-            </nav>
             <h2 class="fw-extrabold text-dark mb-1 fs-3 d-flex align-items-center gap-2">
                 <i class="bi @(isFarmer ? "bi-tree-fill text-success" : "bi-person-badge-fill text-primary")"></i>
                 @(isFarmer ? "Farmer Profile & Farm Portfolio" : "Customer Profile & Order History")
