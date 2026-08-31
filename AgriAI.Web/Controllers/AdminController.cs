@@ -16,12 +16,18 @@ namespace AgriAI.Web.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public AdminController(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+        public AdminController(
+            IUnitOfWork unitOfWork, 
+            UserManager<ApplicationUser> userManager, 
+            ApplicationDbContext context,
+            IWebHostEnvironment webHostEnvironment)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public async Task<IActionResult> Dashboard()
@@ -244,13 +250,59 @@ namespace AgriAI.Web.Controllers
                 return RedirectToAction(nameof(Users), new { roleFilter = "Farmer" });
             }
 
-            user.IsApprovedByAdmin = false;
-            user.KycRejectionReason = string.IsNullOrWhiteSpace(reason) 
-                ? "Document verification failed. Please re-upload a clear 7/12 (Satbara) or Aadhaar document." 
-                : reason.Trim();
-            await _userManager.UpdateAsync(user);
+            var userName = user.UserName ?? user.Email;
 
-            TempData["SuccessMessage"] = $"Farmer '{user.UserName}' verification has been rejected with reason: '{user.KycRejectionReason}'.";
+            // 1. Delete physical KYC Document file from disk
+            if (!string.IsNullOrEmpty(user.KycDocumentPath))
+            {
+                try
+                {
+                    var kycFilePath = Path.Combine(_webHostEnvironment.WebRootPath, user.KycDocumentPath.TrimStart('/', '\\'));
+                    if (System.IO.File.Exists(kycFilePath))
+                    {
+                        System.IO.File.Delete(kycFilePath);
+                    }
+                }
+                catch { }
+            }
+
+            // 2. Delete physical Profile Picture file from disk
+            if (!string.IsNullOrEmpty(user.ProfilePicturePath) && !user.ProfilePicturePath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    var profileFilePath = Path.Combine(_webHostEnvironment.WebRootPath, user.ProfilePicturePath.TrimStart('/', '\\'));
+                    if (System.IO.File.Exists(profileFilePath))
+                    {
+                        System.IO.File.Delete(profileFilePath);
+                    }
+                }
+                catch { }
+            }
+
+            // 3. Remove any products created by this farmer if any
+            var farmerProducts = await _context.Products.Where(p => p.FarmerId == user.Id).ToListAsync();
+            if (farmerProducts.Any())
+            {
+                _context.Products.RemoveRange(farmerProducts);
+                await _context.SaveChangesAsync();
+            }
+
+            // 4. Completely delete user account record from database
+            var result = await _userManager.DeleteAsync(user);
+            if (result.Succeeded)
+            {
+                var rejectionText = string.IsNullOrWhiteSpace(reason) 
+                    ? "Incomplete / invalid 7/12 document" 
+                    : reason.Trim();
+
+                TempData["SuccessMessage"] = $"Farmer '{userName}' application rejected ({rejectionText}). All account data and uploaded documents have been completely cleared so the farmer can submit a fresh registration.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to completely delete rejected farmer: " + string.Join(", ", result.Errors.Select(e => e.Description));
+            }
+
             return RedirectToAction(nameof(Users), new { roleFilter = "Farmer" });
         }
 
