@@ -255,16 +255,11 @@
                             <!-- Actions Column -->
                             <td class="text-end pe-4">
                                 <div class="d-inline-flex gap-2 align-items-center">
-                                    @if (user.Role == "Farmer")
-                                    {
-                                        <!-- Review KYC Inspector Modal Button -->
-                                        <button type="button" class="@(user.IsApprovedByAdmin ? "btn-action-kyc" : "btn-action-kyc-review")" 
-                                                onclick="openKycReviewModal('@user.Id', '@user.FullName', '@user.Email', '@(user.City ?? "")', '@(user.Address ?? "")', '@(user.BankName ?? "")', '@(user.BankAccountNumber ?? "")', '@(user.BankIfscCode ?? "")', '@(user.UpiId ?? "")', '@(user.KycDocumentType ?? "7/12 (Satbara)")', '@(user.KycDocumentPath ?? "")', @(user.IsApprovedByAdmin ? "true" : "false"), '@(user.KycRejectionReason ?? "")', '@(user.ProfilePicturePath ?? "")')"
-                                                title="Inspect Document &amp; Bank KYC">
-                                            <i class="bi bi-shield-check"></i>
-                                            <span>@(user.IsApprovedByAdmin ? "KYC Details" : "Review KYC")</span>
-                                        </button>
-                                    }
+                                    <!-- Full Details Page Button for ALL Users (Farmer & Customer) -->
+                                    <a asp-action="UserDetails" asp-route-id="@user.Id" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" title="View Full Profile, KYC, Orders &amp; Banking Details">
+                                        <i class="bi bi-eye"></i>
+                                        <span>Details</span>
+                                    </a>
 
                                     <!-- Block / Unblock Button -->
                                     <form asp-action="ToggleBlockUser" method="post" class="d-inline m-0">

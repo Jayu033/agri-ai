@@ -218,6 +218,92 @@ namespace AgriAI.Web.Controllers
             return View(order);
         }
 
+        // GET: /Admin/UserDetails/id
+        public async Task<IActionResult> UserDetails(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                TempData["ErrorMessage"] = "Invalid user ID.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var roleName = roles.FirstOrDefault() ?? "Customer";
+            bool isBlocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
+
+            var userVm = new UserManagementViewModel
+            {
+                Id = user.Id,
+                Username = user.UserName ?? string.Empty,
+                Email = user.Email ?? string.Empty,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                ProfilePicturePath = user.ProfilePicturePath,
+                Role = roleName,
+                IsBlocked = isBlocked,
+                IsApprovedByAdmin = user.IsApprovedByAdmin,
+                City = user.City,
+                Address = user.Address,
+                BankName = user.BankName,
+                BankAccountNumber = user.BankAccountNumber,
+                BankIfscCode = user.BankIfscCode,
+                UpiId = user.UpiId,
+                KycDocumentPath = user.KycDocumentPath,
+                KycDocumentType = user.KycDocumentType,
+                KycSubmittedAt = user.KycSubmittedAt,
+                KycRejectionReason = user.KycRejectionReason,
+                CreatedAt = user.CreatedAt
+            };
+
+            var viewModel = new UserDetailsViewModel
+            {
+                User = userVm
+            };
+
+            if (roleName == "Farmer")
+            {
+                // Fetch listed crops
+                viewModel.Products = await _context.Products
+                    .Include(p => p.Category)
+                    .Include(p => p.Images)
+                    .Where(p => p.FarmerId == user.Id)
+                    .ToListAsync();
+
+                // Fetch all orders containing products from this farmer
+                viewModel.Orders = await _context.Orders
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(i => i.Product)
+                    .Where(o => o.OrderItems.Any(i => i.Product != null && i.Product.FarmerId == user.Id))
+                    .OrderByDescending(o => o.OrderDate)
+                    .ToListAsync();
+
+                viewModel.TotalSpentOrEarned = viewModel.Orders.Where(o => o.Status.Contains("Delivered") || o.Status.Contains("Settled")).Sum(o => o.TotalAmount);
+                viewModel.TotalCompletedOrders = viewModel.Orders.Count(o => o.Status.Contains("Delivered") || o.Status.Contains("Settled"));
+            }
+            else
+            {
+                // Fetch all orders placed by this customer
+                viewModel.Orders = await _context.Orders
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(i => i.Product)
+                    .Where(o => o.CustomerId == user.Id || o.CustomerId == user.Email || o.CustomerId == user.UserName)
+                    .OrderByDescending(o => o.OrderDate)
+                    .ToListAsync();
+
+                viewModel.TotalSpentOrEarned = viewModel.Orders.Where(o => o.Status != "Cancelled" && o.Status != "Declined").Sum(o => o.TotalAmount);
+                viewModel.TotalCompletedOrders = viewModel.Orders.Count(o => o.Status.Contains("Delivered") || o.Status.Contains("Settled"));
+            }
+
+            return View(viewModel);
+        }
+
         // GET: /Admin/Users
         public async Task<IActionResult> Users(string? roleFilter)
         {

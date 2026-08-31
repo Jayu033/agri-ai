@@ -51,7 +51,7 @@
                         
                         <button type="button" class="dash-tab-link" onclick="switchDashTab('adminUsersTab', this)">
                             <i class="bi bi-people-fill"></i>
-                            <span>2. Farmer 7/12 KYC &amp; Users</span>
+                            <span>2. Farmer and Users</span>
                             @if (pendingKycCount > 0)
                             {
                                 <span class="badge bg-warning text-dark rounded-pill ms-auto small" style="font-size: 0.70rem;">@pendingKycCount New</span>
@@ -253,12 +253,12 @@
                         </div>
                     </div>
 
-                    <!-- 2. MODULE: Farmer 7/12 KYC & User Directory -->
+                    <!-- 2. MODULE: Farmer and User Directory -->
                     <div id="adminUsersTab" class="dash-tab-panel">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">Farmer 7/12 KYC &amp; User Directory</h3>
-                                <p class="text-muted small mb-0">Inspect 7/12 Satbara &amp; Aadhaar document proof, verify bank payout accounts, and manage platform permissions.</p>
+                                <h3 class="dash-section-title">Farmer and Users Directory</h3>
+                                <p class="text-muted small mb-0">Manage registered farmers and retail customers, verify documents, bank payout accounts, and review profiles.</p>
                             </div>
                             <a asp-action="Users" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm">
                                 <i class="bi bi-arrows-fullscreen me-1"></i> Full Directory Page
@@ -371,15 +371,10 @@
                                             </td>
                                             <td class="text-end">
                                                 <div class="d-inline-flex gap-1.5 align-items-center">
-                                                    @if (user.Role == "Farmer")
-                                                    {
-                                                        <button type="button" class="@(user.IsApprovedByAdmin ? "btn-action-kyc" : "btn-action-kyc-review")" 
-                                                                onclick="openKycReviewModal('@user.Id', '@user.FullName', '@user.Email', '@(user.City ?? "")', '@(user.Address ?? "")', '@(user.BankName ?? "")', '@(user.BankAccountNumber ?? "")', '@(user.BankIfscCode ?? "")', '@(user.UpiId ?? "")', '@(user.KycDocumentType ?? "7/12 (Satbara)")', '@(user.KycDocumentPath ?? "")', @(user.IsApprovedByAdmin ? "true" : "false"), '@(user.KycRejectionReason ?? "")', '@(user.ProfilePicturePath ?? "")')"
-                                                                title="Inspect Document &amp; Bank KYC">
-                                                            <i class="bi bi-shield-check"></i>
-                                                            <span>@(user.IsApprovedByAdmin ? "KYC Details" : "Review KYC")</span>
-                                                        </button>
-                                                    }
+                                                    <a asp-action="UserDetails" asp-route-id="@user.Id" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" title="View Full Profile, KYC, Orders &amp; Details">
+                                                        <i class="bi bi-eye"></i>
+                                                        <span>Details</span>
+                                                    </a>
 
                                                     <form asp-controller="Admin" asp-action="ToggleBlockUser" method="post" class="m-0 d-inline">
                                                         <input type="hidden" name="id" value="@user.Id" />

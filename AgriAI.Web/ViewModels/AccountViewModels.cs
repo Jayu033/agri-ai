@@ -159,4 +159,13 @@ namespace AgriAI.Web.ViewModels
         public string? KycDocumentType { get; set; }
         public DateTime? KycSubmittedAt { get; set; }
     }
+
+    public class UserDetailsViewModel
+    {
+        public UserManagementViewModel User { get; set; } = new();
+        public List<AgriAI.Domain.Entities.Product> Products { get; set; } = new();
+        public List<AgriAI.Domain.Entities.Order> Orders { get; set; } = new();
+        public decimal TotalSpentOrEarned { get; set; }
+        public int TotalCompletedOrders { get; set; }
+    }
 }
