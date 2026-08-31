@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AgriAI.Web.Controllers
 {
-    // [Authorize(Roles = "Admin")] // Uncomment when Identity Roles are fully enforced
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
