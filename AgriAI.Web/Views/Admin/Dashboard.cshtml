@@ -17,6 +17,8 @@
     int totalUsers = ViewBag.TotalUsers ?? allUsers.Count;
     int totalFarmers = ViewBag.TotalFarmers ?? allUsers.Count(u => u.Role == "Farmer");
     int totalCustomers = ViewBag.TotalCustomers ?? allUsers.Count(u => u.Role == "Customer");
+    string activeTab = (ViewBag.ActiveTab as string ?? Context.Request.Query["tab"].ToString() ?? "overview").ToLower().Trim();
+    if (string.IsNullOrEmpty(activeTab)) activeTab = "overview";
 }
 
 @section Styles {
@@ -44,12 +46,12 @@
 
                     <!-- Navigation Tab Buttons (7 Essential Modules) -->
                     <div class="dash-nav-pills">
-                        <button type="button" class="dash-tab-link active" onclick="switchDashTab('adminOverviewTab', this)">
+                        <button type="button" class="dash-tab-link @(activeTab == "overview" ? "active" : "")" onclick="switchDashTab('adminOverviewTab', this)">
                             <i class="bi bi-speedometer2"></i>
                             <span>1. Executive KPI Overview</span>
                         </button>
                         
-                        <button type="button" class="dash-tab-link" onclick="switchDashTab('adminUsersTab', this)">
+                        <button type="button" class="dash-tab-link @(activeTab == "users" ? "active" : "")" onclick="switchDashTab('adminUsersTab', this)">
                             <i class="bi bi-people-fill"></i>
                             <span>2. Farmer and Users</span>
                             @if (pendingKycCount > 0)
@@ -58,7 +60,7 @@
                             }
                         </button>
 
-                        <button type="button" class="dash-tab-link" onclick="switchDashTab('adminEscrowTab', this)">
+                        <button type="button" class="dash-tab-link @(activeTab == "escrow" ? "active" : "")" onclick="switchDashTab('adminEscrowTab', this)">
                             <i class="bi bi-shield-check"></i>
                             <span>3. Escrow &amp; Bilty Payouts</span>
                             @if (inTransitCount > 0)
@@ -67,27 +69,27 @@
                             }
                         </button>
 
-                        <button type="button" class="dash-tab-link" onclick="switchDashTab('adminProductsTab', this)">
+                        <button type="button" class="dash-tab-link @(activeTab == "products" ? "active" : "")" onclick="switchDashTab('adminProductsTab', this)">
                             <i class="bi bi-tree"></i>
                             <span>4. Listed Crops &amp; Categories</span>
                         </button>
 
-                        <button type="button" class="dash-tab-link" onclick="switchDashTab('adminOrdersTab', this)">
+                        <button type="button" class="dash-tab-link @(activeTab == "orders" ? "active" : "")" onclick="switchDashTab('adminOrdersTab', this)">
                             <i class="bi bi-receipt"></i>
                             <span>5. Orders &amp; Transactions</span>
                         </button>
 
-                        <button type="button" class="dash-tab-link" onclick="switchDashTab('adminAiTab', this)">
+                        <button type="button" class="dash-tab-link @(activeTab == "ai" ? "active" : "")" onclick="switchDashTab('adminAiTab', this)">
                             <i class="bi bi-cpu-fill text-success"></i>
                             <span>6. AI &amp; Mandi Intelligence</span>
                         </button>
 
-                        <button type="button" class="dash-tab-link" onclick="switchDashTab('adminReportsTab', this)">
+                        <button type="button" class="dash-tab-link @(activeTab == "reports" ? "active" : "")" onclick="switchDashTab('adminReportsTab', this)">
                             <i class="bi bi-file-earmark-spreadsheet-fill text-primary"></i>
                             <span>7. Reports &amp; Financials</span>
                         </button>
 
-                        <button type="button" class="dash-tab-link" onclick="switchDashTab('adminProfileTab', this)">
+                        <button type="button" class="dash-tab-link @(activeTab == "profile" ? "active" : "")" onclick="switchDashTab('adminProfileTab', this)">
                             <i class="bi bi-person-gear"></i>
                             <span>Admin Profile Settings</span>
                         </button>
@@ -122,7 +124,7 @@
                     }
 
                     <!-- 1. MODULE: Executive KPI Overview Dashboard -->
-                    <div id="adminOverviewTab" class="dash-tab-panel active">
+                    <div id="adminOverviewTab" class="dash-tab-panel @(activeTab == "overview" ? "active" : "")">
                         <div class="dash-section-header">
                             <div>
                                 <h3 class="dash-section-title">Platform Master Dashboard 🛡️</h3>
@@ -254,7 +256,7 @@
                     </div>
 
                     <!-- 2. MODULE: Farmer and User Directory -->
-                    <div id="adminUsersTab" class="dash-tab-panel">
+                    <div id="adminUsersTab" class="dash-tab-panel @(activeTab == "users" ? "active" : "")">
                         <div class="dash-section-header">
                             <div>
                                 <h3 class="dash-section-title">Farmer and Users Directory</h3>
@@ -396,7 +398,7 @@
                     </div>
 
                     <!-- 3. MODULE: Escrow & Bilty Payout Verification -->
-                    <div id="adminEscrowTab" class="dash-tab-panel">
+                    <div id="adminEscrowTab" class="dash-tab-panel @(activeTab == "escrow" ? "active" : "")">
                         <div class="dash-section-header">
                             <div>
                                 <h3 class="dash-section-title">Escrow Vault &amp; Bilty Payout Release</h3>
@@ -516,7 +518,7 @@
                     </div>
 
                     <!-- 4. MODULE: Listed Crops & Categories Oversight -->
-                    <div id="adminProductsTab" class="dash-tab-panel">
+                    <div id="adminProductsTab" class="dash-tab-panel @(activeTab == "products" ? "active" : "")">
                         <div class="dash-section-header">
                             <div>
                                 <h3 class="dash-section-title">All Listed Farm Produce &amp; Categories</h3>
@@ -587,7 +589,7 @@
                     </div>
 
                     <!-- 5. MODULE: Orders & Transaction Feed -->
-                    <div id="adminOrdersTab" class="dash-tab-panel">
+                    <div id="adminOrdersTab" class="dash-tab-panel @(activeTab == "orders" ? "active" : "")">
                         <div class="dash-section-header">
                             <div>
                                 <h3 class="dash-section-title">Transactions &amp; Order Feed</h3>
@@ -661,7 +663,7 @@
                     </div>
 
                     <!-- 6. MODULE: AI & APMC Market Intelligence -->
-                    <div id="adminAiTab" class="dash-tab-panel">
+                    <div id="adminAiTab" class="dash-tab-panel @(activeTab == "ai" ? "active" : "")">
                         <div class="dash-section-header">
                             <div>
                                 <h3 class="dash-section-title">AI Engine &amp; Gujarat Mandi Intelligence 🤖</h3>
@@ -748,7 +750,7 @@
                     </div>
 
                     <!-- 7. MODULE: Accounting & Financial Export Reports -->
-                    <div id="adminReportsTab" class="dash-tab-panel">
+                    <div id="adminReportsTab" class="dash-tab-panel @(activeTab == "reports" ? "active" : "")">
                         <div class="dash-section-header">
                             <div>
                                 <h3 class="dash-section-title">Reports &amp; Financial Auditing 📑</h3>
@@ -804,7 +806,7 @@
                     </div>
 
                     <!-- Admin Profile Settings -->
-                    <div id="adminProfileTab" class="dash-tab-panel">
+                    <div id="adminProfileTab" class="dash-tab-panel @(activeTab == "profile" ? "active" : "")">
                         <div class="dash-section-header">
                             <div>
                                 <h3 class="dash-section-title">Super Admin Credentials</h3>
@@ -995,6 +997,20 @@
             if (element) {
                 element.classList.add('active');
             }
+
+            const tabMap = {
+                'adminOverviewTab': 'overview',
+                'adminUsersTab': 'users',
+                'adminEscrowTab': 'escrow',
+                'adminProductsTab': 'products',
+                'adminOrdersTab': 'orders',
+                'adminAiTab': 'ai',
+                'adminReportsTab': 'reports',
+                'adminProfileTab': 'profile'
+            };
+            const tabName = tabMap[tabId] || 'overview';
+            const newUrl = window.location.pathname + '?tab=' + tabName;
+            window.history.replaceState({ tab: tabName }, '', newUrl);
         }
 
         function filterUsersTable(role, element) {

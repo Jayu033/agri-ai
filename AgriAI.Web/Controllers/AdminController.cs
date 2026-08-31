@@ -30,8 +30,10 @@ namespace AgriAI.Web.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        public async Task<IActionResult> Dashboard()
+        public async Task<IActionResult> Dashboard(string? tab)
         {
+            ViewBag.ActiveTab = string.IsNullOrEmpty(tab) ? "overview" : tab.ToLower().Trim();
+
             var products = await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Images)
