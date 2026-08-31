@@ -486,6 +486,110 @@ namespace AgriAI.Web.Controllers
                     Season = "Perennial / Annual", ExpectedYield = "250-350 Quintals / Acre", GrowthDuration = "11-12 Months", EstimatedPrice = 2200,
                     Description = "Heavy feeder demanding continuous soil moisture, tropical warmth, and rich organic soils in Bharuch/Anand belt.",
                     SoilAdvice = "High potassium nutrition from 5th month onwards ensures thick bunches and heavy finger weight."
+                },
+                new CropMLProfile
+                {
+                    Name = "Mango", GujaratiName = "કેરી (Kesar / Alphonso)", Emoji = "🥭", Category = "Horticulture",
+                    OptN = 20, StdN = 15, OptP = 25, StdP = 15, OptK = 30, StdK = 15, OptTemp = 31.0, StdTemp = 4.0, OptHumidity = 50.0, StdHumidity = 15, OptPh = 6.0, StdPh = 0.8,
+                    Season = "Summer (Giri Kesar)", ExpectedYield = "60-100 Quintals / Acre", GrowthDuration = "Perennial Tree", EstimatedPrice = 5200,
+                    Description = "Deep loamy alluvial soils of Gir and South Gujarat produce world-famous sweetness and aroma.",
+                    SoilAdvice = "Prune dead wood post-harvest and apply paclobutrazol in October for profuse flowering."
+                },
+                new CropMLProfile
+                {
+                    Name = "Pomegranate", GujaratiName = "દાડમ (Bhagwa Pomegranate)", Emoji = "🍎", Category = "Horticulture",
+                    OptN = 20, StdN = 15, OptP = 20, StdP = 15, OptK = 40, StdK = 15, OptTemp = 22.0, StdTemp = 4.0, OptHumidity = 90.0, StdHumidity = 10, OptPh = 6.4, StdPh = 0.8,
+                    Season = "Mrig / Hasta Bahar", ExpectedYield = "70-110 Quintals / Acre", GrowthDuration = "Perennial Shrub", EstimatedPrice = 8500,
+                    Description = "Semi-arid climate of Banaskantha and Kutch with drip fertigation delivers vibrant red arils and high export value.",
+                    SoilAdvice = "Adopt Hasta Bahar for top market prices in summer. Regulate water strictly during resting phase."
+                },
+                new CropMLProfile
+                {
+                    Name = "Grapes", GujaratiName = "દ્રાક્ષ (Thompson Seedless)", Emoji = "🍇", Category = "Horticulture",
+                    OptN = 25, StdN = 15, OptP = 130, StdP = 25, OptK = 200, StdK = 25, OptTemp = 28.0, StdTemp = 4.0, OptHumidity = 80.0, StdHumidity = 10, OptPh = 6.0, StdPh = 0.8,
+                    Season = "Rabi / Summer", ExpectedYield = "100-150 Quintals / Acre", GrowthDuration = "Perennial Vine", EstimatedPrice = 4500,
+                    Description = "Requires high phosphorus and potash with warm dry weather during fruit ripening.",
+                    SoilAdvice = "Y-trellis training system ensures maximum sun interception and air circulation."
+                },
+                new CropMLProfile
+                {
+                    Name = "Papaya", GujaratiName = "પપૈયું (Taiwan 786 Red Lady)", Emoji = "🍈", Category = "Horticulture",
+                    OptN = 50, StdN = 20, OptP = 60, StdP = 20, OptK = 50, StdK = 15, OptTemp = 35.0, StdTemp = 5.0, OptHumidity = 90.0, StdHumidity = 10, OptPh = 6.7, StdPh = 0.8,
+                    Season = "Year-Round", ExpectedYield = "300-450 Quintals / Acre", GrowthDuration = "9-10 Months", EstimatedPrice = 2100,
+                    Description = "Fast-growing high-yield fruit requiring frost-free tropical climate and excellent drainage.",
+                    SoilAdvice = "Raise soil beds by 1.5 feet to prevent collar rot during monsoon."
+                },
+                new CropMLProfile
+                {
+                    Name = "Muskmelon", GujaratiName = "સક્કરટેટી / ચીભડું", Emoji = "🍈", Category = "Horticulture",
+                    OptN = 100, StdN = 25, OptP = 20, StdP = 10, OptK = 50, StdK = 15, OptTemp = 28.0, StdTemp = 3.5, OptHumidity = 92.0, StdHumidity = 10, OptPh = 6.5, StdPh = 0.7,
+                    Season = "Zaid (Summer)", ExpectedYield = "120-180 Quintals / Acre", GrowthDuration = "70-85 Days", EstimatedPrice = 1800,
+                    Description = "Sandy loam soils with hot dry weather produce intense sugar brix and firm netting.",
+                    SoilAdvice = "Drip irrigation with fertigation ensures early uniform harvest before peak monsoon."
+                },
+                new CropMLProfile
+                {
+                    Name = "Pigeonpeas", GujaratiName = "તુવેર (Arhar / Tuver)", Emoji = "🌱", Category = "Pulse",
+                    OptN = 20, StdN = 15, OptP = 68, StdP = 20, OptK = 20, StdK = 10, OptTemp = 28.0, StdTemp = 5.0, OptHumidity = 60.0, StdHumidity = 15, OptPh = 5.8, StdPh = 0.8,
+                    Season = "Kharif", ExpectedYield = "8-14 Quintals / Acre", GrowthDuration = "150-180 Days", EstimatedPrice = 7450,
+                    Description = "Deep taproot pulse crop ideal for intercropping with cotton or groundnut to enrich soil nitrogen.",
+                    SoilAdvice = "Nip terminal shoots at 45-50 days to encourage extensive secondary branching."
+                },
+                new CropMLProfile
+                {
+                    Name = "Blackgram", GujaratiName = "અડદ (Urad)", Emoji = "🌱", Category = "Pulse",
+                    OptN = 40, StdN = 18, OptP = 65, StdP = 20, OptK = 20, StdK = 10, OptTemp = 28.0, StdTemp = 4.0, OptHumidity = 65.0, StdHumidity = 15, OptPh = 7.1, StdPh = 0.8,
+                    Season = "Kharif & Summer", ExpectedYield = "5-8 Quintals / Acre", GrowthDuration = "70-80 Days", EstimatedPrice = 7100,
+                    Description = "Highly remunerative short-season pulse flourishing in heavy clay-loam fertile soils.",
+                    SoilAdvice = "Seed treatment with Trichoderma and PSB increases phosphorus assimilation."
+                },
+                new CropMLProfile
+                {
+                    Name = "Kidneybeans", GujaratiName = "રાજમા (Rajma)", Emoji = "🫘", Category = "Pulse",
+                    OptN = 20, StdN = 15, OptP = 60, StdP = 18, OptK = 20, StdK = 10, OptTemp = 20.0, StdTemp = 4.0, OptHumidity = 20.0, StdHumidity = 10, OptPh = 5.8, StdPh = 0.8,
+                    Season = "Rabi (Winter)", ExpectedYield = "7-11 Quintals / Acre", GrowthDuration = "100-115 Days", EstimatedPrice = 8200,
+                    Description = "Non-nodulating legume requiring rich organic matter and direct nitrogen top-dressing.",
+                    SoilAdvice = "Apply split doses of nitrogen as Rajma does not fix atmospheric nitrogen naturally."
+                },
+                new CropMLProfile
+                {
+                    Name = "Lentil", GujaratiName = "મસૂર (Masur)", Emoji = "🌱", Category = "Pulse",
+                    OptN = 25, StdN = 15, OptP = 68, StdP = 18, OptK = 20, StdK = 10, OptTemp = 24.0, StdTemp = 4.0, OptHumidity = 65.0, StdHumidity = 15, OptPh = 7.2, StdPh = 0.8,
+                    Season = "Rabi (Winter)", ExpectedYield = "6-10 Quintals / Acre", GrowthDuration = "95-110 Days", EstimatedPrice = 7800,
+                    Description = "Cold-tolerant pulse crop suitable for light to medium soils requiring minimal irrigation.",
+                    SoilAdvice = "Sow immediately after kharif rice harvest for optimum residual moisture utilization."
+                },
+                new CropMLProfile
+                {
+                    Name = "Mothbeans", GujaratiName = "મઠ (Moth)", Emoji = "🌱", Category = "Pulse",
+                    OptN = 20, StdN = 15, OptP = 50, StdP = 15, OptK = 20, StdK = 10, OptTemp = 28.0, StdTemp = 4.0, OptHumidity = 55.0, StdHumidity = 15, OptPh = 6.8, StdPh = 0.8,
+                    Season = "Kharif", ExpectedYield = "4-7 Quintals / Acre", GrowthDuration = "65-75 Days", EstimatedPrice = 6500,
+                    Description = "Most drought-hardy legume surviving extreme desert heat in arid and semi-arid zones.",
+                    SoilAdvice = "Excellent soil cover preventing wind and water erosion in sandy soils."
+                },
+                new CropMLProfile
+                {
+                    Name = "Coffee", GujaratiName = "કોફી (Coffee Beans)", Emoji = "☕", Category = "Plantation Crop",
+                    OptN = 100, StdN = 25, OptP = 30, StdP = 15, OptK = 30, StdK = 15, OptTemp = 25.0, StdTemp = 3.5, OptHumidity = 58.0, StdHumidity = 12, OptPh = 6.8, StdPh = 0.7,
+                    Season = "Perennial Plantation", ExpectedYield = "15-25 Quintals / Acre", GrowthDuration = "Perennial", EstimatedPrice = 18500,
+                    Description = "Shade-loving plantation crop requiring cool humid hill climate and humus-rich forest loam.",
+                    SoilAdvice = "Grow under two-tier shade trees (silver oak / dadap) and maintain thick organic leaf mulch."
+                },
+                new CropMLProfile
+                {
+                    Name = "Jute", GujaratiName = "શણ (Golden Fiber Jute)", Emoji = "🌾", Category = "Fibre Crop",
+                    OptN = 80, StdN = 20, OptP = 40, StdP = 15, OptK = 40, StdK = 15, OptTemp = 25.0, StdTemp = 3.5, OptHumidity = 80.0, StdHumidity = 10, OptPh = 6.4, StdPh = 0.8,
+                    Season = "Kharif", ExpectedYield = "14-20 Quintals / Acre", GrowthDuration = "120-135 Days", EstimatedPrice = 5200,
+                    Description = "Thrives in warm, humid monsoon climate with deep alluvial soils and standing retting water.",
+                    SoilAdvice = "Harvest at small-pod stage for top golden fiber tenacity and fineness."
+                },
+                new CropMLProfile
+                {
+                    Name = "Coconut", GujaratiName = "નારિયેળી (Coconut Palm)", Emoji = "🥥", Category = "Plantation Crop",
+                    OptN = 20, StdN = 15, OptP = 25, StdP = 15, OptK = 35, StdK = 15, OptTemp = 27.0, StdTemp = 3.0, OptHumidity = 95.0, StdHumidity = 8, OptPh = 6.0, StdPh = 0.8,
+                    Season = "Perennial Palm", ExpectedYield = "80-120 Nuts / Palm / Year", GrowthDuration = "Perennial", EstimatedPrice = 3200,
+                    Description = "Coastal saline-tolerant palm thriving along Saurashtra coastline with plenty of sunshine.",
+                    SoilAdvice = "Apply common salt (1 kg/palm) along with balanced NPK to promote nut size and water retention."
                 }
             };
         }
