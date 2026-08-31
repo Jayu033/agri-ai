@@ -16,7 +16,18 @@
         <p class="register-card-subtext">Join AgriAI to buy fresh farm produce or sell crops with smart AI tools</p>
 
         <form asp-action="Register" method="post" id="registerForm" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2 mb-3 rounded-3"></div>
+            @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+            {
+                <div class="alert alert-danger alert-dismissible fade show small p-3 mb-3 rounded-4 shadow-sm position-relative" role="alert">
+                    <div class="d-flex align-items-start gap-2">
+                        <i class="bi bi-exclamation-circle-fill text-danger fs-5 mt-0.5"></i>
+                        <div class="pe-4">
+                            <div asp-validation-summary="ModelOnly" class="mb-0 text-danger fw-medium"></div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close p-2.5 shadow-none position-absolute top-0 end-0 m-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
 
             <!-- Farmer 2-Step Progress Stepper (Visible when Farmer role is selected) -->
             <div id="farmerWizardStepper" class="reg-stepper-container" style="display: none;">
@@ -195,8 +206,12 @@
                     </div>
                 </div>
 
-                <div id="step1ErrorAlert" class="alert alert-danger small p-2 mb-3 rounded-3 d-none">
-                    <i class="bi bi-exclamation-triangle-fill me-1"></i> <span id="step1ErrorMsg"></span>
+                <div id="step1ErrorAlert" class="alert alert-danger alert-dismissible fade show small p-2.5 mb-3 rounded-4 shadow-sm d-none align-items-center justify-content-between position-relative" role="alert">
+                    <div class="d-flex align-items-center gap-2 pe-4">
+                        <i class="bi bi-exclamation-triangle-fill text-danger fs-6"></i> 
+                        <span id="step1ErrorMsg"></span>
+                    </div>
+                    <button type="button" class="btn-close p-2 shadow-none position-absolute top-50 end-0 translate-middle-y me-2" onclick="document.getElementById('step1ErrorAlert').classList.add('d-none'); document.getElementById('step1ErrorAlert').classList.remove('d-flex');" aria-label="Close"></button>
                 </div>
 
                 <!-- Action Button: Customer Direct Submit -->
