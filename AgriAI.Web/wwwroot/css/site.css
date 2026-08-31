@@ -279,3 +279,336 @@ button:hover i {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* ==========================================================================
+   GLOBAL SMART NOTIFICATION SYSTEM (MODAL & TOAST)
+   ========================================================================== */
+
+/* 1. Modal Blur Backdrop */
+.modal-backdrop.show {
+    opacity: 0.65 !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+}
+
+.status-modal-dialog {
+    max-width: 420px;
+    margin: 1.75rem auto;
+}
+
+.status-modal-content {
+    background: #ffffff !important;
+    border: none !important;
+    border-radius: 24px !important;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.3), 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    padding: 32px 28px 28px 28px !important;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    animation: statusPopIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes statusPopIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.92) translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.status-modal-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.status-modal-close-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+    transform: rotate(90deg);
+}
+
+.status-modal-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 4px auto 16px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.status-modal-icon-wrapper i {
+    font-size: 2.2rem;
+    position: relative;
+    z-index: 2;
+}
+
+.status-modal-icon-wrapper.status-pending {
+    background: #fef3c7;
+    color: #d97706;
+    box-shadow: 0 0 0 8px #fffbeb;
+}
+
+.status-modal-icon-wrapper.status-error {
+    background: #fee2e2;
+    color: #dc2626;
+    box-shadow: 0 0 0 8px #fef2f2;
+}
+
+.status-modal-icon-wrapper.status-success {
+    background: #dcfce7;
+    color: #15803d;
+    box-shadow: 0 0 0 8px #f0fdf4;
+}
+
+.status-modal-badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.status-modal-badge.badge-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-modal-badge.badge-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-modal-badge.badge-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-modal-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 8px;
+    letter-spacing: -0.2px;
+}
+
+.status-modal-desc {
+    font-size: 0.90rem;
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    padding: 0 8px;
+}
+
+.status-modal-action-btn {
+    width: 100%;
+    padding: 13px 20px;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+}
+
+.status-modal-action-btn.btn-pending {
+    background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(217, 119, 6, 0.35);
+}
+
+.status-modal-action-btn.btn-pending:hover {
+    background: linear-gradient(135deg, #b45309 0%, #d97706 100%);
+    box-shadow: 0 8px 24px rgba(217, 119, 6, 0.5);
+    transform: translateY(-2px);
+}
+
+.status-modal-action-btn.btn-error {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(220, 38, 38, 0.35);
+}
+
+.status-modal-action-btn.btn-error:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.5);
+    transform: translateY(-2px);
+}
+
+.status-modal-action-btn.btn-success {
+    background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(22, 101, 52, 0.35);
+}
+
+.status-modal-action-btn.btn-success:hover {
+    background: linear-gradient(135deg, #14532d 0%, #15803d 100%);
+    box-shadow: 0 8px 24px rgba(22, 101, 52, 0.5);
+    transform: translateY(-2px);
+}
+
+/* 2. Sleek Floating Modern Toast (For Short Messages) */
+.agri-floating-toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 1099;
+    pointer-events: none;
+    max-width: 420px;
+    width: calc(100vw - 48px);
+}
+
+.agri-floating-toast {
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 18px;
+    padding: 14px 18px 16px 18px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    animation: toastSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: all 0.3s ease;
+}
+
+@keyframes toastSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateX(40px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+.agri-floating-toast.toast-fadeout {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+}
+
+.agri-toast-icon-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.agri-toast-icon-badge.toast-success {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.agri-toast-icon-badge.toast-error {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.agri-toast-icon-badge.toast-pending {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.agri-toast-content {
+    flex-grow: 1;
+    padding-right: 18px;
+}
+
+.agri-toast-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+
+.agri-toast-message {
+    font-size: 0.82rem;
+    color: #475569;
+    margin: 0;
+    line-height: 1.45;
+}
+
+.agri-toast-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.agri-toast-close:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.agri-toast-progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    transform-origin: left;
+    animation: toastTimer 4.5s linear forwards;
+}
+
+.agri-toast-progress-bar.progress-success {
+    background: #15803d;
+}
+
+.agri-toast-progress-bar.progress-error {
+    background: #dc2626;
+}
+
+.agri-toast-progress-bar.progress-pending {
+    background: #d97706;
+}
+
+@keyframes toastTimer {
+    0% { transform: scaleX(1); }
+    100% { transform: scaleX(0); }
+}

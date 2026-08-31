@@ -1,0 +1,133 @@
+﻿@{
+    string? msg = TempData["SuccessMessage"]?.ToString() 
+                  ?? TempData["Success"]?.ToString() 
+                  ?? TempData["ErrorMessage"]?.ToString() 
+                  ?? TempData["Error"]?.ToString() 
+                  ?? TempData["Info"]?.ToString() 
+                  ?? TempData["Warning"]?.ToString();
+
+    string statusType = "info";
+    if (TempData["SuccessMessage"] != null || TempData["Success"] != null)
+    {
+        statusType = "success";
+    }
+    else if (TempData["ErrorMessage"] != null || TempData["Error"] != null)
+    {
+        statusType = "error";
+    }
+    else if (TempData["Warning"] != null)
+    {
+        statusType = "pending";
+    }
+
+    if (!string.IsNullOrEmpty(msg) && (msg.Contains("verification", StringComparison.OrdinalIgnoreCase) || msg.Contains("Admin approval", StringComparison.OrdinalIgnoreCase)))
+    {
+        statusType = "pending";
+    }
+
+    bool isDetailed = !string.IsNullOrEmpty(msg) && (
+        msg.Length > 80 || 
+        msg.Contains("verification", StringComparison.OrdinalIgnoreCase) || 
+        msg.Contains("Admin", StringComparison.OrdinalIgnoreCase) || 
+        msg.Contains("payout", StringComparison.OrdinalIgnoreCase) || 
+        msg.Contains("Escrow", StringComparison.OrdinalIgnoreCase) || 
+        msg.Contains("REJECTED", StringComparison.OrdinalIgnoreCase)
+    );
+
+    string iconClass = statusType == "pending" ? "bi bi-hourglass-split" : (statusType == "success" ? "bi bi-check-circle-fill" : "bi bi-shield-x");
+    string badgeText = statusType == "pending" ? "Pending Notice" : (statusType == "success" ? "Success" : "Notice");
+    string modalTitle = statusType == "pending" ? "Account Notice" : (statusType == "success" ? "Action Completed" : "Attention Required");
+    string btnLabel = statusType == "pending" ? "Understood" : (statusType == "success" ? "Continue" : "Got It");
+}
+
+@if (!string.IsNullOrEmpty(msg))
+{
+    @if (isDetailed)
+    {
+        <!-- 1. Large / Detailed Message: Center-Stage Luxury Modal Popup -->
+        <div class="modal fade" id="globalStatusNotificationModal" tabindex="-1" aria-labelledby="globalStatusNotificationModalLabel" aria-hidden="true" data-bs-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered status-modal-dialog">
+                <div class="modal-content status-modal-content">
+                    
+                    <!-- Top Right Close Button -->
+                    <button type="button" class="status-modal-close-btn" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+
+                    <!-- Status Icon Circle -->
+                    <div class="status-modal-icon-wrapper status-@statusType">
+                        <i class="@iconClass"></i>
+                    </div>
+
+                    <!-- Badge -->
+                    <div>
+                        <span class="status-modal-badge badge-@statusType">@badgeText</span>
+                    </div>
+
+                    <!-- Title -->
+                    <h4 class="status-modal-title" id="globalStatusNotificationModalLabel">@modalTitle</h4>
+
+                    <!-- Description Message -->
+                    <p class="status-modal-desc">
+                        @msg
+                    </p>
+
+                    <!-- Action Button -->
+                    <button type="button" class="status-modal-action-btn btn-@statusType" data-bs-dismiss="modal">
+                        <span>@btnLabel</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const modalEl = document.getElementById('globalStatusNotificationModal');
+                if (modalEl) {
+                    if (window.bootstrap && bootstrap.Modal) {
+                        const modal = new bootstrap.Modal(modalEl);
+                        modal.show();
+                    } else if (window.jQuery && $(modalEl).modal) {
+                        $(modalEl).modal('show');
+                    }
+                }
+            });
+        </script>
+    }
+    else
+    {
+        <!-- 2. Short / Concise Message: Sleek Floating Modern Toast -->
+        <div class="agri-floating-toast-container" id="agriGlobalToastContainer">
+            <div class="agri-floating-toast" id="agriGlobalToast">
+                <div class="agri-toast-icon-badge toast-@statusType">
+                    <i class="@(statusType == "success" ? "bi bi-check2-circle" : (statusType == "error" ? "bi bi-exclamation-triangle-fill" : "bi bi-info-circle-fill"))"></i>
+                </div>
+                <div class="agri-toast-content">
+                    <h6 class="agri-toast-title">@(statusType == "success" ? "Success!" : (statusType == "error" ? "Notice" : "Update"))</h6>
+                    <p class="agri-toast-message">@msg</p>
+                </div>
+                <button type="button" class="agri-toast-close" onclick="dismissAgriToast()" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <div class="agri-toast-progress-bar progress-@statusType"></div>
+            </div>
+        </div>
+
+        <script>
+            function dismissAgriToast() {
+                const toast = document.getElementById('agriGlobalToast');
+                if (toast) {
+                    toast.classList.add('toast-fadeout');
+                    setTimeout(() => {
+                        const container = document.getElementById('agriGlobalToastContainer');
+                        if (container) container.remove();
+                    }, 300);
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                setTimeout(dismissAgriToast, 4500);
+            });
+        </script>
+    }
+}
