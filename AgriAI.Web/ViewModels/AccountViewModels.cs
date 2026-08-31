@@ -82,6 +82,8 @@ namespace AgriAI.Web.ViewModels
 
         [Display(Name = "Profile Photo")]
         public IFormFile? ProfilePictureFile { get; set; }
+
+        public string? CapturedProfilePictureBase64 { get; set; }
     }
 
     public class ProfileViewModel

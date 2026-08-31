@@ -71,7 +71,7 @@ namespace AgriAI.Web.Controllers
                 string? profilePicPath = null;
                 string? kycDocPath = null;
 
-                // Handle Profile Photo Upload (Farmer or Customer)
+                // Handle Profile Photo Upload or Camera Capture (Farmer or Customer)
                 if (model.ProfilePictureFile != null && model.ProfilePictureFile.Length > 0)
                 {
                     var profilesDir = Path.Combine(_env.WebRootPath, "uploads", "profiles");
@@ -88,6 +88,27 @@ namespace AgriAI.Web.Controllers
                         await model.ProfilePictureFile.CopyToAsync(stream);
                     }
 
+                    profilePicPath = $"/uploads/profiles/{profileFileName}";
+                }
+                else if (!string.IsNullOrWhiteSpace(model.CapturedProfilePictureBase64))
+                {
+                    var profilesDir = Path.Combine(_env.WebRootPath, "uploads", "profiles");
+                    if (!Directory.Exists(profilesDir))
+                    {
+                        Directory.CreateDirectory(profilesDir);
+                    }
+
+                    var base64Data = model.CapturedProfilePictureBase64;
+                    if (base64Data.Contains(","))
+                    {
+                        base64Data = base64Data.Substring(base64Data.IndexOf(",") + 1);
+                    }
+
+                    var bytes = Convert.FromBase64String(base64Data);
+                    var profileFileName = $"{Guid.NewGuid()}_camera_capture.jpg";
+                    var profileFilePath = Path.Combine(profilesDir, profileFileName);
+
+                    await System.IO.File.WriteAllBytesAsync(profileFilePath, bytes);
                     profilePicPath = $"/uploads/profiles/{profileFileName}";
                 }
 

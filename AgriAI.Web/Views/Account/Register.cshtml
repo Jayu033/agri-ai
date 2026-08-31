@@ -68,20 +68,41 @@
                     <span asp-validation-for="Role" class="text-danger small mt-1 d-block"></span>
                 </div>
 
-                <!-- Profile Photo Live Avatar Upload -->
-                <div class="text-center mb-3">
-                    <div class="position-relative d-inline-block">
+                <!-- Profile Photo Live Avatar with Dual Options: Take Photo & Upload File -->
+                <div class="profile-photo-selection-box text-center mb-3 p-3 bg-light rounded-4 border">
+                    <div class="position-relative d-inline-block mb-2">
                         <img id="avatarPreview" src="https://ui-avatars.com/api/?name=User&background=15803d&color=fff&size=128" 
-                             class="rounded-circle border border-2 border-success shadow-sm" style="width: 68px; height: 68px; object-fit: cover;" alt="Profile Avatar" />
-                        <label for="profilePicInput" class="btn btn-sm btn-success rounded-circle position-absolute bottom-0 end-0 p-0 d-flex align-items-center justify-content-center shadow" 
-                               style="width: 26px; height: 26px; cursor: pointer; background-color: #15803d; border: 2px solid #ffffff;" title="Upload Face Photo">
-                            <i class="bi bi-camera-fill text-white" style="font-size: 0.70rem;"></i>
-                        </label>
-                        <input asp-for="ProfilePictureFile" type="file" id="profilePicInput" class="d-none" accept="image/*" onchange="previewUserAvatar(this)" />
+                             class="rounded-circle border border-3 border-success shadow-sm" style="width: 76px; height: 76px; object-fit: cover;" alt="Profile Avatar" />
+                        <span id="photoTypeBadge" class="badge bg-success position-absolute bottom-0 end-0 rounded-circle p-1 shadow border border-white" style="display: none;" title="Photo selected">
+                            <i class="bi bi-check-lg" style="font-size: 0.70rem;"></i>
+                        </span>
                     </div>
-                    <div class="text-muted mt-1" style="font-size: 0.72rem; font-weight: 500;">
-                        <i class="bi bi-person-bounding-box me-1 text-success"></i>Upload Face / Profile Photo (Optional)
+
+                    <div class="d-block mb-2">
+                        <span class="text-dark small fw-bold d-block mb-0.5">Profile / Face Photo (Optional)</span>
+                        <small class="text-muted" id="photoStatusText" style="font-size: 0.72rem;">Choose your photo via live camera or local file</small>
                     </div>
+
+                    <!-- Dual Option Buttons -->
+                    <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-3 py-1.5 shadow-sm d-inline-flex align-items-center gap-1.5" onclick="openLiveCameraModal()">
+                            <i class="bi bi-camera-fill"></i>
+                            <span>Take Photo</span>
+                        </button>
+
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-3 py-1.5 shadow-sm d-inline-flex align-items-center gap-1.5" onclick="document.getElementById('profilePicInput').click()">
+                            <i class="bi bi-folder-fill"></i>
+                            <span>Upload File</span>
+                        </button>
+
+                        <button type="button" id="btnRemovePhoto" class="btn btn-sm btn-link text-danger text-decoration-none small p-0 ms-1" style="display: none; font-size: 0.75rem;" onclick="resetProfilePhoto()">
+                            <i class="bi bi-trash3"></i> Remove
+                        </button>
+                    </div>
+
+                    <!-- Hidden Inputs for File Upload & Camera Base64 -->
+                    <input asp-for="ProfilePictureFile" type="file" id="profilePicInput" class="d-none" accept="image/*" onchange="previewUserAvatar(this)" />
+                    <input asp-for="CapturedProfilePictureBase64" type="hidden" id="capturedPhotoInput" />
                 </div>
 
                 <!-- Name Row (2 Columns) -->
@@ -319,73 +340,155 @@
     </div>
 </div>
 
+<!-- Live Camera Capture Modal -->
+<div class="modal fade" id="cameraCaptureModal" tabindex="-1" aria-labelledby="cameraCaptureModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom py-3 px-4 bg-white d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle bg-success bg-opacity-10 text-success p-2 fs-5">
+                        <i class="bi bi-camera-fill"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark" id="cameraCaptureModalLabel">Take Profile Photo</h6>
+                        <small class="text-muted" style="font-size: 0.72rem;">Align your face within the frame</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-3 p-md-4 text-center bg-light">
+                <!-- Camera Viewfinder Box -->
+                <div class="position-relative overflow-hidden rounded-4 shadow-sm bg-dark mx-auto" style="max-width: 360px; height: 270px;">
+                    <video id="cameraFeed" autoplay playsinline class="w-100 h-100" style="object-fit: cover; transform: scaleX(-1);"></video>
+                    <canvas id="photoCanvas" class="w-100 h-100 d-none" style="object-fit: cover;"></canvas>
+                    
+                    <!-- Viewfinder Overlay Circle -->
+                    <div id="viewfinderOverlay" class="position-absolute top-50 start-50 translate-middle rounded-circle border border-2 border-white border-opacity-75" 
+                         style="width: 180px; height: 180px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35); pointer-events: none;">
+                    </div>
+
+                    <!-- Camera Error Notice -->
+                    <div id="cameraErrorBox" class="position-absolute top-50 start-50 translate-middle w-100 px-3 d-none text-white text-center">
+                        <i class="bi bi-camera-video-off display-6 text-danger mb-2 d-block"></i>
+                        <span class="small fw-semibold d-block" id="cameraErrorMessage">Camera permission denied or camera not found.</span>
+                    </div>
+                </div>
+
+                <div class="mt-2 text-muted small" id="cameraInstructionText" style="font-size: 0.75rem;">
+                    Look directly at the camera and click <strong>Capture Photo</strong>.
+                </div>
+            </div>
+
+            <div class="modal-footer border-top bg-white py-3 px-4 d-flex justify-content-between">
+                <!-- State 1: Live Stream Controls -->
+                <div id="cameraLiveControls" class="d-flex justify-content-between w-100">
+                    <button type="button" class="btn btn-light rounded-pill px-3 py-2 text-muted border" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" id="btnCapturePhoto" onclick="captureSnapshot()">
+                        <i class="bi bi-camera-fill"></i>
+                        <span>Capture Photo</span>
+                    </button>
+                </div>
+
+                <!-- State 2: Preview & Confirm Controls -->
+                <div id="cameraPreviewControls" class="d-flex justify-content-between w-100 d-none">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-1" onclick="retakeSnapshot()">
+                        <i class="bi bi-arrow-repeat"></i>
+                        <span>Retake</span>
+                    </button>
+                    <button type="button" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" style="background-color: #006653;" onclick="confirmCapturedPhoto()">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Use This Photo</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // Update Role Display
-            function handleRoleChange() {
-                const isFarmer = document.getElementById('roleFarmer').checked;
-                const stepper = document.getElementById('farmerWizardStepper');
-                const btnCustomer = document.getElementById('btnCustomerSubmit');
-                const btnFarmer = document.getElementById('btnGoToStep2');
+        let cameraStream = null;
+        let capturedDataUrl = null;
 
-                if (isFarmer) {
-                    stepper.style.display = 'flex';
-                    btnCustomer.style.display = 'none';
-                    btnFarmer.style.display = 'flex';
-                } else {
-                    stepper.style.display = 'none';
-                    btnCustomer.style.display = 'flex';
-                    btnFarmer.style.display = 'none';
-                    goToStep1(); // Reset to step 1 if switching back to Customer
-                }
+        // Auto-update Avatar initials dynamically from First & Last Name
+        const fnInput = document.getElementById('regFirstName');
+        const lnInput = document.getElementById('regLastName');
+        const avatarImg = document.getElementById('avatarPreview');
+
+        function updateAvatarInitials() {
+            if (capturedDataUrl || (document.getElementById('profilePicInput')?.files?.length > 0)) {
+                return; // Don't override real image
             }
+            const fn = fnInput?.value.trim() || '';
+            const ln = lnInput?.value.trim() || '';
+            const name = (fn + ' ' + ln).trim() || 'User';
+            avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=15803d&color=fff&size=128`;
+        }
 
-            const roleCustomer = document.getElementById('roleCustomer');
-            const roleFarmer = document.getElementById('roleFarmer');
-            if (roleCustomer && roleFarmer) {
-                roleCustomer.addEventListener('change', handleRoleChange);
-                roleFarmer.addEventListener('change', handleRoleChange);
-                handleRoleChange();
+        if (fnInput) fnInput.addEventListener('input', updateAvatarInitials);
+        if (lnInput) lnInput.addEventListener('input', updateAvatarInitials);
+
+        // Role-based Farmer Stepper toggle
+        const roleCustomer = document.getElementById('roleCustomer');
+        const roleFarmer = document.getElementById('roleFarmer');
+        const stepper = document.getElementById('farmerWizardStepper');
+        const btnNextStep = document.getElementById('btnNextStep');
+        const btnSubmitDirect = document.getElementById('btnSubmitDirect');
+
+        function toggleRoleView() {
+            if (roleFarmer && roleFarmer.checked) {
+                stepper.style.display = 'flex';
+                btnNextStep.style.display = 'block';
+                btnSubmitDirect.style.display = 'none';
+            } else {
+                stepper.style.display = 'none';
+                btnNextStep.style.display = 'none';
+                btnSubmitDirect.style.display = 'block';
+                document.getElementById('registerStep1').style.display = 'block';
+                document.getElementById('registerStep2').style.display = 'none';
             }
+        }
 
-            // Password Toggle Buttons
-            const toggleBtns = document.querySelectorAll('.toggle-pwd');
-            toggleBtns.forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const targetId = this.getAttribute('data-target');
-                    const input = document.getElementById(targetId);
-                    const icon = this.querySelector('i');
-                    if (input && icon) {
-                        if (input.type === 'password') {
-                            input.type = 'text';
-                            icon.classList.remove('bi-eye');
-                            icon.classList.add('bi-eye-slash');
-                        } else {
-                            input.type = 'password';
-                            icon.classList.remove('bi-eye-slash');
-                            icon.classList.add('bi-eye');
-                        }
+        if (roleCustomer) roleCustomer.addEventListener('change', toggleRoleView);
+        if (roleFarmer) roleFarmer.addEventListener('change', toggleRoleView);
+        toggleRoleView();
+
+        // Password Toggle Buttons
+        const toggleBtns = document.querySelectorAll('.toggle-pwd');
+        toggleBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                const targetId = this.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                const icon = this.querySelector('i');
+                if (input && icon) {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('bi-eye');
+                        icon.classList.add('bi-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('bi-eye-slash');
+                        icon.classList.add('bi-eye');
                     }
-                });
+                }
             });
         });
 
-        function goToStep2() {
-            // Validate Step 1 mandatory fields before advancing
-            const firstName = document.getElementById('regFirstName').value.trim();
-            const lastName = document.getElementById('regLastName').value.trim();
-            const username = document.getElementById('regUsername').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const phone = document.getElementById('regPhone').value.trim();
-            const password = document.getElementById('regPassword').value;
-            const confirmPass = document.getElementById('regConfirmPassword').value;
-
+        function validateAndGoToStep2() {
             const errorAlert = document.getElementById('step1ErrorAlert');
-            const errorMsg = document.getElementById('step1ErrorMsg');
+            const errorMsg = document.getElementById('step1ErrorMessage');
+            const fn = document.getElementById('regFirstName')?.value.trim();
+            const ln = document.getElementById('regLastName')?.value.trim();
+            const un = document.getElementById('regUsername')?.value.trim();
+            const em = document.getElementById('regEmail')?.value.trim();
+            const password = document.getElementById('regPassword')?.value;
+            const confirmPass = document.getElementById('regConfirmPassword')?.value;
 
-            if (!firstName || !lastName || !username || !email || !password || !confirmPass) {
+            if (!fn || !ln || !un || !em || !password || !confirmPass) {
                 errorMsg.textContent = 'Please fill in all mandatory account details (Name, Username, Email, Password) to proceed.';
                 errorAlert.classList.remove('d-none');
                 return;
@@ -440,13 +543,152 @@
             circle2.innerHTML = '2';
         }
 
+        // ==========================================
+        // DUAL PHOTO SELECTION (CAMERA & FILE UPLOAD)
+        // ==========================================
+
         function previewUserAvatar(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    document.getElementById('avatarPreview').src = e.target.result;
-                }
+                    avatarImg.src = e.target.result;
+                    capturedDataUrl = null;
+                    document.getElementById('capturedPhotoInput').value = '';
+                    document.getElementById('photoTypeBadge').style.display = 'block';
+                    document.getElementById('btnRemovePhoto').style.display = 'inline-block';
+                    document.getElementById('photoStatusText').textContent = '📁 File photo selected: ' + input.files[0].name;
+                };
                 reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function resetProfilePhoto() {
+            document.getElementById('profilePicInput').value = '';
+            document.getElementById('capturedPhotoInput').value = '';
+            capturedDataUrl = null;
+            document.getElementById('photoTypeBadge').style.display = 'none';
+            document.getElementById('btnRemovePhoto').style.display = 'none';
+            document.getElementById('photoStatusText').textContent = 'Choose your photo via live camera or local file';
+            updateAvatarInitials();
+        }
+
+        const cameraModalEl = document.getElementById('cameraCaptureModal');
+        let cameraModal = null;
+
+        function openLiveCameraModal() {
+            if (!cameraModal && cameraModalEl) {
+                cameraModal = new bootstrap.Modal(cameraModalEl);
+            }
+            cameraModal.show();
+            startCameraStream();
+        }
+
+        cameraModalEl?.addEventListener('hidden.bs.modal', function () {
+            stopCameraStream();
+        });
+
+        async function startCameraStream() {
+            const video = document.getElementById('cameraFeed');
+            const canvas = document.getElementById('photoCanvas');
+            const overlay = document.getElementById('viewfinderOverlay');
+            const errorBox = document.getElementById('cameraErrorBox');
+            const errorMsg = document.getElementById('cameraErrorMessage');
+            const liveControls = document.getElementById('cameraLiveControls');
+            const previewControls = document.getElementById('cameraPreviewControls');
+
+            // Reset UI
+            video.classList.remove('d-none');
+            canvas.classList.add('d-none');
+            overlay.classList.remove('d-none');
+            errorBox.classList.add('d-none');
+            liveControls.classList.remove('d-none');
+            previewControls.classList.add('d-none');
+
+            try {
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    cameraStream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+                        audio: false
+                    });
+                    video.srcObject = cameraStream;
+                    await video.play();
+                } else {
+                    throw new Error('Camera media devices not supported in this browser.');
+                }
+            } catch (err) {
+                console.error('Camera error:', err);
+                video.classList.add('d-none');
+                overlay.classList.add('d-none');
+                errorBox.classList.remove('d-none');
+                errorMsg.textContent = 'Camera access unavailable. Please check browser permissions or use "Upload File".';
+                liveControls.classList.add('d-none');
+            }
+        }
+
+        function stopCameraStream() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+        }
+
+        function captureSnapshot() {
+            const video = document.getElementById('cameraFeed');
+            const canvas = document.getElementById('photoCanvas');
+            const overlay = document.getElementById('viewfinderOverlay');
+            const liveControls = document.getElementById('cameraLiveControls');
+            const previewControls = document.getElementById('cameraPreviewControls');
+
+            if (!video || !canvas) return;
+
+            const width = video.videoWidth || 640;
+            const height = video.videoHeight || 480;
+
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            // Mirror image horizontally to match webcam display
+            ctx.translate(width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, width, height);
+
+            // Freeze preview
+            video.classList.add('d-none');
+            canvas.classList.remove('d-none');
+            overlay.classList.add('d-none');
+            liveControls.classList.add('d-none');
+            previewControls.classList.remove('d-none');
+
+            capturedDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+        }
+
+        function retakeSnapshot() {
+            const video = document.getElementById('cameraFeed');
+            const canvas = document.getElementById('photoCanvas');
+            const overlay = document.getElementById('viewfinderOverlay');
+            const liveControls = document.getElementById('cameraLiveControls');
+            const previewControls = document.getElementById('cameraPreviewControls');
+
+            video.classList.remove('d-none');
+            canvas.classList.add('d-none');
+            overlay.classList.remove('d-none');
+            liveControls.classList.remove('d-none');
+            previewControls.classList.add('d-none');
+            capturedDataUrl = null;
+        }
+
+        function confirmCapturedPhoto() {
+            if (capturedDataUrl) {
+                avatarImg.src = capturedDataUrl;
+                document.getElementById('capturedPhotoInput').value = capturedDataUrl;
+                document.getElementById('profilePicInput').value = ''; // clear file input
+                document.getElementById('photoTypeBadge').style.display = 'block';
+                document.getElementById('btnRemovePhoto').style.display = 'inline-block';
+                document.getElementById('photoStatusText').textContent = '📸 Live Camera snapshot captured successfully!';
+
+                stopCameraStream();
+                if (cameraModal) cameraModal.hide();
             }
         }
     </script>
