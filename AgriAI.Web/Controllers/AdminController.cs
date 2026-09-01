@@ -113,6 +113,13 @@ namespace AgriAI.Web.Controllers
             ViewBag.InTransitCount = inTransitCount;
             ViewBag.DeliveredCount = deliveredCount;
             ViewBag.RequestedCount = requestedCount;
+            var soldQuantities = await _context.OrderItems
+                .Where(oi => oi.Order.Status != "Cancelled" && oi.Order.Status != "Declined")
+                .GroupBy(oi => oi.ProductId)
+                .Select(g => new { ProductId = g.Key, Sold = g.Sum(oi => oi.Quantity) })
+                .ToDictionaryAsync(x => x.ProductId, x => x.Sold);
+
+            ViewBag.SoldQuantities = soldQuantities;
             ViewBag.AllUsers = userVMs;
             ViewBag.AllProducts = products;
             ViewBag.AllCategories = categories;

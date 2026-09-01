@@ -210,23 +210,38 @@
             <!-- Right Column: Pricing, Farmer Profile & Purchase Actions -->
             <div class="col-lg-6 d-flex flex-column justify-content-between">
                 <div>
-                    <!-- Category & Stock Status -->
+                    <!-- Category & Stock Status Breakdown -->
                     <div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
                         <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #f0fdf4; color: #006653; border: 1px solid #bbf7d0; font-size: 0.78rem;">
                             🌾 @(Model.Category?.Name ?? "Farm Produce")
                         </span>
-                        @if (Model.StockQuantity > 0)
-                        {
-                            <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #ecfdf5; color: #047857; border: 1px solid #86efac; font-size: 0.82rem;">
-                                <i class="bi bi-check-circle-fill me-1 text-success"></i> @Model.StockQuantity Kg Available in Stock
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            @{
+                                int totalPub = ViewBag.TotalPublished ?? Model.StockQuantity;
+                                int soldQ = ViewBag.SoldQuantity ?? 0;
+                            }
+                            <span class="badge bg-light text-dark border rounded-pill px-3 py-1.5 fw-bold shadow-xs" style="font-size: 0.76rem;" title="Total harvest batch published by farmer">
+                                <i class="bi bi-box-seam text-primary me-1"></i> Total Published: @totalPub Kg
                             </span>
-                        }
-                        else
-                        {
-                            <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-size: 0.82rem;">
-                                <i class="bi bi-x-circle-fill me-1 text-danger"></i> Out of Stock
-                            </span>
-                        }
+                            @if (soldQ > 0)
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1.5 fw-bold shadow-xs" style="font-size: 0.76rem;">
+                                    <i class="bi bi-cart-check-fill text-success me-1"></i> Sold: @soldQ Kg
+                                </span>
+                            }
+                            @if (Model.StockQuantity > 0)
+                            {
+                                <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #ecfdf5; color: #047857; border: 1px solid #86efac; font-size: 0.80rem;">
+                                    <i class="bi bi-check-circle-fill me-1 text-success"></i> @Model.StockQuantity Kg in Stock
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-size: 0.80rem;">
+                                    <i class="bi bi-x-circle-fill me-1 text-danger"></i> Out of Stock
+                                </span>
+                            }
+                        </div>
                     </div>
 
                     <!-- Title -->

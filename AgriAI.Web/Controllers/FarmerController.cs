@@ -72,6 +72,14 @@ namespace AgriAI.Web.Controllers
                 if (!string.IsNullOrEmpty(u.UserName)) usersDict[u.UserName] = u;
             }
 
+            var soldQuantities = incomingOrders
+                .Where(o => o.Status != "Cancelled" && o.Status != "Declined")
+                .SelectMany(o => o.OrderItems)
+                .Where(oi => myProductIds.Contains(oi.ProductId))
+                .GroupBy(oi => oi.ProductId)
+                .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity));
+
+            ViewBag.SoldQuantities = soldQuantities;
             ViewBag.TotalProducts = products.Count;
             ViewBag.TotalSales = farmerRevenue;
             ViewBag.PendingOrdersCount = incomingOrders.Count(o => o.Status == "Pending" || o.Status == "Requested");

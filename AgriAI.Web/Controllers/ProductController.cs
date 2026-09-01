@@ -31,6 +31,14 @@ namespace AgriAI.Web.Controllers
                 .Include(p => p.Category)
                 .Include(p => p.Images)
                 .ToListAsync();
+
+            var soldQuantities = await _context.OrderItems
+                .Where(oi => oi.Order.Status != "Cancelled" && oi.Order.Status != "Declined")
+                .GroupBy(oi => oi.ProductId)
+                .Select(g => new { ProductId = g.Key, Sold = g.Sum(oi => oi.Quantity) })
+                .ToDictionaryAsync(x => x.ProductId, x => x.Sold);
+
+            ViewBag.SoldQuantities = soldQuantities;
             return View(products);
         }
 
@@ -189,6 +197,15 @@ namespace AgriAI.Web.Controllers
                 farmerTotalProducts = 1;
                 farmerTotalStock = product.StockQuantity;
             }
+
+            // Calculate sold quantity and total published
+            int soldQuantity = await _context.OrderItems
+                .Where(oi => oi.ProductId == id && oi.Order.Status != "Cancelled" && oi.Order.Status != "Declined")
+                .SumAsync(oi => (int?)oi.Quantity) ?? 0;
+
+            int totalPublished = product.StockQuantity + soldQuantity;
+            ViewBag.SoldQuantity = soldQuantity;
+            ViewBag.TotalPublished = totalPublished;
 
             ViewBag.FarmerUser = farmerUser;
             ViewBag.FarmerTotalProducts = farmerTotalProducts;

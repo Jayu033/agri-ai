@@ -217,11 +217,16 @@
             </div>
         }
         
+        @{
+            var soldMap = ViewBag.SoldQuantities as Dictionary<int, int> ?? new Dictionary<int, int>();
+        }
         @foreach (var item in Model) {
             var imgUrl = item.Images?.FirstOrDefault()?.ImageUrl;
             var catName = item.Category?.Name ?? "Farm Produce";
             var catNormalized = catName.ToLower();
             var stockQty = item.StockQuantity;
+            var soldQty = soldMap.ContainsKey(item.Id) ? soldMap[item.Id] : 0;
+            var totalPublished = stockQty + soldQty;
             var maundPrice = item.Price * 20;
             var isOwnCrop = !string.IsNullOrEmpty(currentUserId) && (item.FarmerId == currentUserId || item.FarmerId == currentUserName);
 
@@ -254,11 +259,11 @@
                         <span class="badge-stock-float">
                             @if (stockQty > 0)
                             {
-                                <span class="text-success fw-bold">● @stockQty Kg in Stock</span>
+                                <span class="text-success fw-bold">● @stockQty Kg in Stock <small class="text-muted fw-normal">(of @totalPublished Kg Pub.)</small></span>
                             }
                             else
                             {
-                                <span class="text-danger fw-bold">● Out of Stock</span>
+                                <span class="text-danger fw-bold">● Sold Out (@totalPublished Kg Total)</span>
                             }
                         </span>
                     </div>
@@ -282,7 +287,7 @@
 
                         <!-- Price Section with generous padding & margins -->
                         <div class="p-3 bg-light rounded-3 border mb-3">
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-between align-items-center mb-1.5">
                                 <div>
                                     <span class="fs-5 fw-extrabold text-success">₹@item.Price.ToString("N2")</span>
                                     <small class="text-muted fw-bold">/ Kg</small>
@@ -290,6 +295,11 @@
                                 <span class="badge bg-white text-dark border py-1.5 px-2.5 rounded-pill fw-bold" style="font-size: 0.70rem;">
                                     ₹@maundPrice.ToString("N0") / Maund
                                 </span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center text-muted pt-1 border-top" style="font-size: 0.70rem;">
+                                <span>Total Pub: <strong class="text-dark">@totalPublished Kg</strong></span>
+                                <span>Sold: <strong class="text-success">@soldQty Kg</strong></span>
+                                <span>Available: <strong class="@(stockQty > 0 ? "text-primary" : "text-danger")">@stockQty Kg</strong></span>
                             </div>
                         </div>
 
