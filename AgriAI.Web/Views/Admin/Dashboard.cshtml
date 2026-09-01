@@ -19,6 +19,7 @@
     int totalCustomers = ViewBag.TotalCustomers ?? allUsers.Count(u => u.Role == "Customer");
     string activeTab = (ViewBag.ActiveTab as string ?? Context.Request.Query["tab"].ToString() ?? "overview").ToLower().Trim();
     if (string.IsNullOrEmpty(activeTab)) activeTab = "overview";
+    if (activeTab == "crops" || activeTab == "adminproductstab") activeTab = "products";
 }
 
 @section Styles {

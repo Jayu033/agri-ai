@@ -33,6 +33,7 @@ namespace AgriAI.Web.Controllers
         public async Task<IActionResult> Dashboard(string? tab)
         {
             ViewBag.ActiveTab = string.IsNullOrEmpty(tab) ? "overview" : tab.ToLower().Trim();
+            if (ViewBag.ActiveTab == "crops" || ViewBag.ActiveTab == "adminproductstab") ViewBag.ActiveTab = "products";
 
             var products = await _context.Products
                 .Include(p => p.Category)

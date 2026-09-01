@@ -1,54 +1,319 @@
 @model IEnumerable<AgriAI.Domain.Entities.Category>
 
 @{
-    ViewData["Title"] = "Categories";
+    ViewData["Title"] = "Product Categories Taxonomy - Admin";
+    var productCounts = ViewBag.ProductCounts as Dictionary<int, int> ?? new Dictionary<int, int>();
+    int totalCategories = Model.Count();
+    int totalCropsAssigned = productCounts.Values.Sum();
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">Product Categories</h2>
-    <a asp-action="Create" class="btn btn-primary-custom">
-        <i class="bi bi-plus-circle me-1"></i> Add New Category
-    </a>
-</div>
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show glass-panel" role="alert">
-        @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+@section Styles {
+    <link rel="stylesheet" href="~/css/Admin.css" asp-append-version="true" />
+    <style>
+        .category-name-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .category-icon-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(22, 101, 52, 0.1) 0%, rgba(22, 163, 74, 0.15) 100%);
+            color: #15803d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            border: 1px solid rgba(22, 163, 74, 0.2);
+        }
+        .category-table th {
+            background-color: #f8fafc !important;
+            font-size: 0.74rem !important;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #475569 !important;
+            padding: 14px 16px !important;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .category-table td {
+            font-size: 0.86rem;
+            padding: 16px !important;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .category-table tr:hover {
+            background-color: #f8fafc;
+        }
+    </style>
 }
 
-<div class="glass-panel p-4">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Created At</th>
-                    <th class="text-center">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (!Model.Any())
-                {
-                    <tr>
-                        <td colspan="4" class="text-center py-4 text-muted">No categories found. Click 'Add New Category' to create one.</td>
-                    </tr>
-                }
-                @foreach (var item in Model) {
-                    <tr>
-                        <td class="fw-semibold">@Html.DisplayFor(modelItem => item.Name)</td>
-                        <td>@Html.DisplayFor(modelItem => item.Description)</td>
-                        <td>@item.CreatedAt.ToShortDateString()</td>
-                        <td class="text-center">
-                            <a href="#" class="btn btn-sm btn-outline-info rounded-circle me-1" title="Edit"><i class="bi bi-pencil"></i></a>
-                            <a href="#" class="btn btn-sm btn-outline-danger rounded-circle" title="Delete"><i class="bi bi-trash"></i></a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+<div class="container-fluid py-4 px-lg-4 px-md-3" style="max-width: 1440px; min-height: calc(100vh - 180px);">
+    
+    <!-- 1. Executive Top Header Banner Card -->
+    <div class="admin-header-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 shadow-sm">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1 fw-bold small">
+                    <i class="bi bi-tags-fill me-1"></i> Taxonomy &amp; Classifications
+                </span>
+                <span class="text-muted small">&bull; Module 4 Sub-System</span>
+            </div>
+            <h2 class="fw-extrabold text-dark mb-1 fs-3 d-flex align-items-center gap-2">
+                🌿 Agricultural Produce Categories
+            </h2>
+            <p class="text-muted small mb-0">Configure produce taxonomies, category classifications, and marketplace filter tags for Gujarat farmers and buyers.</p>
+        </div>
+
+        <div class="d-flex align-items-center gap-2.5 flex-wrap">
+            <!-- Contextual Back to Tab 4 Button -->
+            <a asp-controller="Admin" asp-action="Dashboard" asp-route-tab="products" class="btn-back-custom shadow-sm">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Listed Crops</span>
+            </a>
+
+            <!-- Add Category Button -->
+            <a asp-action="Create" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>Add New Category</span>
+            </a>
+        </div>
     </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-4 border-success border-opacity-25 shadow-xs mb-4 p-3 d-flex align-items-center justify-content-between" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                <span class="fw-semibold text-dark">@TempData["SuccessMessage"]</span>
+            </div>
+            <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 border-danger border-opacity-25 shadow-xs mb-4 p-3 d-flex align-items-center justify-content-between" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                <span class="fw-semibold text-dark">@TempData["ErrorMessage"]</span>
+            </div>
+            <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- 2. High Impact Stat Summary Cards -->
+    <div class="row g-3 mb-4">
+        <!-- Card 1: Total Categories -->
+        <div class="col-md-4 col-sm-6">
+            <div class="user-stat-card">
+                <div class="user-stat-icon-wrap" style="background: rgba(22, 101, 52, 0.12); color: #166534;">
+                    <i class="bi bi-grid-fill"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Total Active Categories</small>
+                    <h4 class="fw-extrabold text-success mb-0 fs-4">@totalCategories</h4>
+                    <small class="text-muted" style="font-size: 0.72rem;">Configured in marketplace</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Total Assigned Produce -->
+        <div class="col-md-4 col-sm-6">
+            <div class="user-stat-card">
+                <div class="user-stat-icon-wrap" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;">
+                    <i class="bi bi-basket-fill"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Total Listed Crops Assigned</small>
+                    <h4 class="fw-extrabold text-dark mb-0 fs-4">@totalCropsAssigned Produce</h4>
+                    <small class="text-muted" style="font-size: 0.72rem;">Distributed across taxonomies</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Mandi & Marketplace Status -->
+        <div class="col-md-4 col-sm-12">
+            <div class="user-stat-card">
+                <div class="user-stat-icon-wrap" style="background: rgba(234, 179, 8, 0.15); color: #b45309;">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Public Marketplace Status</small>
+                    <h4 class="fw-extrabold text-dark mb-0 fs-5">Active &amp; Discoverable</h4>
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-0.5 small mt-1">
+                        100% Operational
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Categories Management Table Card -->
+    <div class="user-info-card shadow-xs">
+        
+        <!-- Table Header & Live Search Bar -->
+        <div class="user-info-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-collection-fill text-success"></i> Category Records Directory (@totalCategories)
+                </h5>
+                <small class="text-muted">Directly powers the Shop Products filter sidebar and Farmer crop creation menus.</small>
+            </div>
+
+            <!-- Instant Search Input -->
+            <div class="position-relative" style="min-width: 280px;">
+                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3.5 text-muted"></i>
+                <input type="text" id="categorySearchInput" class="form-control rounded-pill ps-5 bg-white border shadow-xs" style="padding-top: 8px; padding-bottom: 8px; font-size: 0.86rem;" placeholder="Search category name..." onkeyup="filterCategoriesTable()" />
+            </div>
+        </div>
+
+        <div class="user-info-body p-0">
+            <div class="table-responsive">
+                <table class="table category-table align-middle mb-0" id="categoryTable">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Category Name</th>
+                            <th>Description</th>
+                            <th>Active Listed Crops</th>
+                            <th>Created Date</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="bi bi-tags display-5 d-block mb-2 text-success opacity-50"></i>
+                                    <p class="mb-0 fw-semibold">No product categories found.</p>
+                                    <small>Click 'Add New Category' above to create your first crop classification.</small>
+                                </td>
+                            </tr>
+                        }
+                        @foreach (var item in Model)
+                        {
+                            int count = productCounts.ContainsKey(item.Id) ? productCounts[item.Id] : 0;
+                            <tr class="category-row" data-search-text="@item.Name.ToLower() @item.Description.ToLower()">
+                                
+                                <!-- Category Name with Icon -->
+                                <td class="ps-4">
+                                    <div class="category-name-badge">
+                                        <div class="category-icon-avatar">
+                                            @if (item.Name.Contains("Veg"))
+                                            {
+                                                <span>🥦</span>
+                                            }
+                                            else if (item.Name.Contains("Fruit"))
+                                            {
+                                                <span>🍎</span>
+                                            }
+                                            else if (item.Name.Contains("Grain") || item.Name.Contains("Wheat") || item.Name.Contains("Crop"))
+                                            {
+                                                <span>🌾</span>
+                                            }
+                                            else if (item.Name.Contains("Dairy") || item.Name.Contains("Milk"))
+                                            {
+                                                <span>🥛</span>
+                                            }
+                                            else if (item.Name.Contains("Seed"))
+                                            {
+                                                <span>🌱</span>
+                                            }
+                                            else if (item.Name.Contains("Fert"))
+                                            {
+                                                <span>🧪</span>
+                                            }
+                                            else if (item.Name.Contains("Equip"))
+                                            {
+                                                <span>🚜</span>
+                                            }
+                                            else
+                                            {
+                                                <span>🏷️</span>
+                                            }
+                                        </div>
+                                        <div>
+                                            <strong class="text-dark d-block fs-6">@item.Name</strong>
+                                            <small class="text-muted font-monospace" style="font-size: 0.70rem;">ID: #@item.Id.ToString("D3")</small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Description -->
+                                <td>
+                                    <p class="text-muted mb-0 small" style="max-width: 380px;">
+                                        @(string.IsNullOrWhiteSpace(item.Description) ? "Standard Gujarat agricultural produce taxonomy classification." : item.Description)
+                                    </p>
+                                </td>
+
+                                <!-- Active Listed Crops Count -->
+                                <td>
+                                    @if (count > 0)
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.78rem;">
+                                            <i class="bi bi-basket-fill me-1"></i> @count Produce Listed
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-muted border rounded-pill px-3 py-1.5" style="font-size: 0.78rem;">
+                                            0 Produce Listed
+                                        </span>
+                                    }
+                                </td>
+
+                                <!-- Created Date -->
+                                <td>
+                                    <span class="text-dark fw-semibold small d-block">@item.CreatedAt.ToString("dd MMM yyyy")</span>
+                                    <small class="text-muted" style="font-size: 0.70rem;">@item.CreatedAt.ToString("hh:mm tt")</small>
+                                </td>
+
+                                <!-- Actions: Edit & Delete -->
+                                <td class="text-end pe-4">
+                                    <div class="d-inline-flex align-items-center gap-1.5">
+                                        <!-- Edit Category Button -->
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-bold shadow-xs d-inline-flex align-items-center gap-1" style="font-size: 0.78rem;">
+                                            <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
+
+                                        <!-- Delete Category Form / Button -->
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete category '@item.Name'?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-bold shadow-xs d-inline-flex align-items-center gap-1" style="font-size: 0.78rem;" @(count > 0 ? "title='Cannot delete: crops are assigned'" : "")>
+                                                <i class="bi bi-trash3"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
 </div>
+
+@section Scripts {
+    <script>
+        function filterCategoriesTable() {
+            const query = document.getElementById('categorySearchInput').value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#categoryTable tbody .category-row');
+            
+            rows.forEach(function(row) {
+                const searchText = row.getAttribute('data-search-text') || '';
+                if (searchText.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
+}

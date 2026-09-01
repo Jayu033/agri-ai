@@ -107,6 +107,29 @@
 
 <div class="container-fluid py-4 px-3 px-lg-5" style="max-width: 1400px;">
     
+    @if (User.IsInRole("Admin"))
+    {
+        <div class="alert alert-info rounded-4 border border-primary border-opacity-25 shadow-xs mb-4 p-3.5 d-flex align-items-center justify-content-between flex-wrap gap-3" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-4 flex-shrink-0" style="width: 44px; height: 44px;">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <strong class="text-dark d-block">🛡️ Super Administrator Market Oversight Mode</strong>
+                    <small class="text-muted">You have supervisory access over all produce listings across Gujarat. You can audit prices, inspect farmer credentials, or delist crops.</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <a asp-controller="Admin" asp-action="Dashboard" asp-route-tab="products" class="btn btn-sm btn-dark rounded-pill px-3.5 py-2 fw-bold shadow-xs">
+                    <i class="bi bi-speedometer2 me-1"></i> Admin Portal (Tab 4)
+                </a>
+                <a asp-controller="Category" asp-action="Index" class="btn btn-sm btn-outline-primary bg-white rounded-pill px-3.5 py-2 fw-bold shadow-xs">
+                    <i class="bi bi-tags-fill me-1"></i> Manage Categories
+                </a>
+            </div>
+        </div>
+    }
+
     <!-- Hero Banner -->
     <div class="marketplace-hero shadow-sm">
         <div class="row align-items-center">
