@@ -36,7 +36,7 @@ namespace AgriAI.Web.Controllers
 
         public IActionResult Helpdesk()
         {
-            return View("About");
+            return RedirectToAction("Index", "Helpdesk");
         }
 
         public async Task<IActionResult> LiveMandi([FromServices] AgriAI.Web.Services.ILiveMandiService mandiService)

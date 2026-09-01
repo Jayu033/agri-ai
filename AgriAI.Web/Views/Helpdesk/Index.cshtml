@@ -1,0 +1,986 @@
+@model IEnumerable<AgriAI.Domain.Entities.SupportTicket>
+
+@{
+    ViewData["Title"] = "Helpdesk & Grievance Redressal Center";
+    bool isAdmin = ViewBag.IsAdmin ?? false;
+    bool isFarmer = ViewBag.IsFarmer ?? false;
+    bool isCustomer = ViewBag.IsCustomer ?? false;
+    var currentUser = ViewBag.CurrentUser as AgriAI.Infrastructure.Identity.ApplicationUser;
+    string activeFilter = ViewBag.ActiveFilter as string ?? "all";
+
+    var relatedOrders = ViewBag.RelatedOrders as Dictionary<int, AgriAI.Domain.Entities.Order> ?? new Dictionary<int, AgriAI.Domain.Entities.Order>();
+    var farmerOrders = ViewBag.FarmerOrders as List<AgriAI.Domain.Entities.Order> ?? new List<AgriAI.Domain.Entities.Order>();
+    var customerOrders = ViewBag.CustomerOrders as List<AgriAI.Domain.Entities.Order> ?? new List<AgriAI.Domain.Entities.Order>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Dashboard.css" asp-append-version="true" />
+    <style>
+        .helpdesk-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #006653 100%);
+            border-radius: 24px;
+            padding: 2.5rem;
+            color: #ffffff;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 102, 83, 0.15);
+        }
+        .ticket-stat-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 1.25rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s ease;
+        }
+        .ticket-stat-card:hover {
+            transform: translateY(-3px);
+        }
+        .help-filter-pill {
+            padding: 8px 18px;
+            border-radius: 9999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-decoration: none;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            background: #ffffff;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .help-filter-pill:hover,
+        .help-filter-pill.active {
+            background: #006653;
+            color: #ffffff;
+            border-color: #006653;
+        }
+        .ticket-card-box {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+        }
+    </style>
+}
+
+<div class="container-fluid py-4 px-lg-4 px-md-3" style="max-width: 1440px; min-height: calc(100vh - 180px);">
+    
+    <!-- Success & Error Alert Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-4 p-3.5 mb-4 shadow-sm border-0 d-flex align-items-center justify-content-between" style="background-color: #d1fae5; color: #065f46;" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill fs-5"></i>
+                <strong>@TempData["SuccessMessage"]</strong>
+            </div>
+            <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 p-3.5 mb-4 shadow-sm border-0 d-flex align-items-center justify-content-between" style="background-color: #fee2e2; color: #991b1b;" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                <strong>@TempData["ErrorMessage"]</strong>
+            </div>
+            <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- ========================================================================= -->
+    <!-- 1. SUPER ADMINISTRATOR HELPDESK & GRIEVANCE REDRESSAL COMMAND CENTER     -->
+    <!-- ========================================================================= -->
+    @if (isAdmin)
+    {
+        <div class="helpdesk-hero">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-30 rounded-pill px-3 py-1 fw-bold small">
+                            <i class="bi bi-shield-lock-fill me-1"></i> Root Administrator Command
+                        </span>
+                        <span class="text-white-50 small">&bull; Central Grievance Redressal</span>
+                    </div>
+                    <h2 class="fw-extrabold text-white mb-2 fs-2">
+                        🛡️ Helpdesk &amp; Grievance Redressal Center
+                    </h2>
+                    <p class="text-white-50 small mb-0" style="max-width: 720px;">
+                        Manage, verify, and resolve all tickets submitted by Gujarat Farmers, Retail Buyers, and Public Visitors. Verify logistics bilty proof and release escrow payouts directly.
+                    </p>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-light rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2 text-dark">
+                        <i class="bi bi-arrow-left"></i> Back to Admin Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 Live Metric Badges for Admin -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-3 col-sm-6">
+                <div class="ticket-stat-card">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.68rem;">Farmer Payout Disputes</small>
+                        <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-0.5 small fw-bold">High Priority</span>
+                    </div>
+                    <h3 class="fw-extrabold text-danger mb-0 fs-4">@ViewBag.PayoutDisputesCount Active</h3>
+                    <small class="text-muted" style="font-size: 0.70rem;">Escrow payout release requests</small>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-sm-6">
+                <div class="ticket-stat-card">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.68rem;">Buyer Order Complaints</small>
+                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2 py-0.5 small fw-bold text-dark">Quality / Delay</span>
+                    </div>
+                    <h3 class="fw-extrabold text-dark mb-0 fs-4">@ViewBag.CustomerIssuesCount Tickets</h3>
+                    <small class="text-muted" style="font-size: 0.70rem;">Damaged goods &amp; transit delays</small>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-sm-6">
+                <div class="ticket-stat-card">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.68rem;">Guest Public Inquiries</small>
+                        <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-2 py-0.5 small fw-bold">General</span>
+                    </div>
+                    <h3 class="fw-extrabold text-dark mb-0 fs-4">@ViewBag.GuestQueriesCount Inquiries</h3>
+                    <small class="text-muted" style="font-size: 0.70rem;">Registration &amp; platform questions</small>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-sm-6">
+                <div class="ticket-stat-card">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.68rem;">Resolved Grievances</small>
+                        <span class="badge bg-success text-white rounded-pill px-2 py-0.5 small fw-bold">Settled</span>
+                    </div>
+                    <h3 class="fw-extrabold text-success mb-0 fs-4">@ViewBag.ResolvedCount Solved</h3>
+                    <small class="text-muted" style="font-size: 0.70rem;">100% resolution compliance</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Pills Bar -->
+        <div class="p-3 bg-white rounded-4 border shadow-xs mb-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="text-muted fw-bold small text-uppercase me-1" style="font-size: 0.72rem;">Filter Tickets:</span>
+                <a asp-action="Index" asp-route-filter="all" class="help-filter-pill @(activeFilter == "all" ? "active" : "")">
+                    All Tickets (@ViewBag.TotalCount)
+                </a>
+                <a asp-action="Index" asp-route-filter="payouts" class="help-filter-pill @(activeFilter == "payouts" ? "active" : "")" style="border-color: #ef4444; color: #dc2626;">
+                    🚨 Farmer Payout Disputes (@ViewBag.PayoutDisputesCount)
+                </a>
+                <a asp-action="Index" asp-route-filter="orders" class="help-filter-pill @(activeFilter == "orders" ? "active" : "")">
+                    📦 Buyer Issues (@ViewBag.CustomerIssuesCount)
+                </a>
+                <a asp-action="Index" asp-route-filter="guest" class="help-filter-pill @(activeFilter == "guest" ? "active" : "")">
+                    ✉️ Guest Queries (@ViewBag.GuestQueriesCount)
+                </a>
+                <a asp-action="Index" asp-route-filter="resolved" class="help-filter-pill @(activeFilter == "resolved" ? "active" : "")">
+                    ✅ Resolved (@ViewBag.ResolvedCount)
+                </a>
+            </div>
+        </div>
+
+        <!-- Tickets Master Table -->
+        <div class="bg-white rounded-4 border shadow-sm p-4">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0" style="font-size: 0.84rem;">
+                    <thead class="table-light text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                        <tr>
+                            <th class="ps-3">Ticket ID &amp; Priority</th>
+                            <th>Raised By</th>
+                            <th>Category &amp; Order</th>
+                            <th>Subject &amp; Message</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th class="text-end pe-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="bi bi-shield-check display-5 d-block mb-2 text-success opacity-50"></i>
+                                    <h6 class="fw-bold text-dark mb-1">No Support Tickets in this category</h6>
+                                    <p class="small text-muted mb-0">All farmer and customer inquiries have been addressed.</p>
+                                </td>
+                            </tr>
+                        }
+                        @foreach (var ticket in Model)
+                        {
+                            <tr>
+                                <td class="ps-3">
+                                    <strong class="text-dark d-block font-monospace">#@ticket.TicketNumber</strong>
+                                    @if (ticket.Priority == "Urgent" || ticket.Priority == "High")
+                                    {
+                                        <span class="badge bg-danger rounded-pill px-2 py-0.5" style="font-size: 0.68rem;">@ticket.Priority</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark border rounded-pill px-2 py-0.5" style="font-size: 0.68rem;">@ticket.Priority</span>
+                                    }
+                                </td>
+                                <td>
+                                    <strong class="text-dark d-block">@ticket.SenderName</strong>
+                                    <span class="badge @(ticket.UserRole == "Farmer" ? "bg-success" : ticket.UserRole == "Customer" ? "bg-primary" : "bg-secondary") text-white rounded-pill px-2 py-0.5 small" style="font-size: 0.66rem;">
+                                        @ticket.UserRole
+                                    </span>
+                                    <small class="text-muted d-block" style="font-size: 0.70rem;">@ticket.SenderEmail</small>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-dark d-block">@ticket.Category</span>
+                                    @if (ticket.OrderId.HasValue)
+                                    {
+                                        <span class="badge bg-light text-primary border font-monospace" style="font-size: 0.70rem;">
+                                            Order #@ticket.OrderId.Value.ToString("D5")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <small class="text-muted">General</small>
+                                    }
+                                </td>
+                                <td>
+                                    <strong class="text-dark d-block" style="max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                        @ticket.Subject
+                                    </strong>
+                                    <small class="text-muted d-block text-truncate" style="max-width: 280px;">
+                                        @ticket.Message
+                                    </small>
+                                </td>
+                                <td>
+                                    <small class="text-muted font-monospace">@ticket.CreatedAt.ToString("dd MMM, hh:mm tt")</small>
+                                </td>
+                                <td>
+                                    @if (ticket.Status == "Resolved")
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1 fw-bold">
+                                            <i class="bi bi-check-circle-fill me-1"></i> Resolved
+                                        </span>
+                                    }
+                                    else if (ticket.Status == "In Progress")
+                                    {
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2.5 py-1 fw-bold">
+                                            <i class="bi bi-hourglass-split me-1"></i> In Progress
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 fw-bold">
+                                            <i class="bi bi-exclamation-circle-fill me-1"></i> Open
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end pe-3">
+                                    <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalTicket_@ticket.Id">
+                                        <i class="bi bi-pencil-square"></i> Review &amp; Resolve
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Review & Resolve Modal for Admin -->
+                            <div class="modal fade" id="modalTicket_@ticket.Id" tabindex="-1" aria-labelledby="modalLabel_@ticket.Id" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content rounded-4 border-0 shadow-lg">
+                                        <div class="modal-header bg-light border-bottom p-4">
+                                            <div>
+                                                <div class="d-flex align-items-center gap-2 mb-1">
+                                                    <span class="badge bg-primary rounded-pill px-2.5 py-1 font-monospace">#@ticket.TicketNumber</span>
+                                                    <span class="badge bg-dark rounded-pill px-2.5 py-1">@ticket.UserRole Grievance</span>
+                                                </div>
+                                                <h5 class="modal-title fw-extrabold text-dark" id="modalLabel_@ticket.Id">
+                                                    @ticket.Subject
+                                                </h5>
+                                            </div>
+                                            <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+
+                                        <form asp-action="ResolveTicket" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@ticket.Id" />
+
+                                            <div class="modal-body p-4">
+                                                
+                                                <!-- Grievance Message Card -->
+                                                <div class="p-3.5 bg-light rounded-4 border mb-3">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <strong class="text-dark small"><i class="bi bi-person-fill me-1"></i>Sender: @ticket.SenderName (@ticket.SenderEmail)</strong>
+                                                        <small class="text-muted">Phone: @(string.IsNullOrEmpty(ticket.SenderPhone) ? "N/A" : ticket.SenderPhone)</small>
+                                                    </div>
+                                                    <p class="mb-0 text-dark" style="white-space: pre-wrap; font-size: 0.88rem;">@ticket.Message</p>
+                                                </div>
+
+                                                <!-- Attachment Preview (Bilty photo or Damaged crop) -->
+                                                @if (!string.IsNullOrEmpty(ticket.AttachmentPath))
+                                                {
+                                                    <div class="mb-3 p-3 bg-light rounded-4 border">
+                                                        <strong class="text-dark small d-block mb-2"><i class="bi bi-paperclip me-1"></i>Uploaded Verification Proof / Bilty Photo:</strong>
+                                                        <a href="@ticket.AttachmentPath" target="_blank" class="d-inline-block">
+                                                            <img src="@ticket.AttachmentPath" alt="Attachment" class="img-fluid rounded-3 border shadow-xs" style="max-height: 200px;" />
+                                                        </a>
+                                                        <small class="text-muted d-block mt-1">Click image to inspect in full resolution.</small>
+                                                    </div>
+                                                }
+
+                                                <!-- Related Order Card (If attached to an Order) -->
+                                                @if (ticket.OrderId.HasValue && relatedOrders.TryGetValue(ticket.OrderId.Value, out var relOrder))
+                                                {
+                                                    <div class="p-3 bg-primary bg-opacity-10 rounded-4 border border-primary border-opacity-25 mb-3">
+                                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                                            <strong class="text-primary small"><i class="bi bi-receipt me-1"></i>Related Order #@relOrder.Id.ToString("D5")</strong>
+                                                            <span class="badge bg-primary text-white rounded-pill px-2.5 py-1">@relOrder.Status</span>
+                                                        </div>
+                                                        <div class="row g-2 small text-dark">
+                                                            <div class="col-sm-6">Gross Amount: <strong>₹@relOrder.TotalAmount.ToString("N2")</strong></div>
+                                                            <div class="col-sm-6">Payment Mode: <strong>@relOrder.PaymentMethod</strong></div>
+                                                            <div class="col-sm-6">Bilty No: <strong class="font-monospace">@(string.IsNullOrEmpty(relOrder.BiltyNumber) ? "N/A" : relOrder.BiltyNumber)</strong></div>
+                                                            <div class="col-sm-6">Escrow Payout: <strong>@(relOrder.AdminApprovedPayout ? "Released" : "Held in Vault")</strong></div>
+                                                        </div>
+
+                                                        <!-- 1-Click Escrow Disbursal Action for Farmer Payment Disputes -->
+                                                        @if (!relOrder.AdminApprovedPayout)
+                                                        {
+                                                            <div class="form-check mt-3 pt-2 border-top border-primary border-opacity-25">
+                                                                <input class="form-check-input" type="checkbox" name="releasePayout" value="true" id="chkRelease_@ticket.Id" checked>
+                                                                <label class="form-check-label fw-bold text-success" for="chkRelease_@ticket.Id">
+                                                                    <i class="bi bi-shield-check me-1"></i> Verify Bilty &amp; Release Escrow Payout of ₹@relOrder.TotalAmount.ToString("N2") to Farmer Bank Now
+                                                                </label>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+
+                                                <!-- Admin Official Reply Textarea -->
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold text-dark small mb-1">Official Resolution &amp; Response to User <span class="text-danger">*</span></label>
+                                                    <textarea name="adminResponse" class="form-control rounded-3 p-3" rows="3" placeholder="Type official resolution message to sender (e.g. 'Your GSRTC Bilty has been verified and payout of ₹24,000 has been released to your bank account successfully.')" required>@ticket.AdminResponse</textarea>
+                                                </div>
+
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label fw-bold text-dark small mb-1">Update Status</label>
+                                                        <select name="status" class="form-select rounded-3 py-2">
+                                                            <option value="Resolved" selected="@(ticket.Status == "Resolved")">✅ Mark as Resolved</option>
+                                                            <option value="In Progress" selected="@(ticket.Status == "In Progress")">⏳ In Progress / Under Review</option>
+                                                            <option value="Closed" selected="@(ticket.Status == "Closed")">📁 Close Ticket</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="modal-footer bg-light border-top p-3 d-flex justify-content-between">
+                                                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
+                                                    <i class="bi bi-check-circle-fill me-1"></i> Save &amp; Dispatch Resolution
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- ========================================================================= -->
+    <!-- 2. FARMER PRIORITY HELPDESK & ESCROW DISBURSAL DESK                     -->
+    <!-- ========================================================================= -->
+    else if (isFarmer)
+    {
+        <div class="helpdesk-hero" style="background: linear-gradient(135deg, #064e3b 0%, #059669 100%);">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-30 rounded-pill px-3 py-1 fw-bold small">
+                            🌾 Farmer Priority Desk
+                        </span>
+                        <span class="text-white-50 small">&bull; Escrow &amp; Logistics Support</span>
+                    </div>
+                    <h2 class="fw-extrabold text-white mb-2 fs-2">
+                        🌾 Farmer Priority Helpdesk &amp; Payout Center
+                    </h2>
+                    <p class="text-white-50 small mb-0" style="max-width: 700px;">
+                        Need assistance with your Escrow Payout, GSRTC / Cargo Bilty verification, or crop listings? Submit a priority ticket directly to the administrator operations desk.
+                    </p>
+                </div>
+
+                <div>
+                    <button type="button" class="btn btn-light rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2 text-success" data-bs-toggle="modal" data-bs-target="#farmerGrievanceModal">
+                        <i class="bi bi-plus-circle-fill"></i> Raise New Ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            
+            <!-- Left Column: Active Tickets & Inquiries (7 Cols) -->
+            <div class="col-lg-7">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-ticket-detailed-fill text-success me-2"></i>My Raised Support Tickets</h5>
+                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2.5 py-1 small fw-bold">@Model.Count() Total Tickets</span>
+                </div>
+
+                @if (!Model.Any())
+                {
+                    <div class="bg-white rounded-4 border p-5 text-center shadow-xs">
+                        <i class="bi bi-patch-check-fill display-4 text-success opacity-50 mb-3 d-block"></i>
+                        <h5 class="fw-bold text-dark mb-1">No Active Grievances</h5>
+                        <p class="text-muted small mb-3">You currently have no pending payment or logistics disputes.</p>
+                        <button type="button" class="btn btn-success rounded-pill px-4 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#farmerGrievanceModal">
+                            Submit a Ticket
+                        </button>
+                    </div>
+                }
+
+                @foreach (var ticket in Model)
+                {
+                    <div class="ticket-card-box">
+                        <div class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom">
+                            <div>
+                                <span class="badge bg-light text-dark border font-monospace">#@ticket.TicketNumber</span>
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill ms-1">@ticket.Category</span>
+                            </div>
+                            <div>
+                                @if (ticket.Status == "Resolved")
+                                {
+                                    <span class="badge bg-success text-white rounded-pill px-2.5 py-1">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Resolved
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1">
+                                        <i class="bi bi-hourglass-split me-1"></i> Under Review
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold text-dark mb-1">@ticket.Subject</h6>
+                        <p class="text-muted small mb-2" style="white-space: pre-wrap;">@ticket.Message</p>
+                        <small class="text-muted font-monospace d-block mb-2" style="font-size: 0.70rem;">Submitted on: @ticket.CreatedAt.ToString("dd MMMM yyyy, hh:mm tt")</small>
+
+                        @if (!string.IsNullOrEmpty(ticket.AdminResponse))
+                        {
+                            <div class="p-3 bg-success bg-opacity-10 rounded-3 border border-success border-opacity-25 mt-3">
+                                <strong class="text-success small d-block mb-1">
+                                    <i class="bi bi-shield-check me-1"></i> Official Administrator Resolution:
+                                </strong>
+                                <p class="mb-0 text-dark small fw-semibold">@ticket.AdminResponse</p>
+                                @if (ticket.ResolvedAt.HasValue)
+                                {
+                                    <small class="text-muted d-block mt-1" style="font-size: 0.68rem;">Resolved at: @ticket.ResolvedAt.Value.ToString("dd MMM yyyy, hh:mm tt")</small>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Right Column: FAQs & Escrow Guidelines (5 Cols) -->
+            <div class="col-lg-5">
+                <div class="bg-white rounded-4 border p-4 shadow-xs mb-4">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-question-circle-fill text-success me-2"></i>Frequently Asked Questions</h6>
+                    
+                    <div class="accordion" id="farmerFaqAccordion">
+                        <div class="accordion-item border-0 mb-2 bg-light rounded-3">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold text-dark small" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                    How soon is my Escrow payout released?
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#farmerFaqAccordion">
+                                <div class="accordion-body text-muted small pt-0">
+                                    Once you upload the verified GSRTC / Cargo Bilty and the buyer confirms delivery (or 48 hours pass with zero dispute), Admin releases funds directly to your verified bank account via NEFT/UPI.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item border-0 mb-2 bg-light rounded-3">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold text-dark small" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                    What if the buyer rejects my produce unfairly?
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#farmerFaqAccordion">
+                                <div class="accordion-body text-muted small pt-0">
+                                    Our platform acts as a neutral arbitrator. If the produce matches your listing description, the buyer's payment will be released to you as per standard mandis compliance.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item border-0 bg-light rounded-3">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold text-dark small" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                    How to update my Bank IFSC or UPI details?
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#farmerFaqAccordion">
+                                <div class="accordion-body text-muted small pt-0">
+                                    Go to your <strong>Profile Settings</strong> or submit a ticket here requesting bank account KYC verification.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Helpline Card -->
+                <div class="p-3.5 bg-light rounded-4 border text-center">
+                    <i class="bi bi-headset display-6 text-success d-block mb-2"></i>
+                    <strong class="text-dark d-block">Direct Gujarat Farmer Helpline</strong>
+                    <p class="text-muted small mb-2">Mon - Sat: 8:00 AM to 8:00 PM</p>
+                    <a href="tel:18001801551" class="btn btn-outline-success rounded-pill px-4 py-1.5 fw-bold small">
+                        <i class="bi bi-telephone-fill me-1"></i> Call 1800-180-1551
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Farmer Grievance Modal -->
+        <div class="modal fade" id="farmerGrievanceModal" tabindex="-1" aria-labelledby="farmerModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content rounded-4 border-0 shadow-lg">
+                    <div class="modal-header bg-success text-white p-4">
+                        <div>
+                            <h5 class="modal-title fw-bold" id="farmerModalLabel">🌾 Submit Farmer Support Request</h5>
+                            <small class="text-white-50">Report payment delay, bilty verification, or order issues</small>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <form asp-action="CreateTicket" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="senderName" value="@(currentUser != null ? $"{currentUser.FirstName} {currentUser.LastName}".Trim() : User.Identity?.Name)" />
+                        <input type="hidden" name="senderEmail" value="@(currentUser?.Email ?? User.Identity?.Name)" />
+                        <input type="hidden" name="senderPhone" value="@currentUser?.PhoneNumber" />
+
+                        <div class="modal-body p-4">
+                            
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-dark small mb-1">Issue Category <span class="text-danger">*</span></label>
+                                    <select name="category" class="form-select rounded-3 py-2.5" required>
+                                        <option value="Escrow & Payout">💰 Escrow Payout Not Received</option>
+                                        <option value="Bilty Verification">🚚 Bilty / Transporter Assistance</option>
+                                        <option value="Account KYC">📋 Bank &amp; KYC Verification</option>
+                                        <option value="General">❓ General Inquiry</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-dark small mb-1">Related Order (If applicable)</label>
+                                    <select name="orderId" class="form-select rounded-3 py-2.5">
+                                        <option value="">-- Select Order --</option>
+                                        @foreach (var ord in farmerOrders)
+                                        {
+                                            <option value="@ord.Id">Order #@ord.Id.ToString("D5") (₹@ord.TotalAmount.ToString("N2")) - @ord.Status</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-8">
+                                    <label class="form-label fw-bold text-dark small mb-1">Subject / Summary <span class="text-danger">*</span></label>
+                                    <input type="text" name="subject" class="form-control rounded-3 py-2.5" placeholder="e.g. Uploaded GSRTC Bilty for Order #00012, Payout pending" required />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-dark small mb-1">Priority</label>
+                                    <select name="priority" class="form-select rounded-3 py-2.5">
+                                        <option value="Urgent">🚨 Urgent (Delayed Payout)</option>
+                                        <option value="High">⚠️ High</option>
+                                        <option value="Medium" selected>Standard</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-dark small mb-1">Detailed Description <span class="text-danger">*</span></label>
+                                <textarea name="message" class="form-control rounded-3 p-3" rows="4" placeholder="Explain your problem in detail. Mention transporter name, bilty receipt number, or delivery date." required></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-dark small mb-1">Attach Bilty Receipt or Document Photo (Optional)</label>
+                                <input type="file" name="attachmentFile" class="form-control rounded-3 py-2" accept="image/*,.pdf" />
+                                <small class="text-muted">Supports JPG, PNG, PDF. Max 5MB.</small>
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer bg-light border-top p-3 d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
+                                <i class="bi bi-send-fill me-1"></i> Submit Ticket
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- ========================================================================= -->
+    <!-- 3. CUSTOMER (BUYER) CARE & ORDER SUPPORT DESK                           -->
+    <!-- ========================================================================= -->
+    else if (isCustomer)
+    {
+        <div class="helpdesk-hero" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-30 rounded-pill px-3 py-1 fw-bold small">
+                            🛒 Buyer Care Center
+                        </span>
+                        <span class="text-white-50 small">&bull; 100% Escrow Buyer Protection</span>
+                    </div>
+                    <h2 class="fw-extrabold text-white mb-2 fs-2">
+                        🛒 Buyer Support &amp; Quality Redressal Desk
+                    </h2>
+                    <p class="text-white-50 small mb-0" style="max-width: 700px;">
+                        Track your crop shipments, report damaged or substandard harvest produce, or request 24-hour inspection escrow holds.
+                    </p>
+                </div>
+
+                <div>
+                    <button type="button" class="btn btn-light rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2 text-primary" data-bs-toggle="modal" data-bs-target="#customerGrievanceModal">
+                        <i class="bi bi-plus-circle-fill"></i> Report Issue / Create Ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            
+            <!-- Left Column: Customer Raised Tickets (7 Cols) -->
+            <div class="col-lg-7">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-ticket-detailed-fill text-primary me-2"></i>My Raised Support Requests</h5>
+                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2.5 py-1 small fw-bold">@Model.Count() Total</span>
+                </div>
+
+                @if (!Model.Any())
+                {
+                    <div class="bg-white rounded-4 border p-5 text-center shadow-xs">
+                        <i class="bi bi-shield-check display-4 text-primary opacity-50 mb-3 d-block"></i>
+                        <h5 class="fw-bold text-dark mb-1">No Active Issues</h5>
+                        <p class="text-muted small mb-3">Your produce orders are protected under AgriAI 100% Escrow Guarantee.</p>
+                        <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#customerGrievanceModal">
+                            Report an Issue
+                        </button>
+                    </div>
+                }
+
+                @foreach (var ticket in Model)
+                {
+                    <div class="ticket-card-box">
+                        <div class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom">
+                            <div>
+                                <span class="badge bg-light text-dark border font-monospace">#@ticket.TicketNumber</span>
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill ms-1">@ticket.Category</span>
+                            </div>
+                            <div>
+                                @if (ticket.Status == "Resolved")
+                                {
+                                    <span class="badge bg-success text-white rounded-pill px-2.5 py-1">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Resolved
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1">
+                                        <i class="bi bi-hourglass-split me-1"></i> In Progress
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold text-dark mb-1">@ticket.Subject</h6>
+                        <p class="text-muted small mb-2" style="white-space: pre-wrap;">@ticket.Message</p>
+                        <small class="text-muted font-monospace d-block mb-2" style="font-size: 0.70rem;">Submitted on: @ticket.CreatedAt.ToString("dd MMMM yyyy, hh:mm tt")</small>
+
+                        @if (!string.IsNullOrEmpty(ticket.AdminResponse))
+                        {
+                            <div class="p-3 bg-primary bg-opacity-10 rounded-3 border border-primary border-opacity-25 mt-3">
+                                <strong class="text-primary small d-block mb-1">
+                                    <i class="bi bi-shield-check me-1"></i> Administrator Resolution:
+                                </strong>
+                                <p class="mb-0 text-dark small fw-semibold">@ticket.AdminResponse</p>
+                                @if (ticket.ResolvedAt.HasValue)
+                                {
+                                    <small class="text-muted d-block mt-1" style="font-size: 0.68rem;">Resolved at: @ticket.ResolvedAt.Value.ToString("dd MMM yyyy, hh:mm tt")</small>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Right Column: Buyer FAQs (5 Cols) -->
+            <div class="col-lg-5">
+                <div class="bg-white rounded-4 border p-4 shadow-xs mb-4">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-shield-check text-primary me-2"></i>Buyer Protection Guarantee</h6>
+                    
+                    <div class="accordion" id="buyerFaqAccordion">
+                        <div class="accordion-item border-0 mb-2 bg-light rounded-3">
+                            <h2 class="accordion-header" id="bheadingOne">
+                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold text-dark small" type="button" data-bs-toggle="collapse" data-bs-target="#bcollapseOne">
+                                    How does the 100% Escrow Protection work?
+                                </button>
+                            </h2>
+                            <div id="bcollapseOne" class="accordion-collapse collapse" data-bs-parent="#buyerFaqAccordion">
+                                <div class="accordion-body text-muted small pt-0">
+                                    When you pay for an order, your money is securely deposited in our licensed Escrow Vault. The farmer is ONLY paid after you receive and inspect your harvest shipment.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item border-0 mb-2 bg-light rounded-3">
+                            <h2 class="accordion-header" id="bheadingTwo">
+                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold text-dark small" type="button" data-bs-toggle="collapse" data-bs-target="#bcollapseTwo">
+                                    What if the crop quality is damaged or substandard?
+                                </button>
+                            </h2>
+                            <div id="bcollapseTwo" class="accordion-collapse collapse" data-bs-parent="#buyerFaqAccordion">
+                                <div class="accordion-body text-muted small pt-0">
+                                    Upload clear photos of the damaged produce within 24 hours of delivery. Admin will hold the farmer payout and process a partial or full refund.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Care Card -->
+                <div class="p-3.5 bg-light rounded-4 border text-center">
+                    <i class="bi bi-chat-dots-fill display-6 text-primary d-block mb-2"></i>
+                    <strong class="text-dark d-block">Buyer Support Desk</strong>
+                    <p class="text-muted small mb-2">Email: support@agriai.gujarat.gov.in</p>
+                    <a href="mailto:support@agriai.com" class="btn btn-outline-primary rounded-pill px-4 py-1.5 fw-bold small">
+                        <i class="bi bi-envelope-fill me-1"></i> Send Support Email
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Customer Grievance Modal -->
+        <div class="modal fade" id="customerGrievanceModal" tabindex="-1" aria-labelledby="custModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content rounded-4 border-0 shadow-lg">
+                    <div class="modal-header bg-primary text-white p-4">
+                        <div>
+                            <h5 class="modal-title fw-bold" id="custModalLabel">🛒 Report Issue / Customer Ticket</h5>
+                            <small class="text-white-50">Report damaged goods, shipment delay, or request refund</small>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <form asp-action="CreateTicket" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="senderName" value="@(currentUser != null ? $"{currentUser.FirstName} {currentUser.LastName}".Trim() : User.Identity?.Name)" />
+                        <input type="hidden" name="senderEmail" value="@(currentUser?.Email ?? User.Identity?.Name)" />
+                        <input type="hidden" name="senderPhone" value="@currentUser?.PhoneNumber" />
+
+                        <div class="modal-body p-4">
+                            
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-dark small mb-1">Issue Category <span class="text-danger">*</span></label>
+                                    <select name="category" class="form-select rounded-3 py-2.5" required>
+                                        <option value="Quality Issue">⚠️ Damaged / Substandard Quality</option>
+                                        <option value="Delivery Delay">🚚 Shipment Delay / Tracking</option>
+                                        <option value="Refund & Cancellation">💳 Refund / Cancellation Request</option>
+                                        <option value="General">❓ General Inquiry</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-dark small mb-1">Related Order (If applicable)</label>
+                                    <select name="orderId" class="form-select rounded-3 py-2.5">
+                                        <option value="">-- Select Order --</option>
+                                        @foreach (var ord in customerOrders)
+                                        {
+                                            <option value="@ord.Id">Order #@ord.Id.ToString("D5") (₹@ord.TotalAmount.ToString("N2")) - @ord.Status</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-8">
+                                    <label class="form-label fw-bold text-dark small mb-1">Subject / Summary <span class="text-danger">*</span></label>
+                                    <input type="text" name="subject" class="form-control rounded-3 py-2.5" placeholder="e.g. Received damaged crop packaging for Order #00015" required />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-dark small mb-1">Priority</label>
+                                    <select name="priority" class="form-select rounded-3 py-2.5">
+                                        <option value="High">⚠️ High</option>
+                                        <option value="Medium" selected>Standard</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-dark small mb-1">Detailed Description <span class="text-danger">*</span></label>
+                                <textarea name="message" class="form-control rounded-3 p-3" rows="4" placeholder="Explain what went wrong. For quality claims, specify damage percentage or weight shortage." required></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-dark small mb-1">Attach Photo of Damaged Produce / Unboxing (Optional)</label>
+                                <input type="file" name="attachmentFile" class="form-control rounded-3 py-2" accept="image/*,.pdf" />
+                                <small class="text-muted">Supports JPG, PNG, PDF. Max 5MB.</small>
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer bg-light border-top p-3 d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); border: none;">
+                                <i class="bi bi-send-fill me-1"></i> Submit Ticket
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- ========================================================================= -->
+    <!-- 4. GUEST / PUBLIC VISITOR HELPDESK & INQUIRY CENTER                     -->
+    <!-- ========================================================================= -->
+    else
+    {
+        <div class="helpdesk-hero" style="background: linear-gradient(135deg, #1e293b 0%, #006653 100%);">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-30 rounded-pill px-3 py-1 fw-bold small">
+                            🌾 Public Helpdesk &amp; Guidance
+                        </span>
+                        <span class="text-white-50 small">&bull; Gujarat Digital Agri Network</span>
+                    </div>
+                    <h2 class="fw-extrabold text-white mb-2 fs-2">
+                        AgriAI Helpdesk &amp; Public Guidance Center
+                    </h2>
+                    <p class="text-white-50 small mb-0" style="max-width: 700px;">
+                        Have questions about direct farmer selling, escrow payments, APMC rates, or AI models? Reach out to our team or explore our guides below.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            
+            <!-- Left Column: Public Inquiry Form (7 Cols) -->
+            <div class="col-lg-7">
+                <div class="bg-white rounded-4 border p-4 p-md-5 shadow-sm">
+                    <h4 class="fw-bold text-dark mb-1">Send a Message / Support Request</h4>
+                    <p class="text-muted small mb-4">Our operations team responds within 24 hours.</p>
+
+                    <form asp-action="CreateTicket" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark small mb-1">Your Full Name <span class="text-danger">*</span></label>
+                                <input type="text" name="senderName" class="form-control rounded-3 py-2.5" placeholder="e.g. Ramesh Patel" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark small mb-1">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" name="senderEmail" class="form-control rounded-3 py-2.5" placeholder="e.g. ramesh@gmail.com" required />
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark small mb-1">Mobile Number (Optional)</label>
+                                <input type="tel" name="senderPhone" class="form-control rounded-3 py-2.5" placeholder="+91 98765 43210" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark small mb-1">Topic / Category <span class="text-danger">*</span></label>
+                                <select name="category" class="form-select rounded-3 py-2.5" required>
+                                    <option value="General">❓ General Platform Question</option>
+                                    <option value="Farmer Registration">🌾 How to Register as Farmer</option>
+                                    <option value="Buyer Inquiries">🛒 Bulk Produce Purchasing</option>
+                                    <option value="AI Tools">🤖 AI Predictor Assistance</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark small mb-1">Subject <span class="text-danger">*</span></label>
+                            <input type="text" name="subject" class="form-control rounded-3 py-2.5" placeholder="Brief summary of your inquiry" required />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark small mb-1">Your Message <span class="text-danger">*</span></label>
+                            <textarea name="message" class="form-control rounded-3 p-3" rows="4" placeholder="How can we assist you today?" required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-success rounded-pill px-5 py-2.5 fw-bold shadow-sm" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
+                            <i class="bi bi-send-fill me-1.5"></i> Submit Inquiry
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Column: Info Cards & Helpline (5 Cols) -->
+            <div class="col-lg-5">
+                <div class="bg-white rounded-4 border p-4 shadow-xs mb-4">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-compass-fill text-success me-2"></i>Getting Started Guides</h6>
+
+                    <div class="d-flex align-items-start gap-3 p-3 bg-light rounded-3 mb-2">
+                        <i class="bi bi-person-plus-fill fs-4 text-success"></i>
+                        <div>
+                            <strong class="d-block text-dark small">Farmer Registration</strong>
+                            <small class="text-muted">Register with your 7/12 land document and bank account to sell crops with 0% middleman fees.</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start gap-3 p-3 bg-light rounded-3 mb-2">
+                        <i class="bi bi-shield-check fs-4 text-primary"></i>
+                        <div>
+                            <strong class="d-block text-dark small">100% Escrow Protection</strong>
+                            <small class="text-muted">Your funds remain safely in the Escrow vault until the produce arrives and passes inspection.</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start gap-3 p-3 bg-light rounded-3">
+                        <i class="bi bi-truck fs-4 text-warning"></i>
+                        <div>
+                            <strong class="d-block text-dark small">GSRTC &amp; Cargo Bilty Logistics</strong>
+                            <small class="text-muted">Statewide agricultural transport connectivity with official receipt tracking.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-light rounded-4 border text-center">
+                    <i class="bi bi-headset display-5 text-success d-block mb-2"></i>
+                    <h6 class="fw-bold text-dark mb-1">Need Immediate Assistance?</h6>
+                    <p class="text-muted small mb-3">Our helpline operates 6 days a week across Gujarat.</p>
+                    <a href="tel:18001801551" class="btn btn-outline-dark rounded-pill px-4 py-2 fw-bold small">
+                        <i class="bi bi-telephone-fill me-1 text-success"></i> Toll-Free: 1800-180-1551
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    }
+
+</div>
