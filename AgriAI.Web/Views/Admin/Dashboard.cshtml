@@ -903,70 +903,255 @@
                         </div>
                     </div>
 
-                    <!-- 7. MODULE: Accounting & Financial Export Reports -->
+                    <!-- 7. MODULE: Strategic Financial Intelligence & Decision Hub -->
                     <div id="adminReportsTab" class="dash-tab-panel @(activeTab == "reports" ? "active" : "")">
-                        <div class="dash-section-header">
+                        
+                        <!-- Header Section -->
+                        <div class="dash-section-header mb-4">
                             <div>
-                                <h3 class="dash-section-title">Reports &amp; Financial Auditing 📑</h3>
-                                <p class="text-muted small mb-0">Generate and download official CSV and PDF audit logs for transactions, escrow payouts, and GST reconciliation.</p>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1 fw-bold small">
+                                        <i class="bi bi-graph-up-arrow me-1"></i> Executive Business Intelligence
+                                    </span>
+                                    <span class="text-muted small">&bull; Real-time Decision Support System</span>
+                                </div>
+                                <h3 class="dash-section-title mb-1">📊 Strategic Reports, Financial Intelligence &amp; Business Decisions</h3>
+                                <p class="text-muted small mb-0">Transform platform trade data into certified statements for GST tax filing, bank NEFT transfers, profit &amp; loss analysis, and investor reviews.</p>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-dark rounded-pill px-3.5 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" onclick="window.print()" style="font-size: 0.86rem;">
+                                    <i class="bi bi-printer-fill"></i> 1-Page Summary (PDF)
+                                </button>
                             </div>
                         </div>
 
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-6">
-                                <div class="p-4 bg-light rounded-4 border h-100 d-flex flex-column justify-content-between">
-                                    <div>
-                                        <div class="d-flex align-items-center gap-2 mb-2">
-                                            <i class="bi bi-file-earmark-spreadsheet-fill text-success fs-4"></i>
-                                            <h5 class="fw-bold text-dark mb-0">Orders &amp; Sales Master Ledger</h5>
-                                        </div>
-                                        <p class="text-muted small mb-3">
-                                            Comprehensive ledger containing Order IDs, Buyer names, Contact details, Crop varieties, Gross bill amounts, Delivery addresses, Bilty references, and Escrow clearance flags.
-                                        </p>
+                        <!-- 4 Live Decision Metric Cards (Real-time P&L Snapshot) -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-xl-3 col-sm-6">
+                                <div class="p-3.5 bg-white rounded-4 border shadow-xs h-100">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">Platform Net Commission (P&amp;L)</small>
+                                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-0.5 small fw-bold">2% Realized</span>
                                     </div>
-                                    <div class="d-flex flex-column gap-2">
-                                        <a asp-action="ExportOrdersCsv" class="btn btn-success rounded-pill fw-bold w-100 py-2.5 shadow-sm" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
-                                            <i class="bi bi-file-earmark-excel-fill me-1"></i> Download Master Orders (.CSV / Excel)
+                                    <h4 class="fw-extrabold text-success mb-1 fs-4">₹@totalRevenue.ToString("N2")</h4>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Net earned revenue for AgriAI</small>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-sm-6">
+                                <div class="p-3.5 bg-white rounded-4 border shadow-xs h-100">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">Total Traded Crop Volume</small>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-0.5 small fw-bold">GMV</span>
+                                    </div>
+                                    @{
+                                        decimal grossVal = Model.Sum(o => o.TotalAmount);
+                                    }
+                                    <h4 class="fw-extrabold text-dark mb-1 fs-4">₹@grossVal.ToString("N2")</h4>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Across @Model.Count() total orders</small>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-sm-6">
+                                <div class="p-3.5 bg-white rounded-4 border shadow-xs h-100">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">Active Escrow Vault Reserve</small>
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2 py-0.5 small fw-bold text-dark">Protected</span>
+                                    </div>
+                                    <h4 class="fw-extrabold text-dark mb-1 fs-4">₹@escrowBalance.ToString("N2")</h4>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Secured until Bilty delivery</small>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-sm-6">
+                                <div class="p-3.5 bg-white rounded-4 border shadow-xs h-100">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">Farmer Disbursals Settled</small>
+                                        <span class="badge bg-success text-white rounded-pill px-2 py-0.5 small fw-bold">100% Paid</span>
+                                    </div>
+                                    <h4 class="fw-extrabold text-primary mb-1 fs-4">₹@releasedPayouts.ToString("N2")</h4>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Transferred to verified bank accounts</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5 Strategic Decision & Reporting Modules -->
+                        <div class="row g-3 g-lg-4 mb-4">
+                            
+                            <!-- Module 1: Sales & Demand Analysis -->
+                            <div class="col-lg-6">
+                                <div class="p-4 bg-white rounded-4 border shadow-xs h-100 d-flex flex-column justify-content-between" style="border-left: 4px solid #16a34a !important;">
+                                    <div>
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="rounded-3 bg-success bg-opacity-10 text-success p-2.5 fs-5">
+                                                    <i class="bi bi-graph-up"></i>
+                                                </div>
+                                                <div>
+                                                    <h5 class="fw-bold text-dark mb-0">૧. માસિક / વાર્ષિક સેલ્સ એનાલિસિસ</h5>
+                                                    <small class="text-muted">Monthly / Yearly Sales &amp; Market Growth Intelligence</small>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1 small fw-bold">Market Demand</span>
+                                        </div>
+
+                                        <div class="p-3 bg-light rounded-3 border my-3">
+                                            <strong class="d-block text-dark small mb-1">🎯 કયા નિર્ણયો લઈ શકાય? (Strategic Decisions):</strong>
+                                            <ul class="mb-0 text-muted small ps-3" style="line-height: 1.6;">
+                                                <li>ગુજરાતના કયા જિલ્લાઓમાં (રાજકોટ, ઊંઝા, ગોંડલ) કયા પાકની સૌથી વધુ માંગ છે તે જાણી શકાય.</li>
+                                                <li>ગત મહિના કરતાં આ મહિને વેચાણમાં કેટલો ગ્રોથ થયો તે સરખાવી શકાય.</li>
+                                                <li>ખેડૂતોને કયો પાક વધુ વાવવા માટે પ્રેરિત કરવા તે નક્કી કરી શકાય.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex flex-wrap gap-2 pt-2 border-top">
+                                        <a asp-action="OrdersReport" class="btn btn-success rounded-pill px-3.5 py-2 fw-bold shadow-sm flex-grow-1" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
+                                            <i class="bi bi-file-earmark-pdf-fill me-1"></i> View Sales Analysis Statement (PDF)
                                         </a>
-                                        <a asp-action="EscrowStatement" class="btn btn-outline-success bg-white rounded-pill fw-bold w-100 py-2 shadow-xs">
-                                            <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> View Printable Financial Statement (PDF)
+                                        <a asp-action="ExportOrdersCsv" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-bold shadow-xs">
+                                            <i class="bi bi-file-earmark-excel-fill text-success me-1"></i> Excel (.CSV)
                                         </a>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="p-4 bg-light rounded-4 border h-100 d-flex flex-column justify-content-between">
+                            <!-- Module 2: CA Accounting & GST Filing -->
+                            <div class="col-lg-6">
+                                <div class="p-4 bg-white rounded-4 border shadow-xs h-100 d-flex flex-column justify-content-between" style="border-left: 4px solid #2563eb !important;">
                                     <div>
-                                        <div class="d-flex align-items-center gap-2 mb-2">
-                                            <i class="bi bi-bank text-primary fs-4"></i>
-                                            <h5 class="fw-bold text-dark mb-0">Farmer Payouts &amp; Banking Audit</h5>
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="rounded-3 bg-primary bg-opacity-10 text-primary p-2.5 fs-5">
+                                                    <i class="bi bi-receipt-cutoff"></i>
+                                                </div>
+                                                <div>
+                                                    <h5 class="fw-bold text-dark mb-0">૨. CA એકાઉન્ટિંગ &amp; GST ફાઇલિંગ</h5>
+                                                    <small class="text-muted">Chartered Accountant Tax Ledger &amp; GST Reconciliation</small>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2.5 py-1 small fw-bold">Tax Audit</span>
                                         </div>
-                                        <p class="text-muted small mb-3">
-                                            Audit report listing all Producer names, KYC approvals, Bank account numbers, IFSC codes, UPI handles, Gross sales, Escrow reserves, and settled payouts.
-                                        </p>
+
+                                        <div class="p-3 bg-light rounded-3 border my-3">
+                                            <strong class="d-block text-dark small mb-1">🎯 કયા નિર્ણયો લઈ શકાય? (Strategic Decisions):</strong>
+                                            <ul class="mb-0 text-muted small ps-3" style="line-height: 1.6;">
+                                                <li>ચાર્ટર્ડ એકાઉન્ટન્ટ (CA) ને આપવા માટે 100% ચોખ્ખો અને ઑડિટેડ ટેક્સ લેજર મળી રહે.</li>
+                                                <li>પ્લેટફોર્મ કમિશન પર 18% GST ની ગણતરી અને ઇનપુટ ટેક્સ ક્રેડિટ (ITC) સરળ બને.</li>
+                                                <li>ટ્રાન્સપોર્ટ બિલ્ટી (Bilty) ના આધારે સરકારી GST E-Way Bill ઓડિટ ક્લિયર થાય.</li>
+                                            </ul>
+                                        </div>
                                     </div>
-                                    <div class="d-flex flex-column gap-2">
-                                        <a asp-action="ExportPayoutsCsv" class="btn btn-primary rounded-pill fw-bold w-100 py-2.5 shadow-sm" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); border: none;">
-                                            <i class="bi bi-file-earmark-excel-fill me-1"></i> Download Banking Audit (.CSV / Excel)
+
+                                    <div class="d-flex flex-wrap gap-2 pt-2 border-top">
+                                        <a asp-action="OrdersReport" class="btn btn-primary rounded-pill px-3.5 py-2 fw-bold shadow-sm flex-grow-1" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); border: none;">
+                                            <i class="bi bi-file-earmark-pdf-fill me-1"></i> Download GST &amp; Tax Audit (PDF)
                                         </a>
-                                        <a asp-action="EscrowStatement" class="btn btn-outline-primary bg-white rounded-pill fw-bold w-100 py-2 shadow-xs">
-                                            <i class="bi bi-shield-check text-primary me-1"></i> Escrow Vault Ledger (PDF)
+                                        <a asp-action="ExportOrdersCsv" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-bold shadow-xs">
+                                            <i class="bi bi-file-earmark-excel-fill text-primary me-1"></i> Excel (.CSV)
                                         </a>
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Module 3: Direct Bank NEFT/RTGS Disbursals -->
+                            <div class="col-lg-6">
+                                <div class="p-4 bg-white rounded-4 border shadow-xs h-100 d-flex flex-column justify-content-between" style="border-left: 4px solid #0891b2 !important;">
+                                    <div>
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="rounded-3 bg-info bg-opacity-10 text-info p-2.5 fs-5">
+                                                    <i class="bi bi-bank2"></i>
+                                                </div>
+                                                <div>
+                                                    <h5 class="fw-bold text-dark mb-0">૩. ખેડૂતોને બેંક NEFT / RTGS ટ્રાન્સફર</h5>
+                                                    <small class="text-muted">Direct Farmer Bank Payouts &amp; Disbursal Compliance</small>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 rounded-pill px-2.5 py-1 small fw-bold">Banking Sheet</span>
+                                        </div>
+
+                                        <div class="p-3 bg-light rounded-3 border my-3">
+                                            <strong class="d-block text-dark small mb-1">🎯 કયા નિર્ણયો લઈ શકાય? (Strategic Decisions):</strong>
+                                            <ul class="mb-0 text-muted small ps-3" style="line-height: 1.6;">
+                                                <li>ખેડૂતોના વેરીફાઈડ બેંક ખાતા નંબર, IFSC કોડ અને UPI ID ની સત્તાવાર યાદી મળે.</li>
+                                                <li>બેંકમાં NEFT / RTGS બેચ પેમેન્ટ અપલોડ કરીને ૧-સાથે બધા ખેડૂતોને પેઆઉટ ચૂકવી શકાય.</li>
+                                                <li>કોઈ ખેડૂતનું KYC કે બેંક વિગતો બાકી હોય તો તે તરત જ પકડી શકાય.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex flex-wrap gap-2 pt-2 border-top">
+                                        <a asp-action="PayoutsReport" class="btn btn-dark rounded-pill px-3.5 py-2 fw-bold shadow-sm flex-grow-1">
+                                            <i class="bi bi-file-earmark-pdf-fill me-1 text-info"></i> View Bank Disbursal Ledger (PDF)
+                                        </a>
+                                        <a asp-action="ExportPayoutsCsv" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-bold shadow-xs">
+                                            <i class="bi bi-file-earmark-excel-fill text-info me-1"></i> Excel Sheet (.CSV)
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Module 4: Platform Profit & Loss (P&L) Audit -->
+                            <div class="col-lg-6">
+                                <div class="p-4 bg-white rounded-4 border shadow-xs h-100 d-flex flex-column justify-content-between" style="border-left: 4px solid #b45309 !important;">
+                                    <div>
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="rounded-3 bg-warning bg-opacity-10 text-warning p-2.5 fs-5">
+                                                    <i class="bi bi-shield-check"></i>
+                                                </div>
+                                                <div>
+                                                    <h5 class="fw-bold text-dark mb-0">૪. પ્લેટફોર્મ વાસ્તવિક આવક (P&amp;L) &amp; એસ્ક્રો ઓડિટ</h5>
+                                                    <small class="text-muted">Platform Profit &amp; Loss Statement &amp; Escrow Vault Ledger</small>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1 small fw-bold text-dark">Real P&amp;L</span>
+                                        </div>
+
+                                        <div class="p-3 bg-light rounded-3 border my-3">
+                                            <strong class="d-block text-dark small mb-1">🎯 કયા નિર્ણયો લઈ શકાય? (Strategic Decisions):</strong>
+                                            <ul class="mb-0 text-muted small ps-3" style="line-height: 1.6;">
+                                                <li>ખરીદદારો પાસેથી આવેલી ગ્રોસ રકમ સામે ખેડૂતોને કેટલી ચૂકવાઈ અને વોલ્ટમાં કેટલી છે તે તપાસી શકાય.</li>
+                                                <li>AgriAI પ્લેટફોર્મની ચોખ્ખી 2% કમિશન આવક (Net Profit) તારીખ-વાર અને મહિના-વાર સ્પષ્ટ દેખાય.</li>
+                                                <li>100% એસ્ક્રો સુરક્ષા સાથે શૂન્ય ફ્રોડ રેશિયો જાળવી શકાય.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex flex-wrap gap-2 pt-2 border-top">
+                                        <a asp-action="EscrowStatement" class="btn btn-outline-dark bg-white rounded-pill px-3.5 py-2 fw-bold shadow-xs flex-grow-1">
+                                            <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> View Escrow P&amp;L Statement (PDF)
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
 
-                        <div class="p-3 bg-white rounded-4 border shadow-sm d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-                            <div>
-                                <h6 class="fw-bold text-dark mb-0"><i class="bi bi-printer-fill text-dark me-2"></i>Official Executive System Summary (PDF View)</h6>
-                                <small class="text-muted">Generate a printer-ready summary of platform performance for stakeholder review.</small>
+                        <!-- Module 5: Investor Review & Board Pitch Summary -->
+                        <div class="p-4 bg-light rounded-4 border shadow-sm mb-4" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center fw-bold fs-4 flex-shrink-0" style="width: 52px; height: 52px;">
+                                        <i class="bi bi-briefcase-fill"></i>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-dark text-white rounded-pill px-3 py-1 small fw-bold mb-1">૫. EXECUTIVE PITCH &amp; BOARD REVIEW</span>
+                                        <h5 class="fw-bold text-dark mb-1">બિઝનેસ મીટિંગ્સ, બેંકો &amp; ઇન્વેસ્ટર રિવ્યૂ માટે સત્તાવાર સમરી</h5>
+                                        <p class="text-muted small mb-0">
+                                            સરકાર, નબાર્ડ (NABARD), બેંકો કે વેન્ચર ઇન્વેસ્ટર્સ સમક્ષ પ્લેટફોર્મની વિશ્વસનીયતા, ગ્રોથ અને સુરક્ષિત ટ્રાન્ઝેક્શન્સ રજૂ કરવા માટેનું સત્તાવાર ૧-પેજ પર્ફોર્મન્સ સમરી સ્ટેટમેન્ટ.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                                    <button type="button" class="btn btn-dark rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2" onclick="window.print()">
+                                        <i class="bi bi-printer-fill"></i> Print / Save 1-Page Summary
+                                    </button>
+                                </div>
                             </div>
-                            <button type="button" class="btn btn-outline-dark rounded-pill px-4 py-2 fw-bold small" onclick="window.print()">
-                                <i class="bi bi-printer me-1"></i> Print / Save PDF
-                            </button>
                         </div>
+
                     </div>
 
                     <!-- Admin Profile Settings -->

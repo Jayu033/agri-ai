@@ -741,5 +741,117 @@ namespace AgriAI.Web.Controllers
 
             return View(model);
         }
+
+        // GET: /Admin/OrdersReport
+        [HttpGet]
+        public async Task<IActionResult> OrdersReport(string? period, DateTime? fromDate, DateTime? toDate, int? year, int? month)
+        {
+            var query = _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(i => i.Product)
+                .AsQueryable();
+
+            var now = DateTime.UtcNow;
+            string selectedPeriod = (period ?? "all").ToLower();
+
+            int selYear = year ?? now.Year;
+            int selMonth = month ?? now.Month;
+
+            if (selectedPeriod == "today")
+            {
+                var todayStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc);
+                query = query.Where(o => o.OrderDate >= todayStart);
+            }
+            else if (selectedPeriod == "this_month")
+            {
+                var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                query = query.Where(o => o.OrderDate >= monthStart);
+            }
+            else if (selectedPeriod == "last_month")
+            {
+                var lastMonth = now.AddMonths(-1);
+                var lmStart = new DateTime(lastMonth.Year, lastMonth.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                var lmEnd = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                query = query.Where(o => o.OrderDate >= lmStart && o.OrderDate < lmEnd);
+            }
+            else if (selectedPeriod == "this_year")
+            {
+                var yearStart = new DateTime(now.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                query = query.Where(o => o.OrderDate >= yearStart);
+            }
+            else if (selectedPeriod == "custom")
+            {
+                if (fromDate.HasValue) query = query.Where(o => o.OrderDate >= fromDate.Value);
+                if (toDate.HasValue)
+                {
+                    var endOfDay = toDate.Value.Date.AddDays(1).AddTicks(-1);
+                    query = query.Where(o => o.OrderDate <= endOfDay);
+                }
+            }
+            else if (selectedPeriod == "month_select" && month.HasValue && year.HasValue)
+            {
+                var mStart = new DateTime(year.Value, month.Value, 1, 0, 0, 0, DateTimeKind.Utc);
+                var mEnd = mStart.AddMonths(1);
+                query = query.Where(o => o.OrderDate >= mStart && o.OrderDate < mEnd);
+            }
+            else if (selectedPeriod == "year_select" && year.HasValue)
+            {
+                var yStart = new DateTime(year.Value, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                var yEnd = yStart.AddYears(1);
+                query = query.Where(o => o.OrderDate >= yStart && o.OrderDate < yEnd);
+            }
+
+            var orders = await query.OrderByDescending(o => o.OrderDate).ToListAsync();
+            var allUsers = await _userManager.Users.ToListAsync();
+            var userMap = allUsers.ToDictionary(u => u.Id, u => u);
+            foreach (var u in allUsers.Where(u => !string.IsNullOrEmpty(u.UserName)))
+            {
+                if (!userMap.ContainsKey(u.UserName!)) userMap[u.UserName!] = u;
+            }
+
+            ViewBag.UserMap = userMap;
+            ViewBag.SelectedPeriod = selectedPeriod;
+            ViewBag.SelectedYear = selYear;
+            ViewBag.SelectedMonth = selMonth;
+
+            return View(orders);
+        }
+
+        // GET: /Admin/PayoutsReport
+        [HttpGet]
+        public async Task<IActionResult> PayoutsReport()
+        {
+            var allUsers = await _userManager.Users.ToListAsync();
+            var userVMs = new List<UserManagementViewModel>();
+
+            foreach (var user in allUsers)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                var primaryRole = roles.FirstOrDefault() ?? "Customer";
+                bool isBlocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
+
+                userVMs.Add(new UserManagementViewModel
+                {
+                    Id = user.Id,
+                    Username = user.UserName ?? string.Empty,
+                    Email = user.Email ?? "No Email",
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    ProfilePicturePath = user.ProfilePicturePath,
+                    Role = primaryRole,
+                    IsApprovedByAdmin = user.IsApprovedByAdmin,
+                    IsBlocked = isBlocked,
+                    City = user.City,
+                    Address = user.Address,
+                    BankName = user.BankName,
+                    BankAccountNumber = user.BankAccountNumber,
+                    BankIfscCode = user.BankIfscCode,
+                    UpiId = user.UpiId,
+                    CreatedAt = user.CreatedAt
+                });
+            }
+
+            return View(userVMs);
+        }
     }
 }

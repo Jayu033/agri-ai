@@ -1,0 +1,286 @@
+@model IEnumerable<AgriAI.Domain.Entities.Order>
+
+@{
+    ViewData["Title"] = "Master Orders & Sales Report - Official Statement";
+    var userMap = ViewBag.UserMap as Dictionary<string, AgriAI.Infrastructure.Identity.ApplicationUser> ?? new Dictionary<string, AgriAI.Infrastructure.Identity.ApplicationUser>();
+    
+    decimal totalGross = Model.Sum(o => o.TotalAmount);
+    decimal totalPlatformFee = Model.Sum(o => o.PlatformFee);
+    decimal totalFarmerEarnings = totalGross - totalPlatformFee;
+    int totalOrdersCount = Model.Count();
+    int deliveredCount = Model.Count(o => o.Status == "Delivered & Settled" || o.AdminApprovedPayout);
+    int pendingCount = Model.Count(o => o.Status != "Delivered & Settled" && o.Status != "Cancelled" && o.Status != "Declined" && !o.AdminApprovedPayout);
+
+    string selectedPeriod = ViewBag.SelectedPeriod as string ?? "all";
+    int currentYear = DateTime.UtcNow.Year;
+    int currentMonth = DateTime.UtcNow.Month;
+    int selYear = ViewBag.SelectedYear ?? currentYear;
+    int selMonth = ViewBag.SelectedMonth ?? currentMonth;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Admin.css" asp-append-version="true" />
+    <style>
+        @@media print {
+            .no-print, header, footer, .floating-chatbot, #openChatBtn, #agriAiChatbot {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-size: 11pt !important;
+            }
+            .statement-container {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .statement-card {
+                border: 1px solid #ddd !important;
+                box-shadow: none !important;
+            }
+        }
+        .report-filter-pill {
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 0.80rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            background: #ffffff;
+            transition: all 0.2s ease;
+        }
+        .report-filter-pill:hover,
+        .report-filter-pill.active {
+            background: #1e293b;
+            color: #ffffff;
+            border-color: #1e293b;
+        }
+    </style>
+}
+
+<div class="container-fluid py-4 px-lg-4 px-md-3 statement-container" style="max-width: 1440px;">
+    
+    <!-- Top Action Bar (No Print) -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 no-print">
+        <div class="d-flex align-items-center gap-2">
+            <a asp-controller="Admin" asp-action="Dashboard" asp-route-tab="reports" class="btn-back-custom shadow-sm">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Reports Dashboard</span>
+            </a>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a asp-action="ExportOrdersCsv" class="btn btn-outline-success bg-white rounded-pill px-3.5 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" style="font-size: 0.86rem;">
+                <i class="bi bi-file-earmark-excel-fill text-success"></i> Download Excel / CSV
+            </a>
+            <button type="button" class="btn btn-dark rounded-pill px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" onclick="window.print()" style="font-size: 0.86rem;">
+                <i class="bi bi-printer-fill"></i> Print / Save as PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Statement Document Paper -->
+    <div class="bg-white rounded-4 border shadow-sm p-4 p-md-5 statement-card">
+        
+        <!-- Header Banner -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center pb-4 mb-4 border-bottom gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1 fw-bold small">
+                        🌾 AgriAI Official Financial Ledger
+                    </span>
+                    <span class="text-muted small">&bull; Gujarat Agri Market Network</span>
+                </div>
+                <h2 class="fw-extrabold text-dark mb-1 fs-3">
+                    📦 Master Orders &amp; Sales Statement
+                </h2>
+                <p class="text-muted small mb-0">Official chronological ledger of customer crop orders, bilty logistics, and escrow disbursements.</p>
+            </div>
+            <div class="text-md-end text-muted small">
+                <div>Statement Date: <strong class="text-dark">@DateTime.UtcNow.ToString("dd MMMM yyyy")</strong></div>
+                <div>Generated By: <strong class="text-dark">Administrator Portal</strong></div>
+                <div>Total Records: <strong class="text-dark">@totalOrdersCount Orders</strong></div>
+            </div>
+        </div>
+
+        <!-- Filter Controls (No Print) -->
+        <div class="p-3 bg-light rounded-4 border mb-4 no-print">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="text-muted fw-bold small text-uppercase" style="font-size: 0.72rem;">Period Filter:</span>
+                    <a asp-action="OrdersReport" asp-route-period="all" class="report-filter-pill @(selectedPeriod == "all" ? "active" : "")">All Time</a>
+                    <a asp-action="OrdersReport" asp-route-period="today" class="report-filter-pill @(selectedPeriod == "today" ? "active" : "")">Today</a>
+                    <a asp-action="OrdersReport" asp-route-period="this_month" class="report-filter-pill @(selectedPeriod == "this_month" ? "active" : "")">This Month</a>
+                    <a asp-action="OrdersReport" asp-route-period="last_month" class="report-filter-pill @(selectedPeriod == "last_month" ? "active" : "")">Last Month</a>
+                    <a asp-action="OrdersReport" asp-route-period="this_year" class="report-filter-pill @(selectedPeriod == "this_year" ? "active" : "")">Year @currentYear</a>
+                </div>
+
+                <!-- Custom Month / Year Selector -->
+                <form asp-action="OrdersReport" method="get" class="d-flex align-items-center gap-2">
+                    <input type="hidden" name="period" value="month_select" />
+                    <select name="month" class="form-select form-select-sm rounded-pill bg-white shadow-none" style="width: 120px; font-size: 0.80rem;">
+                        @for (int m = 1; m <= 12; m++)
+                        {
+                            <option value="@m" selected="@(m == selMonth)">@(new DateTime(2026, m, 1).ToString("MMMM"))</option>
+                        }
+                    </select>
+                    <select name="year" class="form-select form-select-sm rounded-pill bg-white shadow-none" style="width: 95px; font-size: 0.80rem;">
+                        @for (int y = currentYear - 2; y <= currentYear + 1; y++)
+                        {
+                            <option value="@y" selected="@(y == selYear)">@y</option>
+                        }
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold" style="font-size: 0.80rem;">Filter</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 4 Financial Summary Stat Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="p-3 bg-light rounded-4 border">
+                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Total Gross Trade Value</small>
+                    <h4 class="fw-extrabold text-dark mb-0 fs-5">₹@totalGross.ToString("N2")</h4>
+                    <small class="text-muted" style="font-size: 0.70rem;">Across @totalOrdersCount orders</small>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="p-3 bg-light rounded-4 border">
+                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Platform Commission (2%)</small>
+                    <h4 class="fw-extrabold text-success mb-0 fs-5">₹@totalPlatformFee.ToString("N2")</h4>
+                    <small class="text-muted" style="font-size: 0.70rem;">AgriAI Platform Revenue</small>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="p-3 bg-light rounded-4 border">
+                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Farmer Net Earnings</small>
+                    <h4 class="fw-extrabold text-primary mb-0 fs-5">₹@totalFarmerEarnings.ToString("N2")</h4>
+                    <small class="text-muted" style="font-size: 0.70rem;">Direct agricultural payouts</small>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="p-3 bg-light rounded-4 border">
+                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Settlement Ratio</small>
+                    <h4 class="fw-extrabold text-dark mb-0 fs-5">@deliveredCount / @totalOrdersCount Settled</h4>
+                    <small class="text-muted" style="font-size: 0.70rem;">@pendingCount in Escrow transit</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="table-responsive">
+            <table class="table align-middle mb-0" style="font-size: 0.82rem;">
+                <thead class="table-light text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                    <tr>
+                        <th class="ps-3">Order ID &amp; Date</th>
+                        <th>Buyer (Customer)</th>
+                        <th>Crops / Produce Ordered</th>
+                        <th>Total (INR)</th>
+                        <th>Payment Mode</th>
+                        <th>Status</th>
+                        <th>Bilty Reference</th>
+                        <th class="text-end pe-3">Escrow Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox display-6 d-block mb-2 opacity-50"></i>
+                                <p class="mb-0 fw-semibold">No order transactions found for this period.</p>
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var order in Model)
+                    {
+                        string custName = "Customer #" + order.CustomerId;
+                        string custPhone = "N/A";
+                        if (userMap.TryGetValue(order.CustomerId, out var custUser))
+                        {
+                            custName = $"{custUser.FirstName} {custUser.LastName}".Trim();
+                            if (string.IsNullOrEmpty(custName)) custName = custUser.UserName ?? "Buyer";
+                            custPhone = custUser.PhoneNumber ?? "N/A";
+                        }
+
+                        var cropNames = string.Join(", ", order.OrderItems.Select(oi => $"{oi.Quantity}x {(oi.Product?.Name ?? "Crop")}"));
+                        if (string.IsNullOrEmpty(cropNames)) cropNames = "Standard Produce Order";
+                        int totalKg = order.OrderItems.Sum(oi => oi.Quantity);
+                        var bilty = string.IsNullOrEmpty(order.BiltyNumber) ? "Direct / Local" : order.BiltyNumber;
+
+                        <tr>
+                            <td class="ps-3">
+                                <strong class="text-dark d-block">#@order.Id.ToString("D5")</strong>
+                                <small class="text-muted" style="font-size: 0.70rem;">@order.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</small>
+                            </td>
+                            <td>
+                                <strong class="text-dark d-block">@custName</strong>
+                                <small class="text-muted" style="font-size: 0.70rem;"><i class="bi bi-telephone me-1"></i>@custPhone</small>
+                            </td>
+                            <td>
+                                <p class="mb-0 text-dark fw-semibold" style="max-width: 260px;">@cropNames</p>
+                                <small class="text-muted" style="font-size: 0.70rem;">@totalKg Kg Total Weight</small>
+                            </td>
+                            <td>
+                                <strong class="text-success fs-6">₹@order.TotalAmount.ToString("N2")</strong>
+                                <small class="text-muted d-block" style="font-size: 0.68rem;">Fee: ₹@order.PlatformFee.ToString("N2")</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">@order.PaymentMethod</span>
+                            </td>
+                            <td>
+                                @if (order.Status == "Delivered & Settled" || order.AdminApprovedPayout)
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1 fw-bold">
+                                        Settled
+                                    </span>
+                                }
+                                else if (order.Status == "Cancelled" || order.Status == "Declined")
+                                {
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 fw-bold">
+                                        @order.Status
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1 fw-bold text-dark">
+                                        @order.Status
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border font-monospace">@bilty</span>
+                            </td>
+                            <td class="text-end pe-3">
+                                @if (order.AdminApprovedPayout || order.Status == "Delivered & Settled")
+                                {
+                                    <span class="badge bg-success text-white rounded-pill px-2.5 py-1 small">
+                                        <i class="bi bi-check-circle me-1"></i> Paid to Farmer
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2.5 py-1 small fw-bold">
+                                        <i class="bi bi-shield-lock me-1"></i> In Escrow
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer Seal -->
+        <div class="mt-4 pt-3 border-top text-center text-muted small">
+            <span>Official audit log generated by AgriAI Digital Escrow &amp; Market System. Valid for financial accounting and GST reconciliation.</span>
+        </div>
+
+    </div>
+
+</div>
