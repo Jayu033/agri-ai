@@ -239,6 +239,99 @@ namespace AgriAI.Web.Controllers
             return View(product);
         }
 
+        // POST: Product/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price,StockQuantity,CategoryId,FarmerId")] Product product, IFormFile? imageFile)
+        {
+            if (id != product.Id)
+            {
+                return NotFound();
+            }
+
+            var existingProduct = await _context.Products
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (existingProduct == null)
+            {
+                TempData["ErrorMessage"] = "Produce listing not found.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userName = User.Identity?.Name;
+            if (!User.IsInRole("Admin"))
+            {
+                if (existingProduct.FarmerId != userId && existingProduct.FarmerId != userName)
+                {
+                    TempData["ErrorMessage"] = "Unauthorized. You cannot edit this produce listing.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            ModelState.Remove("Category");
+            ModelState.Remove("Images");
+            ModelState.Remove("Reviews");
+            ModelState.Remove("FarmerId");
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    existingProduct.Name = product.Name;
+                    existingProduct.Description = product.Description;
+                    existingProduct.Price = product.Price;
+                    existingProduct.StockQuantity = product.StockQuantity;
+                    existingProduct.CategoryId = product.CategoryId;
+
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "products");
+                        if (!Directory.Exists(uploadsFolder))
+                        {
+                            Directory.CreateDirectory(uploadsFolder);
+                        }
+
+                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(imageFile.FileName);
+                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(fileStream);
+                        }
+
+                        var newImageUrl = "/images/products/" + uniqueFileName;
+                        if (existingProduct.Images.Any())
+                        {
+                            existingProduct.Images.First().ImageUrl = newImageUrl;
+                        }
+                        else
+                        {
+                            existingProduct.Images.Add(new ProductImage { ImageUrl = newImageUrl });
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = $"Produce listing '{existingProduct.Name}' updated successfully!";
+
+                    if (User.IsInRole("Admin"))
+                    {
+                        return Redirect("/Admin/Dashboard?tab=products");
+                    }
+                    return RedirectToAction("Dashboard", "Farmer");
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Error updating product: " + ex.Message);
+                }
+            }
+
+            var categoriesList = await _context.Categories.ToListAsync();
+            ViewData["CategoryId"] = new SelectList(categoriesList, "Id", "Name", product.CategoryId);
+            return View(existingProduct);
+        }
+
         // POST: Product/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]

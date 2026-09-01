@@ -1,0 +1,213 @@
+@model AgriAI.Domain.Entities.Product
+
+@{
+    ViewData["Title"] = "Edit Harvest Produce - " + Model.Name;
+    var currentImg = Model.Images?.FirstOrDefault()?.ImageUrl;
+    bool isAdmin = User.IsInRole("Admin");
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Admin.css" asp-append-version="true" />
+    <style>
+        .edit-card-section {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            padding: 2rem;
+        }
+        .crop-preview-box {
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 1rem;
+            text-align: center;
+            background: #f8fafc;
+        }
+        .crop-current-img {
+            max-height: 220px;
+            width: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+    </style>
+}
+
+<div class="container-fluid py-4 px-lg-4 px-md-3" style="max-width: 1240px; min-height: calc(100vh - 180px);">
+    
+    <!-- Top Header Navigation Card -->
+    <div class="admin-header-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 shadow-sm">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-1 fw-bold small">
+                    <i class="bi bi-pencil-square me-1"></i> Produce Editor #@Model.Id.ToString("D4")
+                </span>
+                <span class="text-muted small">&bull; @(isAdmin ? "Super Administrator Mode" : "Farmer Produce Manager")</span>
+            </div>
+            <h2 class="fw-extrabold text-dark mb-1 fs-3">
+                ✏️ Edit Produce: @Model.Name
+            </h2>
+            <p class="text-muted small mb-0">Update crop specifications, stock quantity, APMC market price, and harvest imagery.</p>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            @if (isAdmin)
+            {
+                <a asp-controller="Admin" asp-action="Dashboard" asp-route-tab="products" class="btn-back-custom shadow-sm">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Back to Listed Crops</span>
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Farmer" asp-action="Dashboard" class="btn-back-custom shadow-sm">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Back to Dashboard</span>
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 border-danger border-opacity-25 shadow-xs mb-4 p-3 d-flex align-items-center justify-content-between" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                <span class="fw-semibold text-dark">@TempData["ErrorMessage"]</span>
+            </div>
+            <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="FarmerId" />
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 small mb-4"></div>
+
+        <div class="row g-4">
+            
+            <!-- Left Column: Produce Fields (8 Cols) -->
+            <div class="col-lg-8">
+                <div class="edit-card-section mb-4">
+                    <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom d-flex align-items-center gap-2">
+                        <i class="bi bi-basket-fill text-success"></i> Crop Details &amp; Taxonomy
+                    </h5>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Name" class="form-label fw-bold text-dark small mb-1">Produce / Crop Name <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-tag-fill text-success"></i></span>
+                                <input asp-for="Name" class="form-control ps-2 rounded-end-3 py-2.5" placeholder="e.g. Organic Saurashtra Groundnut" required />
+                            </div>
+                            <span asp-validation-for="Name" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CategoryId" class="form-label fw-bold text-dark small mb-1">Produce Category <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-grid-fill text-success"></i></span>
+                                <select asp-for="CategoryId" class="form-select ps-2 rounded-end-3 py-2.5" asp-items="ViewBag.CategoryId" required>
+                                    <option value="">-- Select Category --</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="CategoryId" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Price" class="form-label fw-bold text-dark small mb-1">Direct Price (₹ / Kg) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 fw-bold text-success">₹</span>
+                                <input asp-for="Price" class="form-control ps-2 py-2.5" type="number" step="0.01" min="1" required />
+                                <span class="input-group-text bg-light border-start-0 text-muted small">/ Kg</span>
+                            </div>
+                            <span asp-validation-for="Price" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="StockQuantity" class="form-label fw-bold text-dark small mb-1">Available Stock Quantity (Kg) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-box-seam text-success"></i></span>
+                                <input asp-for="StockQuantity" class="form-control ps-2 py-2.5" type="number" min="0" required />
+                                <span class="input-group-text bg-light border-start-0 text-muted small">Kg</span>
+                            </div>
+                            <span asp-validation-for="StockQuantity" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-bold text-dark small mb-1">Detailed Description &amp; Quality Specifications</label>
+                        <textarea asp-for="Description" class="form-control rounded-3 p-3" rows="4" placeholder="Describe harvest quality, moisture percentage, organic certifications, packing type, etc."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+
+                <!-- Form Action Buttons -->
+                <div class="d-flex justify-content-between align-items-center p-3 bg-white rounded-4 border shadow-xs">
+                    @if (isAdmin)
+                    {
+                        <a asp-controller="Admin" asp-action="Dashboard" asp-route-tab="products" class="btn btn-outline-secondary rounded-pill px-4 py-2.5 fw-bold">Cancel</a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Farmer" asp-action="Dashboard" class="btn btn-outline-secondary rounded-pill px-4 py-2.5 fw-bold">Cancel</a>
+                    }
+                    <button type="submit" class="btn btn-success rounded-pill px-4 py-2.5 fw-bold shadow-sm" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
+                        <i class="bi bi-check-circle-fill me-1.5"></i> Save &amp; Update Produce Listing
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column: Image Preview & Farmer Oversight (4 Cols) -->
+            <div class="col-lg-4">
+                <!-- Produce Image Card -->
+                <div class="edit-card-section mb-4">
+                    <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-image text-primary"></i> Produce Image
+                    </h6>
+
+                    <div class="crop-preview-box mb-3">
+                        @if (!string.IsNullOrEmpty(currentImg))
+                        {
+                            <img src="@currentImg" alt="@Model.Name" class="crop-current-img mb-2 shadow-xs" />
+                            <small class="text-muted d-block">Current Active Photo</small>
+                        }
+                        else
+                        {
+                            <div class="py-4 text-center text-muted">
+                                <i class="bi bi-image display-4 text-secondary opacity-50 mb-2 d-block"></i>
+                                <small>No image currently uploaded</small>
+                            </div>
+                        }
+                    </div>
+
+                    <div>
+                        <label class="form-label fw-bold text-dark small mb-1">Replace / Upload New Image</label>
+                        <input type="file" name="imageFile" class="form-control rounded-3 py-2 text-muted" accept="image/*" />
+                        <small class="text-muted" style="font-size: 0.72rem;">Supports JPG, PNG, WEBP. Max size 5MB.</small>
+                    </div>
+                </div>
+
+                <!-- Producer Info Badge -->
+                <div class="p-3 bg-light rounded-4 border">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-person-badge-fill text-success fs-5"></i>
+                        <strong class="text-dark small">Listed By Farmer ID</strong>
+                    </div>
+                    <p class="font-monospace text-muted small mb-0 font-weight-bold" style="word-break: break-all;">
+                        @(string.IsNullOrEmpty(Model.FarmerId) ? "General System Farmer" : Model.FarmerId)
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </form>
+
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
