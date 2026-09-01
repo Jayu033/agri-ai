@@ -56,6 +56,12 @@ namespace AgriAI.Web.Controllers
         // GET: Checkout?productId=1&quantity=5 OR Checkout?isCart=true
         public async Task<IActionResult> Index(int? productId, int quantity = 1, bool isCart = false)
         {
+            if (User.IsInRole("Admin"))
+            {
+                TempData["ErrorMessage"] = "🛡️ Administrators are platform regulators and cannot purchase crops or place orders.";
+                return Redirect("/Admin/Dashboard?tab=products");
+            }
+
             if (quantity < 1) quantity = 1;
 
             // Check if farmer is attempting to buy own product
@@ -141,6 +147,12 @@ namespace AgriAI.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> ProcessPayment(int? productId, int quantity = 1, bool isCart = false, string paymentMethod = "Online", string transportType = "Direct Farm Pickup", string deliveryAddress = "")
         {
+            if (User.IsInRole("Admin"))
+            {
+                TempData["ErrorMessage"] = "🛡️ Administrators cannot place orders.";
+                return Redirect("/Admin/Dashboard?tab=products");
+            }
+
             if (quantity < 1) quantity = 1;
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

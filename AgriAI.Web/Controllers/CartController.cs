@@ -127,6 +127,15 @@ namespace AgriAI.Web.Controllers
                 });
             }
 
+            if (User.IsInRole("Admin"))
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "🛡️ Administrators are platform regulators and cannot purchase crops or use the shopping cart."
+                });
+            }
+
             // Prevent farmer from purchasing their own listed crops
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {

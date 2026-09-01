@@ -114,7 +114,14 @@
                 </li>
                 <li>
                     <a asp-controller="Product" asp-action="Index" class="gov-nav-link @(curCtrl == "Product" ? "active" : "")">
-                        Shop Products
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <span><i class="bi bi-shield-shaded text-success me-1"></i>Marketplace Oversight</span>
+                        }
+                        else
+                        {
+                            <span>Shop Products</span>
+                        }
                     </a>
                 </li>
 
@@ -287,8 +294,8 @@
                 </li>
                 <li class="menu-item">
                     <a asp-controller="Product" asp-action="Index" class="menu-link @(curCtrl == "Product" ? "active" : "")">
-                        <span class="menu-icon-box"><i class="bi bi-shop"></i></span>
-                        <span>Shop Products</span>
+                        <span class="menu-icon-box"><i class="bi @(User.IsInRole("Admin") ? "bi-shield-check" : "bi-shop")"></i></span>
+                        <span>@(User.IsInRole("Admin") ? "Marketplace Oversight" : "Shop Products")</span>
                     </a>
                 </li>
             </ul>
