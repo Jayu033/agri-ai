@@ -597,38 +597,307 @@
                                 <p class="text-muted small mb-0">Get AI-driven price intelligence before selling your harvest at APMC markets.</p>
                             </div>
                             <div class="d-flex gap-2">
-                                <a asp-controller="AI" asp-action="CropPredictor" class="btn btn-sm btn-outline-success rounded-pill px-3.5 py-1.5 fw-bold shadow-sm">
+                                <a asp-controller="AI" asp-action="CropPredictor" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm">
                                     <i class="bi bi-cpu me-1"></i> AI Crop Predictor
                                 </a>
-                                <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-sm btn-success rounded-pill px-3.5 py-1.5 fw-bold shadow-sm">
-                                    <i class="bi bi-arrows-fullscreen me-1"></i> Dedicated AI Studio
+                                <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #006653;">
+                                    <i class="bi bi-arrows-fullscreen me-1"></i> Fullscreen AI Studio
                                 </a>
                             </div>
                         </div>
 
-                        <!-- Featured: AgriAI Crop Predictor Banner Card -->
-                        <div class="card border-0 rounded-4 shadow-sm p-4 mb-4 text-white" style="background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);">
-                            <div class="row align-items-center g-3">
-                                <div class="col-md-8">
-                                    <div class="d-flex align-items-center gap-2 mb-1">
-                                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
-                                            <i class="bi bi-cpu-fill me-1"></i>MACHINE LEARNING
-                                        </span>
-                                        <span class="text-white-50 small">Soil &amp; Weather Engine</span>
+                        <!-- 1. Interactive Farmer AI Prediction Studio Card -->
+                        <div class="card border-0 rounded-4 shadow-sm p-3.5 p-md-4 mb-4 bg-white border">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pb-3 mb-3 border-bottom">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle bg-success bg-opacity-10 text-success p-2 fs-5">
+                                        <i class="bi bi-stars"></i>
                                     </div>
-                                    <h4 class="fw-bold text-white mb-1">AgriAI Crop Predictor</h4>
-                                    <p class="text-white-50 small mb-0">
-                                        Input your soil NPK, temperature, humidity, and pH to get high-accuracy crop recommendations for maximum yield.
-                                    </p>
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-0">Live Crop Price Forecaster</h5>
+                                        <small class="text-muted">Select your crop and parameters to predict mandi prices with Gujarat APMC ML models.</small>
+                                    </div>
                                 </div>
-                                <div class="col-md-4 text-md-end">
-                                    <a asp-controller="AI" asp-action="CropPredictor" class="btn btn-warning rounded-pill px-4 py-2.5 fw-bold shadow">
-                                        <i class="bi bi-stars me-1"></i> Open Crop Predictor
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1.5 rounded-pill fw-bold">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Machine Learning Active
+                                </span>
+                            </div>
+
+                            <!-- Crop Category Filters -->
+                            <div class="d-flex flex-wrap gap-1.5 mb-3" id="dashCropCategoryTabs">
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-bold btn-success dash-cat-filter active" data-cat="all" onclick="filterDashCrops('all', this)">🌟 All Crops</button>
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-bold btn-outline-secondary dash-cat-filter" data-cat="grain" onclick="filterDashCrops('grain', this)">🌾 Grains &amp; Pulses</button>
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-bold btn-outline-secondary dash-cat-filter" data-cat="cash" onclick="filterDashCrops('cash', this)">🌿 Cash &amp; Oilseeds</button>
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-bold btn-outline-secondary dash-cat-filter" data-cat="veg" onclick="filterDashCrops('veg', this)">🥔 Veg &amp; Spices</button>
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-bold btn-outline-secondary dash-cat-filter" data-cat="fruit" onclick="filterDashCrops('fruit', this)">🥭 Fruits</button>
+                            </div>
+
+                            <!-- Crop Selection Grid -->
+                            <div class="row g-2 mb-3" id="dashCropGrid" style="max-height: 240px; overflow-y: auto;">
+                                <!-- Grains -->
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="grain" data-crop="Wheat" onclick="selectDashCrop('Wheat', '🌾', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card active" style="transition: all 0.2s; border-width: 2px !important; border-color: #006653; background-color: #f0fdf4;">
+                                        <div class="fs-4 mb-0.5">🌾</div>
+                                        <div class="small fw-bold text-dark lh-1">Wheat</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(ઘઉં)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="grain" data-crop="Rice (Paddy)" onclick="selectDashCrop('Rice (Paddy)', '🍚', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🍚</div>
+                                        <div class="small fw-bold text-dark lh-1">Rice</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(ડાંગર)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="grain" data-crop="Bajra (Millet)" onclick="selectDashCrop('Bajra (Millet)', '🌾', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🌾</div>
+                                        <div class="small fw-bold text-dark lh-1">Bajra</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(બાજરી)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="grain" data-crop="Chickpea (Chana)" onclick="selectDashCrop('Chickpea (Chana)', '🌱', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🌱</div>
+                                        <div class="small fw-bold text-dark lh-1">Chana</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(ચણા)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="grain" data-crop="Tur / Tuver" onclick="selectDashCrop('Tur / Tuver', '🌱', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🌱</div>
+                                        <div class="small fw-bold text-dark lh-1">Tuver</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(તુવેર)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="grain" data-crop="Moong" onclick="selectDashCrop('Moong', '🌱', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🌱</div>
+                                        <div class="small fw-bold text-dark lh-1">Moong</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(મગ)</small>
+                                    </div>
+                                </div>
+
+                                <!-- Cash & Oilseeds -->
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="cash" data-crop="Cotton" onclick="selectDashCrop('Cotton', '☁️', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">☁️</div>
+                                        <div class="small fw-bold text-dark lh-1">Cotton</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(કપાસ)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="cash" data-crop="Groundnut (Peanut)" onclick="selectDashCrop('Groundnut (Peanut)', '🥜', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🥜</div>
+                                        <div class="small fw-bold text-dark lh-1">Groundnut</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(મગફળી)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="cash" data-crop="Castor (Eranda)" onclick="selectDashCrop('Castor (Eranda)', '🌿', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🌿</div>
+                                        <div class="small fw-bold text-dark lh-1">Castor</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(એરંડા)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="cash" data-crop="Mustard (Rai)" onclick="selectDashCrop('Mustard (Rai)', '🌼', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🌼</div>
+                                        <div class="small fw-bold text-dark lh-1">Mustard</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(રાયડો)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="cash" data-crop="Soybean" onclick="selectDashCrop('Soybean', '🌻', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🌻</div>
+                                        <div class="small fw-bold text-dark lh-1">Soybean</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(સોયાબીન)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="cash" data-crop="Sugarcane" onclick="selectDashCrop('Sugarcane', '🎋', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🎋</div>
+                                        <div class="small fw-bold text-dark lh-1">Sugarcane</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(શેરડી)</small>
+                                    </div>
+                                </div>
+
+                                <!-- Vegetables & Spices -->
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="veg" data-crop="Cumin (Jeera)" onclick="selectDashCrop('Cumin (Jeera)', '🌿', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🌿</div>
+                                        <div class="small fw-bold text-dark lh-1">Cumin</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(જીરું)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="veg" data-crop="Garlic (Lasan)" onclick="selectDashCrop('Garlic (Lasan)', '🧄', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🧄</div>
+                                        <div class="small fw-bold text-dark lh-1">Garlic</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(લસણ)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="veg" data-crop="Onion" onclick="selectDashCrop('Onion', '🧅', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🧅</div>
+                                        <div class="small fw-bold text-dark lh-1">Onion</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(ડુંગળી)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="veg" data-crop="Potato" onclick="selectDashCrop('Potato', '🥔', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🥔</div>
+                                        <div class="small fw-bold text-dark lh-1">Potato</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(બટાકા)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="veg" data-crop="Tomato" onclick="selectDashCrop('Tomato', '🍅', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🍅</div>
+                                        <div class="small fw-bold text-dark lh-1">Tomato</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(ટામેટા)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="veg" data-crop="Red Chilli" onclick="selectDashCrop('Red Chilli', '🌶️', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🌶️</div>
+                                        <div class="small fw-bold text-dark lh-1">Red Chilli</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(લાલ મરચું)</small>
+                                    </div>
+                                </div>
+
+                                <!-- Fruits -->
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="fruit" data-crop="Mango (Kesar/Alphonso)" onclick="selectDashCrop('Mango (Kesar/Alphonso)', '🥭', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🥭</div>
+                                        <div class="small fw-bold text-dark lh-1">Mango</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(કેરી)</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3 col-xl-2 dash-crop-item" data-cat="fruit" data-crop="Banana" onclick="selectDashCrop('Banana', '🍌', this)">
+                                    <div class="p-2.5 rounded-3 border text-center cursor-pointer dash-crop-card" style="transition: all 0.2s;">
+                                        <div class="fs-4 mb-0.5">🍌</div>
+                                        <div class="small fw-bold text-dark lh-1">Banana</div>
+                                        <small class="text-muted" style="font-size: 0.68rem;">(કેળા)</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Selected Crop Banner & Parameters -->
+                            <div class="p-3.5 bg-light rounded-4 border mb-3">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="fs-4" id="dashSelectedCropEmoji">🌾</span>
+                                        <div>
+                                            <span class="text-muted small d-block">Selected Crop for Prediction:</span>
+                                            <strong class="text-dark fs-6" id="dashSelectedCropName">Wheat</strong>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-white text-dark border px-2.5 py-1 rounded-pill small">
+                                        <i class="bi bi-geo-alt-fill text-danger me-1"></i> Gujarat State APMC Markets
+                                    </span>
+                                </div>
+
+                                <div class="row g-3">
+                                    <!-- Season Selection -->
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold text-dark">Harvest Season</label>
+                                        <select id="dashPredSeason" class="form-select bg-white shadow-none">
+                                            <option value="Rabi" selected>Rabi (Winter Season)</option>
+                                            <option value="Kharif">Kharif (Monsoon Season)</option>
+                                            <option value="Whole Year">Summer / Whole Year</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Rainfall (mm) -->
+                                    <div class="col-md-4">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <label class="form-label small fw-bold text-dark mb-1">Expected Rainfall</label>
+                                            <span class="badge bg-success bg-opacity-10 text-success fw-bold" id="dashRainfallBadge">450 mm</span>
+                                        </div>
+                                        <input type="range" class="form-range" id="dashRainfallSlider" min="100" max="1500" step="25" value="450" oninput="document.getElementById('dashRainfallBadge').textContent = this.value + ' mm'" />
+                                    </div>
+
+                                    <!-- Cultivated Area (Acres) -->
+                                    <div class="col-md-4">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <label class="form-label small fw-bold text-dark mb-1">Harvest Area</label>
+                                            <span class="badge bg-primary bg-opacity-10 text-primary fw-bold" id="dashAreaBadge">5 Acres</span>
+                                        </div>
+                                        <input type="range" class="form-range" id="dashAreaSlider" min="1" max="50" step="1" value="5" oninput="document.getElementById('dashAreaBadge').textContent = this.value + ' Acres'" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Trigger Button -->
+                            <button type="button" class="btn btn-success rounded-pill px-4 py-2.5 fw-bold shadow w-100 d-inline-flex align-items-center justify-content-center gap-2" id="btnRunFarmerPrediction" onclick="runFarmerPricePrediction()" style="background-color: #006653;">
+                                <i class="bi bi-cpu-fill fs-5"></i>
+                                <span>Calculate AI Market Price Forecast</span>
+                            </button>
+
+                            <!-- Live Prediction Results Box -->
+                            <div id="dashPredictionResultBox" class="mt-4 d-none">
+                                <div class="card border-0 rounded-4 shadow-sm p-4 text-white position-relative overflow-hidden mb-3" style="background: linear-gradient(135deg, #006653 0%, #15803d 100%);">
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                                        <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill">
+                                            <i class="bi bi-stars me-1"></i> AI PREDICTED MODAL RATE
+                                        </span>
+                                        <span class="text-white-50 small" id="dashResultConfidence">ML Confidence: 95%</span>
+                                    </div>
+
+                                    <div class="row align-items-center g-3 mb-3">
+                                        <div class="col-md-7">
+                                            <span class="text-white-50 small d-block">Estimated APMC Rate (Per 100 Kg / Quintal)</span>
+                                            <div class="display-5 fw-extrabold text-white" id="dashResultQuintal">₹ 2,565.00</div>
+                                            <div class="d-flex align-items-center gap-3 mt-2 flex-wrap">
+                                                <div class="bg-white bg-opacity-10 rounded-3 px-3 py-1.5 border border-white border-opacity-25">
+                                                    <small class="text-white-50 d-block" style="font-size: 0.70rem;">Maund (20 Kg / મણ)</small>
+                                                    <strong class="text-warning fs-6" id="dashResultMaund">₹ 513.00</strong>
+                                                </div>
+                                                <div class="bg-white bg-opacity-10 rounded-3 px-3 py-1.5 border border-white border-opacity-25">
+                                                    <small class="text-white-50 d-block" style="font-size: 0.70rem;">Per Kilogram (1 Kg)</small>
+                                                    <strong class="text-white fs-6" id="dashResultKg">₹ 25.65</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-5 text-md-end">
+                                            <div class="bg-dark bg-opacity-25 rounded-4 p-3 border border-white border-opacity-25 text-start">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <span class="text-white-50 small">Govt. MSP Benchmark:</span>
+                                                    <strong class="text-white small" id="dashResultMsp">₹ 2,425.00</strong>
+                                                </div>
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="text-white-50 small">Expected Margin:</span>
+                                                    <span class="badge bg-success text-white fw-bold" id="dashResultMargin">+₹ 140.00 / Qtl</span>
+                                                </div>
+                                                <div class="small fw-semibold text-warning" id="dashResultTrend">Bullish (Above MSP) 📈</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- AI Recommendation Text -->
+                                    <div class="bg-white bg-opacity-10 rounded-3 p-2.5 border border-white border-opacity-25 d-flex align-items-start gap-2">
+                                        <i class="bi bi-lightbulb-fill text-warning fs-5 mt-0.5"></i>
+                                        <div>
+                                            <strong class="text-white small d-block">Producer Selling Advisory:</strong>
+                                            <span class="text-white-50 small" id="dashResultAdvice">Favorable market rates. Optimal time for direct listing on AgriAI Marketplace.</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons After Prediction -->
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <a href="/Product/Create" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm" id="dashBtnListCrop" style="background-color: #006653;">
+                                        <i class="bi bi-plus-circle-fill me-1"></i> List This Crop on Marketplace
+                                    </a>
+                                    <a asp-controller="Home" asp-action="LiveMandi" class="btn btn-outline-success rounded-pill px-3.5 py-2 fw-bold">
+                                        <i class="bi bi-graph-up me-1"></i> View Live Gujarat APMC Mandi Rates
                                     </a>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- 2. Additional Tools: Quick Converter & ML Soil Recommendation -->
                         <div class="row g-4 mb-3">
                             <div class="col-lg-6">
                                 <div class="p-4 bg-light rounded-4 border h-100">
@@ -644,20 +913,20 @@
                                     </div>
 
                                     <div class="p-3 bg-white rounded-3 border text-center">
-                                        <span class="text-muted small d-block mb-1">Calculated 1 Maund (20 Kg) Price</span>
+                                        <span class="text-muted small d-block mb-1">Calculated 1 Maund (20 Kg / ૧ મણ) Price</span>
                                         <span class="fs-4 fw-extrabold text-success" id="farmerQuickMaundResult">₹ 1,300.00 / Maund</span>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-lg-6">
-                                <div class="p-4 bg-success bg-opacity-10 rounded-4 border border-success border-opacity-25 h-100 d-flex flex-column justify-content-between">
+                                <div class="card border-0 rounded-4 shadow-sm p-4 text-white h-100 d-flex flex-column justify-content-between" style="background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);">
                                     <div>
-                                        <span class="badge bg-success text-white fw-bold mb-2">Market Alert</span>
-                                        <h6 class="fw-bold text-dark mb-1">Top Gaining Gujarat APMC Crops</h6>
-                                        <p class="text-muted small mb-3">Cotton (+6.8% in Rajkot APMC) and Cumin (+8.4% in Unjha APMC) are experiencing high buyer demand today.</p>
+                                        <span class="badge bg-warning text-dark fw-bold mb-2">Soil &amp; Weather Engine</span>
+                                        <h5 class="fw-bold text-white mb-1">AgriAI Crop Recommendation</h5>
+                                        <p class="text-white-50 small mb-3">Input your soil NPK, temperature, and pH to get high-accuracy crop recommendations for maximum harvest yield.</p>
                                     </div>
-                                    <a asp-controller="Home" asp-action="LiveMandi" class="btn btn-sm btn-success rounded-pill fw-bold w-100">
-                                        <i class="bi bi-graph-up me-1"></i> Explore All APMC Live Rates →
+                                    <a asp-controller="AI" asp-action="CropPredictor" class="btn btn-warning rounded-pill px-4 py-2.5 fw-bold shadow">
+                                        <i class="bi bi-stars me-1"></i> Open AI Crop Predictor →
                                     </a>
                                 </div>
                             </div>
@@ -878,5 +1147,116 @@
         }
 
         setInterval(updateFarmerCountdowns, 1000);
+
+        // ========================================================
+        // Farmer Dashboard AI Price Predictor Studio Handlers
+        // ========================================================
+        let currentDashCrop = 'Wheat';
+        let currentDashEmoji = '🌾';
+
+        function filterDashCrops(category, btn) {
+            document.querySelectorAll('.dash-cat-filter').forEach(b => {
+                b.classList.remove('btn-success', 'active');
+                b.classList.add('btn-outline-secondary');
+            });
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-success', 'active');
+
+            const items = document.querySelectorAll('.dash-crop-item');
+            items.forEach(item => {
+                if (category === 'all' || item.getAttribute('data-cat') === category) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function selectDashCrop(cropName, emoji, el) {
+            currentDashCrop = cropName;
+            currentDashEmoji = emoji;
+
+            document.querySelectorAll('.dash-crop-card').forEach(c => {
+                c.classList.remove('active');
+                c.style.borderWidth = '1px';
+                c.style.borderColor = '#e2e8f0';
+                c.style.backgroundColor = '#ffffff';
+            });
+
+            const card = el.querySelector('.dash-crop-card');
+            if (card) {
+                card.classList.add('active');
+                card.style.borderWidth = '2px';
+                card.style.borderColor = '#006653';
+                card.style.backgroundColor = '#f0fdf4';
+            }
+
+            document.getElementById('dashSelectedCropName').textContent = cropName;
+            document.getElementById('dashSelectedCropEmoji').textContent = emoji;
+        }
+
+        async function runFarmerPricePrediction() {
+            const btn = document.getElementById('btnRunFarmerPrediction');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<div class="spinner-border spinner-border-sm text-white me-2" role="status"></div> Calculating ML Forecast...`;
+
+            const season = document.getElementById('dashPredSeason').value || 'Rabi';
+            const rainfall = parseFloat(document.getElementById('dashRainfallSlider').value) || 450;
+            const area = parseFloat(document.getElementById('dashAreaSlider').value) || 5;
+
+            try {
+                const response = await fetch('/AI/ApiPredictPrice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        cropName: currentDashCrop,
+                        season: season,
+                        rainfall: rainfall,
+                        area: area
+                    })
+                });
+
+                const data = await response.json();
+                if (data && data.success) {
+                    const resultBox = document.getElementById('dashPredictionResultBox');
+                    resultBox.classList.remove('d-none');
+
+                    document.getElementById('dashResultConfidence').textContent = `ML Confidence: ${data.confidence || '95%'}`;
+                    document.getElementById('dashResultQuintal').textContent = `₹ ${Number(data.predictedPriceQuintal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    document.getElementById('dashResultMaund').textContent = `₹ ${Number(data.predictedPrice20Kg).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    document.getElementById('dashResultKg').textContent = `₹ ${Number(data.predictedPriceKg).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    document.getElementById('dashResultMsp').textContent = `₹ ${Number(data.msp).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                    const marginElem = document.getElementById('dashResultMargin');
+                    if (data.isAboveMsp) {
+                        marginElem.className = 'badge bg-success text-white fw-bold';
+                        marginElem.textContent = `+₹ ${Number(data.diffFromMsp).toLocaleString('en-IN', { minimumFractionDigits: 2 })} / Qtl`;
+                    } else {
+                        marginElem.className = 'badge bg-warning text-dark fw-bold';
+                        marginElem.textContent = `-₹ ${Math.abs(data.diffFromMsp).toLocaleString('en-IN', { minimumFractionDigits: 2 })} / Qtl`;
+                    }
+
+                    document.getElementById('dashResultTrend').textContent = data.trend || 'Bullish 📈';
+                    document.getElementById('dashResultAdvice').textContent = data.recommendation || 'Favorable market conditions.';
+
+                    const listBtn = document.getElementById('dashBtnListCrop');
+                    if (listBtn) {
+                        listBtn.href = `/Product/Create?name=${encodeURIComponent(currentDashCrop)}&price=${data.predictedPriceKg}`;
+                        listBtn.innerHTML = `<i class="bi bi-plus-circle-fill me-1"></i> List ${currentDashCrop} at ₹${data.predictedPriceKg}/Kg`;
+                    }
+
+                    resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    alert(data.message || 'Unable to calculate prediction at this time.');
+                }
+            } catch (err) {
+                console.error('Prediction API Error:', err);
+                alert('Network error while connecting to AI Engine.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        }
     </script>
 }

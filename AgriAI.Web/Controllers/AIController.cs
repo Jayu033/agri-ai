@@ -92,6 +92,45 @@ namespace AgriAI.Web.Controllers
             return View("PricePredictor");
         }
 
+        // POST: /AI/ApiPredictPrice (JSON API for Dashboard and interactive widgets)
+        [HttpPost]
+        public IActionResult ApiPredictPrice([FromBody] PricePredictorInputModel input)
+        {
+            if (input == null) input = new PricePredictorInputModel();
+            if (string.IsNullOrWhiteSpace(input.CropName)) input.CropName = "Wheat";
+            if (string.IsNullOrWhiteSpace(input.Season)) input.Season = "Rabi";
+            if (input.Rainfall <= 0) input.Rainfall = 450.0;
+            if (input.Area <= 0) input.Area = 5.0;
+
+            var (predictedPrice, msp, confidence, modelSource, price20kg, priceKg) = ExecutePricePredictionModel(input.CropName, input.Season, input.Rainfall, input.Area);
+
+            var isAboveMsp = predictedPrice >= msp;
+            var diffFromMsp = Math.Round(predictedPrice - msp, 2);
+            var trend = isAboveMsp ? "Bullish (Above MSP) 📈" : "Moderate (Near MSP) 📊";
+            var recommendation = isAboveMsp 
+                ? "Favorable market rates. Optimal time for direct listing on AgriAI Marketplace for high producer profit." 
+                : "Market price is near MSP. Consider holding harvest stock in warehouse or selling via local APMC.";
+
+            return Json(new
+            {
+                success = true,
+                cropName = input.CropName,
+                predictedPriceQuintal = predictedPrice,
+                predictedPrice20Kg = price20kg,
+                predictedPriceKg = priceKg,
+                msp = msp,
+                diffFromMsp = diffFromMsp,
+                isAboveMsp = isAboveMsp,
+                confidence = confidence,
+                modelSource = modelSource,
+                season = input.Season,
+                rainfall = input.Rainfall,
+                area = input.Area,
+                trend = trend,
+                recommendation = recommendation
+            });
+        }
+
         private (double predictedPrice, double msp, string confidence, string modelSource, double price20kg, double priceKg) 
             ExecutePricePredictionModel(string cropName, string season, double rainfall, double area)
         {

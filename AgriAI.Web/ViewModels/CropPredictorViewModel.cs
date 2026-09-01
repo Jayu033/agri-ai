@@ -35,4 +35,12 @@ namespace AgriAI.Web.ViewModels
         public double MatchScore { get; set; }
         public string Category { get; set; } = string.Empty;
     }
+
+    public class PricePredictorInputModel
+    {
+        public string CropName { get; set; } = "Wheat";
+        public string Season { get; set; } = "Rabi";
+        public double Rainfall { get; set; } = 450.0;
+        public double Area { get; set; } = 5.0;
+    }
 }
