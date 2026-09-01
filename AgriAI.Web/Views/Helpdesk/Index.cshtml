@@ -5,6 +5,7 @@
     bool isAdmin = ViewBag.IsAdmin ?? false;
     bool isFarmer = ViewBag.IsFarmer ?? false;
     bool isCustomer = ViewBag.IsCustomer ?? false;
+    bool isGuest = !isAdmin && !isFarmer && !isCustomer;
     var currentUser = ViewBag.CurrentUser as AgriAI.Infrastructure.Identity.ApplicationUser;
     string activeFilter = ViewBag.ActiveFilter as string ?? "all";
 
@@ -400,7 +401,7 @@
     <!-- ========================================================================= -->
     <!-- 2. FARMER PRIORITY HELPDESK & ESCROW DISBURSAL DESK                     -->
     <!-- ========================================================================= -->
-    else if (isFarmer)
+    @if (isFarmer)
     {
         <div class="helpdesk-hero" style="background: linear-gradient(135deg, #064e3b 0%, #059669 100%);">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
@@ -566,6 +567,7 @@
                     </div>
 
                     <form asp-action="CreateTicket" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" name="senderName" value="@(currentUser != null ? $"{currentUser.FirstName} {currentUser.LastName}".Trim() : User.Identity?.Name)" />
                         <input type="hidden" name="senderEmail" value="@(currentUser?.Email ?? User.Identity?.Name)" />
                         <input type="hidden" name="senderPhone" value="@currentUser?.PhoneNumber" />
@@ -639,7 +641,7 @@
     <!-- ========================================================================= -->
     <!-- 3. CUSTOMER (BUYER) CARE & ORDER SUPPORT DESK                           -->
     <!-- ========================================================================= -->
-    else if (isCustomer)
+    @if (isCustomer)
     {
         <div class="helpdesk-hero" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
@@ -792,6 +794,7 @@
                     </div>
 
                     <form asp-action="CreateTicket" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" name="senderName" value="@(currentUser != null ? $"{currentUser.FirstName} {currentUser.LastName}".Trim() : User.Identity?.Name)" />
                         <input type="hidden" name="senderEmail" value="@(currentUser?.Email ?? User.Identity?.Name)" />
                         <input type="hidden" name="senderPhone" value="@currentUser?.PhoneNumber" />
@@ -864,7 +867,7 @@
     <!-- ========================================================================= -->
     <!-- 4. GUEST / PUBLIC VISITOR HELPDESK & INQUIRY CENTER                     -->
     <!-- ========================================================================= -->
-    else
+    @if (isGuest)
     {
         <div class="helpdesk-hero" style="background: linear-gradient(135deg, #1e293b 0%, #006653 100%);">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
