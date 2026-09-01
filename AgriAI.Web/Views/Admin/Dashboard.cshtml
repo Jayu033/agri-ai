@@ -918,15 +918,20 @@
                                     <div>
                                         <div class="d-flex align-items-center gap-2 mb-2">
                                             <i class="bi bi-file-earmark-spreadsheet-fill text-success fs-4"></i>
-                                            <h5 class="fw-bold text-dark mb-0">Orders &amp; Sales Master Export</h5>
+                                            <h5 class="fw-bold text-dark mb-0">Orders &amp; Sales Master Ledger</h5>
                                         </div>
                                         <p class="text-muted small mb-3">
-                                            Comprehensive ledger containing Order IDs, Customer IDs, Gross Values, Delivery Addresses, Bilty Reference Numbers, and Admin Escrow approval flags.
+                                            Comprehensive ledger containing Order IDs, Buyer names, Contact details, Crop varieties, Gross bill amounts, Delivery addresses, Bilty references, and Escrow clearance flags.
                                         </p>
                                     </div>
-                                    <a asp-action="ExportOrdersCsv" class="btn btn-success rounded-pill fw-bold w-100 py-2.5 shadow-sm" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
-                                        <i class="bi bi-cloud-arrow-down-fill me-1"></i> Download Orders Report (.CSV)
-                                    </a>
+                                    <div class="d-flex flex-column gap-2">
+                                        <a asp-action="ExportOrdersCsv" class="btn btn-success rounded-pill fw-bold w-100 py-2.5 shadow-sm" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
+                                            <i class="bi bi-file-earmark-excel-fill me-1"></i> Download Master Orders (.CSV / Excel)
+                                        </a>
+                                        <a asp-action="EscrowStatement" class="btn btn-outline-success bg-white rounded-pill fw-bold w-100 py-2 shadow-xs">
+                                            <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> View Printable Financial Statement (PDF)
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
 
@@ -938,12 +943,17 @@
                                             <h5 class="fw-bold text-dark mb-0">Farmer Payouts &amp; Banking Audit</h5>
                                         </div>
                                         <p class="text-muted small mb-3">
-                                            Banking report listing all Farmer names, Bank account numbers, IFSC codes, UPI handles, KYC verification status, and account activity.
+                                            Audit report listing all Producer names, KYC approvals, Bank account numbers, IFSC codes, UPI handles, Gross sales, Escrow reserves, and settled payouts.
                                         </p>
                                     </div>
-                                    <a asp-action="ExportPayoutsCsv" class="btn btn-primary rounded-pill fw-bold w-100 py-2.5 shadow-sm" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); border: none;">
-                                        <i class="bi bi-cloud-arrow-down-fill me-1"></i> Download Payouts Report (.CSV)
-                                    </a>
+                                    <div class="d-flex flex-column gap-2">
+                                        <a asp-action="ExportPayoutsCsv" class="btn btn-primary rounded-pill fw-bold w-100 py-2.5 shadow-sm" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); border: none;">
+                                            <i class="bi bi-file-earmark-excel-fill me-1"></i> Download Banking Audit (.CSV / Excel)
+                                        </a>
+                                        <a asp-action="EscrowStatement" class="btn btn-outline-primary bg-white rounded-pill fw-bold w-100 py-2 shadow-xs">
+                                            <i class="bi bi-shield-check text-primary me-1"></i> Escrow Vault Ledger (PDF)
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>

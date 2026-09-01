@@ -137,19 +137,51 @@ namespace AgriAI.Web.Controllers
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
 
+            var allUsers = await _userManager.Users.ToListAsync();
+            var userMap = allUsers.ToDictionary(u => u.Id, u => u);
+            foreach (var u in allUsers.Where(u => !string.IsNullOrEmpty(u.UserName)))
+            {
+                if (!userMap.ContainsKey(u.UserName!)) userMap[u.UserName!] = u;
+            }
+
             var builder = new System.Text.StringBuilder();
-            builder.AppendLine("Order ID,Order Date,Customer ID,Total Amount (INR),Status,Payment Method,Bilty Number,Delivery Address,Admin Approved Payout");
+            builder.AppendLine("Order ID,Date & Time,Customer Name,Customer Contact,Customer Email,Produce Ordered,Total Quantity (Kg),Crop Total (INR),Platform Fee (INR),Gross Amount (INR),Payment Method,Order Status,Transport Mode,Bilty No,Delivery Address,Escrow Payout Status");
 
             foreach (var order in orders)
             {
-                var addr = (order.ShippingAddress ?? "").Replace(",", " ");
-                var bilty = string.IsNullOrEmpty(order.BiltyNumber) ? "N/A" : order.BiltyNumber;
-                builder.AppendLine($"#{order.Id:D5},{order.OrderDate:yyyy-MM-dd HH:mm},{order.CustomerId},{order.TotalAmount:F2},{order.Status},{order.PaymentMethod},{bilty},{addr},{(order.AdminApprovedPayout ? "Yes" : "No")}");
+                string custName = "Customer #" + order.CustomerId;
+                string custPhone = "N/A";
+                string custEmail = "N/A";
+                if (userMap.TryGetValue(order.CustomerId, out var custUser))
+                {
+                    custName = $"{custUser.FirstName} {custUser.LastName}".Trim();
+                    if (string.IsNullOrEmpty(custName)) custName = custUser.UserName ?? "Buyer";
+                    custPhone = custUser.PhoneNumber ?? "N/A";
+                    custEmail = custUser.Email ?? "N/A";
+                }
+
+                var cropNames = string.Join(" + ", order.OrderItems.Select(oi => $"{oi.Quantity}x {(oi.Product?.Name ?? "Produce")}"));
+                if (string.IsNullOrEmpty(cropNames)) cropNames = "Standard Harvest Order";
+                int totalKg = order.OrderItems.Sum(oi => oi.Quantity);
+                decimal baseCropTotal = order.OrderItems.Sum(oi => oi.UnitPrice * oi.Quantity);
+                if (baseCropTotal == 0) baseCropTotal = order.TotalAmount - order.PlatformFee;
+
+                var safeAddr = $"\"{(order.ShippingAddress ?? "Gujarat, India").Replace("\"", "\"\"")}\"";
+                var safeCropNames = $"\"{cropNames.Replace("\"", "\"\"")}\"";
+                var bilty = string.IsNullOrEmpty(order.BiltyNumber) ? "Direct Delivery / Not Required" : order.BiltyNumber;
+                var payoutReleased = order.AdminApprovedPayout || order.Status == "Delivered & Settled" ? "Released to Farmer" : "Held in Escrow Vault";
+
+                builder.AppendLine($"#{order.Id:D5},{order.OrderDate:yyyy-MM-dd HH:mm},\"{custName}\",{custPhone},{custEmail},{safeCropNames},{totalKg},{baseCropTotal:F2},{order.PlatformFee:F2},{order.TotalAmount:F2},{order.PaymentMethod},{order.Status},{order.TransportType},{bilty},{safeAddr},{payoutReleased}");
             }
 
-            var bytes = System.Text.Encoding.UTF8.GetBytes(builder.ToString());
-            var fileName = $"AgriAI_Orders_Report_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv";
-            return File(bytes, "text/csv", fileName);
+            var preamble = System.Text.Encoding.UTF8.GetPreamble();
+            var dataBytes = System.Text.Encoding.UTF8.GetBytes(builder.ToString());
+            var combinedBytes = new byte[preamble.Length + dataBytes.Length];
+            Buffer.BlockCopy(preamble, 0, combinedBytes, 0, preamble.Length);
+            Buffer.BlockCopy(dataBytes, 0, combinedBytes, preamble.Length, dataBytes.Length);
+
+            var fileName = $"AgriAI_Master_Orders_Report_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv";
+            return File(combinedBytes, "text/csv; charset=utf-8", fileName);
         }
 
         // GET: /Admin/ExportPayoutsCsv
@@ -157,25 +189,60 @@ namespace AgriAI.Web.Controllers
         public async Task<IActionResult> ExportPayoutsCsv()
         {
             var allUsers = _userManager.Users.ToList();
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .ToListAsync();
 
             var builder = new System.Text.StringBuilder();
-            builder.AppendLine("User ID,Full Name,Username,Email,Role,KYC Status,Bank Name,Account Number,IFSC Code,UPI ID,Account Status");
+            builder.AppendLine("User ID,Full Name,Role,KYC Status,Phone,Email,Bank Name,Account Number,IFSC Code,UPI Handle,Total Orders or Sales (INR),Current Escrow Held (INR),Total Payouts Settled (INR),Account Status");
 
             foreach (var user in allUsers)
             {
                 var roles = await _userManager.GetRolesAsync(user);
                 var role = roles.FirstOrDefault() ?? "Customer";
-                var kycStatus = role == "Farmer" ? (user.IsApprovedByAdmin ? "KYC Verified" : "Pending Review") : "N/A (Buyer)";
+                var kycStatus = role == "Farmer" ? (user.IsApprovedByAdmin ? "KYC Verified" : "Pending Review") : "N/A (Retail Buyer)";
                 var accStatus = (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow) ? "Blocked" : "Active";
                 var name = $"{user.FirstName} {user.LastName}".Trim();
                 if (string.IsNullOrEmpty(name)) name = user.UserName ?? "User";
 
-                builder.AppendLine($"{user.Id},{name},{user.UserName},{user.Email},{role},{kycStatus},{user.BankName},{user.BankAccountNumber},{user.BankIfscCode},{user.UpiId},{accStatus}");
+                decimal totalSalesOrPurchases = 0m;
+                decimal escrowHeld = 0m;
+                decimal payoutsSettled = 0m;
+
+                if (role == "Farmer")
+                {
+                    var farmerOrders = orders
+                        .Where(o => o.OrderItems.Any(oi => oi.Product != null && (oi.Product.FarmerId == user.Id || oi.Product.FarmerId == user.UserName)))
+                        .ToList();
+
+                    totalSalesOrPurchases = farmerOrders.Sum(o => o.TotalAmount - o.PlatformFee);
+                    escrowHeld = farmerOrders.Where(o => o.Status != "Delivered & Settled" && o.Status != "Cancelled" && o.Status != "Declined").Sum(o => o.TotalAmount - o.PlatformFee);
+                    payoutsSettled = farmerOrders.Where(o => o.Status == "Delivered & Settled").Sum(o => o.TotalAmount - o.PlatformFee);
+                }
+                else
+                {
+                    var buyerOrders = orders.Where(o => o.CustomerId == user.Id || o.CustomerId == user.UserName).ToList();
+                    totalSalesOrPurchases = buyerOrders.Sum(o => o.TotalAmount);
+                }
+
+                var bankName = string.IsNullOrEmpty(user.BankName) ? "Not Provided" : user.BankName;
+                var accNo = string.IsNullOrEmpty(user.BankAccountNumber) ? "N/A" : $"\"{user.BankAccountNumber}\"";
+                var ifsc = string.IsNullOrEmpty(user.BankIfscCode) ? "N/A" : user.BankIfscCode;
+                var upi = string.IsNullOrEmpty(user.UpiId) ? "N/A" : user.UpiId;
+                var phone = string.IsNullOrEmpty(user.PhoneNumber) ? "N/A" : user.PhoneNumber;
+
+                builder.AppendLine($"#{user.Id.Substring(0, Math.Min(8, user.Id.Length))},\"{name}\",{role},{kycStatus},{phone},{user.Email},{bankName},{accNo},{ifsc},{upi},{totalSalesOrPurchases:F2},{escrowHeld:F2},{payoutsSettled:F2},{accStatus}");
             }
 
-            var bytes = System.Text.Encoding.UTF8.GetBytes(builder.ToString());
-            var fileName = $"AgriAI_Users_And_Banking_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv";
-            return File(bytes, "text/csv", fileName);
+            var preamble = System.Text.Encoding.UTF8.GetPreamble();
+            var dataBytes = System.Text.Encoding.UTF8.GetBytes(builder.ToString());
+            var combinedBytes = new byte[preamble.Length + dataBytes.Length];
+            Buffer.BlockCopy(preamble, 0, combinedBytes, 0, preamble.Length);
+            Buffer.BlockCopy(dataBytes, 0, combinedBytes, preamble.Length, dataBytes.Length);
+
+            var fileName = $"AgriAI_Farmer_Banking_Payouts_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv";
+            return File(combinedBytes, "text/csv; charset=utf-8", fileName);
         }
 
         // GET: /Admin/OrderDetails/5
