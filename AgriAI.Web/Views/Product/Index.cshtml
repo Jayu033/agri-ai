@@ -259,11 +259,11 @@
                         <span class="badge-stock-float">
                             @if (stockQty > 0)
                             {
-                                <span class="text-success fw-bold">● @stockQty Kg in Stock <small class="text-muted fw-normal">(of @totalPublished Kg Pub.)</small></span>
+                                <span class="text-success fw-bold">● @stockQty Kg in Stock</span>
                             }
                             else
                             {
-                                <span class="text-danger fw-bold">● Sold Out (@totalPublished Kg Total)</span>
+                                <span class="text-danger fw-bold">● Sold Out</span>
                             }
                         </span>
                     </div>
@@ -296,10 +296,12 @@
                                     ₹@maundPrice.ToString("N0") / Maund
                                 </span>
                             </div>
-                            <div class="d-flex justify-content-between align-items-center text-muted pt-1 border-top" style="font-size: 0.70rem;">
-                                <span>Total Pub: <strong class="text-dark">@totalPublished Kg</strong></span>
+                            <div class="d-flex justify-content-between align-items-center text-muted pt-2 border-top" style="font-size: 0.73rem; white-space: nowrap;">
+                                <span>Total: <strong class="text-dark">@totalPublished Kg</strong></span>
+                                <span class="text-muted opacity-50">&bull;</span>
                                 <span>Sold: <strong class="text-success">@soldQty Kg</strong></span>
-                                <span>Available: <strong class="@(stockQty > 0 ? "text-primary" : "text-danger")">@stockQty Kg</strong></span>
+                                <span class="text-muted opacity-50">&bull;</span>
+                                <span>Left: <strong class="@(stockQty > 0 ? "text-primary" : "text-danger")">@stockQty Kg</strong></span>
                             </div>
                         </div>
 
