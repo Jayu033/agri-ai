@@ -164,7 +164,7 @@
                             var fh = remainingSeconds / 3600;
                             var fm = (remainingSeconds % 3600) / 60;
                             var fs = remainingSeconds % 60;
-                            <span class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 px-2.5 py-1 rounded-pill small" id="farmerReviewCountdown" data-remaining="@remainingSeconds">
+                            <span class="d-inline-flex align-items-center gap-1.5 px-3 py-1 rounded-pill" style="background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.3); font-weight: 700; font-size: 0.78rem;">
                                 ⏳ @($"{fh:D2}h {fm:D2}m {fs:D2}s") Review Window
                             </span>
                         }
