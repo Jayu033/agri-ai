@@ -83,11 +83,35 @@ a {
 }
 
 /* ==========================================================================
+   BOOTSTRAP MODAL & ALERT CLOSE BUTTONS (ENSURE HIGHEST Z-INDEX & CLICKABILITY)
+   ========================================================================== */
+.btn-close {
+    position: relative;
+    z-index: 1060 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    opacity: 0.75;
+    transition: opacity 0.2s ease, transform 0.2s ease !important;
+}
+
+.btn-close:hover {
+    opacity: 1 !important;
+    transform: scale(1.15) !important;
+}
+
+.modal .btn-close.position-absolute {
+    position: absolute !important;
+    z-index: 1065 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+/* ==========================================================================
    GLOBAL BUTTON ANIMATIONS & MICRO-INTERACTIONS
    ========================================================================== */
 
 .btn, 
-button, 
+button:not(.btn-close), 
 input[type="submit"], 
 input[type="button"], 
 .menu-btn, 
@@ -122,21 +146,21 @@ input[type="submit"]::after {
 }
 
 .btn:hover::after, 
-button:hover::after, 
+button:not(.btn-close):hover::after, 
 input[type="submit"]:hover::after {
     left: 130%;
 }
 
 /* 2. Hover Scale & Elevation */
 .btn:hover, 
-button:hover, 
+button:not(.btn-close):hover, 
 input[type="submit"]:hover {
     transform: translateY(-3px) scale(1.02);
 }
 
 /* 3. Click / Active Compress Animation */
 .btn:active, 
-button:active, 
+button:not(.btn-close):active, 
 input[type="submit"]:active {
     transform: translateY(1px) scale(0.97) !important;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;

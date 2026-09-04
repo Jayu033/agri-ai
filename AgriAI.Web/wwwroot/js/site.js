@@ -264,4 +264,52 @@ document.addEventListener("DOMContentLoaded", function () {
             scrollToBottom();
         });
     }
+
+    // 6. Global Bulletproof Modal & Alert Close Handler (Guarantees every '✕' button works everywhere)
+    document.addEventListener('click', function (e) {
+        // A. Modal Close Button & Dismiss Triggers
+        const dismissModalBtn = e.target.closest('[data-bs-dismiss="modal"]') || (e.target.classList.contains('btn-close') && e.target.closest('.modal'));
+        if (dismissModalBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const modalEl = dismissModalBtn.closest('.modal');
+            if (modalEl) {
+                if (window.bootstrap && bootstrap.Modal) {
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modalInstance.hide();
+                } else {
+                    modalEl.classList.remove('show');
+                    modalEl.style.display = 'none';
+                    document.body.classList.remove('modal-open');
+                    document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                }
+
+                // Cleanup any backdrops that might get stuck
+                setTimeout(function () {
+                    if (!document.querySelector('.modal.show')) {
+                        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                        document.body.classList.remove('modal-open');
+                        document.body.style.removeProperty('overflow');
+                        document.body.style.removeProperty('padding-right');
+                    }
+                }, 200);
+            }
+        }
+
+        // B. Alert Close Button
+        const dismissAlertBtn = e.target.closest('[data-bs-dismiss="alert"]') || (e.target.classList.contains('btn-close') && e.target.closest('.alert'));
+        if (dismissAlertBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const alertEl = dismissAlertBtn.closest('.alert');
+            if (alertEl) {
+                if (window.bootstrap && bootstrap.Alert) {
+                    const alertInstance = bootstrap.Alert.getInstance(alertEl) || bootstrap.Alert.getOrCreateInstance(alertEl);
+                    alertInstance.close();
+                } else {
+                    alertEl.remove();
+                }
+            }
+        }
+    });
 });
