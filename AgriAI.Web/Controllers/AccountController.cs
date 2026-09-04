@@ -33,6 +33,20 @@ namespace AgriAI.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            // Security: Strictly forbid any creation of Admin accounts
+            if (string.Equals(model.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError(string.Empty, "Creating an Admin account is strictly disabled. There is only one dedicated master Admin account.");
+                return View(model);
+            }
+
+            // Enforce only Farmer or Customer
+            if (!string.Equals(model.Role, "Farmer", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(model.Role, "Customer", StringComparison.OrdinalIgnoreCase))
+            {
+                model.Role = "Customer";
+            }
+
             var isFarmer = model.Role == "Farmer";
 
             // Strict Anti-Fraud Validation for Farmers
