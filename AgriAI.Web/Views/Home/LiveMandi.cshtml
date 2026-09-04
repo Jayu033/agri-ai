@@ -11,8 +11,8 @@
 <div class="container py-4">
     <!-- Header Hero Banner -->
     <div class="live-mandi-header-hero">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7 col-xl-8">
                 <div class="live-mandi-badge">
                     <span class="ticker-pulse-dot"></span>
                     <span>LIVE APMC MARKET FEEDS (DATA.GOV.IN CONNECTED)</span>
@@ -24,17 +24,18 @@
                     Real-time market yard commodity prices, daily arrivals, modal auction rates, and MSP benchmarks across 500+ APMC markets in Gujarat.
                 </p>
             </div>
-            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
-                <div class="d-inline-flex flex-column gap-2 text-start bg-white bg-opacity-10 backdrop-blur p-3.5 rounded-4 border border-white border-opacity-25 shadow">
-                    <div class="d-flex align-items-center gap-2 text-warning fw-bold small">
+            <div class="col-lg-5 col-xl-4 text-lg-end mt-3 mt-lg-0">
+                <div class="d-inline-flex flex-column gap-2.5 text-start rounded-4 shadow-sm" style="background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1.5px solid rgba(255, 255, 255, 0.28); padding: 20px 26px; min-width: 320px;">
+                    <div class="d-flex align-items-center gap-2 text-warning fw-bold small" style="white-space: nowrap;">
                         <i class="bi bi-shield-check fs-5"></i>
                         <span>Ministry of Agriculture Verified</span>
                     </div>
-                    <div class="text-white small">
-                        <strong>Live API Status:</strong> <span class="badge bg-success">2026 Live Active 🟢</span>
+                    <div class="text-white small d-flex align-items-center justify-content-between gap-3" style="white-space: nowrap;">
+                        <span><strong>Live API Status:</strong></span>
+                        <span class="badge bg-success px-2.5 py-1.5 rounded-pill fw-bold shadow-sm">2026 Live Active 🟢</span>
                     </div>
-                    <div class="text-white-50" style="font-size: 0.76rem;">
-                        Last Synced: @DateTime.Now.ToString("dd MMM yyyy, hh:mm tt")
+                    <div class="text-white-50 small mt-0.5" style="font-size: 0.78rem; white-space: nowrap;">
+                        <i class="bi bi-clock-history me-1"></i> Last Synced: @DateTime.Now.ToString("dd MMM yyyy, hh:mm tt")
                     </div>
                 </div>
             </div>
