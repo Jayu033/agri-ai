@@ -1,19 +1,19 @@
 /* AgriAI Crop Predictor Stylesheet */
 
 .crop-predictor-container {
-    max-width: 960px;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 24px 16px;
+    padding: 24px 24px 60px 24px;
 }
 
-/* Green Header Banner (Matching User's Uploaded Screenshot) */
+/* Green Header Banner (Matching Exact Layout and Header) */
 .crop-predictor-hero {
-    background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 60%, #1e4620 100%);
+    background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #006653 100%);
     color: #ffffff;
-    border-radius: 20px;
-    padding: 38px 24px;
+    border-radius: 24px;
+    padding: 2.5rem 2rem;
     text-align: center;
-    box-shadow: 0 10px 25px rgba(27, 94, 32, 0.15);
+    box-shadow: 0 12px 32px rgba(4, 120, 87, 0.18);
     margin-bottom: 24px;
     position: relative;
     overflow: hidden;
