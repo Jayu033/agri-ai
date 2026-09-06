@@ -92,16 +92,16 @@
 
     <!-- Filter & Search Toolbar Panel -->
     <div class="mandi-filter-panel">
-        <div class="row g-3 align-items-center">
+        <div class="row g-2.5 g-lg-3 align-items-center">
             <!-- Search input -->
-            <div class="col-lg-4 position-relative">
-                <i class="bi bi-search position-absolute text-muted" style="left: 28px; top: 13px; font-size: 1rem;"></i>
-                <input type="text" id="mandiSearchInput" class="form-control mandi-search-input" placeholder="Search crop, APMC yard (e.g. Cotton, Unjha, Rajkot)..." />
+            <div class="col-md-6 col-lg-3 position-relative">
+                <i class="bi bi-search position-absolute text-muted" style="left: 24px; top: 11px; font-size: 0.92rem;"></i>
+                <input type="text" id="mandiSearchInput" class="form-control mandi-search-input" placeholder="Search crop, APMC yard..." />
             </div>
 
             <!-- District Dropdown Filter -->
-            <div class="col-md-4 col-lg-3">
-                <select id="districtFilterSelect" class="form-select rounded-pill shadow-none" style="font-size: 0.88rem; padding: 10px 18px;">
+            <div class="col-md-6 col-lg-3">
+                <select id="districtFilterSelect" class="form-select rounded-pill shadow-none" style="font-size: 0.86rem; padding: 8px 16px;">
                     <option value="">All Gujarat Districts</option>
                     @foreach (var district in Model.Select(m => m.District).Where(d => !string.IsNullOrEmpty(d)).Distinct().OrderBy(d => d))
                     {
@@ -111,10 +111,10 @@
             </div>
 
             <!-- Category Pills -->
-            <div class="col-lg-5 text-lg-end">
-                <div class="d-flex flex-wrap gap-1.5 justify-content-lg-end" id="categoryPillContainer">
+            <div class="col-lg-6 text-lg-end">
+                <div class="d-flex flex-wrap gap-1.5 justify-content-start justify-content-lg-end align-items-center" id="categoryPillContainer">
                     <button class="mandi-tab-btn active" data-filter="all">All Crops</button>
-                    <button class="mandi-tab-btn" data-filter="cash">Cash Crops &amp; Spices</button>
+                    <button class="mandi-tab-btn" data-filter="cash">Cash &amp; Spices</button>
                     <button class="mandi-tab-btn" data-filter="grains">Grains</button>
                     <button class="mandi-tab-btn" data-filter="pulses">Pulses</button>
                     <button class="mandi-tab-btn" data-filter="oilseeds">Oilseeds</button>
