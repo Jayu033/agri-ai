@@ -263,6 +263,18 @@ document.addEventListener("DOMContentLoaded", function () {
     function formatMarkdown(text) {
         if (!text) return '';
         let formatted = escapeHtml(text);
+
+        // Store and protect code blocks: ```python ... ```
+        const codeBlocks = [];
+        formatted = formatted.replace(/```(?:[a-zA-Z0-9_\-]+)?\s*([\s\S]*?)```/g, function(match, code) {
+            const idx = codeBlocks.length;
+            codeBlocks.push('<pre class="bg-dark text-warning p-2 rounded my-2 text-start" style="font-family: Consolas, monospace; font-size: 0.82rem; overflow-x: auto; white-space: pre-wrap; line-height: 1.4; border-left: 3px solid #198754;"><code>' + code.trim() + '</code></pre>');
+            return `@@CODE_BLOCK_${idx}@@`;
+        });
+
+        // Inline code: `code`
+        formatted = formatted.replace(/`([^`]+)`/g, '<code class="bg-light text-danger px-1 rounded fw-bold">$1</code>');
+
         // Bold: **text**
         formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         // Italic: *text*
@@ -271,6 +283,12 @@ document.addEventListener("DOMContentLoaded", function () {
         formatted = formatted.replace(/^[\*\-]\s+(.*)$/gm, '<li class="ms-3">$1</li>');
         // Newlines
         formatted = formatted.replace(/\n/g, '<br/>');
+
+        // Restore code blocks
+        codeBlocks.forEach((blockHtml, idx) => {
+            formatted = formatted.replace(`@@CODE_BLOCK_${idx}@@`, blockHtml);
+        });
+
         return formatted;
     }
 

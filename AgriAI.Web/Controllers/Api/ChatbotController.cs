@@ -34,6 +34,10 @@ namespace AgriAI.Web.Controllers.Api
             }
 
             var apiKey = _configuration["Gemini:ApiKey"];
+            if (string.IsNullOrWhiteSpace(apiKey) || apiKey == "YOUR_GEMINI_API_KEY_HERE")
+            {
+                apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY");
+            }
             var model = _configuration["Gemini:Model"] ?? "gemini-1.5-flash";
 
             // 1. If API key is present and appears to be a standard Gemini key (starts with AIzaSy), try Gemini API first
@@ -52,16 +56,18 @@ namespace AgriAI.Web.Controllers.Api
                     };
 
                     var promptSystem = $@"You are AgriAI, an elite Indian agricultural doctor, agronomist, and APMC Mandi market specialist for Gujarat farmers.
-RULES:
-1. NEVER beat around the bush or give generic vague boilerplate. Give immediate, direct, pinpoint answers in {targetLanguage}.
-2. When answering crop pest/disease questions, always specify:
+CRITICAL MANDATORY RULES:
+1. You are STRICTLY AND EXCLUSIVELY an Agricultural Assistant. You MUST ONLY answer questions related to agriculture, farming, crops, pest/disease management, chemical/organic pesticides with exact dosages per 15L pump, fertilizers, weather, and Mandi rates.
+2. If the user asks about ANYTHING non-agricultural (such as coding, Python, math calculations like 2+2, sports, movies, politics, technology, or general knowledge), you MUST STRICTLY AND POLITELY REFUSE in {targetLanguage}. Explicitly state that you only assist with agriculture, crops, fertilizers, and farming.
+3. When answering crop pest/disease questions, always specify:
    - Root Cause / Identification
    - Exact Chemical & Commercial Brand Name (e.g. Coragen, Pegasus, Saaf, Delegate, Fipronil)
    - EXACT DOSAGE per 15-liter pump (or per acre)
    - Organic / Desi alternative (Neem oil, Jeevamrut, Trichoderma) with exact dosage
    - Spraying precautions (morning/evening, sticker use)
-3. For fertilizer questions, give exact quantities (kg/acre or ml/pump) and application timing.
-4. Format with clean bullet points, emojis, and bold highlights for quick mobile reading.";
+4. For fertilizer questions, give exact quantities (kg/acre or ml/pump) and application timing.
+5. NEVER beat around the bush. Give immediate, direct, pinpoint answers in {targetLanguage}.
+6. Format with clean bullet points, emojis, and bold highlights for quick mobile reading.";
 
                     var requestBody = new
                     {
@@ -136,6 +142,106 @@ RULES:
             else if (string.IsNullOrWhiteSpace(lang))
             {
                 lang = "gu";
+            }
+
+            // ----------------------------------------------------
+            // A. STRICT FILTER: REJECT NON-AGRICULTURAL QUERIES
+            // (e.g. પાયથોન કોડ, 2+2, math, movies, sports, tech)
+            // ----------------------------------------------------
+            if (IsNonAgriculturalQuery(q, query))
+            {
+                if (lang == "gu")
+                {
+                    return "🌾 **ક્ષમા કરશો! હું ફક્ત ખેતી અને કૃષિ (Agriculture) સહાયક AI છું.**\n\n" +
+                           "મારો ઉપયોગ ફક્ત ખેડૂત મિત્રોને મદદ કરવા માટે છે. હું કોડિંગ, સામાન્ય ગણિત કે ખેતી સિવાયના અન્ય કોઈપણ વિષયોના જવાબો આપતો નથી.\n\n" +
+                           "👉 કૃપા કરીને ફક્ત તમારા **પાક (કપાસ, મગફળી, જીરું, ઘઉં), રોગ-જીવાત, જંતુનાશક દવા, ખાતર કે મંડી ભાવ** વિશે જ પ્રશ્ન પૂછો!";
+                }
+                else if (lang == "hi")
+                {
+                    return "🌾 **क्षमा करें! मैं केवल कृषि (Agriculture) सहायक AI हूँ।**\n\n" +
+                           "मैं कोडिंग, सामान्य गणित या खेती से बाहर के किसी भी अन्य विषय के उत्तर नहीं दे सकता।\n\n" +
+                           "👉 कृपया केवल **फसल (कपास, मूंगफली, गेहूं, जीरा), रोग-कीट नियंत्रण, कीटनाशक दवा, खाद या मंडी भाव** से संबंधित प्रश्न ही पूछें!";
+                }
+                else
+                {
+                    return "🌾 **I apologize! I am strictly an Agricultural AI Assistant.**\n\n" +
+                           "I only answer questions related to agriculture, farming, crops, pesticides, fertilizers, and Mandi rates. I do not answer coding, math, or non-agricultural queries.\n\n" +
+                           "👉 Please ask questions related to **farming, crops, plant protection, or market rates**.";
+                }
+            }
+
+            // ----------------------------------------------------
+            // B. GREETINGS & SMALL TALK (AGRICULTURAL FOCUS)
+            // ----------------------------------------------------
+            if (ContainsAny(q, "નમસ્તે", "નમસ્કાર", "પ્રણામ", "કેમ છો", "કેમ છે", "hello", "hi", "hey", "kem cho", "kem chho", "halo", "સુપ્રભાત", "ગુડ મોર્નિંગ", "શુભ સવાર", "રામ રામ", "જય શ્રી કૃષ્ણ", "જય માતાજી", "જય સ્વામિનારાયણ", "how are you", "મજામાં"))
+            {
+                if (lang == "gu")
+                {
+                    return "🙏 **નમસ્તે / જય શ્રી કૃષ્ણ ખેડૂત મિત્ર!**\n\n" +
+                           "હું **AgriAI ખેતી સહાયક** છું.\n\n" +
+                           "હું તમને નીચેની ખેતી વિષયક બાબતોમાં સીધો અને સચોટ જવાબ આપી શકું છું:\n" +
+                           "1. 🌿 **પાકના રોગ-જીવાત અને દવાઓનું માપ** (કપાસ, મગફળી, જીરું, ઘઉં)\n" +
+                           "2. 🧪 **ખાતરનું શેડ્યૂલ** (યુરિયા, ડીએપી, ૧૯:૧૯:૧૯)\n" +
+                           "3. 🍅 **ગુજરાત માર્કેટ યાર્ડ (APMC) ના આજના લાઈવ ભાવ**\n" +
+                           "4. 🚜 **AgriAI પર પાક વેચાણ અને ઓર્ડર મદદ**\n\n" +
+                           "આજે તમારે કયા પાક વિશે માહિતી જોઈએ છે?";
+                }
+                else if (lang == "hi")
+                {
+                    return "🙏 **नमस्ते किसान मित्र!**\n\n" +
+                           "मैं **AgriAI कृषि सहायक** हूँ।\n\n" +
+                           "मैं केवल फसलों के रोग, कीटनाशक दवा, खाद और लाइव मंडी भाव में आपकी मदद कर सकता हूँ।\n" +
+                           "आज आप किस फसल के बारे में जानना चाहते हैं?";
+                }
+                else
+                {
+                    return "🙏 **Hello & Welcome!**\n\n" +
+                           "I am **AgriAI Agricultural Assistant**.\n\n" +
+                           "I assist exclusively with crop protection, fertilizers, pest control, and live Gujarat Mandi rates.\n" +
+                           "Which crop or farming topic would you like advice on?";
+                }
+            }
+
+            // ----------------------------------------------------
+            // C. AI BOT IDENTITY (STRICTLY AGRICULTURAL)
+            // ----------------------------------------------------
+            if (ContainsAny(q, "who are you", "તમે કોણ", "કોણ છો", "તારું નામ", "તમારું નામ", "your name", "who made you", "કોણે બનાવ્યા", "શું કામ કરો", "what can you do", "શું કરી શકો"))
+            {
+                if (lang == "gu")
+                {
+                    return "🤖 **હું AgriAI - ફક્ત ખેતી અને કૃષિ માટેનો સ્પેશિયાલિસ્ટ AI સહાયક છું.**\n\n" +
+                           "મારો મુખ્ય ઉદ્દેશ્ય ગુજરાતના ખેડૂતોને પાક સંરક્ષણ, દવાનું સચોટ માપ (૧૫ લીટર પંપ દીઠ), રોગ-જીવાત નિયંત્રણ, ખાતર વ્યવસ્થાપન અને APMC બજાર ભાવોની સાચી માહિતી આપવાનો છે.\n\n" +
+                           "ખેતી સિવાયના અન્ય કોઈપણ વિષયોના જવાબો અહીં આપવામાં આવતા નથી.";
+                }
+                else if (lang == "hi")
+                {
+                    return "🤖 **मैं AgriAI - केवल कृषि और खेती के लिए विशेष AI सहायक हूँ।**\n\n" +
+                           "मेरा उद्देश्य किसानों को फसल रोग, दवा के सही माप, खाद प्रबंधन और मंडी भाव की सटीक जानकारी देना है।\n" +
+                           "कृषि के अलावा अन्य विषयों के उत्तर यहाँ उपलब्ध नहीं हैं।";
+                }
+                else
+                {
+                    return "🤖 **I am AgriAI - Strictly an Agricultural Specialist AI.**\n\n" +
+                           "I guide farmers with crop disease diagnosis, pesticide dosages, fertilizer schedules, and APMC Mandi rates.\n" +
+                           "Non-agricultural queries are not supported.";
+                }
+            }
+
+            // ----------------------------------------------------
+            // D. THANKS & GRATITUDE
+            // ----------------------------------------------------
+            if (ContainsAny(q, "thank you", "thanks", "આભાર", "ધન્યવાદ", "શુક્રિયા", "ખૂબ સરસ", "mast", "great", "good job", "super"))
+            {
+                if (lang == "gu")
+                {
+                    return "😊 **તમારો ખૂબ ખૂબ આભાર ખેડૂત મિત્ર!**\n\n" +
+                           "ખેડૂતોની સેવા કરવી એ જ અમારો ઉદ્દેશ્ય છે. પાક, દવા, ખાતર કે મંડી ભાવ વિશે કોઈપણ પ્રશ્ન હોય તો વિના સંકોચે પૂછો!";
+                }
+                else
+                {
+                    return "😊 **You're welcome! / आपका बहुत-बहुत धन्यवाद!**\n\n" +
+                           "Always here to help with your crops and farming questions!";
+                }
             }
 
             // ----------------------------------------------------
@@ -615,7 +721,7 @@ RULES:
             // ----------------------------------------------------
             // 13. AGRIAI પ્લેટફોર્મ અને વેચાણ સહાય (MARKETPLACE / ORDERS)
             // ----------------------------------------------------
-            if (ContainsAny(q, "વેચવું", "ભાવ", "agriai", "ઓર્ડર", "order", "sell", "પૈસા", "પેમેન્ટ", "કેવી રીતે"))
+            if (ContainsAny(q, "વેચવું", "agriai", "ઓર્ડર", "order", "sell", "પેમેન્ટ", "એસ્ક્રો", "escrow", "લિસ્ટિંગ", "કેવી રીતે વેચવું", "માર્કેટપ્લેસ"))
             {
                 if (lang == "gu")
                 {
@@ -635,42 +741,118 @@ RULES:
             }
 
             // ----------------------------------------------------
-            // 14. DEFAULT HIGH-ACCURACY AGRICULTURAL ADVISOR PROTOCOL
-            // (No beating around the bush! Gives clear, actionable general diagnosis)
+            // 14. DEFAULT SMART RESPONSE (AGRICULTURAL VS GENERAL)
             // ----------------------------------------------------
-            if (lang == "gu")
+            bool isAgriQuery = ContainsAny(q,
+                "પાક", "ખેતી", "ખેડૂત", "રોગ", "જીવાત", "દવા", "છંટકાવ", "પંપ", "જંતુનાશક", "ઈયળ", "ફૂગ", 
+                "ખાતર", "બિયારણ", "વાવેતર", "જમીન", "નીંદણ", "સુકારો", "ચરમી", "પીળાશ", "ફળ", "શાકભાજી", 
+                "મંડી", "ભાવ", "ભાવો", "crop", "farm", "farmer", "disease", "pest", "spray", "pump", 
+                "pesticide", "fungicide", "fertilizer", "seed", "sowing", "soil", "weed", "weedicide", 
+                "mandi", "rate", "price", "kheti", "dava", "khatar", "પિયત", "સિંચાઈ", "ટપક",
+                "फसल", "खेती", "किसान", "रोग", "कीट", "दवा", "कीटनाशक", "खाद", "बीज", "मंडी", "भाव");
+
+            if (isAgriQuery)
             {
-                return "🌾 **AgriAI કૃષિ નિષ્ણાત સલાહ:**\n\n" +
-                       $"તમારો પ્રશ્ન: \"*{query}*\"\n\n" +
-                       "🔍 **પાક સંરક્ષણ માટેનો સામાન્ય સુવર્ણ નિયમ:**\n" +
-                       "1. **ચૂસીયા જીવાત (સફેદ માખી, થ્રીપ્સ, મોલો):** કોન્ફીડોર (૭ મિલી) અથવા રીજન્ટ (૩૦ મિલી) પ્રતિ ૧૫ લીટર પંપ.\n" +
-                       "2. **ઈયળ (લીલી કે ગુલાબી ઈયળ):** કોરાજન (૬ મિલી) અથવા એમામેક્ટીન બેન્ઝોએટ (૧૦ ગ્રામ) પ્રતિ પંપ.\n" +
-                       "3. **ફૂગ, ચરમી કે સુકારો:** સાફ (કાર્બેન્ડાઝીમ + મેન્કોઝેબ) ૩૫ ગ્રામ અથવા નેટીવો ૧૦ ગ્રામ પ્રતિ પંપ.\n" +
-                       "4. **પીળાશ દૂર કરવા:** ૧૯:૧૯:૧૯ (૭૫ ગ્રામ) + ચિલેટેડ આયર્ન/ઝિંક (૧૫ ગ્રામ) પ્રતિ પંપ.\n\n" +
-                       "💡 *વધુ ચોક્કસ દવા અને માપ જાણવા તમારા પાકનું નામ (દા.ત. કપાસ, મગફળી, જીરું, ઘઉં) અને રોગનું નામ લખો.*";
-            }
-            else if (lang == "hi")
-            {
-                return "🌾 **AgriAI कृषि विशेषज्ञ सलाह:**\n\n" +
-                       $"आपका सवाल: \"*{query}*\"\n\n" +
-                       "🔍 **फसल सुरक्षा के 4 मुख्य नियम (प्रति 15 लीटर पंप):**\n" +
-                       "1. **चूसक कीट (सफेद मक्खी, थ्रिप्स):** कॉन्फिडोर 7ml या रीजेंट 30ml।\n" +
-                       "2. **इल्ली / सुंडी नियंत्रण:** कोराजन 6ml या प्रोक्लेम 10 ग्राम।\n" +
-                       "3. **फफूंद व झुलसा:** साफ 35 ग्राम या नेटिवो 10 ग्राम।\n" +
-                       "4. **पीलापन हटाने के लिए:** 19:19:19 खाद 75 ग्राम + सूक्ष्म पोषक तत्व।\n\n" +
-                       "💡 *अपनी फसल का नाम (कपास, मूंगफली, जीरा, गेहूं) लिखकर सटीक सलाह प्राप्त करें।*";
+                if (lang == "gu")
+                {
+                    return "🌾 **AgriAI કૃષિ નિષ્ણાત સલાહ:**\n\n" +
+                           $"તમારો પ્રશ્ન: \"*{query}*\"\n\n" +
+                           "🔍 **પાક સંરક્ષણ માટેનો સામાન્ય સુવર્ણ નિયમ:**\n" +
+                           "1. **ચૂસીયા જીવાત (સફેદ માખી, થ્રીપ્સ, મોલો):** કોન્ફીડોર (૭ મિલી) અથવા રીજન્ટ (૩૦ મિલી) પ્રતિ ૧૫ લીટર પંપ.\n" +
+                           "2. **ઈયળ (લીલી કે ગુલાબી ઈયળ):** કોરાજન (૬ મિલી) અથવા એમામેક્ટીન બેન્ઝોએટ (૧૦ ગ્રામ) પ્રતિ પંપ.\n" +
+                           "3. **ફૂગ, ચરમી કે સુકારો:** સાફ (કાર્બેન્ડાઝીમ + મેન્કોઝેબ) ૩૫ ગ્રામ અથવા નેટીવો ૧૦ ગ્રામ પ્રતિ પંપ.\n" +
+                           "4. **પીળાશ દૂર કરવા:** ૧૯:૧૯:૧૯ (૭૫ ગ્રામ) + ચિલેટેડ આયર્ન/ઝિંક (૧૫ ગ્રામ) પ્રતિ પંપ.\n\n" +
+                           "💡 *વધુ ચોક્કસ દવા અને માપ જાણવા તમારા પાકનું નામ (દા.ત. કપાસ, મગફળી, જીરું, ઘઉં) અને રોગનું નામ લખો.*";
+                }
+                else if (lang == "hi")
+                {
+                    return "🌾 **AgriAI कृषि विशेषज्ञ सलाह:**\n\n" +
+                           $"आपका सवाल: \"*{query}*\"\n\n" +
+                           "🔍 **फसल सुरक्षा के 4 मुख्य नियम (प्रति 15 लीटर पंप):**\n" +
+                           "1. **चूसक कीट (सफेद मक्खी, थ्रिप्स):** कॉन्फिडोर 7ml या रीजेंट 30ml।\n" +
+                           "2. **इल्ली / सुंडी नियंत्रण:** कोराजन 6ml या प्रोक्लेम 10 ग्राम।\n" +
+                           "3. **फफूंद व झुलसा:** साफ 35 ग्राम या नेटिवो 10 ग्राम।\n" +
+                           "4. **पीलापन हटाने के लिए:** 19:19:19 खाद 75 ग्राम + सूक्ष्म पोषक तत्व।\n\n" +
+                           "💡 *अपनी फसल का नाम (कपास, मूंगफली, जीरा, गेहूं) लिखकर सटीक सलाह प्राप्त करें।*";
+                }
+                else
+                {
+                    return "🌾 **AgriAI Agricultural Expert Advisory:**\n\n" +
+                           $"Regarding: \"*{query}*\"\n\n" +
+                           "🔍 **Standard 4-Step Crop Protection Protocol (per 15L pump):**\n" +
+                           "1. **Sucking Pests (Whitefly, Thrips, Aphids):** Confidor (7ml) or Regent (30ml).\n" +
+                           "2. **Caterpillars & Bollworms:** Coragen (6ml) or Emamectin Benzoate (10g).\n" +
+                           "3. **Fungal Blights & Rots:** Saaf (35g) or Nativo (10g).\n" +
+                           "4. **Yellowing / Nutrient Deficiency:** NPK 19:19:19 (75g) + Micronutrient mix (15g).\n\n" +
+                           "💡 *Please mention your specific crop name (e.g. Cotton, Groundnut, Cumin, Wheat) for pinpoint prescriptions.*";
+                }
             }
             else
             {
-                return "🌾 **AgriAI Agricultural Expert Advisory:**\n\n" +
-                       $"Regarding: \"*{query}*\"\n\n" +
-                       "🔍 **Standard 4-Step Crop Protection Protocol (per 15L pump):**\n" +
-                       "1. **Sucking Pests (Whitefly, Thrips, Aphids):** Confidor (7ml) or Regent (30ml).\n" +
-                       "2. **Caterpillars & Bollworms:** Coragen (6ml) or Emamectin Benzoate (10g).\n" +
-                       "3. **Fungal Blights & Rots:** Saaf (35g) or Nativo (10g).\n" +
-                       "4. **Yellowing / Nutrient Deficiency:** NPK 19:19:19 (75g) + Micronutrient mix (15g).\n\n" +
-                       "💡 *Please mention your specific crop name (e.g. Cotton, Groundnut, Cumin, Wheat) for pinpoint prescriptions.*";
+                // Strict refusal for any non-agricultural queries
+                if (lang == "gu")
+                {
+                    return "🌾 **ક્ષમા કરશો! હું ફક્ત ખેતી અને કૃષિ (Agriculture) સહાયક AI છું.**\n\n" +
+                           "મારો ઉપયોગ ફક્ત ખેડૂત મિત્રોને મદદ કરવા માટે છે. હું ખેતી સિવાયના અન્ય કોઈપણ વિષયોના જવાબો આપતો નથી.\n\n" +
+                           "👉 કૃપા કરીને ફક્ત તમારા **પાક (કપાસ, મગફળી, જીરું, ઘઉં વગેરે), રોગ-જીવાત, જંતુનાશક દવા, ખાતર કે મંડી ભાવ** વિશે જ પ્રશ્ન પૂછો!";
+                }
+                else if (lang == "hi")
+                {
+                    return "🌾 **क्षमा करें! मैं केवल कृषि (Agriculture) सहायक AI हूँ।**\n\n" +
+                           "मैं खेती से बाहर के किसी भी अन्य विषय के उत्तर नहीं दे सकता।\n\n" +
+                           "👉 कृपया केवल **फसल (कपास, मूंगफली, गेहूं, जीरा), रोग-कीट, कीटनाशक दवा, खाद या मंडी भाव** से संबंधित प्रश्न ही पूछें!";
+                }
+                else
+                {
+                    return "🌾 **I apologize! I am strictly an Agricultural AI Assistant.**\n\n" +
+                           "I only answer agriculture, farming, crop protection, and Mandi rate questions.\n\n" +
+                           "👉 Please ask questions related to farming and crops!";
+                }
             }
+        }
+
+        private static bool IsNonAgriculturalQuery(string q, string rawQuery)
+        {
+            // 1. Coding, Tech, Programming, Software, Computers
+            if (ContainsAny(q, 
+                "પાયથોન", "પાયથન", "पायथन", "python", "કોડ", "code", "coding", "કોડિંગ", 
+                "પ્રોગ્રામિંગ", "programming", "પ્રોગ્રામ", "java", "c#", "csharp", "dotnet", ".net", 
+                "html", "css", "javascript", "js", "php", "software", "સોફ્ટવેર", "computer", "કોમ્પ્યુટર", 
+                "app develop", "algorithm", "developer", "કોડર", "ટેકનોલોજી", "technology", "chatgpt", "gemini"))
+            {
+                return true;
+            }
+
+            // 2. Math & Pure Arithmetic (e.g. 2+2, ૨+૨?, 10*5, 100/4)
+            var sb = new StringBuilder();
+            foreach (char c in rawQuery)
+            {
+                if (c >= '\u0AE6' && c <= '\u0AEF') sb.Append((char)('0' + (c - '\u0AE6')));
+                else if (c >= '\u0966' && c <= '\u096F') sb.Append((char)('0' + (c - '\u0966')));
+                else sb.Append(c);
+            }
+            string norm = sb.ToString().Trim().TrimEnd('?', '=', ' ', '।');
+            if (norm.Any(char.IsDigit) && norm.Any(c => "+-*/%xX÷".Contains(c)))
+            {
+                bool hasFarmContext = ContainsAny(q, 
+                    "કપાસ", "મગફળી", "જીરું", "ઘઉં", "પાક", "ખેતી", "પંપ", "લીટર", "લિટર", "કિલો", 
+                    "એકર", "વીઘા", "ખાતર", "દવા", "ગ્રામ", "મિલી", "ml", "kg", "pump", "acre", "crop");
+                if (!hasFarmContext)
+                {
+                    return true;
+                }
+            }
+
+            // 3. Entertainment, Sports, Politics, Personal Non-Agri
+            if (ContainsAny(q, 
+                "movie", "film", "ફિલ્મ", "પિક્ચર", "ગીત", "song", "cricket", "ક્રિકેટ", "ipl", 
+                "કોહલી", "ધોની", "રાજકારણ", "politics", "મોદી", "modi", "joke", "જોક્સ", 
+                "શાયરી", "shayari", "લવ", "love", "શાળા", "school", "college", "કોલેજ"))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private static bool ContainsAny(string text, params string[] keywords)
