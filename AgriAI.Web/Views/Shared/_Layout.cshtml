@@ -483,27 +483,35 @@
                     <i class="bi bi-robot"></i>
                 </div>
                 <div>
-                    <h6 class="agri-chat-title">AgriAI Smart Assistant</h6>
+                    <h6 class="agri-chat-title mb-0">AgriAI ખેતી સહાયક</h6>
                     <div class="agri-chat-status">
-                        <span class="status-dot"></span> Online (AI Powered)
+                        <span class="status-dot"></span> <span id="agriChatStatusText">ઓનલાઇન (AI સંચાલિત)</span>
                     </div>
                 </div>
             </div>
-            <button id="closeChatBtn" type="button" class="agri-chat-close-btn" title="Close Chat">
-                <i class="bi bi-x-lg"></i>
-            </button>
+            <div class="d-flex align-items-center gap-2">
+                <div class="chat-header-lang-switch d-flex align-items-center bg-black bg-opacity-25 rounded-pill p-0.5 border border-white border-opacity-25">
+                    <button type="button" class="btn btn-sm text-white p-0 px-1.5 fw-bold chat-lang-pill" data-lang="en" style="font-size: 0.68rem; border-radius: 10px; line-height: 1.4;">EN</button>
+                    <button type="button" class="btn btn-sm p-0 px-1.5 fw-bold chat-lang-pill active bg-white text-dark" data-lang="gu" style="font-size: 0.68rem; border-radius: 10px; line-height: 1.4;">ગુજ</button>
+                    <button type="button" class="btn btn-sm text-white p-0 px-1.5 fw-bold chat-lang-pill" data-lang="hi" style="font-size: 0.68rem; border-radius: 10px; line-height: 1.4;">हिन्दी</button>
+                </div>
+                <button id="closeChatBtn" type="button" class="agri-chat-close-btn shadow-none" title="Close Chat">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
         </div>
 
         <div id="agriChatBody" class="agri-chat-body">
             <div class="agri-msg agri-msg-bot">
                 <div class="agri-msg-bubble">
-                    <p class="mb-1"><strong>Hello! 👋 I am your AgriAI Assistant.</strong></p>
-                    <p class="mb-2">Ask any question about crop diseases, organic fertilizers, live Mandi rates, or farm orders:</p>
+                    <p class="mb-1"><strong>Hello! 👋 I am your AgriAI Farm Assistant.</strong></p>
+                    <p class="mb-2">Ask any question about crop diseases, exact medicine dosages, fertilizers, or Gujarat APMC mandi rates:</p>
                     <div class="agri-quick-topics">
-                        <span class="topic-pill">🌱 Cotton Pest Control</span>
-                        <span class="topic-pill">🌾 Wheat Market Rates</span>
-                        <span class="topic-pill">🍅 Tomato Fertilizer Guide</span>
-                        <span class="topic-pill">🌦️ Weather Forecast</span>
+                        <span class="topic-pill">🌱 Cotton Pest &amp; Whitefly</span>
+                        <span class="topic-pill">🥜 Groundnut White Grub</span>
+                        <span class="topic-pill">🌿 Cumin Blight &amp; Mildew</span>
+                        <span class="topic-pill">🌾 Wheat Fertilizer &amp; Yield</span>
+                        <span class="topic-pill">🧪 Urea &amp; Nano Urea Dose</span>
                     </div>
                 </div>
             </div>
