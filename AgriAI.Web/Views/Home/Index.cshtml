@@ -1,4 +1,4 @@
-@model IEnumerable<AgriAI.Domain.Entities.Product>
+﻿@model IEnumerable<AgriAI.Domain.Entities.Product>
 
 @{
     ViewData["Title"] = "National Agricultural Market & AI Price Intelligence Portal";
@@ -20,32 +20,6 @@
     <!-- Ambient Vignette -->
     <div class="agri3d-vignette-overlay"></div>
 
-    <!-- Top Controls: Brand Tag & Skip Button -->
-    <div class="agri3d-intro-topbar">
-        <div class="agri3d-brand-tag">
-            <span class="agri3d-brand-dot"></span>
-            <span>AgriAI • 3D Cinematic Experience</span>
-        </div>
-        <button type="button" id="btnSkip3dIntro" class="agri3d-skip-btn" title="Skip Intro and explore portal">
-            <span>Skip Intro</span>
-            <i class="bi bi-chevron-double-right"></i>
-        </button>
-    </div>
-
-    <!-- Bottom Progress Bar & Info -->
-    <div class="agri3d-intro-bottombar">
-        <div class="agri3d-progress-track">
-            <div id="agri3dProgressBar" class="agri3d-progress-fill"></div>
-        </div>
-        <div class="d-flex justify-content-between align-items-center mt-2 px-1">
-            <small class="text-white-50" style="font-size: 0.75rem;">
-                <i class="bi bi-magic me-1 text-warning"></i> AI Powered Agriculture &amp; Mandi Intelligence
-            </small>
-            <small class="text-white-50" style="font-size: 0.75rem;">
-                Press <kbd style="background: rgba(255,255,255,0.2); border: none;">ESC</kbd> or click Skip to proceed
-            </small>
-        </div>
-    </div>
 </div>
 
 <div id="mainContent">
@@ -990,8 +964,6 @@
         function init3dIntro() {
             const introOverlay = document.getElementById('agri3dIntroOverlay');
             const introVideo = document.getElementById('agri3dIntroVideo');
-            const skipBtn = document.getElementById('btnSkip3dIntro');
-            const progressBar = document.getElementById('agri3dProgressBar');
             const mainContent = document.getElementById('mainContent');
 
             if (!introOverlay || !introVideo) return;
@@ -1013,36 +985,23 @@
                 }, 850);
             }
 
-            // Sync progress bar smoothly
-            introVideo.addEventListener('timeupdate', () => {
-                if (introVideo.duration && progressBar) {
-                    const pct = (introVideo.currentTime / introVideo.duration) * 100;
-                    progressBar.style.width = pct + '%';
-                }
-            });
-
-            // Automatically dismiss when video finishes
+            // Automatically dismiss when 7-second video finishes
             introVideo.addEventListener('ended', dismissIntro);
 
-            // Safety timeout: 7.8 seconds
-            setTimeout(dismissIntro, 8200);
+            // Safety timeout: 7.5 seconds
+            setTimeout(dismissIntro, 7500);
 
-            // Click Skip button
-            if (skipBtn) {
-                skipBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    dismissIntro();
-                });
-            }
+            // Optional: click anywhere on screen to proceed early
+            introOverlay.addEventListener('click', dismissIntro);
 
-            // Press ESC to skip
+            // Optional: press ESC or Space to proceed early
             window.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' || e.keyCode === 27) {
+                if (e.key === 'Escape' || e.keyCode === 27 || e.key === ' ') {
                     dismissIntro();
                 }
             });
 
-            // Ensure attributes for reliable autoplay
+            // Ensure attributes for reliable instant autoplay
             introVideo.muted = true;
             introVideo.defaultMuted = true;
 
