@@ -11,9 +11,10 @@
 <div id="agri3dIntroOverlay" class="agri3d-intro-screen" aria-hidden="true">
     <div class="agri3d-intro-backdrop"></div>
     
-    <!-- Cinematic Video Player -->
-    <video id="agri3dIntroVideo" class="agri3d-intro-video" playsinline muted preload="auto">
-        <source src="~/videos/agriai-intro-3d.mp4" type="video/mp4" />
+    <!-- Cinematic Video Player (7-Second 3D AgriAi Launch) -->
+    <video id="agri3dIntroVideo" class="agri3d-intro-video" src="@Url.Content("~/videos/agriai-intro-3d.mp4")" playsinline muted autoplay preload="auto">
+        <source src="@Url.Content("~/videos/agriai-intro-3d.mp4")" type="video/mp4" />
+        <source src="/videos/agriai-intro-3d.mp4" type="video/mp4" />
     </video>
 
     <!-- Ambient Vignette -->
@@ -983,7 +984,7 @@
         renderBenchmarkPreviewTable();
         renderBenchmarkModalTable();
 
-                // =========================================================================
+                        // =========================================================================
         // 3D Cinematic 7-Second Intro Controller (Plays on Website Start)
         // =========================================================================
         function init3dIntro() {
@@ -1000,7 +1001,7 @@
             function dismissIntro() {
                 if (isDismissed) return;
                 isDismissed = true;
-                
+
                 introOverlay.classList.add('dismissed');
                 if (mainContent) {
                     mainContent.classList.add('main-content-entering');
@@ -1009,10 +1010,10 @@
                 setTimeout(() => {
                     introOverlay.style.display = 'none';
                     try { introVideo.pause(); } catch(e) {}
-                }, 800);
+                }, 850);
             }
 
-            // Progress bar sync
+            // Sync progress bar smoothly
             introVideo.addEventListener('timeupdate', () => {
                 if (introVideo.duration && progressBar) {
                     const pct = (introVideo.currentTime / introVideo.duration) * 100;
@@ -1020,13 +1021,13 @@
                 }
             });
 
-            // Automatically dismiss when the 7-second video completes
+            // Automatically dismiss when video finishes
             introVideo.addEventListener('ended', dismissIntro);
 
-            // Safety fallback: Ensure home page appears after 7.8 seconds
-            setTimeout(dismissIntro, 7800);
+            // Safety timeout: 7.8 seconds
+            setTimeout(dismissIntro, 8200);
 
-            // Skip button click
+            // Click Skip button
             if (skipBtn) {
                 skipBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -1034,21 +1035,31 @@
                 });
             }
 
-            // Keyboard ESC to skip
+            // Press ESC to skip
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' || e.keyCode === 27) {
                     dismissIntro();
                 }
             });
 
-            // Ensure video starts playing immediately
+            // Ensure attributes for reliable autoplay
             introVideo.muted = true;
-            const playPromise = introVideo.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(err => {
-                    console.warn('Autoplay error:', err);
-                    setTimeout(dismissIntro, 2000);
-                });
+            introVideo.defaultMuted = true;
+
+            const tryPlay = () => {
+                const p = introVideo.play();
+                if (p !== undefined) {
+                    p.catch(err => {
+                        console.warn('Autoplay waiting for readyState:', err);
+                    });
+                }
+            };
+
+            if (introVideo.readyState >= 2) {
+                tryPlay();
+            } else {
+                introVideo.addEventListener('canplay', tryPlay, { once: true });
+                introVideo.addEventListener('loadeddata', tryPlay, { once: true });
             }
         }
 
