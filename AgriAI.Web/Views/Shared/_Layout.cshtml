@@ -134,11 +134,6 @@
                                 <i class="bi bi-cpu"></i> Crop Prediction
                             </a>
                         </li>
-                        <li>
-                            <a asp-controller="AI" asp-action="DiseasePredict" class="gov-nav-link text-success fw-bold @(curCtrl == "AI" && curAct == "DiseasePredict" ? "active" : "")">
-                                <i class="bi bi-shield-virus"></i> Leaf Disease
-                            </a>
-                        </li>
                     }
                     else if (User.IsInRole("Customer"))
                     {
@@ -156,11 +151,6 @@
                             </a>
                         </li>
                         <li>
-                            <a asp-controller="AI" asp-action="DiseasePredict" class="gov-nav-link @(curCtrl == "AI" && curAct == "DiseasePredict" ? "active" : "")">
-                                <i class="bi bi-shield-virus"></i> Leaf Disease
-                            </a>
-                        </li>
-                        <li>
                             <a asp-controller="AI" asp-action="PricePredictor" class="gov-nav-link @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
                                 <i class="bi bi-stars"></i> Price Prediction
                             </a>
@@ -172,11 +162,6 @@
                     <li>
                         <a asp-controller="AI" asp-action="CropPredictor" class="gov-nav-link @(curCtrl == "AI" && curAct == "CropPredictor" ? "active" : "")">
                             AI Crop Predictor
-                        </a>
-                    </li>
-                    <li>
-                        <a asp-controller="AI" asp-action="DiseasePredict" class="gov-nav-link @(curCtrl == "AI" && curAct == "DiseasePredict" ? "active" : "")">
-                            AI Leaf Disease
                         </a>
                     </li>
                     <li>
@@ -331,13 +316,6 @@
                                 <span class="ai-badge">FARMER</span>
                             </a>
                         </li>
-                        <li class="menu-item">
-                            <a asp-controller="AI" asp-action="DiseasePredict" class="menu-link @(curCtrl == "AI" && curAct == "DiseasePredict" ? "active" : "")">
-                                <span class="menu-icon-box"><i class="bi bi-shield-virus"></i></span>
-                                <span>Leaf Disease</span>
-                                <span class="ai-badge">AI</span>
-                            </a>
-                        </li>
                     }
                     else if (User.IsInRole("Customer"))
                     {
@@ -359,13 +337,6 @@
                             </a>
                         </li>
                         <li class="menu-item">
-                            <a asp-controller="AI" asp-action="DiseasePredict" class="menu-link @(curCtrl == "AI" && curAct == "DiseasePredict" ? "active" : "")">
-                                <span class="menu-icon-box"><i class="bi bi-shield-virus"></i></span>
-                                <span>Leaf Disease</span>
-                                <span class="ai-badge">ADMIN</span>
-                            </a>
-                        </li>
-                        <li class="menu-item">
                             <a asp-controller="AI" asp-action="PricePredictor" class="menu-link @(curCtrl == "AI" && curAct == "PricePredictor" ? "active" : "")">
                                 <span class="menu-icon-box"><i class="bi bi-stars"></i></span>
                                 <span>Price Prediction</span>
@@ -381,13 +352,6 @@
                             <span class="menu-icon-box"><i class="bi bi-cpu"></i></span>
                             <span>AI Crop Predictor</span>
                             <span class="ai-badge">NEW</span>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a asp-controller="AI" asp-action="DiseasePredict" class="menu-link @(curCtrl == "AI" && curAct == "DiseasePredict" ? "active" : "")">
-                            <span class="menu-icon-box"><i class="bi bi-shield-virus"></i></span>
-                            <span>AI Leaf Disease</span>
-                            <span class="ai-badge">VISION</span>
                         </a>
                     </li>
                     <li class="menu-item">
