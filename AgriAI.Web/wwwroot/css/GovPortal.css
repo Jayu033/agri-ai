@@ -1104,3 +1104,56 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
+
+
+/* Benchmark Section & Clean Boundary Divider */
+.gov-benchmark-section {
+    padding: 50px 0 65px 0;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.section-boundary-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin: -15px auto 35px auto;
+    max-width: 500px;
+}
+
+.section-boundary-divider::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1.5px;
+    background: linear-gradient(90deg, transparent, #cbd5e1 20%, #cbd5e1 80%, transparent);
+}
+
+.section-boundary-pill {
+    position: relative;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 5px 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #006653;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+}
+
+.gov-table-footer {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}

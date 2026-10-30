@@ -285,76 +285,173 @@
         </div>
     </section>
 
-    <!-- 4. Official Multi-Year Gujarat APMC Market Benchmark Historical Report -->
-    <div class="container my-5">
-        <div class="gov-table-card">
-            <!-- Header -->
-            <div class="gov-table-header">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-file-earmark-bar-graph-fill fs-5 text-warning"></i>
-                    <div>
-                        <h4 class="gov-table-title">
-                            Official Gujarat APMC Market Benchmark Report (<span id="activeBenchmarkYearLabel">2025-26 Season</span>)
-                        </h4>
-                        <small class="text-light opacity-75">Directorate of Marketing &amp; Inspection (DMI) &amp; Agmarknet Validated</small>
+    <!-- 4. Official Gujarat APMC Market Benchmark Section (Compact Preview + Full Modal) -->
+    <section class="gov-benchmark-section">
+        <div class="container">
+            <!-- Smooth Boundary Divider Pill -->
+            <div class="section-boundary-divider">
+                <span class="section-boundary-pill">
+                    <i class="bi bi-bar-chart-line-fill text-success"></i> Official APMC Intelligence &amp; Benchmarks
+                </span>
+            </div>
+
+            <!-- Section Heading -->
+            <div class="gov-section-heading mb-4 text-center">
+                <span class="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-1.5 rounded-pill mb-2">
+                    <i class="bi bi-file-earmark-bar-graph me-1"></i> APMC Market Intelligence &amp; Data
+                </span>
+                <h2 class="gov-section-title">Gujarat APMC Market Benchmark Highlights</h2>
+                <p class="gov-section-subtitle">Real-time market modal rates vs. Government Minimum Support Price (MSP) coverage</p>
+            </div>
+
+            <!-- Compact Preview Card -->
+            <div class="gov-table-card mb-0">
+                <!-- Header -->
+                <div class="gov-table-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-file-earmark-bar-graph-fill fs-5 text-warning"></i>
+                        <div>
+                            <h4 class="gov-table-title">
+                                Official Gujarat APMC Market Benchmark (<span id="activeBenchmarkYearLabel">2025-26 Season</span>)
+                            </h4>
+                            <small class="text-light opacity-75">Directorate of Marketing &amp; Inspection (DMI) &amp; Agmarknet Validated</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-light fw-bold rounded-pill px-3 shadow-none" data-bs-toggle="modal" data-bs-target="#benchmarkReportModal">
+                            <i class="bi bi-arrows-fullscreen me-1"></i> View Full Report
+                        </button>
+                        <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-sm btn-light fw-bold text-success rounded-pill px-3 shadow-sm">
+                            <i class="bi bi-cpu-fill me-1"></i> Open AI Predictor
+                        </a>
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-sm btn-light fw-bold text-success rounded-pill px-3 shadow-sm">
-                        <i class="bi bi-cpu-fill me-1"></i> Open AI Predictor
-                    </a>
+
+                <!-- Preview Table: Top 5 Key Crops -->
+                <div class="table-responsive">
+                    <table class="gov-custom-table table table-hover mb-0" id="govBenchmarkPreviewTable">
+                        <thead>
+                            <tr>
+                                <th>Commodity Group</th>
+                                <th>Crop / Commodity</th>
+                                <th>Govt. MSP (₹/Qtl)</th>
+                                <th>Season</th>
+                                <th>Market Modal Price (₹/Qtl)</th>
+                                <th>Total Arrival (Metric Tonnes)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="benchmarkPreviewTableBody">
+                            <!-- Top 5 dynamically rendered -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer with 'More Details / View Full Report' Trigger -->
+                <div class="gov-table-footer">
+                    <div class="d-flex align-items-center gap-2 text-muted small">
+                        <i class="bi bi-info-circle-fill text-success fs-5"></i>
+                        <div>
+                            <span class="fw-bold text-dark">Showing top 5 benchmark commodities for 2025-26.</span><br />
+                            <small class="text-secondary">Historical seasons (2021-2026), arrival volumes, and all 14+ crops available in full report.</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-success fw-bold rounded-pill px-4 py-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#benchmarkReportModal">
+                        <i class="bi bi-arrows-angle-expand me-1.5"></i> View Full Benchmark Report (વધુ વિગતો / More) →
+                    </button>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <!-- Year Selector Tabs (2025-26, 2024-25, 2022-23, 2021-22) -->
-            <div class="gov-year-tab-container">
-                <span class="text-white-50 small fw-bold me-2"><i class="bi bi-calendar3 me-1"></i>Select Season Year:</span>
-                <button type="button" class="gov-year-tab-btn active" onclick="switchBenchmarkYear('2025-26', this)">2025-26 (Latest)</button>
-                <button type="button" class="gov-year-tab-btn" onclick="switchBenchmarkYear('2024-25', this)">2024-25</button>
-                <button type="button" class="gov-year-tab-btn" onclick="switchBenchmarkYear('2022-23', this)">2022-23</button>
-                <button type="button" class="gov-year-tab-btn" onclick="switchBenchmarkYear('2021-22', this)">2021-22</button>
-            </div>
-
-            <!-- Filter and Search toolbar inside table -->
-            <div class="gov-table-filter-bar">
-                <div class="position-relative">
-                    <i class="bi bi-search position-absolute text-muted" style="left: 12px; top: 8px; font-size: 0.8rem;"></i>
-                    <input type="text" id="benchmarkTableSearch" class="form-control gov-table-search-input" placeholder="Search crop in this year..." oninput="filterBenchmarkTable()" />
+    <!-- Modal: Complete Official Benchmark Report Popup -->
+    <div class="modal fade" id="benchmarkReportModal" tabindex="-1" aria-labelledby="benchmarkReportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
+                <!-- Modal Header -->
+                <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #006653 0%, #004d3e 100%) !important;">
+                    <div class="d-flex align-items-center gap-2.5">
+                        <div class="bg-white bg-opacity-20 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                            <i class="bi bi-file-earmark-bar-graph-fill fs-5 text-warning"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold text-white mb-0" id="benchmarkReportModalLabel">
+                                Official Gujarat APMC Market Benchmark Report (<span id="modalActiveBenchmarkYearLabel">2025-26 Season (Latest)</span>)
+                            </h5>
+                            <small class="text-white-50" style="font-size: 0.78rem;">Directorate of Marketing &amp; Inspection (DMI) &amp; Agmarknet Validated</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <select id="benchmarkSeasonFilter" class="form-select form-select-sm rounded-pill shadow-none" style="font-size: 0.8rem; width: 130px;" onchange="filterBenchmarkTable()">
-                        <option value="">All Seasons</option>
-                        <option value="Kharif">Kharif</option>
-                        <option value="Rabi">Rabi</option>
-                    </select>
-                    <select id="benchmarkGroupFilter" class="form-select form-select-sm rounded-pill shadow-none" style="font-size: 0.8rem; width: 140px;" onchange="filterBenchmarkTable()">
-                        <option value="">All Groups</option>
-                        <option value="Fibre Crops">Fibre Crops</option>
-                        <option value="Oil Seeds">Oil Seeds</option>
-                        <option value="Pulses">Pulses</option>
-                        <option value="Cereals">Cereals</option>
-                    </select>
-                </div>
-            </div>
 
-            <!-- Table -->
-            <div class="table-responsive">
-                <table class="gov-custom-table table table-hover mb-0" id="govBenchmarkTable">
-                    <thead>
-                        <tr>
-                            <th>Commodity Group</th>
-                            <th>Crop / Commodity</th>
-                            <th>Govt. MSP (₹/Qtl)</th>
-                            <th>Season</th>
-                            <th>Market Modal Price (₹/Qtl)</th>
-                            <th>Total Arrival (Metric Tonnes)</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="benchmarkTableBody">
-                        <!-- Rendered dynamically -->
-                    </tbody>
-                </table>
+                <!-- Modal Year Selector Tabs -->
+                <div class="gov-year-tab-container px-4 py-2.5">
+                    <span class="text-white-50 small fw-bold me-2"><i class="bi bi-calendar3 me-1"></i>Select Season Year:</span>
+                    <button type="button" class="gov-year-tab-btn active" onclick="switchBenchmarkYear('2025-26', this)">2025-26 (Latest)</button>
+                    <button type="button" class="gov-year-tab-btn" onclick="switchBenchmarkYear('2024-25', this)">2024-25</button>
+                    <button type="button" class="gov-year-tab-btn" onclick="switchBenchmarkYear('2022-23', this)">2022-23</button>
+                    <button type="button" class="gov-year-tab-btn" onclick="switchBenchmarkYear('2021-22', this)">2021-22</button>
+                </div>
+
+                <!-- Modal Toolbar Filter & Search -->
+                <div class="gov-table-filter-bar px-4 py-3">
+                    <div class="position-relative flex-grow-1" style="max-width: 360px;">
+                        <i class="bi bi-search position-absolute text-muted" style="left: 14px; top: 10px; font-size: 0.85rem;"></i>
+                        <input type="text" id="modalBenchmarkSearch" class="form-control gov-table-search-input w-100" placeholder="Search crop or commodity in this year..." oninput="filterBenchmarkModalTable()" />
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <select id="modalBenchmarkSeasonFilter" class="form-select form-select-sm rounded-pill shadow-none" style="font-size: 0.82rem; width: 140px;" onchange="filterBenchmarkModalTable()">
+                            <option value="">All Seasons</option>
+                            <option value="Kharif">Kharif</option>
+                            <option value="Rabi">Rabi</option>
+                        </select>
+                        <select id="modalBenchmarkGroupFilter" class="form-select form-select-sm rounded-pill shadow-none" style="font-size: 0.82rem; width: 150px;" onchange="filterBenchmarkModalTable()">
+                            <option value="">All Groups</option>
+                            <option value="Fibre Crops">Fibre Crops</option>
+                            <option value="Oil Seeds">Oil Seeds</option>
+                            <option value="Pulses">Pulses</option>
+                            <option value="Cereals">Cereals</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Modal Body: Full Dynamic Table -->
+                <div class="modal-body p-0">
+                    <div class="table-responsive" style="max-height: 60vh;">
+                        <table class="gov-custom-table table table-hover mb-0" id="govBenchmarkModalTable">
+                            <thead class="sticky-top bg-light">
+                                <tr>
+                                    <th>Commodity Group</th>
+                                    <th>Crop / Commodity</th>
+                                    <th>Govt. MSP (₹/Qtl)</th>
+                                    <th>Season</th>
+                                    <th>Market Modal Price (₹/Qtl)</th>
+                                    <th>Total Arrival (Metric Tonnes)</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="benchmarkModalTableBody">
+                                <!-- Full records rendered dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center">
+                    <div class="text-muted small">
+                        <i class="bi bi-shield-check text-success me-1"></i>
+                        <span>Real-time DMI APMC Feeds • Complete Statewide Coverage</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">
+                            Close
+                        </button>
+                        <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
+                            <i class="bi bi-cpu me-1"></i> Open AI Price Predictor
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -733,25 +830,81 @@
 
         let currentSelectedYear = "2025-26";
 
+        function renderBenchmarkRowHtml(item, groupBadgeMap) {
+            const badgeClass = groupBadgeMap[item.group] || 'bg-secondary-subtle text-secondary';
+            const diffMsp = ((item.price - item.msp) / item.msp) * 100;
+            
+            let diffBadge = '';
+            if (diffMsp > 0) {
+                diffBadge = `<span class="msp-diff-badge msp-diff-above">+${diffMsp.toFixed(1)}% vs MSP ▲</span>`;
+            } else {
+                diffBadge = `<span class="msp-diff-badge msp-diff-below">MSP Protected 🛡️</span>`;
+            }
+
+            return `
+                <tr>
+                    <td><span class="badge ${badgeClass}">${item.group}</span></td>
+                    <td><strong>${item.crop}</strong></td>
+                    <td>₹ ${item.msp.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                    <td><span class="badge bg-light text-dark border">${item.season}</span></td>
+                    <td>
+                        <span class="gov-price-val">₹ ${item.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        ${diffBadge}
+                    </td>
+                    <td><span class="gov-arrival-val">${item.arrival.toLocaleString('en-IN', { minimumFractionDigits: 2 })} MT</span></td>
+                    <td>
+                        <a class="btn btn-xs btn-outline-success rounded-pill px-3 py-1 small fw-bold" href="/AI/PricePredictor">
+                            Predict
+                        </a>
+                    </td>
+                </tr>
+            `;
+        }
+
         function switchBenchmarkYear(year, btn) {
             currentSelectedYear = year;
             document.querySelectorAll('.gov-year-tab-btn').forEach(b => b.classList.remove('active'));
             if (btn) btn.classList.add('active');
             
-            const label = document.getElementById('activeBenchmarkYearLabel');
-            if (label) label.innerText = year + (year === '2025-26' ? ' Season (Latest)' : ' Season');
+            const previewLabel = document.getElementById('activeBenchmarkYearLabel');
+            if (previewLabel) previewLabel.innerText = year + (year === '2025-26' ? ' Season' : ' Season');
+            
+            const modalLabel = document.getElementById('modalActiveBenchmarkYearLabel');
+            if (modalLabel) modalLabel.innerText = year + (year === '2025-26' ? ' Season (Latest)' : ' Season');
 
-            renderBenchmarkTable();
+            renderBenchmarkPreviewTable();
+            renderBenchmarkModalTable();
         }
 
-        function renderBenchmarkTable() {
-            const tableBody = document.getElementById('benchmarkTableBody');
+        function renderBenchmarkPreviewTable() {
+            const tableBody = document.getElementById('benchmarkPreviewTableBody');
             if (!tableBody) return;
 
             const data = historicalBenchmarkData[currentSelectedYear] || [];
-            const searchVal = (document.getElementById('benchmarkTableSearch')?.value || '').toLowerCase().trim();
-            const seasonVal = document.getElementById('benchmarkSeasonFilter')?.value || '';
-            const groupVal = document.getElementById('benchmarkGroupFilter')?.value || '';
+            const groupBadgeMap = {
+                'Fibre Crops': 'bg-success-subtle text-success',
+                'Oil Seeds': 'bg-warning-subtle text-warning-emphasis',
+                'Pulses': 'bg-info-subtle text-info-emphasis',
+                'Cereals': 'bg-primary-subtle text-primary'
+            };
+
+            let html = '';
+            // Render top 5 benchmark crops on the homepage preview
+            data.slice(0, 5).forEach(item => {
+                html += renderBenchmarkRowHtml(item, groupBadgeMap);
+            });
+
+            tableBody.innerHTML = html;
+        }
+
+        function renderBenchmarkModalTable() {
+            const tableBody = document.getElementById('benchmarkModalTableBody');
+            if (!tableBody) return;
+
+            const data = historicalBenchmarkData[currentSelectedYear] || [];
+            const searchVal = (document.getElementById('modalBenchmarkSearch')?.value || '').toLowerCase().trim();
+            const seasonVal = document.getElementById('modalBenchmarkSeasonFilter')?.value || '';
+            const groupVal = document.getElementById('modalBenchmarkGroupFilter')?.value || '';
 
             const groupBadgeMap = {
                 'Fibre Crops': 'bg-success-subtle text-success',
@@ -767,34 +920,7 @@
                 const matchesGroup = !groupVal || item.group === groupVal;
 
                 if (matchesSearch && matchesSeason && matchesGroup) {
-                    const badgeClass = groupBadgeMap[item.group] || 'bg-secondary-subtle text-secondary';
-                    const diffMsp = ((item.price - item.msp) / item.msp) * 100;
-                    
-                    let diffBadge = '';
-                    if (diffMsp > 0) {
-                        diffBadge = `<span class="msp-diff-badge msp-diff-above">+${diffMsp.toFixed(1)}% vs MSP ▲</span>`;
-                    } else {
-                        diffBadge = `<span class="msp-diff-badge msp-diff-below">MSP Protected 🛡️</span>`;
-                    }
-
-                    html += `
-                        <tr>
-                            <td><span class="badge ${badgeClass}">${item.group}</span></td>
-                            <td><strong>${item.crop}</strong></td>
-                            <td>₹ ${item.msp.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                            <td><span class="badge bg-light text-dark border">${item.season}</span></td>
-                            <td>
-                                <span class="gov-price-val">₹ ${item.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                                ${diffBadge}
-                            </td>
-                            <td><span class="gov-arrival-val">${item.arrival.toLocaleString('en-IN', { minimumFractionDigits: 2 })} MT</span></td>
-                            <td>
-                                <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-xs btn-outline-success rounded-pill px-3 py-1 small fw-bold" href="/AI/PricePredictor">
-                                    Predict
-                                </a>
-                            </td>
-                        </tr>
-                    `;
+                    html += renderBenchmarkRowHtml(item, groupBadgeMap);
                 }
             });
 
@@ -805,12 +931,13 @@
             tableBody.innerHTML = html;
         }
 
-        function filterBenchmarkTable() {
-            renderBenchmarkTable();
+        function filterBenchmarkModalTable() {
+            renderBenchmarkModalTable();
         }
 
-        // Initialize table on load
-        renderBenchmarkTable();
+        // Initialize both preview table & modal table on load
+        renderBenchmarkPreviewTable();
+        renderBenchmarkModalTable();
     </script>
 }
 
