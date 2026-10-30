@@ -4,6 +4,49 @@
     ViewData["Title"] = "National Agricultural Market & AI Price Intelligence Portal";
 }
 
+
+<!-- =========================================================================
+     3D CINEMATIC INTRO OVERLAY (Sweet Corn & Glowing AgriAi Burst)
+     ========================================================================= -->
+<div id="agri3dIntroOverlay" class="agri3d-intro-screen" aria-hidden="true">
+    <div class="agri3d-intro-backdrop"></div>
+    
+    <!-- Cinematic Video Player -->
+    <video id="agri3dIntroVideo" class="agri3d-intro-video" playsinline muted preload="auto">
+        <source src="~/videos/agriai-intro-3d.mp4" type="video/mp4" />
+    </video>
+
+    <!-- Ambient Vignette -->
+    <div class="agri3d-vignette-overlay"></div>
+
+    <!-- Top Controls: Brand Tag & Skip Button -->
+    <div class="agri3d-intro-topbar">
+        <div class="agri3d-brand-tag">
+            <span class="agri3d-brand-dot"></span>
+            <span>AgriAI • 3D Cinematic Experience</span>
+        </div>
+        <button type="button" id="btnSkip3dIntro" class="agri3d-skip-btn" title="Skip Intro and explore portal">
+            <span>Skip Intro</span>
+            <i class="bi bi-chevron-double-right"></i>
+        </button>
+    </div>
+
+    <!-- Bottom Progress Bar & Info -->
+    <div class="agri3d-intro-bottombar">
+        <div class="agri3d-progress-track">
+            <div id="agri3dProgressBar" class="agri3d-progress-fill"></div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+            <small class="text-white-50" style="font-size: 0.75rem;">
+                <i class="bi bi-magic me-1 text-warning"></i> AI Powered Agriculture &amp; Mandi Intelligence
+            </small>
+            <small class="text-white-50" style="font-size: 0.75rem;">
+                Press <kbd style="background: rgba(255,255,255,0.2); border: none;">ESC</kbd> or click Skip to proceed
+            </small>
+        </div>
+    </div>
+</div>
+
 <div id="mainContent">
     <!-- 1. Hero Carousel Slider -->
     <div class="gov-hero-banner position-relative">
@@ -40,6 +83,10 @@
                                 <i class="bi bi-shop"></i>
                                 <span>Shop Fresh Products</span>
                             </a>
+                            <button type="button" class="btn-hero-outline" onclick="play3dIntro(true)" title="Watch 3D Cinematic AgriAi Animation">
+                                <i class="bi bi-play-circle-fill text-warning"></i>
+                                <span>3D Intro</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -938,6 +985,97 @@
         // Initialize both preview table & modal table on load
         renderBenchmarkPreviewTable();
         renderBenchmarkModalTable();
+
+        // =========================================================================
+        // 3D Cinematic Intro Controller
+        // =========================================================================
+        function init3dIntro() {
+            const introOverlay = document.getElementById('agri3dIntroOverlay');
+            const introVideo = document.getElementById('agri3dIntroVideo');
+            const skipBtn = document.getElementById('btnSkip3dIntro');
+            const progressBar = document.getElementById('agri3dProgressBar');
+            const mainContent = document.getElementById('mainContent');
+
+            if (!introOverlay || !introVideo) return;
+
+            // Check if intro was already played in this browser session
+            const hasPlayed = sessionStorage.getItem('agriai_3d_intro_played');
+            if (hasPlayed === 'true') {
+                introOverlay.style.display = 'none';
+                introOverlay.classList.add('dismissed');
+                return;
+            }
+
+            function dismissIntro() {
+                if (introOverlay.classList.contains('dismissed')) return;
+                introOverlay.classList.add('dismissed');
+                sessionStorage.setItem('agriai_3d_intro_played', 'true');
+                
+                if (mainContent) {
+                    mainContent.classList.add('main-content-entering');
+                }
+
+                setTimeout(() => {
+                    introOverlay.style.display = 'none';
+                    try { introVideo.pause(); } catch(e) {}
+                }, 850);
+            }
+
+            // Progress bar sync
+            introVideo.addEventListener('timeupdate', () => {
+                if (introVideo.duration && progressBar) {
+                    const pct = (introVideo.currentTime / introVideo.duration) * 100;
+                    progressBar.style.width = pct + '%';
+                }
+            });
+
+            // Automatically dismiss when video completes and smoothly slide in home page
+            introVideo.addEventListener('ended', dismissIntro);
+
+            // Skip button click
+            if (skipBtn) {
+                skipBtn.addEventListener('click', dismissIntro);
+            }
+
+            // Keyboard ESC to skip
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' || e.keyCode === 27) {
+                    dismissIntro();
+                }
+            });
+
+            // Autoplay video
+            const playPromise = introVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(err => {
+                    console.warn('Autoplay prevented or video error:', err);
+                    setTimeout(dismissIntro, 2500);
+                });
+            }
+        }
+
+        window.play3dIntro = function(force) {
+            const introOverlay = document.getElementById('agri3dIntroOverlay');
+            const introVideo = document.getElementById('agri3dIntroVideo');
+            const progressBar = document.getElementById('agri3dProgressBar');
+            if (!introOverlay || !introVideo) return;
+
+            if (force) {
+                sessionStorage.removeItem('agriai_3d_intro_played');
+            }
+            introOverlay.style.display = 'flex';
+            introOverlay.classList.remove('dismissed');
+            if (progressBar) progressBar.style.width = '0%';
+            introVideo.currentTime = 0;
+            introVideo.play().catch(e => console.warn(e));
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init3dIntro);
+        } else {
+            init3dIntro();
+        }
+
     </script>
 }
 
