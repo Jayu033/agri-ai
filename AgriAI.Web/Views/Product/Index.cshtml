@@ -138,6 +138,82 @@
         border-color: #006653;
         box-shadow: 0 4px 12px rgba(0, 102, 83, 0.2);
     }
+
+    /* Modern Card Skeleton Loading (NO SPINNER - pure card shape shimmer) */
+    .product-skeleton-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 1.25rem;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    }
+    .skeleton-box {
+        background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+        background-size: 200% 100%;
+        animation: skeletonShimmerAnimation 1.3s infinite ease-in-out;
+    }
+    @@keyframes skeletonShimmerAnimation {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+    .skeleton-img {
+        width: 100%;
+        height: 220px;
+    }
+    .skeleton-badge {
+        width: 85px;
+        height: 20px;
+        border-radius: 9999px;
+    }
+    .skeleton-pill-sm {
+        width: 95px;
+        height: 16px;
+        border-radius: 9999px;
+    }
+    .skeleton-title {
+        width: 70%;
+        height: 20px;
+        border-radius: 6px;
+    }
+    .skeleton-desc {
+        width: 90%;
+        height: 14px;
+        border-radius: 4px;
+    }
+    .skeleton-price-box {
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        border-radius: 12px;
+        padding: 1rem;
+    }
+    .skeleton-price-line {
+        width: 55%;
+        height: 22px;
+        border-radius: 6px;
+    }
+    .skeleton-meta-line {
+        width: 100%;
+        height: 12px;
+        border-radius: 4px;
+    }
+    .skeleton-btn {
+        height: 38px;
+        border-radius: 9999px;
+        flex: 1;
+    }
+
+    /* Product Not Found State (Within Catalog Card Box) */
+    .product-not-found-card {
+        padding: 4.5rem 1.5rem;
+        text-align: center;
+        background: #fafbfc;
+        border: 2px dashed #e2e8f0;
+        border-radius: 1.25rem;
+        margin: 0.5rem 0 1.5rem 0;
+    }
 </style>
 
 <div class="container-fluid py-3 px-2 px-md-3 px-xl-4" style="max-width: 1680px;">
@@ -217,17 +293,65 @@
             </div>
 
             <div class="d-flex align-items-center gap-2">
-                <div class="input-group input-group-sm" style="max-width: 280px;">
+                <div class="input-group input-group-sm" style="max-width: 290px;">
                     <span class="input-group-text bg-light border-end-0 rounded-start-pill text-muted ps-3">
                         <i class="bi bi-search"></i>
                     </span>
-                    <input type="text" id="cropSearchInput" class="form-control bg-light border-start-0 rounded-end-pill shadow-none" placeholder="Search crops, spices..." onkeyup="searchMarketplace(this.value)" />
+                    <input type="text" id="cropSearchInput" class="form-control bg-light border-start-0 border-end-0 shadow-none" placeholder="Search crops, spices..." oninput="searchMarketplace(this.value)" />
+                    <button type="button" id="clearSearchBtn" class="btn bg-light border-start-0 rounded-end-pill text-muted pe-3 d-none" onclick="resetMarketplaceSearch()" title="Clear Search">
+                        <i class="bi bi-x-circle-fill text-secondary"></i>
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- Scrollable Produce Grid Area -->
         <div class="marketplace-scroll-wrapper">
+            
+            <!-- Skeleton Loading State (Card Shapes Shimmer - NO SPINNER) -->
+            <div class="row g-4 mb-4" id="skeletonGrid" style="display: none;">
+                @for (int s = 0; s < 4; s++)
+                {
+                    <div class="col-md-6 col-lg-4 col-xl-3">
+                        <div class="product-skeleton-card">
+                            <div class="skeleton-box skeleton-img"></div>
+                            <div class="p-4 d-flex flex-column flex-grow-1">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <div class="skeleton-box skeleton-badge"></div>
+                                    <div class="skeleton-box skeleton-pill-sm"></div>
+                                </div>
+                                <div class="skeleton-box skeleton-title mb-2"></div>
+                                <div class="skeleton-box skeleton-desc mb-3"></div>
+                                <div class="skeleton-price-box mb-3">
+                                    <div class="skeleton-box skeleton-price-line mb-2"></div>
+                                    <div class="skeleton-box skeleton-meta-line"></div>
+                                </div>
+                                <div class="d-flex gap-2 mt-auto">
+                                    <div class="skeleton-box skeleton-btn"></div>
+                                    <div class="skeleton-box skeleton-btn"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Product Not Found State (Dedicated Box Inside Catalog) -->
+            <div id="productNotFoundState" class="product-not-found-card" style="display: none;">
+                <div class="d-inline-flex align-items-center justify-content-center bg-white rounded-circle shadow-xs mb-3" style="width: 76px; height: 76px; border: 1px solid #e2e8f0;">
+                    <i class="bi bi-search text-muted" style="font-size: 2rem; color: #006653 !important;"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-1.5" style="letter-spacing: -0.02em;">Product Not Found</h4>
+                <p class="text-muted mx-auto mb-4" style="max-width: 480px; font-size: 0.95rem; line-height: 1.55;">
+                    We couldn't find any farm produce matching "<span id="searchKeywordEcho" class="text-success fw-bold"></span>". Try checking spelling, clearing search filter, or browsing all available harvests.
+                </p>
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-success rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2" style="background-color: #006653; border-color: #006653;" onclick="resetMarketplaceSearch()">
+                        <i class="bi bi-arrow-counterclockwise"></i> Clear Search &amp; Show All
+                    </button>
+                </div>
+            </div>
+
             <div class="row g-4" id="marketplaceGrid">
         @if (!Model.Any())
         {
@@ -393,59 +517,103 @@
 </div>
 
 <script>
+    let searchTimer = null;
+    let currentSearchCategory = 'all';
+
     function filterMarketplace(category, btn) {
+        currentSearchCategory = category;
         document.querySelectorAll('.filter-chip-btn').forEach(b => b.classList.remove('active'));
         if (btn) btn.classList.add('active');
 
-        const cards = document.querySelectorAll('.crop-card-item');
-        cards.forEach(card => {
-            if (category === 'all') {
-                card.style.display = '';
-            } else {
-                const cat = card.getAttribute('data-category') || '';
-                card.style.display = cat.includes(category) ? '' : 'none';
-            }
-        });
+        const searchInput = document.getElementById('cropSearchInput');
+        const keyword = searchInput ? searchInput.value : '';
+        triggerSkeletonAndFilter(keyword);
     }
 
     function searchMarketplace(keyword) {
-        keyword = keyword.toLowerCase().trim();
+        const clearBtn = document.getElementById('clearSearchBtn');
+        if (clearBtn) {
+            if (keyword && keyword.trim().length > 0) {
+                clearBtn.classList.remove('d-none');
+            } else {
+                clearBtn.classList.add('d-none');
+            }
+        }
+        triggerSkeletonAndFilter(keyword);
+    }
+
+    function triggerSkeletonAndFilter(keyword) {
+        const skeletonGrid = document.getElementById('skeletonGrid');
+        const marketplaceGrid = document.getElementById('marketplaceGrid');
+        const notFoundState = document.getElementById('productNotFoundState');
+
+        // Immediately show skeleton card shapes shimmer (Strictly NO SPINNER)
+        if (skeletonGrid) skeletonGrid.style.display = 'flex';
+        if (marketplaceGrid) marketplaceGrid.style.display = 'none';
+        if (notFoundState) notFoundState.style.display = 'none';
+
+        // 250ms smooth transition for realistic reactive card skeleton shape
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            applySearchAndFilter(keyword);
+        }, 250);
+    }
+
+    function applySearchAndFilter(keyword) {
+        const searchVal = (keyword || '').toLowerCase().trim();
+        const skeletonGrid = document.getElementById('skeletonGrid');
+        const marketplaceGrid = document.getElementById('marketplaceGrid');
+        const notFoundState = document.getElementById('productNotFoundState');
+        const searchEcho = document.getElementById('searchKeywordEcho');
+
         const cards = document.querySelectorAll('.crop-card-item');
+        let visibleCount = 0;
+
         cards.forEach(card => {
-            const name = card.getAttribute('data-name') || '';
-            const cat = card.getAttribute('data-category') || '';
-            if (name.includes(keyword) || cat.includes(keyword)) {
+            const name = (card.getAttribute('data-name') || '').toLowerCase();
+            const cat = (card.getAttribute('data-category') || '').toLowerCase();
+
+            const matchesCat = (currentSearchCategory === 'all') || cat.includes(currentSearchCategory);
+            const matchesQuery = !searchVal || name.includes(searchVal) || cat.includes(searchVal);
+
+            if (matchesCat && matchesQuery) {
                 card.style.display = '';
+                visibleCount++;
             } else {
                 card.style.display = 'none';
             }
         });
+
+        // Hide skeleton loading shape
+        if (skeletonGrid) skeletonGrid.style.display = 'none';
+
+        if (visibleCount === 0) {
+            if (marketplaceGrid) marketplaceGrid.style.display = 'none';
+            if (notFoundState) {
+                notFoundState.style.display = 'block';
+                if (searchEcho) {
+                    searchEcho.textContent = searchVal || (currentSearchCategory !== 'all' ? currentSearchCategory : 'selected filter');
+                }
+            }
+        } else {
+            if (notFoundState) notFoundState.style.display = 'none';
+            if (marketplaceGrid) marketplaceGrid.style.display = 'flex';
+        }
     }
 
-    function showFloatingToast(message, isSuccess = true) {
-        let toast = document.getElementById('agriai-floating-toast');
-        if (!toast) {
-            toast = document.createElement('div');
-            toast.id = 'agriai-floating-toast';
-            toast.style.position = 'fixed';
-            toast.style.bottom = '28px';
-            toast.style.right = '28px';
-            toast.style.zIndex = '999999';
-            toast.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
-            document.body.appendChild(toast);
-        }
-        toast.innerHTML = `
-            <div class="alert ${isSuccess ? 'alert-success border-success' : 'alert-danger border-danger'} shadow-lg rounded-4 p-3 d-flex align-items-center gap-2 mb-0" style="min-width: 290px; background-color: #ffffff;">
-                <i class="bi ${isSuccess ? 'bi-check-circle-fill text-success' : 'bi-exclamation-circle-fill text-danger'} fs-5"></i>
-                <div class="flex-grow-1 small fw-bold text-dark">${message}</div>
-                <a href="/Customer/Dashboard?tab=cartTab" class="btn btn-xs btn-outline-success rounded-pill px-2.5 py-1 fw-bold text-nowrap">View Cart</a>
-                <button type="button" class="btn-close btn-sm shadow-none" onclick="this.closest('#agriai-floating-toast').style.display='none'"></button>
-            </div>
-        `;
-        toast.style.display = 'block';
-        setTimeout(() => {
-            if (toast) toast.style.display = 'none';
-        }, 4500);
+    function resetMarketplaceSearch() {
+        const searchInput = document.getElementById('cropSearchInput');
+        const clearBtn = document.getElementById('clearSearchBtn');
+        if (searchInput) searchInput.value = '';
+        if (clearBtn) clearBtn.classList.add('d-none');
+
+        currentSearchCategory = 'all';
+        document.querySelectorAll('.filter-chip-btn').forEach((b, idx) => {
+            if (idx === 0) b.classList.add('active');
+            else b.classList.remove('active');
+        });
+
+        triggerSkeletonAndFilter('');
     }
 
     function addToCartAjax(productId, qty, name) {
