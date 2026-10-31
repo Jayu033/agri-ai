@@ -179,13 +179,13 @@
 /* 3. Crop Selection Grid */
 .crop-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 16px;
     margin-bottom: 24px;
-    max-height: 380px;
+    max-height: 480px;
     overflow-y: auto;
-    padding: 10px;
-    border-radius: 18px;
+    padding: 16px;
+    border-radius: 20px;
     background: #f8fafc;
     border: 1px solid #edf2f7;
 }
@@ -203,90 +203,141 @@
     border-radius: 4px;
 }
 .crop-grid::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: #006653;
 }
 
+/* Modern Animated Crop Option Card */
 .crop-option-card {
     border: 2px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 12px 8px;
+    border-radius: 18px;
+    padding: 14px 10px 12px 10px;
     text-align: center;
     cursor: pointer;
     background: #ffffff;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     user-select: none;
     position: relative;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 146px;
 }
 
 .crop-option-card:hover {
-    border-color: #86efac;
-    background: #f0fdf4;
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    border-color: #10b981;
+    background: #ffffff;
+    transform: translateY(-6px);
+    box-shadow: 0 14px 28px rgba(0, 102, 83, 0.12), 0 4px 10px rgba(0, 0, 0, 0.03);
 }
 
 .crop-option-card.active {
     border-color: #006653;
-    background: #ecfdf5;
-    box-shadow: 0 4px 16px rgba(0, 102, 83, 0.2);
-    transform: translateY(-2px);
+    background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+    box-shadow: 0 10px 26px rgba(0, 102, 83, 0.18), 0 0 0 1px #006653;
+    transform: translateY(-3px);
 }
 
 .crop-option-card.active::after {
     content: '✓';
     position: absolute;
-    top: 6px;
+    top: 8px;
     right: 8px;
     background: #006653;
     color: #ffffff;
-    font-size: 0.65rem;
+    font-size: 0.72rem;
     font-weight: 900;
-    width: 16px;
-    height: 16px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 102, 83, 0.35);
+    animation: checkBadgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes checkBadgePop {
+    0% { transform: scale(0); opacity: 0; }
+    70% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Crop Real Image Thumbnail */
+.crop-img-thumb {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    margin: 0 auto 8px auto;
+    overflow: hidden;
+    background: #f1f5f9;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.crop-emoji {
-    font-size: 1.75rem;
-    display: block;
-    margin-bottom: 4px;
-    transition: transform 0.2s ease;
+.crop-img-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.crop-option-card:hover .crop-emoji {
-    transform: scale(1.12);
+.crop-option-card:hover .crop-img-thumb {
+    transform: scale(1.08) rotate(1.5deg);
+    box-shadow: 0 8px 18px rgba(0, 102, 83, 0.18);
+}
+
+.crop-option-card:hover .crop-img-thumb img {
+    transform: scale(1.1);
+}
+
+.crop-option-card.active .crop-img-thumb {
+    border-color: #006653;
+    box-shadow: 0 6px 14px rgba(0, 102, 83, 0.25);
+    transform: scale(1.04);
 }
 
 .crop-name-text {
-    font-size: 0.84rem;
+    font-size: 0.90rem;
     font-weight: 700;
     color: #1e293b;
     display: block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.2;
-}
-
-.crop-category-tag {
-    font-size: 0.68rem;
-    color: #64748b;
-    display: block;
-    margin-top: 2px;
+    line-height: 1.25;
+    margin-bottom: 4px;
+    max-width: 100%;
+    transition: color 0.2s ease;
 }
 
 .crop-option-card.active .crop-name-text {
     color: #006653;
-    font-weight: 800;
+}
+
+.crop-category-tag {
+    font-size: 0.70rem;
+    font-weight: 600;
+    color: #047857;
+    background: #ecfdf5;
+    border: 1px solid #d1fae5;
+    padding: 2px 10px;
+    border-radius: 50px;
+    display: inline-block;
+    white-space: nowrap;
+    line-height: 1.3;
+    transition: all 0.2s ease;
 }
 
 .crop-option-card.active .crop-category-tag {
-    color: #047857;
-    font-weight: 600;
+    background: #dcfce7;
+    border-color: #86efac;
+    color: #166534;
 }
 
 /* Custom Crop Input Box */

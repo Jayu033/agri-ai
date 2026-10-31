@@ -30,29 +30,7 @@
         </div>
     </div>
 
-    @if (User.Identity == null || !User.Identity.IsAuthenticated)
-    {
-        <!-- Guest Exploration Banner -->
-        <div class="alert bg-white border border-success border-opacity-25 shadow-sm rounded-4 p-3.5 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
-            <div class="d-flex align-items-center gap-2.5">
-                <div class="rounded-circle bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; font-size: 1.25rem;">
-                    <i class="bi bi-info-circle-fill"></i>
-                </div>
-                <div>
-                    <strong class="text-dark small d-block">Exploring in Guest Preview Mode</strong>
-                    <small class="text-muted">Select from 24+ Gujarat crops and adjust parameters. Please log in or register to run the real-time AI Market Price Analysis.</small>
-                </div>
-            </div>
-            <div class="d-flex gap-2">
-                <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="/AI/PricePredictor" class="btn btn-sm btn-success rounded-pill px-3.5 py-1.5 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;">
-                    <i class="bi bi-box-arrow-in-right me-1"></i> Login
-                </a>
-                <a asp-controller="Account" asp-action="Register" asp-route-returnUrl="/AI/PricePredictor" class="btn btn-sm btn-outline-success rounded-pill px-3.5 py-1.5 fw-bold">
-                    <i class="bi bi-person-plus me-1"></i> Register
-                </a>
-            </div>
-        </div>
-    }
+    
 
     <!-- 2. Main AI Prediction Form Card -->
     <div class="predictor-card">
@@ -82,142 +60,194 @@
             <div class="crop-grid" id="cropGridContainer">
                 <!-- Grains & Pulses -->
                 <div class="crop-option-card active" data-crop="Wheat" data-cat="grain">
-                    <span class="crop-emoji">🌾</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/wheat.jpg")" alt="Wheat" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Wheat</span>
-                    <span class="crop-category-tag">ઘઉં &bull; Grain</span>
+                    <span class="crop-category-tag">Grain</span>
                 </div>
                 <div class="crop-option-card" data-crop="Rice (Paddy)" data-cat="grain">
-                    <span class="crop-emoji">🍚</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/rice.jpg")" alt="Rice" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Rice (Paddy)</span>
-                    <span class="crop-category-tag">ડાંગર &bull; Grain</span>
+                    <span class="crop-category-tag">Grain</span>
                 </div>
                 <div class="crop-option-card" data-crop="Maize (Corn)" data-cat="grain">
-                    <span class="crop-emoji">🌽</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/maize.jpg")" alt="Maize" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Maize</span>
-                    <span class="crop-category-tag">મકાઈ &bull; Grain</span>
+                    <span class="crop-category-tag">Grain</span>
                 </div>
                 <div class="crop-option-card" data-crop="Bajra (Millet)" data-cat="grain">
-                    <span class="crop-emoji">🌾</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/bajra.jpg")" alt="Bajra" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Bajra</span>
-                    <span class="crop-category-tag">બાજરી &bull; Grain</span>
+                    <span class="crop-category-tag">Grain</span>
                 </div>
                 <div class="crop-option-card" data-crop="Chickpea (Chana)" data-cat="grain">
-                    <span class="crop-emoji">🌱</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/chana.jpg")" alt="Chana" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Chana</span>
-                    <span class="crop-category-tag">ચણા &bull; Pulse</span>
+                    <span class="crop-category-tag">Pulse</span>
                 </div>
                 <div class="crop-option-card" data-crop="Pigeon Pea (Tur)" data-cat="grain">
-                    <span class="crop-emoji">🌱</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/tuver.jpg")" alt="Tuver" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Tuver</span>
-                    <span class="crop-category-tag">તુવેર &bull; Pulse</span>
+                    <span class="crop-category-tag">Pulse</span>
                 </div>
                 <div class="crop-option-card" data-crop="Moong (Green Gram)" data-cat="grain">
-                    <span class="crop-emoji">🌱</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/moong.jpg")" alt="Moong" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Moong</span>
-                    <span class="crop-category-tag">મગ &bull; Pulse</span>
+                    <span class="crop-category-tag">Pulse</span>
                 </div>
 
-                <!-- Cash Crops & Oilseeds -->
+                <!-- Cash & Oilseeds -->
                 <div class="crop-option-card" data-crop="Cotton" data-cat="cash">
-                    <span class="crop-emoji">☁️</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/cotton.jpg")" alt="Cotton" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Cotton</span>
-                    <span class="crop-category-tag">કપાસ &bull; Cash Crop</span>
+                    <span class="crop-category-tag">Cash Crop</span>
                 </div>
                 <div class="crop-option-card" data-crop="Groundnut (Peanut)" data-cat="cash">
-                    <span class="crop-emoji">🥜</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/groundnut.jpg")" alt="Groundnut" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Groundnut</span>
-                    <span class="crop-category-tag">મગફળી &bull; Oilseed</span>
+                    <span class="crop-category-tag">Oilseed</span>
                 </div>
                 <div class="crop-option-card" data-crop="Castor (Eranda)" data-cat="cash">
-                    <span class="crop-emoji">🌿</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/castor.jpg")" alt="Castor" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Castor</span>
-                    <span class="crop-category-tag">એરંડા &bull; Oilseed</span>
+                    <span class="crop-category-tag">Oilseed</span>
                 </div>
                 <div class="crop-option-card" data-crop="Mustard (Rai)" data-cat="cash">
-                    <span class="crop-emoji">🌼</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/mustard.jpg")" alt="Mustard" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Mustard</span>
-                    <span class="crop-category-tag">રાયડો &bull; Oilseed</span>
+                    <span class="crop-category-tag">Oilseed</span>
                 </div>
                 <div class="crop-option-card" data-crop="Soybean" data-cat="cash">
-                    <span class="crop-emoji">🌻</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/soybean.jpg")" alt="Soybean" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Soybean</span>
-                    <span class="crop-category-tag">સોયાબીન &bull; Oilseed</span>
+                    <span class="crop-category-tag">Oilseed</span>
                 </div>
                 <div class="crop-option-card" data-crop="Sugarcane" data-cat="cash">
-                    <span class="crop-emoji">🎋</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/sugarcane.jpg")" alt="Sugarcane" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Sugarcane</span>
-                    <span class="crop-category-tag">શેરડી &bull; Cash Crop</span>
+                    <span class="crop-category-tag">Cash Crop</span>
                 </div>
                 <div class="crop-option-card" data-crop="Sesamum (Til)" data-cat="cash">
-                    <span class="crop-emoji">🌱</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/sesame.jpg")" alt="Sesame" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Sesame (Til)</span>
-                    <span class="crop-category-tag">તલ &bull; Oilseed</span>
+                    <span class="crop-category-tag">Oilseed</span>
                 </div>
 
-                <!-- Spices & Vegetables -->
+                <!-- Veg & Spices -->
                 <div class="crop-option-card" data-crop="Cumin (Jeera)" data-cat="veg">
-                    <span class="crop-emoji">🌿</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/jeera.jpg")" alt="Jeera" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Jeera</span>
-                    <span class="crop-category-tag">જીરું &bull; Spice</span>
+                    <span class="crop-category-tag">Spice</span>
                 </div>
                 <div class="crop-option-card" data-crop="Fennel (Variyali)" data-cat="veg">
-                    <span class="crop-emoji">🌱</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/fennel.jpg")" alt="Fennel" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Fennel</span>
-                    <span class="crop-category-tag">વરિયાળી &bull; Spice</span>
+                    <span class="crop-category-tag">Spice</span>
                 </div>
                 <div class="crop-option-card" data-crop="Coriander (Dhaniya)" data-cat="veg">
-                    <span class="crop-emoji">🌿</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/coriander.jpg")" alt="Coriander" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Coriander</span>
-                    <span class="crop-category-tag">ધાણા &bull; Spice</span>
+                    <span class="crop-category-tag">Spice</span>
                 </div>
                 <div class="crop-option-card" data-crop="Garlic (Lasan)" data-cat="veg">
-                    <span class="crop-emoji">🧄</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/garlic.jpg")" alt="Garlic" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Garlic</span>
-                    <span class="crop-category-tag">લસણ &bull; Spice</span>
+                    <span class="crop-category-tag">Spice</span>
                 </div>
                 <div class="crop-option-card" data-crop="Onion" data-cat="veg">
-                    <span class="crop-emoji">🧅</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/onion.jpg")" alt="Onion" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Onion</span>
-                    <span class="crop-category-tag">ડુંગળી &bull; Veg</span>
+                    <span class="crop-category-tag">Vegetable</span>
                 </div>
                 <div class="crop-option-card" data-crop="Potato" data-cat="veg">
-                    <span class="crop-emoji">🥔</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/potato.jpg")" alt="Potato" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Potato</span>
-                    <span class="crop-category-tag">બટાકા &bull; Veg</span>
+                    <span class="crop-category-tag">Vegetable</span>
                 </div>
                 <div class="crop-option-card" data-crop="Tomato" data-cat="veg">
-                    <span class="crop-emoji">🍅</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/tomato.jpg")" alt="Tomato" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Tomato</span>
-                    <span class="crop-category-tag">ટામેટા &bull; Veg</span>
+                    <span class="crop-category-tag">Vegetable</span>
                 </div>
                 <div class="crop-option-card" data-crop="Chilli" data-cat="veg">
-                    <span class="crop-emoji">🌶️</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/chilli.jpg")" alt="Chilli" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Chilli</span>
-                    <span class="crop-category-tag">મરચાં &bull; Spice</span>
+                    <span class="crop-category-tag">Spice</span>
                 </div>
 
                 <!-- Fruits -->
                 <div class="crop-option-card" data-crop="Mango" data-cat="fruit">
-                    <span class="crop-emoji">🥭</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/mango.jpg")" alt="Mango" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Mango (Kesar)</span>
-                    <span class="crop-category-tag">કેસર કેરી &bull; Fruit</span>
+                    <span class="crop-category-tag">Fruit</span>
                 </div>
                 <div class="crop-option-card" data-crop="Banana" data-cat="fruit">
-                    <span class="crop-emoji">🍌</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/banana.jpg")" alt="Banana" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Banana</span>
-                    <span class="crop-category-tag">કેળા &bull; Fruit</span>
+                    <span class="crop-category-tag">Fruit</span>
                 </div>
                 <div class="crop-option-card" data-crop="Pomegranate" data-cat="fruit">
-                    <span class="crop-emoji">🍎</span>
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/pomegranate.jpg")" alt="Pomegranate" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Pomegranate</span>
-                    <span class="crop-category-tag">દાડમ &bull; Fruit</span>
+                    <span class="crop-category-tag">Fruit</span>
                 </div>
 
-                <!-- Custom Other Crop Card -->
-                <div class="crop-option-card" data-crop="custom" data-cat="all" id="customCropCard">
-                    <span class="crop-emoji">✨</span>
+                <!-- Other / Custom -->
+                <div class="crop-option-card" data-crop="custom" data-cat="all">
+                    <div class="crop-img-thumb">
+                        <img src="@Url.Content("~/images/crops/other.jpg")" alt="Other Crop" loading="lazy" />
+                    </div>
                     <span class="crop-name-text">Other Crop</span>
-                    <span class="crop-category-tag">અન્ય પાક &bull; Custom</span>
+                    <span class="crop-category-tag">Custom</span>
                 </div>
             </div>
 
