@@ -8,6 +8,41 @@
 }
 
 <style>
+    .marketplace-catalog-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 1.5rem 1.75rem 1.75rem 1.75rem;
+        box-shadow: 0 10px 30px rgba(0, 50, 35, 0.05), 0 1px 4px rgba(0, 0, 0, 0.02);
+        margin-bottom: 2rem;
+    }
+    .marketplace-catalog-header {
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    .marketplace-scroll-wrapper {
+        min-height: 480px;
+        max-height: calc(100vh - 270px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 6px;
+        padding-bottom: 8px;
+    }
+    .marketplace-scroll-wrapper::-webkit-scrollbar {
+        width: 7px;
+    }
+    .marketplace-scroll-wrapper::-webkit-scrollbar-track {
+        background: #f8fafc;
+        border-radius: 10px;
+    }
+    .marketplace-scroll-wrapper::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+    .marketplace-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+        background: #006653;
+    }
     .marketplace-hero {
         background: linear-gradient(135deg, #006653 0%, #047857 100%);
         border-radius: 1.25rem;
@@ -105,7 +140,7 @@
     }
 </style>
 
-<div class="container-fluid py-4 px-3 px-lg-5" style="max-width: 1400px;">
+<div class="container-fluid py-3 px-2 px-md-3 px-xl-4" style="max-width: 1680px;">
     
     <!-- Hero Banner -->
     <div class="marketplace-hero shadow-sm">
@@ -158,38 +193,42 @@
         </div>
     }
 
-    <!-- Filter Pills Bar -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-2">
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-            <button type="button" class="filter-chip-btn active" onclick="filterMarketplace('all', this)">
-                All Harvests (@Model.Count())
-            </button>
-            <button type="button" class="filter-chip-btn" onclick="filterMarketplace('grains', this)">
-                🌾 Grains &amp; Cereals
-            </button>
-            <button type="button" class="filter-chip-btn" onclick="filterMarketplace('oilseeds', this)">
-                🥜 Oilseeds
-            </button>
-            <button type="button" class="filter-chip-btn" onclick="filterMarketplace('spices', this)">
-                🌿 Spices &amp; Jeera
-            </button>
-            <button type="button" class="filter-chip-btn" onclick="filterMarketplace('pulses', this)">
-                🌱 Pulses
-            </button>
-        </div>
+    <!-- Dedicated Distinct Marketplace Catalog Box (Framed with Custom Scrollbar) -->
+    <div class="marketplace-catalog-card shadow-sm">
+        
+        <!-- Filter Header: Categories & Search Bar -->
+        <div class="marketplace-catalog-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <button type="button" class="filter-chip-btn active" onclick="filterMarketplace('all', this)">
+                    All Harvests (@Model.Count())
+                </button>
+                <button type="button" class="filter-chip-btn" onclick="filterMarketplace('grains', this)">
+                    🌾 Grains &amp; Cereals
+                </button>
+                <button type="button" class="filter-chip-btn" onclick="filterMarketplace('oilseeds', this)">
+                    🥜 Oilseeds
+                </button>
+                <button type="button" class="filter-chip-btn" onclick="filterMarketplace('spices', this)">
+                    🌿 Spices &amp; Jeera
+                </button>
+                <button type="button" class="filter-chip-btn" onclick="filterMarketplace('pulses', this)">
+                    🌱 Pulses
+                </button>
+            </div>
 
-        <div class="d-flex align-items-center gap-2">
-            <div class="input-group input-group-sm" style="max-width: 260px;">
-                <span class="input-group-text bg-white border-end-0 rounded-start-pill text-muted ps-3">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="text" id="cropSearchInput" class="form-control border-start-0 rounded-end-pill shadow-none" placeholder="Search crops, spices..." onkeyup="searchMarketplace(this.value)" />
+            <div class="d-flex align-items-center gap-2">
+                <div class="input-group input-group-sm" style="max-width: 280px;">
+                    <span class="input-group-text bg-light border-end-0 rounded-start-pill text-muted ps-3">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" id="cropSearchInput" class="form-control bg-light border-start-0 rounded-end-pill shadow-none" placeholder="Search crops, spices..." onkeyup="searchMarketplace(this.value)" />
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Produce Grid with Spacious Cards -->
-    <div class="row g-4" id="marketplaceGrid">
+        <!-- Scrollable Produce Grid Area -->
+        <div class="marketplace-scroll-wrapper">
+            <div class="row g-4" id="marketplaceGrid">
         @if (!Model.Any())
         {
             <div class="col-12">
@@ -348,6 +387,8 @@
                 </div>
             </div>
         }
+            </div>
+        </div>
     </div>
 </div>
 
