@@ -6,8 +6,26 @@
 
 
 <!-- =========================================================================
-     3D CINEMATIC INTRO OVERLAY (Sweet Corn & Glowing AgriAi Burst)
+     3D CINEMATIC INTRO OVERLAY (Sweet Corn & Glowing AgriAi Burst - Plays ONCE per session)
      ========================================================================= -->
+<script>
+    (function () {
+        try {
+            if (sessionStorage.getItem('agriai_3d_intro_shown') === 'true') {
+                document.documentElement.classList.add('intro-already-shown');
+            }
+        } catch (e) {}
+    })();
+</script>
+<style>
+    html.intro-already-shown #agri3dIntroOverlay {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+</style>
+
 <div id="agri3dIntroOverlay" class="agri3d-intro-screen" aria-hidden="true">
     <div class="agri3d-intro-backdrop"></div>
     
@@ -966,7 +984,26 @@
             const introVideo = document.getElementById('agri3dIntroVideo');
             const mainContent = document.getElementById('mainContent');
 
+            // Only play once per session: do not replay on page refresh or navigation from other pages
+            try {
+                if (sessionStorage.getItem('agriai_3d_intro_shown') === 'true') {
+                    if (introOverlay) {
+                        introOverlay.style.display = 'none';
+                        introOverlay.classList.add('dismissed');
+                    }
+                    if (introVideo) {
+                        try { introVideo.pause(); } catch(e) {}
+                    }
+                    return;
+                }
+            } catch (e) {}
+
             if (!introOverlay || !introVideo) return;
+
+            // Immediately mark as shown for this session
+            try {
+                sessionStorage.setItem('agriai_3d_intro_shown', 'true');
+            } catch (e) {}
 
             let isDismissed = false;
 
