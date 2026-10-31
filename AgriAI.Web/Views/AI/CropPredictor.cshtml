@@ -10,20 +10,29 @@
     <link rel="stylesheet" href="~/css/CropPredictor.css" asp-append-version="true" />
 }
 
-<div class="crop-predictor-container">
+<div class="container-fluid py-3 px-2 px-md-3 px-xl-4 crop-predictor-container" style="max-width: 1680px;">
 
-    <!-- Top Hero Banner (Matching Exact Layout and Header) -->
-    <div class="crop-predictor-hero">
-        <div class="ai-badge-header">
-            <i class="bi bi-cpu"></i>
-            <span>AI Crop Recommendation</span>
+    <!-- Top Hero Banner (Matching Exact Layout, Height & Width of Shop Product) -->
+    <div class="crop-predictor-hero shadow-sm">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="agri-page-badge">
+                    <i class="bi bi-cpu"></i>
+                    <span>AI Soil &amp; Crop Intelligence</span>
+                </div>
+                <h1 class="agri-page-title">
+                    AgriAI Crop Predictor
+                </h1>
+                <p class="agri-page-subtitle">
+                    Enter your soil metrics and climate data to get instant, accurate crop recommendations for maximum yield.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-light text-success fw-bold px-4 py-2.5 rounded-pill shadow">
+                    <i class="bi bi-graph-up-arrow me-1"></i> AI Price Predictor
+                </a>
+            </div>
         </div>
-        <h1 class="crop-hero-title">
-            AgriAI Crop Predictor
-        </h1>
-        <p class="crop-hero-subtitle">
-            Enter your soil and climate data to get instant, accurate crop recommendations for maximum yield.
-        </p>
     </div>
 
     @if (User.Identity == null || !User.Identity.IsAuthenticated)
