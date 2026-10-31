@@ -6,19 +6,28 @@
     <link rel="stylesheet" href="~/css/PricePredictor.css" asp-append-version="true" />
 }
 
-<div class="predictor-container">
-    <!-- 1. Hero Header Section -->
-    <div class="predictor-header">
-        <div class="ai-badge-header">
-            <i class="bi bi-graph-up-arrow"></i>
-            <span>AI Price Intelligence</span>
+<div class="container-fluid py-3 px-2 px-md-3 px-xl-4 predictor-container" style="max-width: 1680px;">
+    <!-- 1. Hero Header Section (Matching Exact Width, Height & Layout of Shop Product) -->
+    <div class="predictor-header shadow-sm">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="agri-page-badge">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>AI Price Intelligence</span>
+                </div>
+                <h1 class="agri-page-title">
+                    AI Market Price Predictor
+                </h1>
+                <p class="agri-page-subtitle">
+                    Forecast upcoming crop market prices and seasonal trends across APMC markets with machine learning.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a asp-controller="AI" asp-action="CropPredictor" class="btn btn-light text-success fw-bold px-4 py-2.5 rounded-pill shadow">
+                    <i class="bi bi-cpu me-1"></i> AI Crop Predictor
+                </a>
+            </div>
         </div>
-        <h1 class="predictor-title">
-            AI Market Price Predictor
-        </h1>
-        <p class="predictor-subtitle">
-            Forecast upcoming crop market prices and seasonal trends across APMC markets with machine learning.
-        </p>
     </div>
 
     @if (User.Identity == null || !User.Identity.IsAuthenticated)
