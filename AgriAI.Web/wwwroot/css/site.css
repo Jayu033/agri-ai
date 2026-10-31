@@ -636,3 +636,81 @@ button:hover i {
     0% { transform: scaleX(1); }
     100% { transform: scaleX(0); }
 }
+/* =========================================================================
+   Unified Page Hero Header Boards (Consistent across all 5 main pages)
+   ========================================================================= */
+.agri-unified-hero,
+.live-mandi-header-hero,
+.marketplace-hero,
+.crop-predictor-hero,
+.predictor-header,
+.helpdesk-hero {
+    background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #006653 100%) !important;
+    border-radius: 20px !important;
+    padding: 2.25rem 2rem !important;
+    color: #ffffff !important;
+    margin-bottom: 2rem !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: 0 10px 30px rgba(0, 102, 83, 0.16) !important;
+    text-align: left !important;
+}
+
+.agri-unified-hero::after,
+.live-mandi-header-hero::after,
+.marketplace-hero::after,
+.crop-predictor-hero::after,
+.predictor-header::after,
+.helpdesk-hero::after {
+    content: "" !important;
+    position: absolute !important;
+    right: -40px !important;
+    bottom: -40px !important;
+    width: 220px !important;
+    height: 220px !important;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%) !important;
+    border-radius: 50% !important;
+    pointer-events: none !important;
+}
+
+.live-mandi-badge,
+.ai-badge-header,
+.agri-page-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px !important;
+    padding: 4px 14px !important;
+    border-radius: 50px !important;
+    box-shadow: none !important;
+    margin-bottom: 0.75rem !important;
+}
+
+.live-mandi-title,
+.crop-hero-title,
+.predictor-title,
+.agri-page-title {
+    font-size: 1.85rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.3px !important;
+    margin-bottom: 0.4rem !important;
+    color: #ffffff !important;
+    line-height: 1.25 !important;
+    display: block !important;
+}
+
+.live-mandi-subtitle,
+.crop-hero-subtitle,
+.predictor-subtitle,
+.agri-page-subtitle {
+    font-size: 0.95rem !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    max-width: 720px !important;
+    margin-bottom: 0 !important;
+    line-height: 1.5 !important;
+}
