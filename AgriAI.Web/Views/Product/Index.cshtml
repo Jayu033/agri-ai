@@ -214,6 +214,65 @@
         border-radius: 1.25rem;
         margin: 0.5rem 0 1.5rem 0;
     }
+
+    /* Product Card Action Buttons (Fixed spacing between icon & text) */
+    .product-btn-cart,
+    .product-btn-buy {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        font-size: 0.82rem !important;
+        font-weight: 700 !important;
+        padding: 0.55rem 0.65rem !important;
+        flex: 1 1 0 !important;
+        white-space: nowrap !important;
+        min-height: 40px !important;
+        line-height: 1 !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        text-decoration: none !important;
+    }
+    .product-btn-cart i,
+    .product-btn-buy i {
+        font-size: 1.05rem !important;
+        line-height: 1 !important;
+        display: inline-block !important;
+        flex-shrink: 0 !important;
+        margin-right: 4px !important;
+    }
+    .product-btn-buy {
+        background-color: #006653 !important;
+        border-color: #006653 !important;
+        color: #ffffff !important;
+    }
+    .product-btn-buy:hover {
+        background-color: #047857 !important;
+        border-color: #047857 !important;
+        color: #ffffff !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 102, 83, 0.25) !important;
+    }
+    .product-btn-cart {
+        border-color: #006653 !important;
+        color: #006653 !important;
+        background-color: transparent !important;
+    }
+    .product-btn-cart:hover {
+        background-color: #006653 !important;
+        border-color: #006653 !important;
+        color: #ffffff !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 102, 83, 0.2) !important;
+    }
+    .product-btn-cart:hover i,
+    .product-btn-cart:hover span {
+        color: #ffffff !important;
+    }
+    .product-btn-cart span,
+    .product-btn-buy span {
+        display: inline-block !important;
+        vertical-align: middle !important;
+    }
 </style>
 
 <div class="container-fluid py-3 px-2 px-md-3 px-xl-4" style="max-width: 1680px;">
@@ -499,11 +558,13 @@
                             }
                             else
                             {
-                                <button type="button" class="btn btn-outline-success rounded-pill fw-bold px-3 py-2 shadow-sm d-flex align-items-center justify-content-center gap-1.5 flex-grow-1" onclick="addToCartAjax(@item.Id, 1, '@item.Name')">
-                                    <i class="bi bi-cart-plus fs-6"></i> Add to Cart
+                                <button type="button" class="btn btn-outline-success product-btn-cart rounded-pill shadow-sm" onclick="addToCartAjax(@item.Id, 1, '@item.Name')">
+                                    <i class="bi bi-cart-plus"></i>
+                                    <span>Add to Cart</span>
                                 </button>
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-success rounded-pill fw-bold px-3 py-2 shadow-sm d-flex align-items-center justify-content-center gap-1.5 flex-grow-1" style="background-color: #006653; border-color: #006653;">
-                                    <i class="bi bi-lightning-charge-fill fs-6"></i> Buy Now
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-success product-btn-buy rounded-pill shadow-sm">
+                                    <i class="bi bi-lightning-charge-fill"></i>
+                                    <span>Buy Now</span>
                                 </a>
                             }
                         </div>
@@ -511,6 +572,64 @@
                 </div>
             </div>
         }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Login Required Prompt Modal (Clean, modern popup box) -->
+<div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow: hidden; background: #ffffff;">
+            <!-- Header with close button -->
+            <div class="modal-header border-0 pb-0 pt-4 px-4 position-relative">
+                <button type="button" class="btn-close shadow-none position-absolute top-0 end-0 m-4" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-4 pt-0 text-center">
+                <!-- Icon Emblem -->
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 shadow-xs" style="width: 76px; height: 76px; background: rgba(0, 102, 83, 0.08); border: 2px solid rgba(0, 102, 83, 0.18);">
+                    <i class="bi bi-person-lock" style="font-size: 2.2rem; color: #006653;"></i>
+                </div>
+                
+                <h4 class="fw-bold text-dark mb-2" id="loginRequiredModalLabel" style="letter-spacing: -0.02em;">
+                    Login Required
+                </h4>
+                
+                <p class="text-muted mb-3 px-2" style="font-size: 0.92rem; line-height: 1.55;">
+                    Please sign in to your AgriAI account to add produce to your cart and proceed with order checkout.
+                </p>
+
+                <!-- Selected Crop Preview Card -->
+                <div class="p-3 bg-light rounded-4 border d-flex align-items-center gap-3 mb-4 text-start">
+                    <div class="d-flex align-items-center justify-content-center bg-white rounded-circle shadow-xs flex-shrink-0" style="width: 44px; height: 44px; border: 1px solid #e2e8f0;">
+                        <i class="bi bi-basket2-fill text-success fs-5"></i>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="fw-bold text-dark text-truncate" id="modalCropNamePreview" style="font-size: 0.95rem;">Farm Produce</div>
+                        <div class="text-muted small" style="font-size: 0.74rem;">Ready to be added to cart</div>
+                    </div>
+                    <span class="badge bg-success bg-opacity-10 text-success fw-bold rounded-pill px-2.5 py-1" style="font-size: 0.72rem;">
+                        Verified APMC
+                    </span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex flex-column gap-2 mb-2">
+                    <a id="modalLoginRedirectBtn" href="/Account/Login" class="btn btn-success rounded-pill fw-bold py-2.5 px-4 shadow-sm d-flex align-items-center justify-content-center gap-2" style="background-color: #006653; border-color: #006653;">
+                        <i class="bi bi-box-arrow-in-right fs-5"></i> Sign In to Continue
+                    </a>
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-outline-success rounded-pill fw-bold py-2.5 px-4 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-person-plus-fill fs-5"></i> Create Free Account
+                    </a>
+                </div>
+
+                <div class="pt-2">
+                    <button type="button" class="btn btn-link text-muted text-decoration-none small fw-semibold" data-bs-dismiss="modal">
+                        <i class="bi bi-arrow-left me-1"></i> Continue Browsing
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -616,7 +735,35 @@
         triggerSkeletonAndFilter('');
     }
 
+    const isUserLoggedIn = @(User.Identity?.IsAuthenticated == true ? "true" : "false");
+
+    function openLoginRequiredModal(productName, redirectUrl) {
+        const modalNameEl = document.getElementById('modalCropNamePreview');
+        const modalLoginBtn = document.getElementById('modalLoginRedirectBtn');
+        
+        if (modalNameEl) {
+            modalNameEl.textContent = productName || 'Farm Produce';
+        }
+        
+        const returnPath = window.location.pathname + window.location.search;
+        const targetUrl = redirectUrl || (`/Account/Login?returnUrl=${encodeURIComponent(returnPath)}`);
+        if (modalLoginBtn) {
+            modalLoginBtn.href = targetUrl;
+        }
+
+        const modalEl = document.getElementById('loginRequiredModal');
+        if (modalEl && window.bootstrap) {
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modalInstance.show();
+        }
+    }
+
     function addToCartAjax(productId, qty, name) {
+        if (!isUserLoggedIn) {
+            openLoginRequiredModal(name, `/Account/Login?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+            return;
+        }
+
         fetch('/Cart/AddToCart', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -628,10 +775,7 @@
                 showFloatingToast(data.message || `🌾 ${name} added to cart!`);
             } else {
                 if (data.requireLogin) {
-                    showFloatingToast(data.message || 'Please log in to continue.', false);
-                    setTimeout(() => {
-                        window.location.href = data.redirectUrl || '/Account/Login';
-                    }, 1400);
+                    openLoginRequiredModal(name, data.redirectUrl);
                 } else {
                     showFloatingToast(data.message || 'Could not add to cart', false);
                 }
