@@ -1207,7 +1207,8 @@
 .agri3d-vignette-overlay {
     position: absolute;
     inset: 0;
-    box-shadow: inset 0 0 140px rgba(0, 0, 0, 0.80);
+    box-shadow: inset 0 0 140px rgba(0, 0, 0, 0.82);
+    background: radial-gradient(circle at 98% 97%, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.50) 65px, transparent 150px);
     pointer-events: none;
     z-index: 3;
 }
