@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    // Helper to get active language
+    // Helper to get cookie value
     function getCookie(name) {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
@@ -67,60 +67,78 @@ document.addEventListener("DOMContentLoaded", function () {
         return '';
     }
 
-    function getCurrentLanguage() {
-        let savedLang = localStorage.getItem('agri_lang');
-        if (savedLang) return savedLang;
+    function setGoogleTransCookie(lang) {
+        const hostname = window.location.hostname;
+        const val = (lang === 'en') ? '/en/en' : `/en/${lang}`;
 
-        const selectEl = document.querySelector('.app-language-select');
-        if (selectEl && selectEl.value) {
-            return selectEl.value;
+        // Clear previous cookies across possible domain scopes
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        if (hostname) {
+            document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + hostname + ';';
+            document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + hostname + ';';
         }
 
+        // Set new cookie
+        document.cookie = `googtrans=${val}; path=/;`;
+        if (hostname && hostname !== 'localhost') {
+            document.cookie = `googtrans=${val}; path=/; domain=.${hostname};`;
+        }
+    }
+
+    function getCurrentLanguage() {
         const cookieVal = getCookie('googtrans');
-        if (cookieVal && cookieVal.includes('/gu')) return 'gu';
-        if (cookieVal && cookieVal.includes('/hi')) return 'hi';
-        return 'gu'; // Default to Gujarati for Gujarat farmers
+        if (cookieVal) {
+            if (cookieVal.includes('/gu')) return 'gu';
+            if (cookieVal.includes('/hi')) return 'hi';
+            if (cookieVal.includes('/en')) return 'en';
+        }
+
+        const savedLang = localStorage.getItem('agri_lang');
+        if (savedLang && (savedLang === 'en' || savedLang === 'gu' || savedLang === 'hi')) {
+            return savedLang;
+        }
+
+        return 'en';
     }
 
     let activeLang = getCurrentLanguage();
 
     // 3. Centralized Multi-Language Switcher (Synchronizes Header, Sidebar, and Chatbot in Real-Time)
-    window.switchLanguageEverywhere = function (selectedLang, forceReload = false) {
+    window.switchLanguageEverywhere = function (selectedLang) {
         if (!selectedLang) return;
         localStorage.setItem('agri_lang', selectedLang);
         activeLang = selectedLang;
 
         // 1. Sync all language dropdowns on the page
         document.querySelectorAll('.app-language-select').forEach(sel => {
-            if (sel.value !== selectedLang) {
-                sel.value = selectedLang;
-            }
+            sel.value = selectedLang;
         });
 
         // 2. Set Google Translate cookie
-        const cookieValue = `/en/${selectedLang}`;
-        document.cookie = `googtrans=${cookieValue}; path=/;`;
-        if (window.location.hostname && window.location.hostname !== 'localhost') {
-            document.cookie = `googtrans=${cookieValue}; path=/; domain=.${window.location.hostname};`;
+        setGoogleTransCookie(selectedLang);
+
+        // 3. Update Chatbot UI dictionary
+        if (typeof applyChatbotLanguage === 'function') {
+            applyChatbotLanguage(selectedLang);
         }
 
-        // 3. Trigger Google Translate native combo live if loaded
+        // 4. Save Chat Open state across reload
+        const chatWidget = document.getElementById('agriChatWidget');
+        if (chatWidget && !chatWidget.classList.contains('hidden')) {
+            sessionStorage.setItem('agri_chat_open', 'true');
+        }
+
+        // 5. Trigger Google Translate native combo if present
         const gCombo = document.querySelector('.goog-te-combo');
         if (gCombo) {
             gCombo.value = selectedLang;
-            gCombo.dispatchEvent(new Event('change'));
+            gCombo.dispatchEvent(new Event('change', { bubbles: true }));
         }
 
-        // 4. Update Chatbot UI instantly
-        applyChatbotLanguage(selectedLang);
-
-        if (forceReload) {
-            const chatWidget = document.getElementById('agriChatWidget');
-            if (chatWidget && !chatWidget.classList.contains('hidden')) {
-                sessionStorage.setItem('agri_chat_open', 'true');
-            }
+        // 6. Reload page to ensure clean full-page translation
+        setTimeout(function () {
             window.location.reload();
-        }
+        }, 150);
     };
 
     // Attach listeners to all language select dropdowns
@@ -128,7 +146,7 @@ document.addEventListener("DOMContentLoaded", function () {
     langSelects.forEach(select => {
         select.value = activeLang;
         select.addEventListener('change', function () {
-            window.switchLanguageEverywhere(this.value, false);
+            window.switchLanguageEverywhere(this.value);
         });
     });
 

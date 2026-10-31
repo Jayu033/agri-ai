@@ -23,10 +23,33 @@
     @await RenderSectionAsync("Styles", required: false)
 
     <style>
-        /* Hide Google Translate default top banner & branding */
-        .goog-te-banner-frame, .skiptranslate, .goog-te-gadget-icon { display: none !important; }
-        body { top: 0 !important; position: static !important; }
-        #google_translate_element { display: none !important; }
+        /* Cleanly hide Google Translate native UI without breaking its functionality */
+        #google_translate_element {
+            position: absolute !important;
+            top: -9999px !important;
+            left: -9999px !important;
+            width: 1px !important;
+            height: 1px !important;
+            overflow: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        .goog-te-banner-frame,
+        iframe.goog-te-banner-frame,
+        .goog-te-banner,
+        #goog-gt-tt,
+        .goog-te-balloon-frame {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        body {
+            top: 0px !important;
+            position: static !important;
+        }
+        .goog-text-highlight {
+            background: none !important;
+            box-shadow: none !important;
+        }
 
         /* Hide browser default native eye icon (Edge / Chrome) */
         input::-ms-reveal, input::-ms-clear { display: none !important; width: 0 !important; height: 0 !important; }
@@ -239,10 +262,10 @@
                 }
 
                 <div class="d-lg-none ms-1">
-                    <select class="form-select form-select-sm border-success text-dark bg-white shadow-none app-language-select" style="width: 85px; height: 28px; font-size: 0.72rem; padding: 2px 4px;">
-                        <option value="en">EN</option>
-                        <option value="gu">ગુજ</option>
-                        <option value="hi">हिन्दी</option>
+                    <select class="form-select form-select-sm border-success text-dark bg-white shadow-none app-language-select" style="width: 95px; height: 28px; font-size: 0.72rem; padding: 2px 4px;">
+                        <option value="en">English</option>
+                        <option value="gu">ગુજરાતી</option>
+                        <option value="hi">हिंदी</option>
                     </select>
                 </div>
             </div>
@@ -552,7 +575,7 @@
             }, 'google_translate_element');
         }
     </script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
