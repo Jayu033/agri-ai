@@ -1,195 +1,591 @@
 @model AgriAI.Domain.Entities.Product
 
 @{
-    ViewData["Title"] = "List New Farm Produce";
+    ViewData["Title"] = "List New Farm Produce - Direct Farmer Marketplace";
 }
 
-<div class="py-4 my-2">
-    <div class="container-fluid px-lg-4 px-md-3" style="max-width: 1240px;">
-        
-        <!-- Header Navigation -->
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-            <div>
-                <div class="d-flex align-items-center gap-2">
-                    <h2 class="fw-extrabold text-dark mb-0">List Farm Produce for Direct Sale</h2>
-                    <span class="badge bg-success bg-opacity-10 text-success fw-bold border border-success border-opacity-25 rounded-pill px-3 py-1.5 small">
-                        <i class="bi bi-patch-check-fill me-1"></i>0% Commission
-                    </span>
+@section Styles {
+    <style>
+        .produce-create-container {
+            max-width: 1680px;
+            margin: 0 auto;
+        }
+
+        /* 1. Hero Header Banner (Matching Exact Layout of Shop Products, Price Predictor & Live Mandi) */
+        .produce-hero-header {
+            background: linear-gradient(135deg, #006653 0%, #047857 100%);
+            border-radius: 1.25rem;
+            padding: 2.25rem 2rem;
+            color: #ffffff;
+            margin-bottom: 1.75rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 50, 35, 0.05), 0 1px 4px rgba(0, 0, 0, 0.02);
+            animation: produceFadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .produce-hero-header::after {
+            content: "";
+            position: absolute;
+            right: -30px;
+            bottom: -30px;
+            width: 220px;
+            height: 220px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .produce-hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 16px;
+            border-radius: 30px;
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(8px);
+        }
+
+        .produce-hero-title {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        .produce-hero-subtitle {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.88);
+            max-width: 720px;
+            margin-bottom: 0;
+            line-height: 1.5;
+        }
+
+        /* 2. Unified Master Card (Consolidates Everything in One Elegant Box) */
+        .produce-unified-card {
+            background: #ffffff;
+            border-radius: 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 30px rgba(0, 50, 35, 0.05), 0 1px 4px rgba(0, 0, 0, 0.02);
+            padding: 2.25rem 2.5rem;
+            margin-bottom: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            animation: produceFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        }
+
+        .produce-unified-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #006653 0%, #10b981 50%, #cb9d46 100%);
+        }
+
+        .produce-card-header {
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Modern Form Controls */
+        .produce-form-label {
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.45rem;
+            display: block;
+        }
+
+        .produce-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .produce-input-icon {
+            position: absolute;
+            left: 14px;
+            color: #64748b;
+            font-size: 1rem;
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        .produce-form-control {
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.72rem 1rem 0.72rem 2.75rem;
+            font-size: 0.92rem;
+            color: #0f172a;
+            width: 100%;
+            background: #f8fafc;
+            transition: all 0.25s ease;
+        }
+
+        .produce-form-control:focus {
+            background: #ffffff;
+            border-color: #006653;
+            box-shadow: 0 0 0 3.5px rgba(0, 102, 83, 0.12);
+            outline: none;
+        }
+
+        .produce-select-control {
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.72rem 1rem 0.72rem 2.75rem;
+            font-size: 0.92rem;
+            color: #0f172a;
+            width: 100%;
+            background-color: #f8fafc;
+            transition: all 0.25s ease;
+        }
+
+        .produce-select-control:focus {
+            background-color: #ffffff;
+            border-color: #006653;
+            box-shadow: 0 0 0 3.5px rgba(0, 102, 83, 0.12);
+            outline: none;
+        }
+
+        /* Price & Quantity Addon Groups */
+        .produce-addon-group {
+            display: flex;
+            align-items: stretch;
+            width: 100%;
+        }
+
+        .produce-addon-prefix {
+            background: #f1f5f9;
+            border: 1.5px solid #e2e8f0;
+            border-right: none;
+            border-radius: 12px 0 0 12px;
+            padding: 0.72rem 1rem;
+            color: #475569;
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .produce-addon-suffix {
+            background: #f1f5f9;
+            border: 1.5px solid #e2e8f0;
+            border-left: none;
+            border-radius: 0 12px 12px 0;
+            padding: 0.72rem 1rem;
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .produce-addon-input {
+            border: 1.5px solid #e2e8f0;
+            border-radius: 0;
+            padding: 0.72rem 0.9rem;
+            font-size: 0.92rem;
+            color: #0f172a;
+            flex: 1;
+            background: #f8fafc;
+            transition: all 0.25s ease;
+        }
+
+        .produce-addon-input:focus {
+            background: #ffffff;
+            border-color: #006653;
+            box-shadow: 0 0 0 3.5px rgba(0, 102, 83, 0.12);
+            outline: none;
+            z-index: 3;
+        }
+
+        .produce-textarea-control {
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.8rem 1rem;
+            font-size: 0.92rem;
+            color: #0f172a;
+            width: 100%;
+            background: #f8fafc;
+            transition: all 0.25s ease;
+            resize: vertical;
+        }
+
+        .produce-textarea-control:focus {
+            background: #ffffff;
+            border-color: #006653;
+            box-shadow: 0 0 0 3.5px rgba(0, 102, 83, 0.12);
+            outline: none;
+        }
+
+        /* 3. Photo Upload Dropzone */
+        .produce-upload-zone {
+            border: 2px dashed #86efac;
+            background: #f0fdf4;
+            border-radius: 18px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .produce-upload-zone:hover {
+            border-color: #006653;
+            background: #ecfdf5;
+            transform: translateY(-2px);
+        }
+
+        .produce-upload-card {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            padding: 1.25rem;
+        }
+
+        /* 4. Right Intelligence Sidebar Inside Main Card */
+        .produce-sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .produce-sidebar-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 1.35rem 1.45rem;
+            transition: all 0.25s ease;
+        }
+
+        .produce-sidebar-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+            transform: translateY(-2px);
+        }
+
+        .apmc-rate-item {
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            border-radius: 12px;
+            padding: 0.65rem 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .apmc-rate-item:hover {
+            transform: translateX(4px);
+            border-color: #86efac;
+            box-shadow: 0 3px 10px rgba(0, 102, 83, 0.06);
+        }
+
+        .farmer-adv-card {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1.5px solid rgba(16, 185, 129, 0.24);
+            border-radius: 18px;
+            padding: 1.35rem 1.45rem;
+            transition: all 0.25s ease;
+        }
+
+        .farmer-adv-card:hover {
+            background: rgba(16, 185, 129, 0.12);
+            transform: translateY(-2px);
+        }
+
+        /* 5. Action Buttons */
+        .btn-publish-produce {
+            background: linear-gradient(135deg, #006653 0%, #047857 100%);
+            border: none;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border-radius: 9999px;
+            padding: 0.75rem 2.25rem;
+            box-shadow: 0 4px 14px rgba(0, 102, 83, 0.25);
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-publish-produce:hover {
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 102, 83, 0.35);
+        }
+
+        .btn-cancel-produce {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border-radius: 9999px;
+            padding: 0.75rem 1.75rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-cancel-produce:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        /* Entrance Keyframe Animation */
+        @@keyframes produceFadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(22px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@media (max-width: 991px) {
+            .produce-hero-title {
+                font-size: 1.85rem;
+            }
+            .produce-unified-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+}
+
+<div class="container-fluid py-3 px-2 px-md-3 px-xl-4 produce-create-container">
+    
+    <!-- 1. Hero Header Banner (Consistent With Shop Products, Price Predictor & Live Mandi) -->
+    <div class="produce-hero-header shadow-sm">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+                <div class="produce-hero-badge">
+                    <i class="bi bi-patch-check-fill text-warning"></i>
+                    <span>Direct Farmer Marketplace &bull; 0% Commission</span>
                 </div>
+                <h1 class="produce-hero-title">
+                    List Farm Produce for Direct Sale
+                </h1>
+                <p class="produce-hero-subtitle">
+                    Publish your harvested crops, grains, and spices directly to verified buyers across Gujarat with 0% middleman brokerage.
+                </p>
             </div>
-            <div>
-                <a asp-controller="Farmer" asp-action="Dashboard" class="btn btn-outline-success rounded-pill px-4 py-2 fw-bold shadow-sm">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a asp-controller="Farmer" asp-action="Dashboard" class="btn btn-light text-success fw-bold px-4 py-2.5 rounded-pill shadow-sm">
+                    <i class="bi bi-arrow-left me-1.5"></i> Back to Dashboard
                 </a>
             </div>
         </div>
+    </div>
 
-        <div class="row g-4">
+    <!-- 2. Single Unified Main Box Container -->
+    <div class="produce-unified-card shadow-sm">
+        
+        <!-- Header Bar Inside Box -->
+        <div class="produce-card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                    <i class="bi bi-box-seam-fill text-success"></i> Crop &amp; Harvest Specifications
+                </h3>
+                <p class="text-muted small mb-0">Fill in accurate crop specifications and upload genuine farm photos for rapid buyer inquiries.</p>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge bg-success bg-opacity-10 text-success fw-bold border border-success border-opacity-25 rounded-pill px-3 py-1.5 small">
+                    <i class="bi bi-patch-check-fill me-1"></i> 0% Commission
+                </span>
+                <span class="badge bg-primary bg-opacity-10 text-primary fw-bold border border-primary border-opacity-25 rounded-pill px-3 py-1.5 small">
+                    <i class="bi bi-shield-check me-1"></i> Verified Escrow Safe
+                </span>
+                <span class="text-muted small ms-1">* Mandatory fields</span>
+            </div>
+        </div>
+
+        <!-- Integrated Row: Form on Left, Intelligence & Guidance on Right -->
+        <div class="row g-4 g-xl-5">
             
-            <!-- Left Column: Main Produce Creation Form (8 Columns) -->
-            <div class="col-lg-8">
-                <div class="bg-white shadow-sm rounded-4 border p-4 p-md-5">
-                    <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-4">
-                        <h4 class="fw-bold text-dark mb-0">Crop &amp; Harvest Details</h4>
-                        <span class="text-muted small">* Mandatory fields</span>
+            <!-- Left Column: Produce Form -->
+            <div class="col-lg-7 col-xl-8">
+                <form asp-action="Create" enctype="multipart/form-data" id="createProduceForm">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-3 mb-4 rounded-3"></div>
+                    
+                    <!-- Crop Name & Category -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Name" class="produce-form-label">Product / Crop Name *</label>
+                            <div class="produce-input-wrapper">
+                                <i class="bi bi-tag-fill produce-input-icon"></i>
+                                <input asp-for="Name" class="produce-form-control" placeholder="e.g. Organic Saurashtra Groundnut" required />
+                            </div>
+                            <span asp-validation-for="Name" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="CategoryId" class="produce-form-label">Produce Category *</label>
+                            <div class="produce-input-wrapper">
+                                <i class="bi bi-grid-fill produce-input-icon"></i>
+                                <select asp-for="CategoryId" class="produce-select-control" asp-items="ViewBag.CategoryId" required>
+                                    <option value="">-- Select Category --</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="CategoryId" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Selling Price & Available Stock -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Price" class="produce-form-label">Direct Selling Price (₹ / Kg) *</label>
+                            <div class="produce-addon-group">
+                                <span class="produce-addon-prefix">₹</span>
+                                <input asp-for="Price" type="number" step="0.01" min="0.01" class="produce-addon-input" placeholder="e.g. 62.00" required />
+                                <span class="produce-addon-suffix">/ Kg</span>
+                            </div>
+                            <small class="text-muted d-block mt-1" style="font-size: 0.80rem;">Set direct farm selling price per Kilogram (Kg).</small>
+                            <span asp-validation-for="Price" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="StockQuantity" class="produce-form-label">Available Stock Quantity (in Kg) *</label>
+                            <div class="produce-addon-group">
+                                <span class="produce-addon-prefix"><i class="bi bi-box-seam-fill"></i></span>
+                                <input asp-for="StockQuantity" type="number" min="1" class="produce-addon-input" placeholder="e.g. 500" required />
+                                <span class="produce-addon-suffix">Kg</span>
+                            </div>
+                            <small class="text-muted d-block mt-1" style="font-size: 0.80rem;">Enter total stock quantity strictly in Kilograms (Kg).</small>
+                            <span asp-validation-for="StockQuantity" class="text-danger small mt-1 d-block"></span>
+                        </div>
                     </div>
 
-                    <form asp-action="Create" enctype="multipart/form-data">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-3 mb-4 rounded-3"></div>
-                        
-                        <!-- Name & Category -->
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="Name" class="form-label fw-bold text-dark small mb-1.5">Product / Crop Name *</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-tag-fill"></i></span>
-                                    <input asp-for="Name" class="form-control border-start-0 px-2.5 py-2 shadow-none" placeholder="e.g. Organic Saurashtra Groundnut" required />
-                                </div>
-                                <span asp-validation-for="Name" class="text-danger small mt-1 d-block"></span>
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <label asp-for="CategoryId" class="form-label fw-bold text-dark small mb-1.5">Produce Category *</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-grid-fill"></i></span>
-                                    <select asp-for="CategoryId" class="form-select border-start-0 px-2.5 py-2 shadow-none" asp-items="ViewBag.CategoryId" required>
-                                        <option value="">-- Select Category --</option>
-                                    </select>
-                                </div>
-                                <span asp-validation-for="CategoryId" class="text-danger small mt-1 d-block"></span>
-                            </div>
-                        </div>
-                        
-                        <!-- Price & Quantity -->
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="Price" class="form-label fw-bold text-dark small mb-1.5">Direct Selling Price (₹ / Kg) *</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted border-end-0 fw-bold">₹</span>
-                                    <input asp-for="Price" type="number" step="0.01" min="0.01" class="form-control border-start-0 border-end-0 px-2.5 py-2 shadow-none" placeholder="e.g. 62.00" required />
-                                    <span class="input-group-text bg-light text-dark fw-bold border-start-0">/ Kg</span>
-                                </div>
-                                <small class="text-muted d-block mt-1">Set direct farm selling price per Kilogram (Kg).</small>
-                                <span asp-validation-for="Price" class="text-danger small mt-1 d-block"></span>
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <label asp-for="StockQuantity" class="form-label fw-bold text-dark small mb-1.5">Available Stock Quantity (in Kg) *</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-box-seam-fill"></i></span>
-                                    <input asp-for="StockQuantity" type="number" min="1" class="form-control border-start-0 border-end-0 px-2.5 py-2 shadow-none" placeholder="e.g. 500" required />
-                                    <span class="input-group-text bg-light text-dark fw-bold border-start-0">Kg</span>
-                                </div>
-                                <small class="text-muted d-block mt-1">Enter total stock quantity strictly in Kilograms (Kg).</small>
-                                <span asp-validation-for="StockQuantity" class="text-danger small mt-1 d-block"></span>
-                            </div>
-                        </div>
+                    <!-- Harvest Description & Origin -->
+                    <div class="mb-4">
+                        <label asp-for="Description" class="produce-form-label">Harvest Description &amp; Origin Details</label>
+                        <textarea asp-for="Description" class="produce-textarea-control" rows="3" placeholder="Describe harvest date, organic certification, farm region (e.g. Gondal, Rajkot), and grain moisture quality..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small mt-1 d-block"></span>
+                    </div>
 
-                        <!-- Description -->
-                        <div class="mb-4">
-                            <label asp-for="Description" class="form-label fw-bold text-dark small mb-1.5">Harvest Description &amp; Origin Details</label>
-                            <textarea asp-for="Description" class="form-control px-3 py-2.5 shadow-none" rows="3" placeholder="Describe harvest date, organic certification, farm region (e.g. Gondal, Rajkot), and grain moisture quality..."></textarea>
-                            <span asp-validation-for="Description" class="text-danger small mt-1 d-block"></span>
-                        </div>
-
-                        <!-- Produce Photo Upload Area -->
-                        <div class="mb-4 p-4 rounded-4 border bg-light bg-opacity-50">
-                            <label class="form-label fw-bold text-success d-flex align-items-center gap-2 mb-1.5 fs-6">
+                    <!-- Produce Photo Upload Area (Modern Dropzone Box) -->
+                    <div class="produce-upload-zone mb-4">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label class="form-label fw-bold text-success d-flex align-items-center gap-2 mb-0 fs-6">
                                 <i class="bi bi-camera-fill"></i> Produce Photo / Image Upload
                             </label>
-                            <p class="text-muted small mb-3">Upload clear photos of your crop produce for higher visibility and fast buyer inquiries.</p>
+                            <span class="badge bg-white text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1 small fw-bold">
+                                High Resolution Recommended
+                            </span>
+                        </div>
+                        <p class="text-muted small mb-3">Upload clear photos of your harvested produce for higher search ranking and fast buyer inquiries.</p>
+                        
+                        <div class="produce-upload-card">
+                            <input type="file" name="imageFile" id="imageFileInput" class="form-control shadow-none" accept="image/*" />
+                            <div class="d-flex justify-content-between align-items-center mt-1.5">
+                                <small class="text-muted" style="font-size: 0.80rem;">Supported formats: JPG, JPEG, PNG, WEBP (Max 5MB)</small>
+                                <small class="text-success fw-medium" style="font-size: 0.80rem;"><i class="bi bi-check-circle-fill me-1"></i> Auto Compressed</small>
+                            </div>
                             
-                            <div class="p-3 bg-white rounded-3 border">
-                                <input type="file" name="imageFile" id="imageFileInput" class="form-control shadow-none" accept="image/*" />
-                                <small class="text-muted d-block mt-1.5">Supported file formats: JPG, JPEG, PNG, WEBP (Max 5MB)</small>
-                                
-                                <div id="imagePreviewContainer" class="mt-3 d-none text-center p-3 bg-light rounded-3 border">
-                                    <span class="text-muted small d-block mb-2">Selected Photo Preview:</span>
-                                    <img id="imagePreview" src="#" alt="Selected Image Preview" class="img-thumbnail rounded-3 shadow-sm" style="max-height: 200px; object-fit: cover;" />
-                                </div>
+                            <div id="imagePreviewContainer" class="mt-3 d-none text-center p-3 bg-light rounded-3 border position-relative">
+                                <span class="text-muted small d-block mb-2 fw-medium">Selected Photo Preview:</span>
+                                <img id="imagePreview" src="#" alt="Selected Image Preview" class="img-thumbnail rounded-3 shadow-sm" style="max-height: 220px; object-fit: cover;" />
                             </div>
                         </div>
-                        
-                        <!-- Hidden FarmerId -->
-                        <input type="hidden" asp-for="FarmerId" value="farmer-123" />
-                        
-                        <!-- Action Buttons -->
-                        <div class="d-flex align-items-center justify-content-end gap-3 pt-3 border-top">
-                            <a asp-controller="Farmer" asp-action="Dashboard" class="btn btn-light rounded-pill px-4 py-2.5 fw-bold text-muted border">
-                                Cancel
-                            </a>
-                            <button type="submit" class="btn btn-success rounded-pill px-5 py-2.5 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;">
-                                <i class="bi bi-cloud-arrow-up-fill me-1.5"></i> Publish Farm Produce
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+                    
+                    <!-- Hidden FarmerId -->
+                    <input type="hidden" asp-for="FarmerId" value="farmer-123" />
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex align-items-center justify-content-end gap-3 pt-3 border-top">
+                        <a asp-controller="Farmer" asp-action="Dashboard" class="btn-cancel-produce">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn-publish-produce">
+                            <i class="bi bi-cloud-arrow-up-fill fs-5"></i>
+                            <span>Publish Farm Produce</span>
+                        </button>
+                    </div>
+                </form>
             </div>
 
-            <!-- Right Column: Market Guidance & Seller Advantages (4 Columns) -->
-            <div class="col-lg-4">
-                
-                <!-- Live Gujarat APMC Rates Reference Card -->
-                <div class="bg-white rounded-4 border shadow-sm p-4 mb-4">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="fw-bold text-dark mb-0">
-                            <i class="bi bi-graph-up text-success me-1.5"></i> APMC Benchmark Rates
-                        </h6>
-                        <span class="badge bg-danger text-white fw-bold px-2 py-0.5 small">LIVE</span>
+            <!-- Right Column: Live APMC Intelligence & Farmer Advantage -->
+            <div class="col-lg-5 col-xl-4">
+                <div class="produce-sidebar-section">
+                    
+                    <!-- Live Gujarat APMC Rates Reference Card -->
+                    <div class="produce-sidebar-card shadow-sm">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <h6 class="fw-bold text-dark mb-0 d-flex align-items-center">
+                                <i class="bi bi-graph-up text-success me-1.5"></i> APMC Benchmark Rates
+                            </h6>
+                            <span class="badge bg-danger text-white fw-bold px-2 py-0.5 small">LIVE</span>
+                        </div>
+                        <p class="text-muted small mb-3" style="font-size: 0.82rem;">Today's modal reference prices across Gujarat markets:</p>
+
+                        <div class="d-flex flex-column gap-2 mb-3">
+                            <div class="apmc-rate-item">
+                                <span class="small fw-bold text-dark">🌱 Cotton</span>
+                                <span class="text-success fw-bold small">₹ 7,120 / Qtl</span>
+                            </div>
+                            <div class="apmc-rate-item">
+                                <span class="small fw-bold text-dark">🥜 Groundnut</span>
+                                <span class="text-success fw-bold small">₹ 6,208 / Qtl</span>
+                            </div>
+                            <div class="apmc-rate-item">
+                                <span class="small fw-bold text-dark">🌿 Cumin / Jeera</span>
+                                <span class="text-success fw-bold small">₹ 28,500 / Qtl</span>
+                            </div>
+                            <div class="apmc-rate-item">
+                                <span class="small fw-bold text-dark">🌾 Wheat</span>
+                                <span class="text-success fw-bold small">₹ 2,565 / Qtl</span>
+                            </div>
+                        </div>
+                        <a asp-controller="Home" asp-action="LiveMandi" class="btn btn-sm btn-outline-success rounded-pill fw-bold w-100 py-1.5">
+                            View Full Mandi Price Board →
+                        </a>
                     </div>
-                    <p class="text-muted small mb-3">Today's modal reference prices across Gujarat markets:</p>
 
-                    <div class="d-flex flex-column gap-2 mb-3">
-                        <div class="d-flex justify-content-between align-items-center p-2.5 bg-light rounded-3">
-                            <span class="small fw-bold text-dark">🌱 Cotton</span>
-                            <span class="text-success fw-bold small">₹ 7,120 / Qtl</span>
+                    <!-- Farmer Direct Advantage Card -->
+                    <div class="farmer-adv-card shadow-sm">
+                        <div class="d-flex align-items-center gap-2 mb-2.5">
+                            <i class="bi bi-shield-check text-success fs-5"></i>
+                            <h6 class="fw-bold text-success mb-0">Farmer Direct Advantage</h6>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center p-2.5 bg-light rounded-3">
-                            <span class="small fw-bold text-dark">🥜 Groundnut</span>
-                            <span class="text-success fw-bold small">₹ 6,208 / Qtl</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center p-2.5 bg-light rounded-3">
-                            <span class="small fw-bold text-dark">🌿 Cumin / Jeera</span>
-                            <span class="text-success fw-bold small">₹ 28,500 / Qtl</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center p-2.5 bg-light rounded-3">
-                            <span class="small fw-bold text-dark">🌾 Wheat</span>
-                            <span class="text-success fw-bold small">₹ 2,565 / Qtl</span>
-                        </div>
+                        <ul class="list-unstyled small text-muted mb-0 d-flex flex-column gap-2" style="font-size: 0.83rem;">
+                            <li><i class="bi bi-check-circle-fill text-success me-1.5"></i> <strong>0% Brokerage:</strong> Keep 100% of your selling price.</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-1.5"></i> <strong>Direct Buyer Connection:</strong> Connect with retail buyers across Gujarat.</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-1.5"></i> <strong>Transparent Payment:</strong> Secure bank &amp; UPI settlements.</li>
+                        </ul>
                     </div>
-                    <a asp-controller="Home" asp-action="LiveMandi" class="btn btn-sm btn-outline-success rounded-pill fw-bold w-100">
-                        View Full Mandi Price Board →
-                    </a>
-                </div>
 
-                <!-- Seller Protection & Advantage Card -->
-                <div class="p-4 rounded-4 border bg-success bg-opacity-10 mb-4 border-success border-opacity-25">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <i class="bi bi-shield-check text-success fs-5"></i>
-                        <h6 class="fw-bold text-success mb-0">Farmer Direct Advantage</h6>
+                    <!-- Photo Tips Card -->
+                    <div class="produce-sidebar-card shadow-sm">
+                        <div class="d-flex align-items-center gap-2 mb-1.5">
+                            <i class="bi bi-lightbulb-fill text-warning fs-5"></i>
+                            <h6 class="fw-bold text-dark mb-0 small">Photo Tips for Fast Selling</h6>
+                        </div>
+                        <p class="text-muted small mb-0" style="font-size: 0.82rem; line-height: 1.5;">
+                            Capture produce in natural daylight. Clean background and closeup grain texture increases buyer inquiries and trust by 3x.
+                        </p>
                     </div>
-                    <ul class="list-unstyled small text-muted mb-0 d-flex flex-column gap-2">
-                        <li><i class="bi bi-check-circle-fill text-success me-1.5"></i> <strong>0% Brokerage:</strong> Keep 100% of your selling price.</li>
-                        <li><i class="bi bi-check-circle-fill text-success me-1.5"></i> <strong>Direct Buyer Connection:</strong> Connect with retail buyers across Gujarat.</li>
-                        <li><i class="bi bi-check-circle-fill text-success me-1.5"></i> <strong>Transparent Payment:</strong> Secure bank &amp; UPI settlements.</li>
-                    </ul>
-                </div>
 
-                <!-- Photo Tips Card -->
-                <div class="p-3.5 bg-white rounded-4 border shadow-sm">
-                    <h6 class="fw-bold text-dark mb-1.5 small">
-                        <i class="bi bi-lightbulb-fill text-warning me-1"></i> Photo Tips for Fast Selling
-                    </h6>
-                    <p class="text-muted small mb-0" style="font-size: 0.80rem;">
-                        Capture produce in natural daylight. Clean background and closeup grain texture increases buyer trust by 3x.
-                    </p>
                 </div>
-
             </div>
 
         </div>
 
     </div>
+
 </div>
 
 @section Scripts {

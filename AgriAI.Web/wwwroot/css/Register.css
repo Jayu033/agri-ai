@@ -60,6 +60,27 @@
     box-shadow: 0 6px 16px rgba(22, 101, 52, 0.3);
 }
 
+.register-card-title.brand-logo-title {
+    font-size: 2.35rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+    line-height: 1.1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brand-text-agri {
+    color: #007b49;
+    font-weight: 900;
+}
+
+.brand-text-ai {
+    color: #cb9d46;
+    font-weight: 900;
+}
+
 .register-card-title {
     color: #14532d;
     font-weight: 800;
