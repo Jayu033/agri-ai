@@ -35,108 +35,192 @@
         </div>
     </div>
 
-    @if (User.Identity == null || !User.Identity.IsAuthenticated)
-    {
-        <!-- Guest Exploration Banner -->
-        <div class="alert bg-white border border-success border-opacity-25 shadow-sm rounded-4 p-3 mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <!-- Quick Presets Bar (Auto-Fill Benchmarks) -->
+    <div class="crop-presets-wrapper mb-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2.5">
             <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-info-circle-fill text-success fs-5"></i>
-                <div>
-                    <strong class="text-dark small d-block">Exploring in Guest Preview Mode</strong>
-                    <small class="text-muted">You can view parameters and test presets. Please log in or register to run the Machine Learning model.</small>
-                </div>
+                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.82rem;">
+                    <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Quick Soil Presets
+                </span>
+                <span class="text-muted small">Select any soil profile to auto-fill laboratory parameters:</span>
             </div>
-            <div class="d-flex gap-2">
-                <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="/AI/CropPredictor" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-bold shadow-sm" style="background-color: #006653;">
-                    <i class="bi bi-box-arrow-in-right me-1"></i> Login
-                </a>
-                <a asp-controller="Account" asp-action="Register" asp-route-returnUrl="/AI/CropPredictor" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold">
-                    <i class="bi bi-person-plus me-1"></i> Register
-                </a>
-            </div>
+            <span class="badge bg-white text-dark border shadow-xs rounded-pill px-3 py-1.5 small fw-semibold">
+                <i class="bi bi-cpu text-success me-1"></i> 28+ Crops Trained
+            </span>
         </div>
-    }
 
-    <!-- Quick Preset Soil Badges for 1-Click Testing -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 px-1">
-        <div class="d-flex flex-wrap align-items-center gap-2">
-            <span class="text-muted small fw-bold"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Quick Presets:</span>
-            <button type="button" class="soil-preset-btn" onclick="applySoilPreset(90, 42, 43, 20.8, 82.0, 6.5)">
-                🌾 Standard (Rice / Wheat)
+        <div class="crop-presets-grid">
+            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(90, 42, 43, 20.8, 82.0, 6.5)">
+                <span class="chip-icon">🌾</span>
+                <span class="chip-info">
+                    <span class="chip-title">Alluvial Loam</span>
+                    <span class="chip-sub">Rice &bull; Wheat</span>
+                </span>
             </button>
-            <button type="button" class="soil-preset-btn" onclick="applySoilPreset(120, 46, 20, 24.0, 79.8, 6.8)">
-                ☁️ Black Soil (Cotton)
+            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(120, 46, 20, 24.0, 79.8, 6.8)">
+                <span class="chip-icon">☁️</span>
+                <span class="chip-info">
+                    <span class="chip-title">Black Regur</span>
+                    <span class="chip-sub">Cotton (Kapas)</span>
+                </span>
             </button>
-            <button type="button" class="soil-preset-btn" onclick="applySoilPreset(35, 40, 45, 26.0, 60.0, 6.5)">
-                🥜 Saurashtra (Groundnut)
+            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(35, 40, 45, 26.0, 60.0, 6.5)">
+                <span class="chip-icon">🥜</span>
+                <span class="chip-info">
+                    <span class="chip-title">Saurashtra Loam</span>
+                    <span class="chip-sub">Groundnut</span>
+                </span>
             </button>
-            <button type="button" class="soil-preset-btn" onclick="applySoilPreset(40, 30, 30, 21.0, 50.0, 7.2)">
-                🌿 Unjha (Cumin / Jeera)
+            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(40, 30, 30, 21.0, 50.0, 7.2)">
+                <span class="chip-icon">🌿</span>
+                <span class="chip-info">
+                    <span class="chip-title">North Gujarat Arid</span>
+                    <span class="chip-sub">Cumin &bull; Jeera</span>
+                </span>
             </button>
-            <button type="button" class="soil-preset-btn" onclick="applySoilPreset(40, 68, 80, 19.0, 17.0, 7.3)">
-                🌱 Winter Pulse (Chickpea / Chana)
+            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(40, 68, 80, 19.0, 17.0, 7.3)">
+                <span class="chip-icon">🌱</span>
+                <span class="chip-info">
+                    <span class="chip-title">Winter Heavy Clay</span>
+                    <span class="chip-sub">Chickpea &bull; Chana</span>
+                </span>
+            </button>
+            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(50, 40, 35, 25.0, 60.0, 6.5)">
+                <span class="chip-icon">🍃</span>
+                <span class="chip-info">
+                    <span class="chip-title">Semi-Arid Dryland</span>
+                    <span class="chip-sub">Castor (Divela)</span>
+                </span>
+            </button>
+            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(100, 50, 100, 18.0, 75.0, 5.8)">
+                <span class="chip-icon">🥔</span>
+                <span class="chip-info">
+                    <span class="chip-title">Sandy Alluvial</span>
+                    <span class="chip-sub">Potato &bull; Onion</span>
+                </span>
+            </button>
+            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(20, 20, 40, 22.0, 90.0, 6.4)">
+                <span class="chip-icon">🍎</span>
+                <span class="chip-info">
+                    <span class="chip-title">Horticulture Drip</span>
+                    <span class="chip-sub">Pomegranate</span>
+                </span>
             </button>
         </div>
-        <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-3 py-1">
-            <i class="bi bi-graph-up-arrow me-1"></i> AI Price Predictor
-        </a>
     </div>
 
     <!-- Main Soil & Weather Input Form Card -->
-    <div class="crop-form-card">
+    <div class="crop-form-card mb-4 shadow-sm">
         <div class="crop-form-heading">
-            <span><i class="bi bi-sliders text-success me-2"></i>Enter Soil &amp; Weather Data</span>
-            <span class="badge bg-success bg-opacity-10 text-success fw-semibold small">Machine Learning V2.4</span>
+            <div>
+                <h5 class="fw-bold mb-1 d-flex align-items-center gap-2 text-dark">
+                    <i class="bi bi-sliders2-vertical text-success"></i>
+                    Enter Soil &amp; Climate Parameters
+                </h5>
+                <p class="text-muted small mb-0">Input laboratory soil nutrient levels (N-P-K) and environmental conditions for optimal crop selection.</p>
+            </div>
+            <span class="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-1.5 rounded-pill border border-success border-opacity-25 font-monospace" style="font-size: 0.78rem;">
+                <i class="bi bi-cpu-fill me-1"></i> ML Random Forest V2.4
+            </span>
         </div>
 
         <form asp-action="PredictCrop" method="post" id="cropPredictorForm">
-            <!-- Row 1: N, P, K Ratios -->
-            <div class="row g-3 mb-3">
-                <div class="col-md-4">
-                    <label class="crop-form-label" for="inputN">
-                        Nitrogen (N) <span class="unit">(Ratio)</span>
-                    </label>
-                    <input type="number" step="any" class="form-control crop-input-field" id="inputN" name="Nitrogen" value="@Model.Nitrogen" placeholder="e.g. 90" required />
+            <!-- Parameter Section 1: Soil Nutrients -->
+            <div class="param-section-box mb-3.5">
+                <div class="param-section-header">
+                    <i class="bi bi-flower1 text-success fs-5"></i>
+                    <h6 class="param-section-title m-0">Soil Macro-Nutrients (N - P - K)</h6>
                 </div>
-                <div class="col-md-4">
-                    <label class="crop-form-label" for="inputP">
-                        Phosphorus (P) <span class="unit">(Ratio)</span>
-                    </label>
-                    <input type="number" step="any" class="form-control crop-input-field" id="inputP" name="Phosphorus" value="@Model.Phosphorus" placeholder="e.g. 42" required />
-                </div>
-                <div class="col-md-4">
-                    <label class="crop-form-label" for="inputK">
-                        Potassium (K) <span class="unit">(Ratio)</span>
-                    </label>
-                    <input type="number" step="any" class="form-control crop-input-field" id="inputK" name="Potassium" value="@Model.Potassium" placeholder="e.g. 43" required />
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="crop-input-group">
+                            <label class="crop-input-label" for="inputN">
+                                Nitrogen (N)
+                            </label>
+                            <div class="crop-input-wrapper">
+                                <i class="bi bi-leaf-fill crop-input-icon text-success"></i>
+                                <input type="number" step="any" class="form-control crop-input-field" id="inputN" name="Nitrogen" value="@Model.Nitrogen" placeholder="e.g. 90" required />
+                                <span class="crop-input-unit">Ratio / ppm</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="crop-input-group">
+                            <label class="crop-input-label" for="inputP">
+                                Phosphorus (P)
+                            </label>
+                            <div class="crop-input-wrapper">
+                                <i class="bi bi-sun-fill crop-input-icon text-warning"></i>
+                                <input type="number" step="any" class="form-control crop-input-field" id="inputP" name="Phosphorus" value="@Model.Phosphorus" placeholder="e.g. 42" required />
+                                <span class="crop-input-unit">Ratio / ppm</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="crop-input-group">
+                            <label class="crop-input-label" for="inputK">
+                                Potassium (K)
+                            </label>
+                            <div class="crop-input-wrapper">
+                                <i class="bi bi-gem crop-input-icon text-danger"></i>
+                                <input type="number" step="any" class="form-control crop-input-field" id="inputK" name="Potassium" value="@Model.Potassium" placeholder="e.g. 43" required />
+                                <span class="crop-input-unit">Ratio / ppm</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Row 2: Temperature, Humidity, pH Value -->
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <label class="crop-form-label" for="inputTemp">
-                        Temperature <span class="unit">(°C)</span>
-                    </label>
-                    <input type="number" step="any" class="form-control crop-input-field" id="inputTemp" name="Temperature" value="@Model.Temperature" placeholder="e.g. 20.8" required />
+            <!-- Parameter Section 2: Climate & Soil Chemistry -->
+            <div class="param-section-box mb-4">
+                <div class="param-section-header">
+                    <i class="bi bi-cloud-sun-fill text-primary fs-5"></i>
+                    <h6 class="param-section-title m-0">Climate &amp; Environmental Factors</h6>
                 </div>
-                <div class="col-md-4">
-                    <label class="crop-form-label" for="inputHumidity">
-                        Humidity <span class="unit">(%)</span>
-                    </label>
-                    <input type="number" step="any" class="form-control crop-input-field" id="inputHumidity" name="Humidity" value="@Model.Humidity" placeholder="e.g. 82.0" required />
-                </div>
-                <div class="col-md-4">
-                    <label class="crop-form-label" for="inputPh">
-                        pH Value
-                    </label>
-                    <input type="number" step="any" min="0" max="14" class="form-control crop-input-field" id="inputPh" name="PhValue" value="@Model.PhValue" placeholder="e.g. 6.5" required />
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="crop-input-group">
+                            <label class="crop-input-label" for="inputTemp">
+                                Average Temperature
+                            </label>
+                            <div class="crop-input-wrapper">
+                                <i class="bi bi-thermometer-half crop-input-icon text-danger"></i>
+                                <input type="number" step="any" class="form-control crop-input-field" id="inputTemp" name="Temperature" value="@Model.Temperature" placeholder="e.g. 20.8" required />
+                                <span class="crop-input-unit">°C</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="crop-input-group">
+                            <label class="crop-input-label" for="inputHumidity">
+                                Relative Humidity
+                            </label>
+                            <div class="crop-input-wrapper">
+                                <i class="bi bi-droplet-half crop-input-icon text-primary"></i>
+                                <input type="number" step="any" class="form-control crop-input-field" id="inputHumidity" name="Humidity" value="@Model.Humidity" placeholder="e.g. 82.0" required />
+                                <span class="crop-input-unit">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="crop-input-group">
+                            <label class="crop-input-label" for="inputPh">
+                                Soil pH Value
+                            </label>
+                            <div class="crop-input-wrapper">
+                                <i class="bi bi-speedometer2 crop-input-icon text-info"></i>
+                                <input type="number" step="any" min="0" max="14" class="form-control crop-input-field" id="inputPh" name="PhValue" value="@Model.PhValue" placeholder="e.g. 6.5" required />
+                                <span class="crop-input-unit">pH (0-14)</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Submit Button -->
             <button type="submit" class="btn-predict-crop" id="btnPredictSubmit">
-                <i class="bi bi-stars"></i> Predict Crop
+                <i class="bi bi-stars fs-5"></i>
+                <span>Run AI Crop Recommendation</span>
             </button>
         </form>
     </div>
