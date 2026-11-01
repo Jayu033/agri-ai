@@ -137,7 +137,7 @@
 }
 
 .crop-tab-btn.active {
-    background: #006653;
+    background: linear-gradient(135deg, #006653 0%, #047857 100%);
     border-color: #006653;
     color: #ffffff;
     box-shadow: 0 4px 14px rgba(0, 102, 83, 0.25);
@@ -405,10 +405,10 @@
     color: #006653;
 }
 
-/* 5. Submit AI Button */
+/* 5. Submit AI Button (Exact matching header gradient and style) */
 .btn-predict-action {
     width: 100%;
-    background: linear-gradient(135deg, #006653 0%, #15803d 50%, #16a34a 100%);
+    background: linear-gradient(135deg, #006653 0%, #047857 100%);
     border: none;
     color: #ffffff;
     font-weight: 800;
@@ -420,15 +420,17 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    box-shadow: 0 8px 24px rgba(0, 102, 83, 0.25);
-    transition: all 0.25s ease;
+    box-shadow: 0 8px 24px rgba(0, 102, 83, 0.28);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     margin-top: 10px;
+    letter-spacing: 0.3px;
 }
 
 .btn-predict-action:hover {
+    background: linear-gradient(135deg, #004d3e 0%, #036549 100%);
     transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(0, 102, 83, 0.32);
-    filter: brightness(1.04);
+    box-shadow: 0 12px 28px rgba(0, 102, 83, 0.38);
+    filter: brightness(1.05);
 }
 
 .btn-predict-action:active {
