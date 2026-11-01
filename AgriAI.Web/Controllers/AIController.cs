@@ -1,3 +1,4 @@
+using AgriAI.Web.Services;
 using AgriAI.Web.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,19 +12,35 @@ namespace AgriAI.Web.Controllers
 {
     public class AIController : Controller
     {
+        private readonly IGujaratAgroDataService _agroDataService;
+
+        public AIController(IGujaratAgroDataService agroDataService)
+        {
+            _agroDataService = agroDataService;
+        }
+
         // GET: /AI/CropPredictor (Accessible to guests for previewing the interface)
         [HttpGet]
         public IActionResult CropPredictor()
         {
+            ViewBag.Districts = _agroDataService.GetAllDistricts();
+
             var defaultInput = new CropPredictorInputModel
             {
-                Nitrogen = 90,
+                Mode = "simple",
+                District = "Rajkot",
+                SoilType = "black",
+                WaterSource = "borewell",
+                WaterQuality = "fresh",
+                PreviousCrop = "Groundnut",
+                CultivationArea = 5.0,
+                Nitrogen = 110,
                 Phosphorus = 42,
-                Potassium = 43,
-                Temperature = 20.8,
-                Humidity = 82.0,
-                PhValue = 6.5,
-                Rainfall = 150.0
+                Potassium = 45,
+                Temperature = 26.5,
+                Humidity = 62.0,
+                PhValue = 7.4,
+                Rainfall = 650.0
             };
 
             return View("CropPredictor", defaultInput);
@@ -40,13 +57,54 @@ namespace AgriAI.Web.Controllers
         [HttpPost]
         public IActionResult PredictCrop(CropPredictorInputModel input)
         {
+            ViewBag.Districts = _agroDataService.GetAllDistricts();
+
             if (User.Identity == null || !User.Identity.IsAuthenticated)
             {
                 TempData["ErrorMessage"] = "Please log in or create a free account to run AI Crop Predictions.";
                 return RedirectToAction("Login", "Account", new { returnUrl = "/AI/CropPredictor" });
             }
 
+            if (input.Mode == "simple")
+            {
+                var resolved = _agroDataService.ResolveSoilAndClimate(
+                    input.District, 
+                    input.SoilType, 
+                    input.WaterSource, 
+                    input.WaterQuality, 
+                    input.PreviousCrop
+                );
+
+                input.Nitrogen = resolved.Nitrogen;
+                input.Phosphorus = resolved.Phosphorus;
+                input.Potassium = resolved.Potassium;
+                input.Temperature = resolved.Temperature;
+                input.Humidity = resolved.Humidity;
+                input.PhValue = resolved.PhValue;
+                input.Rainfall = resolved.Rainfall;
+            }
+
             var result = RunCropRecommendationModel(input);
+
+            // Option B: Fertilizer dosage recommendation
+            result.FertilizerPlan = _agroDataService.CalculateFertilizer(
+                result.CropName, 
+                input.Nitrogen, 
+                input.Phosphorus, 
+                input.Potassium, 
+                input.CultivationArea
+            );
+
+            // Option F: 3-Season Crop Rotation Calendar
+            result.CropRotation = _agroDataService.GetCropRotationPlan(result.CropName);
+
+            if (input.Mode == "simple")
+            {
+                result.ResolvedDistrict = input.District;
+                result.ResolvedSoilType = char.ToUpper(input.SoilType[0]) + input.SoilType.Substring(1) + " Soil";
+                result.ResolvedWater = char.ToUpper(input.WaterSource[0]) + input.WaterSource.Substring(1);
+            }
+
             ViewBag.PredictionResult = result;
             return View("CropPredictor", input);
         }
@@ -66,8 +124,44 @@ namespace AgriAI.Web.Controllers
                 });
             }
 
+            if (input.Mode == "simple")
+            {
+                var resolved = _agroDataService.ResolveSoilAndClimate(
+                    input.District, 
+                    input.SoilType, 
+                    input.WaterSource, 
+                    input.WaterQuality, 
+                    input.PreviousCrop
+                );
+
+                input.Nitrogen = resolved.Nitrogen;
+                input.Phosphorus = resolved.Phosphorus;
+                input.Potassium = resolved.Potassium;
+                input.Temperature = resolved.Temperature;
+                input.Humidity = resolved.Humidity;
+                input.PhValue = resolved.PhValue;
+                input.Rainfall = resolved.Rainfall;
+            }
+
             var result = RunCropRecommendationModel(input);
+            result.FertilizerPlan = _agroDataService.CalculateFertilizer(
+                result.CropName, 
+                input.Nitrogen, 
+                input.Phosphorus, 
+                input.Potassium, 
+                input.CultivationArea
+            );
+            result.CropRotation = _agroDataService.GetCropRotationPlan(result.CropName);
+
             return Json(new { success = true, result });
+        }
+
+        // GET: /AI/GetDistrictDetails?name=Rajkot
+        [HttpGet]
+        public IActionResult GetDistrictDetails(string name)
+        {
+            var dist = _agroDataService.GetDistrict(name);
+            return Json(new { success = dist != null, district = dist });
         }
 
         // GET: /AI/PricePredictor (Accessible to guests for previewing the interface)

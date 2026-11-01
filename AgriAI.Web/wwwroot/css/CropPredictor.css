@@ -1,11 +1,13 @@
-/* AgriAI Crop Predictor Stylesheet */
+/* AgriAI Modern Crop Predictor Stylesheet */
 
-.crop-predictor-container {
+.crop-predictor-page {
     max-width: 1680px;
     margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1e293b;
 }
 
-/* Green Header Banner (Exact match to Shop Product .marketplace-hero) */
+/* 1. HERO BANNER */
 .crop-predictor-hero {
     background: linear-gradient(135deg, #006653 0%, #047857 100%);
     border-radius: 1.25rem;
@@ -14,244 +16,461 @@
     margin-bottom: 2rem;
     position: relative;
     overflow: hidden;
-    text-align: left;
-    box-shadow: 0 10px 30px rgba(0, 50, 35, 0.05), 0 1px 4px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 10px 30px rgba(0, 50, 35, 0.08);
 }
 
 .crop-predictor-hero::after {
     content: "";
     position: absolute;
-    right: -30px;
-    bottom: -30px;
-    width: 200px;
-    height: 200px;
-    background: rgba(255, 255, 255, 0.06);
+    right: -40px;
+    bottom: -40px;
+    width: 240px;
+    height: 240px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 70%);
     border-radius: 50%;
     pointer-events: none;
 }
 
-.crop-hero-icon {
-    font-size: 2.2rem;
-    margin-bottom: 8px;
+.agri-page-badge {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #f0fdf4;
 }
 
-.crop-hero-title {
-    font-size: 2rem;
+.agri-page-title {
+    font-size: 2.15rem;
     font-weight: 800;
-    letter-spacing: -0.5px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+    letter-spacing: -0.6px;
+    margin-bottom: 8px;
+    color: #ffffff;
 }
 
-.crop-hero-subtitle {
+.agri-page-subtitle {
     font-size: 1rem;
-    color: #e8f5e9;
-    max-width: 680px;
-    margin: 0 auto;
-    line-height: 1.5;
-    font-weight: 400;
+    color: #e6f4ea;
+    max-width: 760px;
+    line-height: 1.55;
+    margin-bottom: 0;
     opacity: 0.95;
 }
 
-/* Quick Presets Bar (Pills / Cards) */
-.crop-presets-wrapper {
+/* 2. MODE SWITCHER TABS */
+.mode-tabs-wrapper {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: 1.5px solid #e2e8f0;
     border-radius: 18px;
-    padding: 16px 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    padding: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
 }
 
-.crop-presets-grid {
+.mode-tabs-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
 
-.soil-preset-chip {
+.mode-tab-btn {
     background: #f8fafc;
-    border: 1.5px solid #e2e8f0;
+    border: 1.5px solid transparent;
     border-radius: 14px;
-    padding: 10px 14px;
+    padding: 14px 18px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    text-align: left;
+    gap: 14px;
     cursor: pointer;
     transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    position: relative;
+    outline: none;
 }
 
-.soil-preset-chip:hover {
+.mode-tab-btn:hover {
+    background: #f1f5f9;
+}
+
+.mode-tab-btn.active {
     background: #ffffff;
     border-color: #006653;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 14px rgba(0, 102, 83, 0.12);
+    box-shadow: 0 6px 18px rgba(0, 102, 83, 0.12);
 }
 
-.soil-preset-chip:active {
-    transform: translateY(0);
-}
-
-.soil-preset-chip .chip-icon {
-    font-size: 1.4rem;
-    line-height: 1;
-    flex-shrink: 0;
-}
-
-.soil-preset-chip .chip-info {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-.soil-preset-chip .chip-title {
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: #1e293b;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.soil-preset-chip .chip-sub {
-    font-size: 0.72rem;
-    font-weight: 500;
+.tab-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #f0fdf4;
     color: #006653;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Main Form Card */
-.crop-form-card {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 32px 28px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.04);
-}
-
-.crop-form-heading {
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1.5px solid #f1f5f9;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-/* Parameter Sections (Nutrients vs Climate) */
-.param-section-box {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 20px 22px;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
     transition: all 0.2s ease;
 }
 
-.param-section-box:hover {
-    border-color: #cbd5e1;
-    background: #fbfcfe;
+.mode-tab-btn.active .tab-icon-wrap {
+    background: #006653;
+    color: #ffffff;
 }
 
-.param-section-header {
+.tab-title {
+    font-size: 0.96rem;
+    font-weight: 800;
+    color: #0f172a;
+    display: block;
+}
+
+.tab-sub {
+    font-size: 0.78rem;
+    color: #64748b;
+    display: block;
+    margin-top: 2px;
+}
+
+.tab-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+/* 3. MAIN FORM CARD */
+.crop-main-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 32px 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.form-section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.section-step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #006653 0%, #047857 100%);
+    color: #ffffff;
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 16px;
-    padding-bottom: 10px;
-    border-bottom: 1px dashed #e2e8f0;
-}
-
-.param-section-title {
-    font-size: 0.88rem;
+    justify-content: center;
     font-weight: 800;
-    color: #1e293b;
-    letter-spacing: 0.2px;
+    font-size: 0.95rem;
+    flex-shrink: 0;
 }
 
-/* Modern Input Groups */
-.crop-input-group {
-    display: flex;
-    flex-direction: column;
+.section-step-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f172a;
 }
 
-.crop-input-label {
-    font-size: 0.84rem;
+.section-step-sub {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* Modern Form Controls */
+.modern-label {
+    font-size: 0.86rem;
     font-weight: 700;
     color: #334155;
     margin-bottom: 6px;
+    display: block;
 }
 
-.crop-input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
-.crop-input-icon {
-    position: absolute;
-    left: 14px;
-    font-size: 1.05rem;
-    pointer-events: none;
-    z-index: 2;
-}
-
-.crop-input-field {
-    width: 100%;
+.modern-select {
     border: 1.5px solid #cbd5e1;
     border-radius: 12px;
-    padding: 11px 85px 11px 42px;
+    padding: 11px 16px;
     font-size: 0.95rem;
     font-weight: 600;
     color: #0f172a;
     background-color: #ffffff;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
 }
 
-.crop-input-field:focus {
+.modern-select:focus {
     border-color: #006653;
     box-shadow: 0 0 0 4px rgba(0, 102, 83, 0.12);
     outline: none;
-    background-color: #ffffff;
 }
 
-.crop-input-field::placeholder {
-    color: #94a3b8;
-    font-weight: 400;
+.modern-input-group {
+    border-radius: 12px;
+    overflow: hidden;
 }
 
-.crop-input-unit {
-    position: absolute;
-    right: 10px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #64748b;
+.modern-input {
+    border: 1.5px solid #cbd5e1;
+    padding: 11px 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+    border-radius: 12px 0 0 12px !important;
+}
+
+.modern-input:focus {
+    border-color: #006653;
+    box-shadow: 0 0 0 4px rgba(0, 102, 83, 0.12);
+    outline: none;
+    z-index: 3;
+}
+
+.modern-unit {
     background: #f1f5f9;
-    padding: 4px 8px;
-    border-radius: 6px;
-    pointer-events: none;
-    border: 1px solid #e2e8f0;
-    z-index: 2;
+    border: 1.5px solid #cbd5e1;
+    border-left: none;
+    color: #475569;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 0 14px;
+    border-radius: 0 12px 12px 0 !important;
 }
 
-/* Run AI Crop Prediction Button */
-.btn-predict-crop {
+/* 4. VISUAL SOIL PHOTO CARDS */
+.soil-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.soil-card {
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.soil-card:hover {
+    border-color: #94a3b8;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.soil-card.selected {
+    border-color: #006653;
+    background: #f0fdf4;
+    box-shadow: 0 8px 24px rgba(0, 102, 83, 0.18);
+    transform: translateY(-2px);
+}
+
+.soil-check-mark {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: bold;
+    z-index: 4;
+    transition: all 0.2s ease;
+}
+
+.soil-card.selected .soil-check-mark {
+    background: #006653;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 102, 83, 0.35);
+}
+
+.soil-card-image-wrap {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+    background: #f8fafc;
+}
+
+.soil-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.soil-card:hover .soil-card-img {
+    transform: scale(1.06);
+}
+
+.soil-type-tag {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.soil-card-body {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.soil-name {
+    font-size: 0.98rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.soil-card.selected .soil-name {
+    color: #006653;
+}
+
+.soil-desc {
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.4;
+    margin-bottom: 10px;
+    flex-grow: 1;
+}
+
+.soil-best-crops {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.crop-tag {
+    background: #f1f5f9;
+    color: #334155;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 6px;
+}
+
+.soil-card.selected .crop-tag {
+    background: #dcfce7;
+    color: #166534;
+}
+
+/* 5. CHOICE PILLS (WATER & QUALITY) */
+.choice-pills-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.choice-pill-btn {
+    flex: 1;
+    min-width: 110px;
+    background: #f8fafc;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.choice-pill-btn:hover {
+    background: #ffffff;
+    border-color: #94a3b8;
+}
+
+.choice-pill-btn.active {
+    background: #f0fdf4;
+    border-color: #006653;
+    color: #006653;
+    box-shadow: 0 4px 12px rgba(0, 102, 83, 0.12);
+}
+
+/* 6. ADVANCED LAB MODE */
+.lab-presets-bar {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 14px;
+    padding: 12px 16px;
+}
+
+.lab-preset-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.lab-preset-btn {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.lab-preset-btn:hover {
+    background: #f0fdf4;
+    border-color: #006653;
+    color: #006653;
+    transform: translateY(-1px);
+}
+
+.lab-field-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.lab-field-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 7. RUN AI PREDICTION BUTTON */
+.btn-run-prediction {
     background: linear-gradient(135deg, #006653 0%, #047857 100%);
     border: none;
     color: #ffffff;
     font-size: 1.05rem;
-    font-weight: 700;
+    font-weight: 800;
     border-radius: 14px;
     padding: 15px 28px;
     width: 100%;
@@ -265,107 +484,436 @@
     letter-spacing: 0.3px;
 }
 
-.btn-predict-crop:hover {
+.btn-run-prediction:hover {
     color: #ffffff;
     transform: translateY(-2px);
     box-shadow: 0 12px 28px rgba(0, 102, 83, 0.38);
     filter: brightness(1.05);
 }
 
-.btn-predict-crop:active {
-    transform: translateY(0);
-}
-
 .pulse-glow {
-    animation: buttonPulse 0.5s ease-in-out;
+    animation: btnGlow 0.5s ease-in-out;
 }
 
-@@keyframes buttonPulse {
+@keyframes btnGlow {
     0% { transform: scale(1); }
-    50% { transform: scale(1.02); box-shadow: 0 0 25px rgba(0, 102, 83, 0.5); }
+    50% { transform: scale(1.015); box-shadow: 0 0 25px rgba(0, 102, 83, 0.5); }
     100% { transform: scale(1); }
 }
 
-/* Prediction Result Card */
-.crop-result-container {
+/* 8. PREDICTION RESULTS CARD */
+.crop-result-card {
     background: #ffffff;
-    border-radius: 20px;
     border: 2px solid #86efac;
-    padding: 32px 28px;
-    box-shadow: 0 10px 30px rgba(34, 197, 94, 0.12);
-    margin-bottom: 30px;
+    border-radius: 22px;
+    padding: 32px 30px;
+    box-shadow: 0 12px 36px rgba(34, 197, 94, 0.12);
     animation: fadeInResult 0.4s ease-out;
 }
 
-@@keyframes fadeInResult {
-    from { opacity: 0; transform: translateY(12px); }
+@keyframes fadeInResult {
+    from { opacity: 0; transform: translateY(14px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-.crop-result-badge {
-    background: #dcfce7;
-    color: #166534;
-    font-weight: 700;
-    font-size: 0.82rem;
-    padding: 6px 14px;
-    border-radius: 20px;
+.match-score-badge {
+    background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.95rem;
+    padding: 7px 18px;
+    border-radius: 30px;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    border: 1px solid #86efac;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
 }
 
-.crop-result-title {
-    font-size: 2rem;
+.crop-photo-wrap {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    margin: 0 auto;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 3px solid #dcfce7;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.crop-photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.crop-photo-badge {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 102, 83, 0.88);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.crop-primary-title {
+    font-size: 2.1rem;
     font-weight: 800;
     color: #0f172a;
-    margin-top: 10px;
+    letter-spacing: -0.5px;
+}
+
+.crop-primary-desc {
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.soil-advice-box {
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    border-radius: 12px;
+    padding: 10px 14px;
+}
+
+.advice-title {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #92400e;
+    margin-bottom: 2px;
+}
+
+.advice-text {
+    font-size: 0.78rem;
+    color: #78350f;
+    line-height: 1.45;
+}
+
+.metric-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 10px;
+    text-align: center;
+}
+
+.metric-label {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.metric-val {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f172a;
+    display: block;
+}
+
+/* 9. OPTION B: FERTILIZER SCHEDULE CARD */
+.fertilizer-card-box {
+    background: #ffffff;
+    border: 1.5px solid #bbf7d0;
+    border-radius: 18px;
+    padding: 22px 24px;
+    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.08);
+}
+
+.fertilizer-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.fert-icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #dcfce7;
+    color: #006653;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.fert-title {
+    font-size: 1.08rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.fert-sub {
+    font-size: 0.8rem;
+    color: #64748b;
+    display: block;
+}
+
+.nutrient-dosage-card {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px 18px;
+    transition: all 0.2s ease;
+}
+
+.nutrient-dosage-card:hover {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+}
+
+.nutrient-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.nutrient-badge {
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 6px;
+}
+
+.nutrient-badge.urea {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.nutrient-badge.dap {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+.nutrient-badge.potash {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.nutrient-symbol {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dosage-main {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.dosage-num {
+    font-size: 1.85rem;
+    font-weight: 900;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.dosage-unit {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #64748b;
+}
+
+.dosage-meta {
+    font-size: 0.76rem;
+    color: #475569;
+    display: flex;
+    justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.dosage-timeline {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px 18px;
+}
+
+.timeline-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.timeline-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.timeline-step {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.step-badge {
+    font-size: 0.68rem;
+    font-weight: 800;
+    background: #f1f5f9;
+    color: #006653;
+    padding: 2px 7px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 6px;
+}
+
+.step-name {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #0f172a;
     margin-bottom: 4px;
+}
+
+.step-desc {
+    font-size: 0.76rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.fert-tip-box {
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.fert-tip-box.bio {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+}
+
+.fert-tip-box.saving {
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+}
+
+/* 10. OPTION F: 12-MONTH CROP ROTATION CALENDAR */
+.rotation-card-box {
+    background: #ffffff;
+    border: 1.5px solid #bfdbfe;
+    border-radius: 18px;
+    padding: 22px 24px;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.08);
+}
+
+.rotation-icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.rotation-pipeline-row {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.crop-result-title .crop-emoji {
-    font-size: 2.4rem;
-}
-
-.crop-match-pill {
-    background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
-    color: #ffffff;
-    font-weight: 800;
-    font-size: 0.95rem;
-    padding: 6px 16px;
-    border-radius: 30px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.crop-stat-box {
+.rotation-season-card {
+    flex: 1;
     background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    border: 1.5px solid #e2e8f0;
     border-radius: 14px;
-    padding: 14px;
+    padding: 16px;
     text-align: center;
-    height: 100%;
+    transition: all 0.2s ease;
 }
 
-.crop-stat-box .label {
-    font-size: 0.75rem;
-    color: #64748b;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
+.rotation-season-card:hover {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
 }
 
-.crop-stat-box .value {
-    font-size: 1.05rem;
-    font-weight: 700;
+.season-badge {
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+.season-badge.kharif {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.season-badge.rabi {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.season-badge.zaid {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.season-crop-name {
+    font-size: 1.15rem;
+    font-weight: 800;
     color: #0f172a;
+    margin-bottom: 2px;
 }
 
+.season-role {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.rotation-arrow {
+    color: #94a3b8;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rotation-benefit-strip {
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 11. SECONDARY ALTERNATIVES */
 .alternative-crop-item {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
@@ -380,79 +928,56 @@
 .alternative-crop-item:hover {
     background: #ffffff;
     border-color: #cbd5e1;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* 12. RESPONSIVE MEDIA QUERIES */
+@media (max-width: 992px) {
+    .soil-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .rotation-pipeline-row {
+        flex-direction: column;
+    }
+    .rotation-arrow {
+        transform: rotate(90deg);
+        margin: -4px 0;
+    }
+    .timeline-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 768px) {
-    .crop-predictor-container {
-        padding: 14px 12px 40px 12px;
-    }
     .crop-predictor-hero {
-        padding: 24px 16px;
-        border-radius: 18px;
-        margin-bottom: 16px;
-    }
-    .crop-hero-title {
-        font-size: 1.4rem;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-    .crop-hero-subtitle {
-        font-size: 0.88rem;
-        line-height: 1.5;
-    }
-    .crop-form-card {
-        padding: 18px 14px;
+        padding: 22px 18px;
         border-radius: 16px;
-        margin-bottom: 20px;
     }
-    .crop-form-heading {
-        font-size: 1.05rem;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-        margin-bottom: 16px;
+    .agri-page-title {
+        font-size: 1.55rem;
     }
-    .crop-input-field {
-        font-size: 16px !important; /* Prevents auto-zoom on mobile safari/chrome */
-        padding: 10px 12px;
-        border-radius: 10px;
+    .mode-tabs-container {
+        grid-template-columns: 1fr;
     }
-    .crop-form-label {
-        font-size: 0.85rem;
-        margin-bottom: 4px;
+    .crop-main-card {
+        padding: 20px 16px;
+        border-radius: 16px;
     }
-    .soil-preset-btn {
-        font-size: 0.76rem;
-        padding: 6px 11px;
+    .soil-cards-grid {
+        grid-template-columns: 1fr;
     }
-    .btn-predict-crop {
-        padding: 13px 18px;
+    .btn-run-prediction {
+        padding: 14px 20px;
         font-size: 1rem;
-        border-radius: 12px;
     }
-    .crop-result-container {
-        padding: 18px 14px;
-        border-radius: 16px;
+    .crop-result-card {
+        padding: 20px 16px;
     }
-    .crop-result-title {
-        font-size: 1.45rem;
-        flex-wrap: wrap;
+    .crop-primary-title {
+        font-size: 1.6rem;
     }
-}
-
-@media (max-width: 576px) {
-    .crop-hero-title {
-        font-size: 1.25rem;
-    }
-    .crop-stat-box {
-        padding: 10px 8px;
-    }
-    .crop-stat-box .value {
-        font-size: 0.95rem;
-    }
-    .crop-match-pill {
-        font-size: 0.82rem;
-        padding: 5px 12px;
+    .fertilizer-card-box,
+    .rotation-card-box {
+        padding: 16px 14px;
     }
 }

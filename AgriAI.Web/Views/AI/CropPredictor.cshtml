@@ -1,342 +1,796 @@
 @model AgriAI.Web.ViewModels.CropPredictorInputModel
 @using AgriAI.Web.ViewModels
+@using AgriAI.Web.Services
 
 @{
-    ViewData["Title"] = "AgriAI Crop Predictor - Machine Learning Soil & Weather Analysis";
+    ViewData["Title"] = "AgriAI Crop Predictor - AI Soil & Climate Crop Intelligence";
     var result = ViewBag.PredictionResult as CropPredictionResult;
+    var districts = ViewBag.Districts as List<DistrictAgroProfile> ?? new List<DistrictAgroProfile>();
+}
+
+@functions {
+    string GetCropImage(string cropName)
+    {
+        if (string.IsNullOrWhiteSpace(cropName)) return "/images/crops/other.jpg";
+        var clean = cropName.Trim().ToLowerInvariant();
+        if (clean.Contains("cotton")) return "/images/crops/cotton.jpg";
+        if (clean.Contains("groundnut") || clean.Contains("peanut")) return "/images/crops/groundnut.jpg";
+        if (clean.Contains("wheat")) return "/images/crops/wheat.jpg";
+        if (clean.Contains("rice") || clean.Contains("paddy")) return "/images/crops/rice.jpg";
+        if (clean.Contains("maize") || clean.Contains("corn")) return "/images/crops/maize.jpg";
+        if (clean.Contains("bajra") || clean.Contains("millet")) return "/images/crops/bajra.jpg";
+        if (clean.Contains("chana") || clean.Contains("chickpea") || clean.Contains("gram")) return "/images/crops/chana.jpg";
+        if (clean.Contains("tuver") || clean.Contains("toor") || clean.Contains("pigeon")) return "/images/crops/tuver.jpg";
+        if (clean.Contains("moong") || clean.Contains("mung")) return "/images/crops/moong.jpg";
+        if (clean.Contains("castor")) return "/images/crops/castor.jpg";
+        if (clean.Contains("mustard")) return "/images/crops/mustard.jpg";
+        if (clean.Contains("soybean") || clean.Contains("soya")) return "/images/crops/soybean.jpg";
+        if (clean.Contains("sugarcane")) return "/images/crops/sugarcane.jpg";
+        if (clean.Contains("sesame") || clean.Contains("til")) return "/images/crops/sesame.jpg";
+        if (clean.Contains("jeera") || clean.Contains("cumin")) return "/images/crops/jeera.jpg";
+        if (clean.Contains("fennel") || clean.Contains("variyali")) return "/images/crops/fennel.jpg";
+        if (clean.Contains("coriander") || clean.Contains("dhana")) return "/images/crops/coriander.jpg";
+        if (clean.Contains("garlic")) return "/images/crops/garlic.jpg";
+        if (clean.Contains("onion")) return "/images/crops/onion.jpg";
+        if (clean.Contains("potato")) return "/images/crops/potato.jpg";
+        if (clean.Contains("tomato")) return "/images/crops/tomato.jpg";
+        if (clean.Contains("chilli")) return "/images/crops/chilli.jpg";
+        if (clean.Contains("mango")) return "/images/crops/mango.jpg";
+        if (clean.Contains("banana")) return "/images/crops/banana.jpg";
+        if (clean.Contains("pomegranate")) return "/images/crops/pomegranate.jpg";
+        return "/images/crops/other.jpg";
+    }
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/CropPredictor.css" asp-append-version="true" />
 }
 
-<div class="container-fluid py-3 px-2 px-md-3 px-xl-4 crop-predictor-container" style="max-width: 1680px;">
+<div class="crop-predictor-page notranslate" translate="no">
+    <div class="container-fluid py-3 px-2 px-md-3 px-xl-4" style="max-width: 1680px;">
 
-    <!-- Top Hero Banner (Matching Exact Layout, Height & Width of Shop Product) -->
-    <div class="crop-predictor-hero shadow-sm">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <div class="agri-page-badge">
-                    <i class="bi bi-cpu"></i>
-                    <span>AI Soil &amp; Crop Intelligence</span>
-                </div>
-                <h1 class="agri-page-title">
-                    AgriAI Crop Predictor
-                </h1>
-                <p class="agri-page-subtitle">
-                    Enter your soil metrics and climate data to get instant, accurate crop recommendations for maximum yield.
-                </p>
-            </div>
-            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-light text-success fw-bold px-4 py-2.5 rounded-pill shadow">
-                    <i class="bi bi-graph-up-arrow me-1"></i> AI Price Predictor
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Presets Bar (Auto-Fill Benchmarks) -->
-    <div class="crop-presets-wrapper mb-4">
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2.5">
-            <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.82rem;">
-                    <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Quick Soil Presets
-                </span>
-                <span class="text-muted small">Select any soil profile to auto-fill laboratory parameters:</span>
-            </div>
-            <span class="badge bg-white text-dark border shadow-xs rounded-pill px-3 py-1.5 small fw-semibold">
-                <i class="bi bi-cpu text-success me-1"></i> 28+ Crops Trained
-            </span>
-        </div>
-
-        <div class="crop-presets-grid">
-            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(90, 42, 43, 20.8, 82.0, 6.5)">
-                <span class="chip-icon">🌾</span>
-                <span class="chip-info">
-                    <span class="chip-title">Alluvial Loam</span>
-                    <span class="chip-sub">Rice &bull; Wheat</span>
-                </span>
-            </button>
-            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(120, 46, 20, 24.0, 79.8, 6.8)">
-                <span class="chip-icon">☁️</span>
-                <span class="chip-info">
-                    <span class="chip-title">Black Regur</span>
-                    <span class="chip-sub">Cotton (Kapas)</span>
-                </span>
-            </button>
-            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(35, 40, 45, 26.0, 60.0, 6.5)">
-                <span class="chip-icon">🥜</span>
-                <span class="chip-info">
-                    <span class="chip-title">Saurashtra Loam</span>
-                    <span class="chip-sub">Groundnut</span>
-                </span>
-            </button>
-            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(40, 30, 30, 21.0, 50.0, 7.2)">
-                <span class="chip-icon">🌿</span>
-                <span class="chip-info">
-                    <span class="chip-title">North Gujarat Arid</span>
-                    <span class="chip-sub">Cumin &bull; Jeera</span>
-                </span>
-            </button>
-            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(40, 68, 80, 19.0, 17.0, 7.3)">
-                <span class="chip-icon">🌱</span>
-                <span class="chip-info">
-                    <span class="chip-title">Winter Heavy Clay</span>
-                    <span class="chip-sub">Chickpea &bull; Chana</span>
-                </span>
-            </button>
-            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(50, 40, 35, 25.0, 60.0, 6.5)">
-                <span class="chip-icon">🍃</span>
-                <span class="chip-info">
-                    <span class="chip-title">Semi-Arid Dryland</span>
-                    <span class="chip-sub">Castor (Divela)</span>
-                </span>
-            </button>
-            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(100, 50, 100, 18.0, 75.0, 5.8)">
-                <span class="chip-icon">🥔</span>
-                <span class="chip-info">
-                    <span class="chip-title">Sandy Alluvial</span>
-                    <span class="chip-sub">Potato &bull; Onion</span>
-                </span>
-            </button>
-            <button type="button" class="soil-preset-chip" onclick="applySoilPreset(20, 20, 40, 22.0, 90.0, 6.4)">
-                <span class="chip-icon">🍎</span>
-                <span class="chip-info">
-                    <span class="chip-title">Horticulture Drip</span>
-                    <span class="chip-sub">Pomegranate</span>
-                </span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Main Soil & Weather Input Form Card -->
-    <div class="crop-form-card mb-4 shadow-sm">
-        <div class="crop-form-heading">
-            <div>
-                <h5 class="fw-bold mb-1 d-flex align-items-center gap-2 text-dark">
-                    <i class="bi bi-sliders2-vertical text-success"></i>
-                    Enter Soil &amp; Climate Parameters
-                </h5>
-                <p class="text-muted small mb-0">Input laboratory soil nutrient levels (N-P-K) and environmental conditions for optimal crop selection.</p>
-            </div>
-            <span class="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-1.5 rounded-pill border border-success border-opacity-25 font-monospace" style="font-size: 0.78rem;">
-                <i class="bi bi-cpu-fill me-1"></i> ML Random Forest V2.4
-            </span>
-        </div>
-
-        <form asp-action="PredictCrop" method="post" id="cropPredictorForm">
-            <!-- Parameter Section 1: Soil Nutrients -->
-            <div class="param-section-box mb-3.5">
-                <div class="param-section-header">
-                    <i class="bi bi-flower1 text-success fs-5"></i>
-                    <h6 class="param-section-title m-0">Soil Macro-Nutrients (N - P - K)</h6>
-                </div>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <div class="crop-input-group">
-                            <label class="crop-input-label" for="inputN">
-                                Nitrogen (N)
-                            </label>
-                            <div class="crop-input-wrapper">
-                                <i class="bi bi-leaf-fill crop-input-icon text-success"></i>
-                                <input type="number" step="any" class="form-control crop-input-field" id="inputN" name="Nitrogen" value="@Model.Nitrogen" placeholder="e.g. 90" required />
-                                <span class="crop-input-unit">Ratio / ppm</span>
-                            </div>
-                        </div>
+        <!-- Hero Header -->
+        <div class="crop-predictor-hero shadow-sm">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="agri-page-badge">
+                        <i class="bi bi-cpu-fill"></i>
+                        <span>AI Soil &amp; Climate Crop Intelligence</span>
                     </div>
-                    <div class="col-md-4">
-                        <div class="crop-input-group">
-                            <label class="crop-input-label" for="inputP">
-                                Phosphorus (P)
-                            </label>
-                            <div class="crop-input-wrapper">
-                                <i class="bi bi-sun-fill crop-input-icon text-warning"></i>
-                                <input type="number" step="any" class="form-control crop-input-field" id="inputP" name="Phosphorus" value="@Model.Phosphorus" placeholder="e.g. 42" required />
-                                <span class="crop-input-unit">Ratio / ppm</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="crop-input-group">
-                            <label class="crop-input-label" for="inputK">
-                                Potassium (K)
-                            </label>
-                            <div class="crop-input-wrapper">
-                                <i class="bi bi-gem crop-input-icon text-danger"></i>
-                                <input type="number" step="any" class="form-control crop-input-field" id="inputK" name="Potassium" value="@Model.Potassium" placeholder="e.g. 43" required />
-                                <span class="crop-input-unit">Ratio / ppm</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Parameter Section 2: Climate & Soil Chemistry -->
-            <div class="param-section-box mb-4">
-                <div class="param-section-header">
-                    <i class="bi bi-cloud-sun-fill text-primary fs-5"></i>
-                    <h6 class="param-section-title m-0">Climate &amp; Environmental Factors</h6>
-                </div>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <div class="crop-input-group">
-                            <label class="crop-input-label" for="inputTemp">
-                                Average Temperature
-                            </label>
-                            <div class="crop-input-wrapper">
-                                <i class="bi bi-thermometer-half crop-input-icon text-danger"></i>
-                                <input type="number" step="any" class="form-control crop-input-field" id="inputTemp" name="Temperature" value="@Model.Temperature" placeholder="e.g. 20.8" required />
-                                <span class="crop-input-unit">°C</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="crop-input-group">
-                            <label class="crop-input-label" for="inputHumidity">
-                                Relative Humidity
-                            </label>
-                            <div class="crop-input-wrapper">
-                                <i class="bi bi-droplet-half crop-input-icon text-primary"></i>
-                                <input type="number" step="any" class="form-control crop-input-field" id="inputHumidity" name="Humidity" value="@Model.Humidity" placeholder="e.g. 82.0" required />
-                                <span class="crop-input-unit">%</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="crop-input-group">
-                            <label class="crop-input-label" for="inputPh">
-                                Soil pH Value
-                            </label>
-                            <div class="crop-input-wrapper">
-                                <i class="bi bi-speedometer2 crop-input-icon text-info"></i>
-                                <input type="number" step="any" min="0" max="14" class="form-control crop-input-field" id="inputPh" name="PhValue" value="@Model.PhValue" placeholder="e.g. 6.5" required />
-                                <span class="crop-input-unit">pH (0-14)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Submit Button -->
-            <button type="submit" class="btn-predict-crop" id="btnPredictSubmit">
-                <i class="bi bi-stars fs-5"></i>
-                <span>Run AI Crop Recommendation</span>
-            </button>
-        </form>
-    </div>
-
-    <!-- Prediction Results Section (Displays on Result) -->
-    @if (result != null)
-    {
-        <div class="crop-result-container" id="predictionResultCard">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-                <div class="crop-result-badge">
-                    <i class="bi bi-patch-check-fill text-success"></i> AI Recommendation Found
-                </div>
-                <div class="crop-match-pill">
-                    <i class="bi bi-stars"></i> @result.MatchScore% Optimal Match
-                </div>
-            </div>
-
-            <div class="row align-items-center g-4 mb-4">
-                <div class="col-md-7">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-4 bg-success bg-opacity-10 d-flex align-items-center justify-content-center p-3 border border-success border-opacity-25" style="width: 80px; height: 80px; font-size: 2.8rem;">
-                            @result.Emoji
-                        </div>
-                        <div>
-                            <span class="badge bg-secondary bg-opacity-10 text-secondary fw-semibold small mb-1">
-                                @result.Category
-                            </span>
-                            <h2 class="crop-result-title m-0">@result.CropName</h2>
-                            <strong class="text-success fs-5">@result.GujaratiName</strong>
-                        </div>
-                    </div>
-                    <p class="text-muted small mt-3 mb-0 leading-relaxed">
-                        @result.Description
+                    <h1 class="agri-page-title">
+                        AgriAI Crop Predictor
+                    </h1>
+                    <p class="agri-page-subtitle">
+                        Select your Gujarat district, farmland soil type, and irrigation source to discover the highest yielding and most profitable crops with scientific fertilizer dosages.
                     </p>
                 </div>
-
-                <div class="col-md-5">
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <div class="crop-stat-box">
-                                <div class="label">Sowing Season</div>
-                                <div class="value text-success">@result.Season</div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="crop-stat-box">
-                                <div class="label">Expected Yield</div>
-                                <div class="value">@result.ExpectedYield</div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="crop-stat-box">
-                                <div class="label">Growth Period</div>
-                                <div class="value">@result.GrowthDuration</div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="crop-stat-box">
-                                <div class="label">Avg APMC Rate</div>
-                                <div class="value text-success">₹@result.EstimatedPricePerQtl.ToString("N0") / Qtl</div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-light text-success fw-bold px-4 py-2.5 rounded-pill shadow-sm">
+                        <i class="bi bi-graph-up-arrow me-1.5"></i> AI Market Price Predictor
+                    </a>
                 </div>
             </div>
+        </div>
 
-            <!-- Agronomy Soil & Care Advice -->
-            <div class="p-3.5 bg-light rounded-4 border mb-4">
-                <h6 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
-                    <i class="bi bi-lightbulb-fill text-warning"></i> Soil Care &amp; Best Practices
-                </h6>
-                <p class="text-muted small mb-0">
-                    @result.SoilAdvice
-                </p>
-            </div>
-
-            <!-- Top 3 Alternative Crops -->
-            @if (result.TopAlternatives.Any())
-            {
-                <div class="mb-4">
-                    <h6 class="fw-bold text-dark mb-2">Alternative Crop Recommendations:</h6>
-                    <div class="row g-2">
-                        @foreach (var alt in result.TopAlternatives)
-                        {
-                            <div class="col-md-4">
-                                <div class="alternative-crop-item">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="fs-4">@alt.Emoji</span>
-                                        <div>
-                                            <strong class="text-dark d-block small">@alt.CropName</strong>
-                                            <span class="text-muted" style="font-size: 0.72rem;">@alt.Category</span>
-                                        </div>
-                                    </div>
-                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold">@alt.MatchScore%</span>
-                                </div>
-                            </div>
-                        }
+        <!-- Mode Switcher Tabs -->
+        <div class="mode-tabs-wrapper mb-4">
+            <div class="mode-tabs-container">
+                <button type="button" 
+                        class="mode-tab-btn @(Model.Mode != "advanced" ? "active" : "")" 
+                        id="tabFarmerMode" 
+                        onclick="switchPredictorMode('simple')">
+                    <div class="tab-icon-wrap">
+                        <i class="bi bi-geo-alt-fill"></i>
                     </div>
-                </div>
-            }
+                    <div class="tab-text-wrap text-start">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="tab-title">Quick Farmer Mode</span>
+                            <span class="badge bg-success text-white rounded-pill px-2 py-0.5 tab-badge">Recommended</span>
+                        </div>
+                        <span class="tab-sub">Select District, 4 Visual Soil Photos &amp; Water Facility (No Soil Test Needed)</span>
+                    </div>
+                </button>
 
-            <!-- Action CTAs -->
-            <div class="d-flex flex-wrap gap-2 pt-2 border-top">
-                <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-sm btn-success rounded-pill fw-bold px-3.5 py-2 shadow-sm" style="background-color: #006653; border-color: #006653;">
-                    <i class="bi bi-graph-up me-1"></i> Forecast Price for @result.CropName
-                </a>
-                <a asp-controller="Product" asp-action="Index" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-3.5 py-2">
-                    <i class="bi bi-basket2 me-1"></i> Shop Quality Seeds &amp; Fertilizers
-                </a>
-                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold px-3 py-2 ms-auto" onclick="document.getElementById('inputN').focus();">
-                    <i class="bi bi-arrow-repeat me-1"></i> Test Another Sample
+                <button type="button" 
+                        class="mode-tab-btn @(Model.Mode == "advanced" ? "active" : "")" 
+                        id="tabLabMode" 
+                        onclick="switchPredictorMode('advanced')">
+                    <div class="tab-icon-wrap">
+                        <i class="bi bi-sliders2"></i>
+                    </div>
+                    <div class="tab-text-wrap text-start">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="tab-title">Advanced Soil Lab Mode</span>
+                            <span class="badge bg-light text-dark border rounded-pill px-2 py-0.5 tab-badge">Precision</span>
+                        </div>
+                        <span class="tab-sub">Direct Soil Health Card Metrics (N-P-K, pH, Temperature &amp; Rainfall)</span>
+                    </div>
                 </button>
             </div>
         </div>
-    }
 
+        <!-- Main Form Card -->
+        <div class="crop-main-card shadow-sm mb-4">
+            <form asp-action="PredictCrop" method="post" id="cropPredictorForm">
+                <!-- Hidden State Inputs -->
+                <input type="hidden" name="Mode" id="formModeInput" value="@Model.Mode" />
+                <input type="hidden" name="SoilType" id="formSoilTypeInput" value="@Model.SoilType" />
+                <input type="hidden" name="WaterSource" id="formWaterSourceInput" value="@Model.WaterSource" />
+                <input type="hidden" name="WaterQuality" id="formWaterQualityInput" value="@Model.WaterQuality" />
+
+                <!-- 1. FARMER MODE SECTION -->
+                <div id="sectionFarmerMode" class="@(Model.Mode == "advanced" ? "d-none" : "")">
+                    <!-- Step 1: Location & Land Area -->
+                    <div class="form-section-header">
+                        <div class="section-step-num">1</div>
+                        <div>
+                            <h5 class="section-step-title mb-0">Select Farmland Location &amp; Cultivation Area</h5>
+                            <p class="section-step-sub mb-0">AI automatically matches local rainfall, temperature, and agro-climatic zone data.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-7">
+                            <label class="modern-label" for="selectDistrict">
+                                <i class="bi bi-geo-alt text-success me-1"></i> Gujarat District
+                            </label>
+                            <div class="position-relative">
+                                <select class="form-select modern-select" id="selectDistrict" name="District" onchange="onDistrictSelected(this.value)">
+                                    @foreach (var dist in districts)
+                                    {
+                                        <option value="@dist.Name" selected="@(Model.District.Equals(dist.Name, StringComparison.OrdinalIgnoreCase))">
+                                            @dist.Name &bull; @dist.Region Region (Avg Rain: @dist.AvgRainfallMm mm)
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-5">
+                            <label class="modern-label" for="inputCultivationArea">
+                                <i class="bi bi-aspect-ratio text-success me-1"></i> Land Area
+                            </label>
+                            <div class="input-group modern-input-group">
+                                <input type="number" 
+                                       step="0.5" 
+                                       min="0.5" 
+                                       max="1000" 
+                                       class="form-control modern-input" 
+                                       id="inputCultivationArea" 
+                                       name="CultivationArea" 
+                                       value="@Model.CultivationArea" 
+                                       placeholder="e.g. 5.0" 
+                                       oninput="updateAreaConversion(this.value)" 
+                                       required />
+                                <span class="input-group-text modern-unit" id="areaConversionDisplay">
+                                    Acres (≈ @((Model.CultivationArea * 2.4).ToString("0.#")) Vigha)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Visual Soil Type Selection (Real Photo Cards) -->
+                    <div class="form-section-header mt-4">
+                        <div class="section-step-num">2</div>
+                        <div>
+                            <h5 class="section-step-title mb-0">Select Farmland Soil Type</h5>
+                            <p class="section-step-sub mb-0">Click on the soil photograph that matches your field soil texture.</p>
+                        </div>
+                    </div>
+
+                    <div class="soil-cards-grid mb-4">
+                        <!-- Soil Card 1: Black Regur -->
+                        <div class="soil-card @(Model.SoilType == "black" ? "selected" : "")" 
+                             onclick="selectSoilType('black', this)">
+                            <div class="soil-check-mark">
+                                <i class="bi bi-check-lg"></i>
+                            </div>
+                            <div class="soil-card-image-wrap">
+                                <img src="/images/soil/black.jpg" alt="Black Regur Soil" class="soil-card-img" />
+                                <span class="soil-type-tag">Black Clay</span>
+                            </div>
+                            <div class="soil-card-body">
+                                <h6 class="soil-name">Black Regur Soil</h6>
+                                <p class="soil-desc">Deep clay soil with exceptional moisture retention. Rich in iron, calcium, and magnesium.</p>
+                                <div class="soil-best-crops">
+                                    <span class="crop-tag">Cotton</span>
+                                    <span class="crop-tag">Castor</span>
+                                    <span class="crop-tag">Wheat</span>
+                                    <span class="crop-tag">Sugarcane</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Soil Card 2: Goradu / Loamy -->
+                        <div class="soil-card @(Model.SoilType == "loamy" ? "selected" : "")" 
+                             onclick="selectSoilType('loamy', this)">
+                            <div class="soil-check-mark">
+                                <i class="bi bi-check-lg"></i>
+                            </div>
+                            <div class="soil-card-image-wrap">
+                                <img src="/images/soil/loamy.jpg" alt="Goradu Loam Soil" class="soil-card-img" />
+                                <span class="soil-type-tag">Loamy Silt</span>
+                            </div>
+                            <div class="soil-card-body">
+                                <h6 class="soil-name">Goradu / Loam Soil</h6>
+                                <p class="soil-desc">Well-drained balanced soil rich in organic matter. Optimal aeration and root penetration.</p>
+                                <div class="soil-best-crops">
+                                    <span class="crop-tag">Groundnut</span>
+                                    <span class="crop-tag">Maize</span>
+                                    <span class="crop-tag">Vegetables</span>
+                                    <span class="crop-tag">Pulses</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Soil Card 3: Sandy Arid -->
+                        <div class="soil-card @(Model.SoilType == "sandy" ? "selected" : "")" 
+                             onclick="selectSoilType('sandy', this)">
+                            <div class="soil-check-mark">
+                                <i class="bi bi-check-lg"></i>
+                            </div>
+                            <div class="soil-card-image-wrap">
+                                <img src="/images/soil/sandy.jpg" alt="Sandy Arid Soil" class="soil-card-img" />
+                                <span class="soil-type-tag">Sandy Arid</span>
+                            </div>
+                            <div class="soil-card-body">
+                                <h6 class="soil-name">Sandy / Arid Soil</h6>
+                                <p class="soil-desc">Light coarse sandy loam found in North Gujarat and Kutch. Fast draining, ideal for spice crops.</p>
+                                <div class="soil-best-crops">
+                                    <span class="crop-tag">Cumin (Jeera)</span>
+                                    <span class="crop-tag">Fennel</span>
+                                    <span class="crop-tag">Mustard</span>
+                                    <span class="crop-tag">Bajra</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Soil Card 4: Alluvial Clay -->
+                        <div class="soil-card @(Model.SoilType == "alluvial" ? "selected" : "")" 
+                             onclick="selectSoilType('alluvial', this)">
+                            <div class="soil-check-mark">
+                                <i class="bi bi-check-lg"></i>
+                            </div>
+                            <div class="soil-card-image-wrap">
+                                <img src="/images/soil/alluvial.jpg" alt="Alluvial Clay Soil" class="soil-card-img" />
+                                <span class="soil-type-tag">Alluvial Clay</span>
+                            </div>
+                            <div class="soil-card-body">
+                                <h6 class="soil-name">Alluvial Clay Soil</h6>
+                                <p class="soil-desc">Fertile riverbed silt from Narmada and Tapi basins. High potash and phosphorus fertility.</p>
+                                <div class="soil-best-crops">
+                                    <span class="crop-tag">Paddy (Rice)</span>
+                                    <span class="crop-tag">Sugarcane</span>
+                                    <span class="crop-tag">Banana</span>
+                                    <span class="crop-tag">Wheat</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Irrigation Source & Field History -->
+                    <div class="form-section-header mt-4">
+                        <div class="section-step-num">3</div>
+                        <div>
+                            <h5 class="section-step-title mb-0">Irrigation Facility &amp; Field History</h5>
+                            <p class="section-step-sub mb-0">Specifies water availability and natural residual nitrogen from prior crops.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <!-- Water Source -->
+                        <div class="col-lg-5">
+                            <label class="modern-label mb-2">
+                                <i class="bi bi-droplet-half text-primary me-1"></i> Water Facility
+                            </label>
+                            <div class="choice-pills-row">
+                                <button type="button" 
+                                        class="choice-pill-btn @(Model.WaterSource == "borewell" ? "active" : "")" 
+                                        onclick="selectWaterSource('borewell', this)">
+                                    <i class="bi bi-water"></i>
+                                    <span>Borewell / Tubewell</span>
+                                </button>
+                                <button type="button" 
+                                        class="choice-pill-btn @(Model.WaterSource == "canal" ? "active" : "")" 
+                                        onclick="selectWaterSource('canal', this)">
+                                    <i class="bi bi-tsunami"></i>
+                                    <span>Canal / Surface</span>
+                                </button>
+                                <button type="button" 
+                                        class="choice-pill-btn @(Model.WaterSource == "rainfed" ? "active" : "")" 
+                                        onclick="selectWaterSource('rainfed', this)">
+                                    <i class="bi bi-cloud-rain"></i>
+                                    <span>Rainfed Only</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Water Quality -->
+                        <div class="col-lg-3 col-md-6">
+                            <label class="modern-label mb-2">
+                                <i class="bi bi-shield-check text-info me-1"></i> Water Quality
+                            </label>
+                            <div class="choice-pills-row">
+                                <button type="button" 
+                                        class="choice-pill-btn @(Model.WaterQuality != "saline" ? "active" : "")" 
+                                        onclick="selectWaterQuality('fresh', this)">
+                                    <i class="bi bi-cup-straw"></i>
+                                    <span>Sweet / Fresh</span>
+                                </button>
+                                <button type="button" 
+                                        class="choice-pill-btn @(Model.WaterQuality == "saline" ? "active" : "")" 
+                                        onclick="selectWaterQuality('saline', this)">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <span>Hard / Saline</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Previous Crop -->
+                        <div class="col-lg-4 col-md-6">
+                            <label class="modern-label mb-2" for="selectPreviousCrop">
+                                <i class="bi bi-arrow-repeat text-success me-1"></i> Previous Crop Harvested
+                            </label>
+                            <select class="form-select modern-select" id="selectPreviousCrop" name="PreviousCrop">
+                                <option value="None" selected="@(Model.PreviousCrop == "None")">None (Virgin Field / Fallow Land)</option>
+                                <option value="Groundnut" selected="@(Model.PreviousCrop == "Groundnut")">Groundnut (+20 kg Nitrogen Enriched)</option>
+                                <option value="Chana" selected="@(Model.PreviousCrop == "Chana")">Chana / Gram (+25 kg Legume Nitrogen)</option>
+                                <option value="Cotton" selected="@(Model.PreviousCrop == "Cotton")">Cotton (Standard Residual)</option>
+                                <option value="Wheat" selected="@(Model.PreviousCrop == "Wheat")">Wheat (Standard Residual)</option>
+                                <option value="Paddy" selected="@(Model.PreviousCrop == "Paddy")">Paddy / Rice (Heavy Moisture Residue)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. ADVANCED LAB MODE SECTION -->
+                <div id="sectionLabMode" class="@(Model.Mode == "advanced" ? "" : "d-none")">
+                    <!-- Quick Benchmark Presets -->
+                    <div class="lab-presets-bar mb-4">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                            <span class="small fw-bold text-dark d-flex align-items-center gap-1.5">
+                                <i class="bi bi-lightning-charge-fill text-warning"></i>
+                                Quick Benchmark Fillers:
+                            </span>
+                            <span class="badge bg-light text-muted border small">Click any preset to autofill lab inputs</span>
+                        </div>
+                        <div class="lab-preset-pills">
+                            <button type="button" class="lab-preset-btn" onclick="applyLabPreset(90, 42, 43, 6.5, 20.8, 82.0, 150)">
+                                Alluvial Loam (Rice/Wheat)
+                            </button>
+                            <button type="button" class="lab-preset-btn" onclick="applyLabPreset(120, 46, 20, 6.8, 24.0, 79.8, 650)">
+                                Black Regur (Cotton)
+                            </button>
+                            <button type="button" class="lab-preset-btn" onclick="applyLabPreset(35, 40, 45, 6.5, 26.0, 60.0, 550)">
+                                Saurashtra Loam (Groundnut)
+                            </button>
+                            <button type="button" class="lab-preset-btn" onclick="applyLabPreset(40, 30, 30, 7.2, 21.0, 50.0, 350)">
+                                North Gujarat Arid (Cumin / Jeera)
+                            </button>
+                            <button type="button" class="lab-preset-btn" onclick="applyLabPreset(40, 68, 80, 7.3, 19.0, 17.0, 200)">
+                                Clay Loam (Winter Gram / Chana)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Lab Parameter Inputs (Modern Flat Grid) -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4 col-sm-6">
+                            <div class="lab-field-card">
+                                <label class="lab-field-label" for="inputN">
+                                    <i class="bi bi-leaf-fill text-success"></i> Nitrogen (N)
+                                </label>
+                                <div class="input-group modern-input-group">
+                                    <input type="number" step="any" class="form-control modern-input" id="inputN" name="Nitrogen" value="@Model.Nitrogen" placeholder="e.g. 90" />
+                                    <span class="input-group-text modern-unit">ppm</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 col-sm-6">
+                            <div class="lab-field-card">
+                                <label class="lab-field-label" for="inputP">
+                                    <i class="bi bi-sun-fill text-warning"></i> Phosphorus (P)
+                                </label>
+                                <div class="input-group modern-input-group">
+                                    <input type="number" step="any" class="form-control modern-input" id="inputP" name="Phosphorus" value="@Model.Phosphorus" placeholder="e.g. 42" />
+                                    <span class="input-group-text modern-unit">ppm</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 col-sm-6">
+                            <div class="lab-field-card">
+                                <label class="lab-field-label" for="inputK">
+                                    <i class="bi bi-gem text-danger"></i> Potassium (K)
+                                </label>
+                                <div class="input-group modern-input-group">
+                                    <input type="number" step="any" class="form-control modern-input" id="inputK" name="Potassium" value="@Model.Potassium" placeholder="e.g. 43" />
+                                    <span class="input-group-text modern-unit">ppm</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-sm-6">
+                            <div class="lab-field-card">
+                                <label class="lab-field-label" for="inputPh">
+                                    <i class="bi bi-speedometer2 text-info"></i> Soil pH Value
+                                </label>
+                                <div class="input-group modern-input-group">
+                                    <input type="number" step="any" min="0" max="14" class="form-control modern-input" id="inputPh" name="PhValue" value="@Model.PhValue" placeholder="e.g. 6.5" />
+                                    <span class="input-group-text modern-unit">0-14</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-sm-6">
+                            <div class="lab-field-card">
+                                <label class="lab-field-label" for="inputTemp">
+                                    <i class="bi bi-thermometer-half text-danger"></i> Temperature
+                                </label>
+                                <div class="input-group modern-input-group">
+                                    <input type="number" step="any" class="form-control modern-input" id="inputTemp" name="Temperature" value="@Model.Temperature" placeholder="e.g. 25.0" />
+                                    <span class="input-group-text modern-unit">°C</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-sm-6">
+                            <div class="lab-field-card">
+                                <label class="lab-field-label" for="inputHumidity">
+                                    <i class="bi bi-droplet text-primary"></i> Humidity
+                                </label>
+                                <div class="input-group modern-input-group">
+                                    <input type="number" step="any" class="form-control modern-input" id="inputHumidity" name="Humidity" value="@Model.Humidity" placeholder="e.g. 70.0" />
+                                    <span class="input-group-text modern-unit">%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-sm-6">
+                            <div class="lab-field-card">
+                                <label class="lab-field-label" for="inputRainfall">
+                                    <i class="bi bi-cloud-rain-heavy text-primary"></i> Annual Rainfall
+                                </label>
+                                <div class="input-group modern-input-group">
+                                    <input type="number" step="any" class="form-control modern-input" id="inputRainfall" name="Rainfall" value="@Model.Rainfall" placeholder="e.g. 600" />
+                                    <span class="input-group-text modern-unit">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Run AI Prediction Button -->
+                <div class="pt-3 border-top">
+                    <button type="submit" class="btn-run-prediction" id="btnPredictSubmit">
+                        <i class="bi bi-stars"></i>
+                        <span>Run AI Crop Intelligence Analysis</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- PREDICTION RESULTS SECTION -->
+        @if (result != null)
+        {
+            <div class="crop-result-card shadow-sm mb-5" id="predictionResultCard">
+                <!-- Result Status Header -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-3 mb-4 border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-1.5">
+                            <i class="bi bi-patch-check-fill"></i> AI Recommendation Complete
+                        </span>
+                        @if (!string.IsNullOrEmpty(result.ResolvedDistrict))
+                        {
+                            <span class="badge bg-light text-dark border rounded-pill px-3 py-1.5 small">
+                                Farmland: @result.ResolvedDistrict &bull; @result.ResolvedSoilType &bull; @result.ResolvedWater
+                            </span>
+                        }
+                    </div>
+                    <div class="match-score-badge">
+                        <i class="bi bi-trophy-fill"></i> @result.MatchScore% Optimal Suitability
+                    </div>
+                </div>
+
+                <!-- Primary Recommended Crop Highlight -->
+                <div class="row align-items-center g-4 mb-4">
+                    <div class="col-lg-3 col-md-4 text-center">
+                        <div class="crop-photo-wrap">
+                            <img src="@GetCropImage(result.CropName)" alt="@result.CropName" class="crop-photo-img" />
+                            <span class="crop-photo-badge">@result.Category</span>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-5 col-md-8">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="fs-4">@result.Emoji</span>
+                            <h2 class="crop-primary-title mb-0">@result.CropName</h2>
+                        </div>
+                        <p class="crop-primary-desc text-muted mb-3">
+                            @result.Description
+                        </p>
+                        <div class="soil-advice-box">
+                            <div class="advice-title">
+                                <i class="bi bi-lightbulb-fill text-warning me-1"></i> Soil Suitability Advisory
+                            </div>
+                            <p class="advice-text mb-0">
+                                @result.SoilAdvice
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-12">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="metric-box">
+                                    <span class="metric-label">Sowing Season</span>
+                                    <span class="metric-val text-success">@result.Season</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="metric-box">
+                                    <span class="metric-label">Expected Yield</span>
+                                    <span class="metric-val">@result.ExpectedYield</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="metric-box">
+                                    <span class="metric-label">Growth Duration</span>
+                                    <span class="metric-val">@result.GrowthDuration</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="metric-box">
+                                    <span class="metric-label">Avg Mandi Price</span>
+                                    <span class="metric-val text-success">₹@result.EstimatedPricePerQtl.ToString("N0") / Qtl</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OPTION B: SCIENTIFIC FERTILIZER DOSAGE PLAN -->
+                @if (result.FertilizerPlan != null)
+                {
+                    <div class="fertilizer-card-box mb-4">
+                        <div class="fertilizer-card-header">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fert-icon-wrap">
+                                    <i class="bi bi-prescription2"></i>
+                                </span>
+                                <div>
+                                    <h5 class="fert-title mb-0">Scientific Fertilizer Dosage Schedule</h5>
+                                    <span class="fert-sub">
+                                        Custom calculated for @result.Input.CultivationArea Acres (≈ @((result.Input.CultivationArea * 2.4).ToString("0.#")) Gujarat Vigha)
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="badge bg-success text-white rounded-pill px-3 py-1.5 fw-bold small">
+                                Recommended Schedule
+                            </span>
+                        </div>
+
+                        <!-- 3 Nutrient Dosages (Urea, DAP, Potash) -->
+                        <div class="row g-3 mb-4">
+                            <!-- Urea -->
+                            <div class="col-md-4">
+                                <div class="nutrient-dosage-card">
+                                    <div class="nutrient-header">
+                                        <span class="nutrient-badge urea">Urea (46% N)</span>
+                                        <span class="nutrient-symbol">N</span>
+                                    </div>
+                                    <div class="dosage-main">
+                                        <span class="dosage-num">@result.FertilizerPlan.UreaKgPerAcre</span>
+                                        <span class="dosage-unit">kg / Acre</span>
+                                    </div>
+                                    <div class="dosage-meta">
+                                        <span>≈ <strong>@result.FertilizerPlan.UreaKgPerVigha kg / Vigha</strong></span>
+                                        <span>Total: <strong>@(Math.Round(result.FertilizerPlan.UreaKgPerAcre * result.Input.CultivationArea, 1)) kg</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- DAP -->
+                            <div class="col-md-4">
+                                <div class="nutrient-dosage-card">
+                                    <div class="nutrient-header">
+                                        <span class="nutrient-badge dap">DAP (18-46-0)</span>
+                                        <span class="nutrient-symbol">P</span>
+                                    </div>
+                                    <div class="dosage-main">
+                                        <span class="dosage-num">@result.FertilizerPlan.DapKgPerAcre</span>
+                                        <span class="dosage-unit">kg / Acre</span>
+                                    </div>
+                                    <div class="dosage-meta">
+                                        <span>≈ <strong>@result.FertilizerPlan.DapKgPerVigha kg / Vigha</strong></span>
+                                        <span>Total: <strong>@(Math.Round(result.FertilizerPlan.DapKgPerAcre * result.Input.CultivationArea, 1)) kg</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Potash / MOP -->
+                            <div class="col-md-4">
+                                <div class="nutrient-dosage-card">
+                                    <div class="nutrient-header">
+                                        <span class="nutrient-badge potash">MOP / Potash (60% K)</span>
+                                        <span class="nutrient-symbol">K</span>
+                                    </div>
+                                    <div class="dosage-main">
+                                        <span class="dosage-num">@result.FertilizerPlan.PotashKgPerAcre</span>
+                                        <span class="dosage-unit">kg / Acre</span>
+                                    </div>
+                                    <div class="dosage-meta">
+                                        <span>≈ <strong>@result.FertilizerPlan.PotashKgPerVigha kg / Vigha</strong></span>
+                                        <span>Total: <strong>@(Math.Round(result.FertilizerPlan.PotashKgPerAcre * result.Input.CultivationArea, 1)) kg</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Split Application Schedule Timeline -->
+                        <div class="dosage-timeline mb-3">
+                            <h6 class="timeline-title mb-3">
+                                <i class="bi bi-calendar2-week text-success me-1.5"></i>
+                                Application Stages &amp; Split Timing:
+                            </h6>
+                            <div class="timeline-grid">
+                                <div class="timeline-step">
+                                    <div class="step-badge">Stage 1</div>
+                                    <div class="step-name">Basal Dose (At Sowing)</div>
+                                    <div class="step-desc">@result.FertilizerPlan.SowingBaseDose</div>
+                                </div>
+                                <div class="timeline-step">
+                                    <div class="step-badge">Stage 2</div>
+                                    <div class="step-name">Top Dressing (30 Days)</div>
+                                    <div class="step-desc">@result.FertilizerPlan.TopDressingStage1</div>
+                                </div>
+                                <div class="timeline-step">
+                                    <div class="step-badge">Stage 3</div>
+                                    <div class="step-name">Top Dressing (60 Days)</div>
+                                    <div class="step-desc">@result.FertilizerPlan.TopDressingStage2</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bio-Fertilizer & Cost Saving Tips -->
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <div class="fert-tip-box bio">
+                                    <i class="bi bi-shield-fill-check text-success"></i>
+                                    <div>
+                                        <strong>Bio-Fertilizer &amp; Organic Enrichment:</strong>
+                                        <p class="mb-0 small text-muted">@result.FertilizerPlan.BioFertilizerAdvice</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="fert-tip-box saving">
+                                    <i class="bi bi-piggy-bank-fill text-warning"></i>
+                                    <div>
+                                        <strong>Farmer Cost-Saving Tip:</strong>
+                                        <p class="mb-0 small text-muted">@result.FertilizerPlan.CostSavingTip</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- OPTION F: 12-MONTH MULTI-SEASON CROP ROTATION CALENDAR -->
+                @if (result.CropRotation != null)
+                {
+                    <div class="rotation-card-box mb-4">
+                        <div class="fertilizer-card-header">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="rotation-icon-wrap">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </span>
+                                <div>
+                                    <h5 class="fert-title mb-0">12-Month Multi-Season Crop Rotation Cycle</h5>
+                                    <span class="fert-sub">Optimized sequence to break pest cycles, prevent soil depletion, and sustain yields.</span>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-1.5 rounded-pill small">
+                                    @result.CropRotation.NitrogenBalance
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- 3-Season Visual Sequence -->
+                        <div class="rotation-pipeline-row mb-3">
+                            <!-- Kharif -->
+                            <div class="rotation-season-card">
+                                <div class="season-badge kharif">
+                                    <i class="bi bi-cloud-rain me-1"></i> Kharif (Monsoon)
+                                </div>
+                                <div class="season-crop-name">@result.CropRotation.KharifCrop</div>
+                                <div class="season-role">Primary Cash / Base Crop</div>
+                            </div>
+
+                            <div class="rotation-arrow">
+                                <i class="bi bi-arrow-right"></i>
+                            </div>
+
+                            <!-- Rabi -->
+                            <div class="rotation-season-card">
+                                <div class="season-badge rabi">
+                                    <i class="bi bi-snow me-1"></i> Rabi (Winter)
+                                </div>
+                                <div class="season-crop-name">@result.CropRotation.RabiCrop</div>
+                                <div class="season-role">Residual Moisture Crop</div>
+                            </div>
+
+                            <div class="rotation-arrow">
+                                <i class="bi bi-arrow-right"></i>
+                            </div>
+
+                            <!-- Zaid -->
+                            <div class="rotation-season-card">
+                                <div class="season-badge zaid">
+                                    <i class="bi bi-brightness-high me-1"></i> Zaid (Summer)
+                                </div>
+                                <div class="season-crop-name">@result.CropRotation.ZaidCrop</div>
+                                <div class="season-role">Soil Restoring Legume / Green Manure</div>
+                            </div>
+                        </div>
+
+                        <!-- Rationale & Soil Health Strip -->
+                        <div class="rotation-benefit-strip">
+                            <i class="bi bi-info-circle-fill text-primary fs-5 flex-shrink-0"></i>
+                            <div class="small">
+                                <strong class="text-dark">Agronomic Rationale:</strong>
+                                <span class="text-muted"> @result.CropRotation.RotationBenefit</span>
+                                <span class="ms-2 badge bg-white text-success border">Status: @result.CropRotation.SoilHealthStatus</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Alternative Crop Recommendations -->
+                @if (result.TopAlternatives != null && result.TopAlternatives.Any())
+                {
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark mb-2.5 d-flex align-items-center gap-1.5">
+                            <i class="bi bi-stars text-success"></i> Secondary Crop Alternatives for this Farmland:
+                        </h6>
+                        <div class="row g-2">
+                            @foreach (var alt in result.TopAlternatives)
+                            {
+                                <div class="col-md-4">
+                                    <div class="alternative-crop-item">
+                                        <div class="d-flex align-items-center gap-2.5">
+                                            <span class="fs-4">@alt.Emoji</span>
+                                            <div>
+                                                <strong class="text-dark d-block small">@alt.CropName</strong>
+                                                <span class="text-muted" style="font-size: 0.72rem;">@alt.Category</span>
+                                            </div>
+                                        </div>
+                                        <span class="badge bg-success bg-opacity-10 text-success fw-bold">@alt.MatchScore%</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Action CTAs -->
+                <div class="d-flex flex-wrap gap-2 pt-3 border-top">
+                    <a asp-controller="AI" asp-action="PricePredictor" class="btn btn-sm btn-success rounded-pill fw-bold px-3.5 py-2 shadow-sm" style="background-color: #006653; border-color: #006653;">
+                        <i class="bi bi-graph-up me-1"></i> Forecast Market Price for @result.CropName
+                    </a>
+                    <a asp-controller="Product" asp-action="Index" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-3.5 py-2">
+                        <i class="bi bi-basket2 me-1"></i> Shop Quality Seeds &amp; Fertilizers
+                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold px-3 py-2 ms-auto" onclick="window.scrollTo({ top: 120, behavior: 'smooth' });">
+                        <i class="bi bi-arrow-repeat me-1"></i> Test Another Farmland
+                    </button>
+                </div>
+            </div>
+        }
+
+    </div>
 </div>
 
 <!-- Auth Required Modal for Guests -->
@@ -348,16 +802,16 @@
                 <div class="rounded-circle bg-success bg-opacity-10 text-success d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px; font-size: 2rem;">
                     <i class="bi bi-stars"></i>
                 </div>
-                <h4 class="fw-extrabold text-dark mb-1" id="authRequiredModalLabel">Unlock AI Prediction</h4>
+                <h4 class="fw-extrabold text-dark mb-1" id="authRequiredModalLabel">Unlock AI Crop Intelligence</h4>
                 <p class="text-muted small mb-4">
-                    Please log in with your existing account or create a free account to generate AI crop recommendations based on your soil parameters.
+                    Please log in or register a free account to generate AI crop predictions, fertilizer plans, and crop rotation schedules for your farmland.
                 </p>
                 <div class="d-grid gap-2 mb-3">
                     <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="/AI/CropPredictor" class="btn btn-success btn-lg rounded-pill fw-bold py-2.5 shadow-sm" style="background-color: #006653; border-color: #006653;">
-                        <i class="bi bi-box-arrow-in-right me-1.5"></i> Login to Predict
+                        <i class="bi bi-box-arrow-in-right me-1.5"></i> Login to Run Analysis
                     </a>
                     <a asp-controller="Account" asp-action="Register" asp-route-returnUrl="/AI/CropPredictor" class="btn btn-outline-success btn-lg rounded-pill fw-bold py-2.5">
-                        <i class="bi bi-person-plus me-1.5"></i> Register New Account
+                        <i class="bi bi-person-plus me-1.5"></i> Register Free Account
                     </a>
                 </div>
                 <button type="button" class="btn btn-link text-muted small text-decoration-none shadow-none" data-bs-dismiss="modal" style="cursor: pointer;">
@@ -372,6 +826,7 @@
     <script>
         const isAuthenticated = @(User.Identity != null && User.Identity.IsAuthenticated ? "true" : "false");
 
+        // Auth check before submit
         document.getElementById('cropPredictorForm')?.addEventListener('submit', function (e) {
             if (!isAuthenticated) {
                 e.preventDefault();
@@ -381,18 +836,95 @@
             }
         });
 
-        function applySoilPreset(n, p, k, temp, hum, ph) {
+        // Mode Switcher (Farmer Mode vs Lab Mode)
+        function switchPredictorMode(mode) {
+            document.getElementById('formModeInput').value = mode;
+
+            const tabFarmer = document.getElementById('tabFarmerMode');
+            const tabLab = document.getElementById('tabLabMode');
+            const secFarmer = document.getElementById('sectionFarmerMode');
+            const secLab = document.getElementById('sectionLabMode');
+
+            if (mode === 'simple') {
+                tabFarmer.classList.add('active');
+                tabLab.classList.remove('active');
+                secFarmer.classList.remove('d-none');
+                secLab.classList.add('d-none');
+            } else {
+                tabLab.classList.add('active');
+                tabFarmer.classList.remove('active');
+                secLab.classList.remove('d-none');
+                secFarmer.classList.add('d-none');
+            }
+        }
+
+        // Soil Type Card Selection
+        function selectSoilType(type, element) {
+            document.getElementById('formSoilTypeInput').value = type;
+            document.querySelectorAll('.soil-card').forEach(c => c.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        // Water Source Selection
+        function selectWaterSource(source, element) {
+            document.getElementById('formWaterSourceInput').value = source;
+            element.parentElement.querySelectorAll('.choice-pill-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // Water Quality Selection
+        function selectWaterQuality(quality, element) {
+            document.getElementById('formWaterQualityInput').value = quality;
+            element.parentElement.querySelectorAll('.choice-pill-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // Live Area to Vigha Conversion
+        function updateAreaConversion(acres) {
+            const vighaDisplay = document.getElementById('areaConversionDisplay');
+            const val = parseFloat(acres);
+            if (!isNaN(val) && val > 0) {
+                const vigha = (val * 2.4).toFixed(1);
+                vighaDisplay.textContent = `Acres (≈ ${vigha} Vigha)`;
+            } else {
+                vighaDisplay.textContent = 'Acres';
+            }
+        }
+
+        // Apply Lab Benchmark Preset
+        function applyLabPreset(n, p, k, ph, temp, hum, rain) {
             document.getElementById('inputN').value = n;
             document.getElementById('inputP').value = p;
             document.getElementById('inputK').value = k;
+            document.getElementById('inputPh').value = ph;
             document.getElementById('inputTemp').value = temp;
             document.getElementById('inputHumidity').value = hum;
-            document.getElementById('inputPh').value = ph;
+            document.getElementById('inputRainfall').value = rain;
 
-            // Highlight button
             const btn = document.getElementById('btnPredictSubmit');
             btn.classList.add('pulse-glow');
             setTimeout(() => btn.classList.remove('pulse-glow'), 600);
+        }
+
+        // District Change handler
+        function onDistrictSelected(districtName) {
+            fetch(`/AI/GetDistrictDetails?name=${encodeURIComponent(districtName)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.success && data.district) {
+                        const d = data.district;
+                        // Select default soil type for district if not manually selected
+                        if (d.defaultSoilType) {
+                            const soilCards = document.querySelectorAll('.soil-card');
+                            soilCards.forEach(c => {
+                                if (c.getAttribute('onclick').includes(d.defaultSoilType)) {
+                                    c.click();
+                                }
+                            });
+                        }
+                    }
+                })
+                .catch(err => console.log('District lookup note:', err));
         }
 
         // Auto-scroll to results if present

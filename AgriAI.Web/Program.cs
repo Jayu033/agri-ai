@@ -38,6 +38,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<AgriAI.Web.Services.ILiveMandiService, AgriAI.Web.Services.LiveMandiService>();
+builder.Services.AddSingleton<AgriAI.Web.Services.IGujaratAgroDataService, AgriAI.Web.Services.GujaratAgroDataService>();
 
 builder.Services.AddSession(options => {
     options.IdleTimeout = TimeSpan.FromDays(7);

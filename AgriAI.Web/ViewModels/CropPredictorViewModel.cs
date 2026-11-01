@@ -1,7 +1,20 @@
+using System.Collections.Generic;
+using AgriAI.Web.Services;
+
 namespace AgriAI.Web.ViewModels
 {
     public class CropPredictorInputModel
     {
+        // Simple Mode Inputs (For Farmers - Option A)
+        public string Mode { get; set; } = "simple"; // "simple" or "advanced"
+        public string District { get; set; } = "Rajkot";
+        public string SoilType { get; set; } = "black"; // "black", "loamy", "sandy", "alluvial"
+        public string WaterSource { get; set; } = "borewell"; // "borewell", "canal", "rainfed"
+        public string WaterQuality { get; set; } = "fresh"; // "fresh" or "saline"
+        public string PreviousCrop { get; set; } = "None"; // "None", "Groundnut", "Cotton", "Wheat", "Paddy", "Chana"
+        public double CultivationArea { get; set; } = 5.0; // In Acres
+
+        // Advanced Mode Inputs (Direct Lab Metrics)
         public double Nitrogen { get; set; } = 90;
         public double Phosphorus { get; set; } = 42;
         public double Potassium { get; set; } = 43;
@@ -26,6 +39,17 @@ namespace AgriAI.Web.ViewModels
         public string SoilAdvice { get; set; } = string.Empty;
         public List<CropAlternative> TopAlternatives { get; set; } = new();
         public CropPredictorInputModel Input { get; set; } = new();
+
+        // Metadata Resolution for Simple Mode
+        public string ResolvedDistrict { get; set; } = string.Empty;
+        public string ResolvedSoilType { get; set; } = string.Empty;
+        public string ResolvedWater { get; set; } = string.Empty;
+
+        // Option B: Fertilizer Dosage Plan
+        public FertilizerRecommendation FertilizerPlan { get; set; } = new();
+
+        // Option F: Multi-Season Crop Rotation Calendar
+        public CropRotationPlan CropRotation { get; set; } = new();
     }
 
     public class CropAlternative
