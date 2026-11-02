@@ -474,7 +474,31 @@
                                             var bPhone = bUser?.PhoneNumber ?? "";
                                             var bName = $"{bUser?.FirstName} {bUser?.LastName}".Trim();
                                             if (string.IsNullOrEmpty(bName)) bName = "Customer";
-                                            var waText = Uri.EscapeDataString($"🌾 નમસ્તે {bName}, તમારી AgriAI ઓર્ડર #{order.Id:D5} ની રકમ ₹{activeOrdFarmerEarning:N2} Razorpay એસ્ક્રોમાં સફળતાપૂર્વક મળી ગઈ છે. અમે તમારી ઉપજ પેક કરી રહ્યા છીએ.");
+                                            var firstCrop = order.OrderItems.FirstOrDefault()?.Product?.Name ?? "ખેતી પાક";
+                                            var firstCropQty = order.OrderItems.FirstOrDefault()?.Quantity ?? 1;
+
+                                            var fWaLines = new List<string>
+                                            {
+                                                "👨‍🌾 *AgriAI - ખેડૂત તરફથી ઓર્ડર કન્ફર્મેશન* 🚜",
+                                                "━━━━━━━━━━━━━━━━━━━━",
+                                                $"નમસ્તે *{bName}* જી,",
+                                                $"તમારો ઓર્ડર *#{order.Id:D5}* મને મળી ગયો છે!",
+                                                "",
+                                                "🌾 *ઓર્ડર વિગતો:*",
+                                                $"• *ઓર્ડર:* #{order.Id:D5}",
+                                                $"• *પાક:* {firstCrop} ({firstCropQty} Kg)",
+                                                $"• *રકમ:* ₹{activeOrdFarmerEarning:N2}",
+                                                $"• *ડિલિવરી:* {order.TransportType ?? "Direct Farm Pickup"}",
+                                                "• *પેમેન્ટ:* એસ્ક્રોમાં ૧૦૦% સુરક્ષિત ✅",
+                                                "",
+                                                "📦 *હાલની સ્થિતિ:*",
+                                                "અમે તમારા માટે ખેતરમાંથી એકદમ તાજી ઉપજ પેક કરી રહ્યા છીએ.",
+                                                "",
+                                                "🙏 AgriAI પર સીધા ખેડૂત પાસેથી ખરીદી કરવા બદલ ખૂબ ખૂબ આભાર!",
+                                                "━━━━━━━━━━━━━━━━━━━━",
+                                                "_AgriAI - ખેડૂતથી સીધા ગ્રાહક સુધી 🌾_"
+                                            };
+                                            var waText = Uri.EscapeDataString(string.Join("\n", fWaLines));
                                         }
                                         @if (order.PaymentMethod != "Cash on Delivery")
                                         {
