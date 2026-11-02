@@ -560,36 +560,51 @@ namespace AgriAI.Web.Controllers
         {
             try
             {
+                // Reload full order with products and payment details
+                var fullOrder = await _context.Orders
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.Product)
+                    .Include(o => o.Payment)
+                    .FirstOrDefaultAsync(o => o.Id == order.Id) ?? order;
+
                 var buyerUser = await _userManager.FindByIdAsync(buyerUserId) ?? await _userManager.FindByNameAsync(buyerUserId);
                 var buyerName = $"{buyerUser?.FirstName} {buyerUser?.LastName}".Trim();
                 if (string.IsNullOrEmpty(buyerName)) buyerName = "Customer";
                 var buyerPhone = buyerUser?.PhoneNumber ?? "";
 
                 // Find primary farmer for the crop
-                var firstProdId = order.OrderItems.FirstOrDefault()?.ProductId;
-                if (firstProdId.HasValue)
+                var firstProd = fullOrder.OrderItems.FirstOrDefault()?.Product;
+                var farmerId = firstProd?.FarmerId;
+                if (string.IsNullOrEmpty(farmerId) && fullOrder.OrderItems.Any())
                 {
-                    var prod = await _context.Products.FindAsync(firstProdId.Value);
-                    if (prod != null && !string.IsNullOrEmpty(prod.FarmerId))
+                    var pId = fullOrder.OrderItems.First().ProductId;
+                    var p = await _context.Products.FindAsync(pId);
+                    farmerId = p?.FarmerId;
+                }
+
+                if (!string.IsNullOrEmpty(farmerId))
+                {
+                    var farmerUser = await _userManager.FindByIdAsync(farmerId) ?? await _userManager.FindByNameAsync(farmerId);
+                    var farmerPhone = farmerUser?.PhoneNumber ?? "";
+                    var farmerName = $"{farmerUser?.FirstName} {farmerUser?.LastName}".Trim();
+                    if (string.IsNullOrEmpty(farmerName)) farmerName = "Farmer";
+
+                    var farmerAddress = !string.IsNullOrWhiteSpace(farmerUser?.Address)
+                        ? $"{farmerUser.Address}, {farmerUser.City}"
+                        : (farmerUser?.City ?? "Gujarat Farm Location");
+
+                    decimal farmerEarnings = fullOrder.OrderItems.Sum(oi => oi.UnitPrice * oi.Quantity);
+
+                    // 1. Send automated WhatsApp message to Farmer
+                    if (!string.IsNullOrEmpty(farmerPhone))
                     {
-                        var farmerUser = await _userManager.FindByIdAsync(prod.FarmerId) ?? await _userManager.FindByNameAsync(prod.FarmerId);
-                        var farmerPhone = farmerUser?.PhoneNumber ?? "";
-                        var farmerName = $"{farmerUser?.FirstName} {farmerUser?.LastName}".Trim();
-                        if (string.IsNullOrEmpty(farmerName)) farmerName = "Farmer";
+                        await _whatsAppService.SendOrderNotificationToFarmerAsync(fullOrder, farmerPhone, farmerName, buyerName, farmerEarnings, buyerPhone);
+                    }
 
-                        decimal farmerEarnings = order.OrderItems.Sum(oi => oi.UnitPrice * oi.Quantity);
-
-                        // 1. Send automated WhatsApp message to Farmer
-                        if (!string.IsNullOrEmpty(farmerPhone))
-                        {
-                            await _whatsAppService.SendOrderNotificationToFarmerAsync(order, farmerPhone, farmerName, buyerName, farmerEarnings);
-                        }
-
-                        // 2. Send automated WhatsApp confirmation to Buyer
-                        if (!string.IsNullOrEmpty(buyerPhone))
-                        {
-                            await _whatsAppService.SendOrderConfirmationToBuyerAsync(order, buyerPhone, buyerName, farmerName);
-                        }
+                    // 2. Send automated WhatsApp confirmation to Buyer
+                    if (!string.IsNullOrEmpty(buyerPhone))
+                    {
+                        await _whatsAppService.SendOrderConfirmationToBuyerAsync(fullOrder, buyerPhone, buyerName, farmerName, farmerPhone, farmerAddress);
                     }
                 }
             }

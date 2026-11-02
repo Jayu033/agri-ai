@@ -17,13 +17,23 @@ namespace AgriAI.Web.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _environment;
         private readonly IRazorpayPaymentService _razorpayService;
+        private readonly IWhatsAppNotificationService _whatsAppService;
+        private readonly ILogger<FarmerController> _logger;
 
-        public FarmerController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IWebHostEnvironment environment, IRazorpayPaymentService razorpayService)
+        public FarmerController(
+            ApplicationDbContext context, 
+            UserManager<ApplicationUser> userManager, 
+            IWebHostEnvironment environment, 
+            IRazorpayPaymentService razorpayService,
+            IWhatsAppNotificationService whatsAppService,
+            ILogger<FarmerController> logger)
         {
             _context = context;
             _userManager = userManager;
             _environment = environment;
             _razorpayService = razorpayService;
+            _whatsAppService = whatsAppService;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Dashboard()
@@ -249,13 +259,24 @@ namespace AgriAI.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateOrderStatus(int orderId, string status, string? returnUrl = null)
         {
-            var order = await _context.Orders.FindAsync(orderId);
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
             if (order != null)
             {
                 order.Status = status;
                 order.CancellationDeadline = DateTime.UtcNow; // Lock review window immediately on dispatch / ready
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"✅ Order #{order.Id:D5} status marked as '{status}' successfully!";
+
+                // Trigger automated WhatsApp notification when produce is ready or dispatched
+                if (status.Contains("Ready", StringComparison.OrdinalIgnoreCase))
+                {
+                    _ = TriggerProduceReadyWhatsAppAlertAsync(order.Id);
+                }
+
+                TempData["SuccessMessage"] = $"✅ Order #{order.Id:D5} status marked as '{status}' successfully! WhatsApp notification sent to customer.";
             }
             return RedirectToFarmerOrder(orderId, returnUrl);
         }
@@ -335,8 +356,86 @@ namespace AgriAI.Web.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"🚚 Bilty #{order.BiltyNumber} uploaded! Order #{order.Id:D5} marked as Dispatched via {order.CargoServiceName}.";
+            // Trigger automated WhatsApp dispatch alert to buyer
+            _ = TriggerProduceDispatchedWhatsAppAlertAsync(order.Id);
+
+            TempData["SuccessMessage"] = $"🚚 Bilty #{order.BiltyNumber} uploaded! Order #{order.Id:D5} marked as Dispatched via {order.CargoServiceName}. WhatsApp notification sent to customer.";
             return RedirectToFarmerOrder(orderId, returnUrl);
+        }
+
+        private async Task TriggerProduceReadyWhatsAppAlertAsync(int orderId)
+        {
+            try
+            {
+                var order = await _context.Orders
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.Product)
+                    .FirstOrDefaultAsync(o => o.Id == orderId);
+
+                if (order == null || string.IsNullOrEmpty(order.CustomerId)) return;
+
+                var buyerUser = await _userManager.FindByIdAsync(order.CustomerId) ?? await _userManager.FindByNameAsync(order.CustomerId);
+                var buyerPhone = buyerUser?.PhoneNumber ?? "";
+                var buyerName = $"{buyerUser?.FirstName} {buyerUser?.LastName}".Trim();
+                if (string.IsNullOrEmpty(buyerName)) buyerName = "Customer";
+
+                var currentFarmer = await _userManager.GetUserAsync(User);
+                var farmerName = $"{currentFarmer?.FirstName} {currentFarmer?.LastName}".Trim();
+                if (string.IsNullOrEmpty(farmerName)) farmerName = "Farmer";
+                var farmerPhone = currentFarmer?.PhoneNumber ?? "";
+
+                var pickupAddress = !string.IsNullOrWhiteSpace(currentFarmer?.Address)
+                    ? $"{currentFarmer.Address}, {currentFarmer.City}"
+                    : (currentFarmer?.City ?? "Gujarat Farm Location");
+
+                if (!string.IsNullOrEmpty(buyerPhone))
+                {
+                    await _whatsAppService.SendProduceReadyNotificationAsync(order, buyerPhone, buyerName, farmerName, farmerPhone, pickupAddress);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send Produce Ready WhatsApp alert for Order #{OrderId}", orderId);
+            }
+        }
+
+        private async Task TriggerProduceDispatchedWhatsAppAlertAsync(int orderId)
+        {
+            try
+            {
+                var order = await _context.Orders
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.Product)
+                    .FirstOrDefaultAsync(o => o.Id == orderId);
+
+                if (order == null || string.IsNullOrEmpty(order.CustomerId)) return;
+
+                var buyerUser = await _userManager.FindByIdAsync(order.CustomerId) ?? await _userManager.FindByNameAsync(order.CustomerId);
+                var buyerPhone = buyerUser?.PhoneNumber ?? "";
+                var buyerName = $"{buyerUser?.FirstName} {buyerUser?.LastName}".Trim();
+                if (string.IsNullOrEmpty(buyerName)) buyerName = "Customer";
+
+                var currentFarmer = await _userManager.GetUserAsync(User);
+                var farmerName = $"{currentFarmer?.FirstName} {currentFarmer?.LastName}".Trim();
+                if (string.IsNullOrEmpty(farmerName)) farmerName = "Farmer";
+                var farmerPhone = currentFarmer?.PhoneNumber ?? "";
+
+                if (!string.IsNullOrEmpty(buyerPhone))
+                {
+                    await _whatsAppService.SendProduceDispatchedNotificationAsync(
+                        order, 
+                        buyerPhone, 
+                        buyerName, 
+                        farmerName, 
+                        farmerPhone, 
+                        order.CargoServiceName ?? "GSRTC ST Bus Parcel", 
+                        order.BiltyNumber ?? "LR-Direct");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send Produce Dispatched WhatsApp alert for Order #{OrderId}", orderId);
+            }
         }
 
         public IActionResult AddProduct()

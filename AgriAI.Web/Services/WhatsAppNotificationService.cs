@@ -153,7 +153,7 @@ namespace AgriAI.Web.Services
         }
 
         public async Task<(bool Success, string MessageId, string ErrorMessage)> SendOrderNotificationToFarmerAsync(
-            Order order, string farmerPhone, string farmerName, string buyerName, decimal farmerEarnings)
+            Order order, string farmerPhone, string farmerName, string buyerName, decimal farmerEarnings, string buyerPhone = "")
         {
             var firstItem = order.OrderItems.FirstOrDefault();
             var cropName = firstItem?.Product?.Name ?? "ખેતી પાક (Produce)";
@@ -202,10 +202,15 @@ namespace AgriAI.Web.Services
             sb.AppendLine();
             sb.AppendLine("📍 *BUYER INFO / ગ્રાહક વિગતો:*");
             sb.AppendLine($"• *Name / નામ:* {safeBuyerName}");
+            if (!string.IsNullOrEmpty(buyerPhone))
+            {
+                sb.AppendLine($"• *Phone / સંપર્ક:* {buyerPhone}");
+            }
             sb.AppendLine($"• *Location / સ્થળ:* {deliveryAddr}");
             sb.AppendLine();
-            sb.AppendLine("⏳ Please review order & prepare harvest packaging.");
-            sb.AppendLine("_કૃપા કરીને ઓર્ડર ચકાસી ખેતરે ઉપજ તૈયાર રાખવા વિનંતી._");
+            sb.AppendLine("⏳ *Action Required / આગળનું પગલું:*");
+            sb.AppendLine("Please review order & mark ready when harvest packaging is done.");
+            sb.AppendLine("_કૃપા કરીને ઓર્ડર ચકાસી ખેતરે ઉપજ તૈયાર કરી પોર્ટલ પર 'Ready for Pickup' માર્ક કરવા વિનંતી._");
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
             sb.AppendLine("🚜 *AgriAI - Direct Gujarat Farm-to-Consumer Portal* 🌾");
 
@@ -213,30 +218,143 @@ namespace AgriAI.Web.Services
         }
 
         public async Task<(bool Success, string MessageId, string ErrorMessage)> SendOrderConfirmationToBuyerAsync(
-            Order order, string buyerPhone, string buyerName, string farmerName)
+            Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone = "", string pickupAddress = "")
         {
             var firstItem = order.OrderItems.FirstOrDefault();
             var cropName = firstItem?.Product?.Name ?? "ખેતી પાક (Produce)";
             int totalQty = order.OrderItems.Sum(oi => oi.Quantity);
+            if (order.OrderItems.Count > 1)
+            {
+                cropName += $" (+{order.OrderItems.Count - 1} varieties)";
+            }
+
+            var safeBuyerName = string.IsNullOrWhiteSpace(buyerName) ? "Customer" : buyerName.Trim();
+            var safeFarmerName = string.IsNullOrWhiteSpace(farmerName) ? "ખેડૂત મિત્ર" : farmerName.Trim();
+            var farmLoc = string.IsNullOrWhiteSpace(pickupAddress) ? order.ShippingAddress : pickupAddress;
 
             var sb = new StringBuilder();
             sb.AppendLine("🌾 *AGRIAI ORDER CONFIRMATION* 🌾");
-            sb.AppendLine("_ઓર્ડર કન્ફર્મેશન રસીદ_");
+            sb.AppendLine("_ઓર્ડર અને પેમેન્ટ કન્ફર્મેશન રસીદ_");
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
-            sb.AppendLine($"Hello / નમસ્તે *{buyerName}* જી,");
-            sb.AppendLine("Thank you for buying direct from our Gujarat Farmers!");
+            sb.AppendLine($"Hello / નમસ્તે *{safeBuyerName}* જી,");
+            sb.AppendLine("Thank you for buying direct from Gujarat Farmers!");
             sb.AppendLine("_ખેડૂત પાસેથી સીધી ખરીદી કરવા બદલ તમારો ખૂબ ખૂબ આભાર._");
             sb.AppendLine();
-            sb.AppendLine("📋 *ORDER SUMMARY:*");
-            sb.AppendLine($"• *Order ID:* #{order.Id:D5}");
-            sb.AppendLine($"• *Produce:* *{cropName}* ({totalQty} Kg)");
-            sb.AppendLine($"• *Farmer / ખેડૂત:* *{farmerName}*");
-            sb.AppendLine($"• *Total Paid:* *₹{order.TotalAmount:N2}*");
+            sb.AppendLine("📋 *ORDER SUMMARY / ઓર્ડર વિગતો:*");
+            sb.AppendLine($"• *Order ID / ઓર્ડર નં:* #{order.Id:D5}");
+            sb.AppendLine($"• *Produce / પાક:* *{cropName}* ({totalQty} Kg)");
+            sb.AppendLine($"• *Farmer / ખેડૂત:* *{safeFarmerName}*");
+            if (!string.IsNullOrEmpty(farmerPhone))
+            {
+                sb.AppendLine($"• *Farmer Phone / સંપર્ક:* {farmerPhone}");
+            }
+            sb.AppendLine($"• *Total Paid / ચૂકવેલ રકમ:* *₹{order.TotalAmount:N2}*");
             sb.AppendLine("• *Status:* 100% Escrow Secured ✅");
             sb.AppendLine();
-            sb.AppendLine("Track your order live on the AgriAI portal!");
+            sb.AppendLine("🔐 *YOUR DELIVERY OTP / ડિલિવરી ઓટીપી:*");
+            sb.AppendLine($"👉 *{order.DeliveryOtp}* 👈");
+            sb.AppendLine("_આ ૪-અંકનો સિક્રેટ OTP સાચવી રાખવો. માલ મેળવતી વખતે જ ખેડૂત ભાઈને આપવો._");
+            sb.AppendLine();
+            sb.AppendLine("📍 *FARM LOCATION / ખેતરનું સ્થળ:*");
+            sb.AppendLine($"• {farmLoc}");
+            sb.AppendLine();
+            sb.AppendLine("🛡️ *Escrow Guarantee / સુરક્ષા ખાતરી:*");
+            sb.AppendLine("Your money is safely locked in AgriAI Escrow until you collect and inspect your produce.");
+            sb.AppendLine("_જ્યાં સુધી તમે પાક ચકાસીને ના લો ત્યાં સુધી તમારા પૈસા સંપૂર્ણ સુરક્ષિત છે._");
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
             sb.AppendLine("🚜 *AgriAI - Pure Direct Farm Marketplace* 🌾");
+
+            return await SendMessageAsync(buyerPhone, sb.ToString());
+        }
+
+        public async Task<(bool Success, string MessageId, string ErrorMessage)> SendProduceReadyNotificationAsync(
+            Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone, string pickupAddress)
+        {
+            var firstItem = order.OrderItems.FirstOrDefault();
+            var cropName = firstItem?.Product?.Name ?? "ખેતી પાક (Produce)";
+            int totalQty = order.OrderItems.Sum(oi => oi.Quantity);
+            if (order.OrderItems.Count > 1)
+            {
+                cropName += $" (+{order.OrderItems.Count - 1} varieties)";
+            }
+
+            var safeBuyerName = string.IsNullOrWhiteSpace(buyerName) ? "Customer" : buyerName.Trim();
+            var safeFarmerName = string.IsNullOrWhiteSpace(farmerName) ? "ખેડૂત મિત્ર" : farmerName.Trim();
+            var farmLoc = string.IsNullOrWhiteSpace(pickupAddress) ? (order.ShippingAddress ?? "Gujarat Farm") : pickupAddress;
+
+            var sb = new StringBuilder();
+            sb.AppendLine("🌾 *AGRIAI PRODUCE READY FOR PICKUP* 🌾");
+            sb.AppendLine("_તમારો ખેતી પાક ખેતરેથી મેળવવા માટે તૈયાર છે!_");
+            sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
+            sb.AppendLine($"Hello / નમસ્તે *{safeBuyerName}* જી,");
+            sb.AppendLine($"Farmer *{safeFarmerName}* has harvested and packed your produce!");
+            sb.AppendLine($"_ખેડૂત ભાઈ *{safeFarmerName}* એ તમારો પાક પેક કરીને ખેતરે તૈયાર કરી લીધો છે!_");
+            sb.AppendLine();
+            sb.AppendLine("📋 *ORDER DETAILS / ઓર્ડર વિગતો:*");
+            sb.AppendLine($"• *Order ID / ઓર્ડર નં:* #{order.Id:D5}");
+            sb.AppendLine($"• *Produce / પાક:* *{cropName}* ({totalQty} Kg)");
+            sb.AppendLine($"• *Farmer / ખેડૂત:* *{safeFarmerName}*");
+            if (!string.IsNullOrEmpty(farmerPhone))
+            {
+                sb.AppendLine($"• *Farmer Phone / સંપર્ક:* {farmerPhone}");
+            }
+            sb.AppendLine();
+            sb.AppendLine("📍 *PICKUP FARM LOCATION / ખેતરનું સરનામું:*");
+            sb.AppendLine($"• {farmLoc}");
+            sb.AppendLine();
+            sb.AppendLine("🔐 *YOUR DELIVERY OTP / ડિલિવરી ઓટીપી:*");
+            sb.AppendLine($"👉 *{order.DeliveryOtp}* 👈");
+            sb.AppendLine("_જ્યારે તમે ખેતરેથી માલ મેળવો ત્યારે આ ૪-અંકનો OTP ખેડૂત ભાઈને ચકાસણી માટે આપવો._");
+            sb.AppendLine();
+            sb.AppendLine("🛡️ *Escrow Payout Release:*");
+            sb.AppendLine("Once OTP is verified, AgriAI releases payment to the farmer.");
+            sb.AppendLine("_તમે ઓટીપી આપશો એટલે તમારા વતી ખેડૂત ભાઈને પેમેન્ટ રિલીઝ થશે._");
+            sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
+            sb.AppendLine("🚜 *AgriAI - Direct Gujarat Farm-to-Consumer Portal* 🌾");
+
+            return await SendMessageAsync(buyerPhone, sb.ToString());
+        }
+
+        public async Task<(bool Success, string MessageId, string ErrorMessage)> SendProduceDispatchedNotificationAsync(
+            Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone, string cargoServiceName, string biltyNumber)
+        {
+            var firstItem = order.OrderItems.FirstOrDefault();
+            var cropName = firstItem?.Product?.Name ?? "ખેતી પાક (Produce)";
+            int totalQty = order.OrderItems.Sum(oi => oi.Quantity);
+            if (order.OrderItems.Count > 1)
+            {
+                cropName += $" (+{order.OrderItems.Count - 1} varieties)";
+            }
+
+            var safeBuyerName = string.IsNullOrWhiteSpace(buyerName) ? "Customer" : buyerName.Trim();
+            var safeFarmerName = string.IsNullOrWhiteSpace(farmerName) ? "ખેડૂત મિત્ર" : farmerName.Trim();
+            var safeCargo = string.IsNullOrWhiteSpace(cargoServiceName) ? "GSRTC ST Bus Parcel / Cargo" : cargoServiceName;
+            var safeBilty = string.IsNullOrWhiteSpace(biltyNumber) ? "LR-Direct" : biltyNumber;
+
+            var sb = new StringBuilder();
+            sb.AppendLine("🚚 *AGRIAI PRODUCE DISPATCHED* 🚚");
+            sb.AppendLine("_તમારો પાક ટ્રાન્સપોર્ટ / પાર્સલ દ્વારા રવાના થઈ ગયો છે!_");
+            sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
+            sb.AppendLine($"Hello / નમસ્તે *{safeBuyerName}* જી,");
+            sb.AppendLine($"Farmer *{safeFarmerName}* has dispatched your order via cargo logistics!");
+            sb.AppendLine($"_ખેડૂત ભાઈએ તમારો પાક પાર્સલ સર્વિસ દ્વારા રવાના કરી દીધો છે._");
+            sb.AppendLine();
+            sb.AppendLine("📋 *DISPATCH DETAILS / ડિસ્પેચ વિગતો:*");
+            sb.AppendLine($"• *Order ID / ઓર્ડર નં:* #{order.Id:D5}");
+            sb.AppendLine($"• *Produce / પાક:* *{cropName}* ({totalQty} Kg)");
+            sb.AppendLine($"• *Transport / વાહન:* *{safeCargo}*");
+            sb.AppendLine($"• *Bilty / LR No:* *{safeBilty}*");
+            if (!string.IsNullOrEmpty(farmerPhone))
+            {
+                sb.AppendLine($"• *Farmer Contact:* {farmerPhone}");
+            }
+            sb.AppendLine($"• *Delivery Address / સ્થળ:* {order.ShippingAddress}");
+            sb.AppendLine();
+            sb.AppendLine("🔐 *YOUR DELIVERY OTP / ડિલિવરી ઓટીપી:*");
+            sb.AppendLine($"👉 *{order.DeliveryOtp}* 👈");
+            sb.AppendLine("_પાર્સલ મેળવતી વખતે આ OTP ડિલિવરી સ્ટાફને શેર કરવો._");
+            sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
+            sb.AppendLine("🚜 *AgriAI - Direct Gujarat Farm-to-Consumer Portal* 🌾");
 
             return await SendMessageAsync(buyerPhone, sb.ToString());
         }
