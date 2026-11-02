@@ -46,6 +46,7 @@ namespace AgriAI.Web.Controllers
                     .Include(o => o.OrderItems)
                         .ThenInclude(oi => oi.Product)
                             .ThenInclude(p => p.Images)
+                    .Include(o => o.Payment)
                     .Where(o => o.OrderItems.Any(oi => myProductIds.Contains(oi.ProductId)))
                     .OrderByDescending(o => o.OrderDate)
                     .ToListAsync()

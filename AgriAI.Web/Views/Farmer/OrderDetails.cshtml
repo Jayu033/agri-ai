@@ -511,6 +511,19 @@
                                 @(isParcel ? "The 3-hour review window has concluded. Cancellation is now permanently locked. Dispatch the parcel via GSRTC/Cargo and upload the Bilty slip below." : "The 3-hour review window has concluded. Cancellation is now permanently locked. Pack the produce and mark it ready for customer pickup.")
                             }
                         </p>
+                        @if (Model.PaymentMethod != "Cash on Delivery")
+                        {
+                            <div class="mt-2.5 p-2 px-3 rounded-3 d-inline-flex align-items-center gap-2" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25);">
+                                <i class="bi bi-shield-fill-check text-warning fs-6"></i>
+                                <span class="small text-white">
+                                    <strong>₹@baseAmount.ToString("N2") Funded in AgriAI Escrow Vault</strong> (100% Razorpay Guaranteed)
+                                    @if (Model.Payment != null && !string.IsNullOrEmpty(Model.Payment.RazorpayPaymentId))
+                                    {
+                                        <span class="opacity-75 ms-1">&bull; Ref: @Model.Payment.RazorpayPaymentId</span>
+                                    }
+                                </span>
+                            </div>
+                        }
                     </div>
                     <div class="col-md-5 text-md-end d-flex flex-column align-items-md-end gap-2">
                         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
