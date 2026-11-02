@@ -168,11 +168,14 @@ namespace AgriAI.Web.Controllers
             }
 
             order.Status = "Accepted";
-            order.FarmerAcceptanceAt = DateTime.UtcNow;
-            order.CancellationDeadline = DateTime.UtcNow.AddHours(3);
+            order.FarmerAcceptanceAt ??= DateTime.UtcNow;
+            if (!order.CancellationDeadline.HasValue)
+            {
+                order.CancellationDeadline = order.OrderDate.AddHours(3);
+            }
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"✅ Order #{order.Id:D5} accepted! The customer has a 3-hour review window before the order is locked for harvest dispatch.";
+            TempData["SuccessMessage"] = $"✅ Order #{order.Id:D5} confirmed! 3-hour harvest review period active.";
             return RedirectToFarmerOrder(orderId, returnUrl);
         }
 
@@ -201,9 +204,16 @@ namespace AgriAI.Web.Controllers
                 return RedirectToFarmerOrder(orderId, returnUrl);
             }
 
+            // Strict 3-Hour window check: once 3 hours pass, cancellation is permanently locked
+            if (order.CancellationDeadline.HasValue && DateTime.UtcNow > order.CancellationDeadline.Value)
+            {
+                TempData["ErrorMessage"] = "❌ The 3-hour cancellation window has expired! This order is locked for harvest fulfillment.";
+                return RedirectToFarmerOrder(orderId, returnUrl);
+            }
+
             order.Status = "Declined";
             order.IsFarmerDeclined = true;
-            order.FarmerDeclineReason = string.IsNullOrWhiteSpace(reason) ? "Produce unavailable / logistics constraint" : reason.Trim();
+            order.FarmerDeclineReason = string.IsNullOrWhiteSpace(reason) ? "Produce unavailable / harvest constraint" : reason.Trim();
 
             // Restore Stock
             foreach (var item in order.OrderItems)
@@ -216,7 +226,7 @@ namespace AgriAI.Web.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"❌ Order #{order.Id:D5} declined. Customer has been notified and ₹{order.TotalAmount:N2} will be refunded.";
+            TempData["SuccessMessage"] = $"❌ Order #{order.Id:D5} cancelled/declined. Customer notified and ₹{order.TotalAmount:N2} will be refunded.";
             return RedirectToFarmerOrder(orderId, returnUrl);
         }
 

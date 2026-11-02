@@ -32,7 +32,7 @@
             margin: 0 auto;
         }
 
-        /* 1. Hero Header Banner (Matching Exact Layout of Shop Products, Price Predictor & Live Mandi) */
+        /* 1. Hero Header Banner */
         .order-hero-header {
             background: linear-gradient(135deg, #006653 0%, #047857 100%);
             border-radius: 1.25rem;
@@ -89,7 +89,7 @@
             line-height: 1.5;
         }
 
-        /* 2. Unified Master Card (Consolidates Everything in One Elegant Box) */
+        /* 2. Unified Master Card */
         .order-unified-card {
             background: #ffffff;
             border-radius: 24px;
@@ -319,7 +319,7 @@
 
 <div class="container-fluid py-3 px-2 px-md-3 px-xl-4 order-details-container">
     
-    <!-- 1. Hero Header Banner (Consistent With Shop Products, Price Predictor & Live Mandi) -->
+    <!-- 1. Hero Header Banner -->
     <div class="order-hero-header shadow-sm">
         <div class="row align-items-center g-3">
             <div class="col-lg-8">
@@ -337,10 +337,10 @@
                     }
                     else if (Model.Status == "Accepted")
                     {
-                        @if (Model.CancellationDeadline.HasValue && DateTime.UtcNow < Model.CancellationDeadline.Value)
+                        @if (remainingSeconds > 0)
                         {
-                            <span class="badge bg-info text-dark fw-bold px-3 py-1.5 rounded-pill fs-6">
-                                <i class="bi bi-clock-history me-1"></i>Accepted (Review Window)
+                            <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill fs-6 shadow-sm">
+                                <i class="bi bi-clock-history me-1"></i>Active (3h Review)
                             </span>
                         }
                         else
@@ -402,7 +402,7 @@
         </div>
     </div>
 
-    <!-- 2. Single Unified Master Card (Consolidates Everything in One Elegant Box) -->
+    <!-- 2. Single Unified Master Card -->
     <div class="order-unified-card shadow-sm">
         
         <!-- Header Bar Inside Box -->
@@ -460,7 +460,7 @@
                     </div>
                 </div>
 
-                <div id="declineDetailsBox" class="mt-3 p-3 bg-white rounded-3 border" style="display: none;">
+                <div id="declineDetailsBox" class="mt-3 p-3 bg-white text-dark rounded-3 border" style="display: none;">
                     <form asp-action="DeclineOrder" method="post">
                         <input type="hidden" name="orderId" value="@Model.Id" />
                         <label class="form-label small fw-bold text-danger mb-1">Reason for declining order request:</label>
@@ -480,27 +480,36 @@
                     <div class="col-md-7">
                         <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                             <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
-                                <i class="bi bi-check2-circle me-1"></i>ORDER ACCEPTED BY PRODUCER
+                                <i class="bi bi-check2-circle me-1"></i>ORDER CONFIRMED &amp; ACTIVE
                             </span>
                             @if (remainingSeconds > 0)
                             {
                                 var fh = remainingSeconds / 3600;
                                 var fm = (remainingSeconds % 3600) / 60;
                                 var fs = remainingSeconds % 60;
-                                <span class="d-inline-flex align-items-center gap-1.5 px-3 py-1 rounded-pill" style="background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.3); font-weight: 700; font-size: 0.78rem;">
+                                <span class="d-inline-flex align-items-center gap-1.5 px-3 py-1 rounded-pill" id="farmerReviewCountdown" data-remaining="@remainingSeconds" style="background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.3); font-weight: 700; font-size: 0.78rem;">
                                     ⏳ @($"{fh:D2}h {fm:D2}m {fs:D2}s") Review Window
                                 </span>
                             }
                             else
                             {
                                 <span class="badge bg-success bg-opacity-75 text-white border px-2.5 py-1 rounded-pill small">
-                                    🔒 Locked for Dispatch
+                                    🔒 3-Hour Review Ended &bull; Locked for Dispatch
                                 </span>
                             }
                         </div>
-                        <h4 class="fw-bold text-white mb-1">Harvest &amp; Packaging in Progress</h4>
+                        <h4 class="fw-bold text-white mb-1">
+                            @(remainingSeconds > 0 ? "Harvest Review & Packaging in Progress" : "Order Locked for Dispatch")
+                        </h4>
                         <p class="text-white-50 small mb-0">
-                            @(isParcel ? "Prepare the parcel and hand it over to GSRTC/Cargo logistics. Upload the stamped Bilty receipt slip below." : "Harvest and package the produce for direct buyer farm pickup. Mark it ready once packed.")
+                            @if (remainingSeconds > 0)
+                            {
+                                @(isParcel ? "Prepare the parcel and hand it over to GSRTC/Cargo logistics. You may decline if stock is unavailable, or click dispatch below." : "Check your stock and package fresh produce for farm pickup. You can decline if out of stock, or mark ready instantly.")
+                            }
+                            else
+                            {
+                                @(isParcel ? "The 3-hour review window has concluded. Cancellation is now permanently locked. Dispatch the parcel via GSRTC/Cargo and upload the Bilty slip below." : "The 3-hour review window has concluded. Cancellation is now permanently locked. Pack the produce and mark it ready for customer pickup.")
+                            }
                         </p>
                     </div>
                     <div class="col-md-5 text-md-end d-flex flex-column align-items-md-end gap-2">
@@ -521,12 +530,41 @@
                                     </button>
                                 </form>
                             }
+
+                            @if (remainingSeconds > 0)
+                            {
+                                <button type="button" class="btn btn-outline-light rounded-pill px-3 py-2 fw-bold" onclick="toggleDeclineDetailsBox()">
+                                    <i class="bi bi-x-circle me-1"></i> Decline (Out of Stock)
+                                </button>
+                            }
                         </div>
                         <small class="text-white-50" style="font-size: 0.76rem;">
-                            <i class="bi bi-lightning-fill text-warning me-0.5"></i> Click above to mark ready instantly without waiting.
+                            @if (remainingSeconds > 0)
+                            {
+                                <span><i class="bi bi-lightning-fill text-warning me-0.5"></i> Advancing status locks order immediately.</span>
+                            }
+                            else
+                            {
+                                <span><i class="bi bi-lock-fill text-warning me-0.5"></i> Review window concluded &bull; Dispatch only</span>
+                            }
                         </small>
                     </div>
                 </div>
+
+                @if (remainingSeconds > 0)
+                {
+                    <div id="declineDetailsBox" class="mt-3 p-3 bg-white text-dark rounded-3 border" style="display: none;">
+                        <form asp-action="DeclineOrder" method="post">
+                            <input type="hidden" name="orderId" value="@Model.Id" />
+                            <label class="form-label small fw-bold text-danger mb-1">Reason for declining / cancelling order:</label>
+                            <textarea name="reason" class="form-control rounded-3 mb-2 small shadow-none" rows="2" placeholder="e.g. Current crop harvest exhausted / logistics unserviceable..." required></textarea>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" onclick="toggleDeclineDetailsBox()">Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold">Confirm Decline &amp; 100% Refund Buyer</button>
+                            </div>
+                        </form>
+                    </div>
+                }
             </div>
         }
         else if (Model.Status == "Ready for Pickup")
@@ -579,6 +617,34 @@
                         <a href="#otpVerificationCard" class="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
                             <i class="bi bi-shield-check me-1"></i> Enter OTP
                         </a>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (Model.Status == "Declined")
+        {
+            <div class="order-status-banner" style="background-color: #fee2e2; border-color: #fca5a5; color: #991b1b;">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-x-circle-fill fs-3 text-danger"></i>
+                    <div>
+                        <h5 class="fw-bold mb-1 text-danger">Order Declined / Cancelled by Producer</h5>
+                        <p class="small mb-0 opacity-85">
+                            Reason: @(string.IsNullOrEmpty(Model.FarmerDeclineReason) ? "Produce unavailable / harvest constraint" : Model.FarmerDeclineReason). Crop inventory stock has been restored and ₹@Model.TotalAmount.ToString("N2") refunded to buyer.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (Model.Status == "Cancelled")
+        {
+            <div class="order-status-banner" style="background-color: #f1f5f9; border-color: #cbd5e1; color: #475569;">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-slash-circle-fill fs-3 text-secondary"></i>
+                    <div>
+                        <h5 class="fw-bold mb-1 text-dark">Order Cancelled by Buyer</h5>
+                        <p class="small mb-0 opacity-85">
+                            Reason: @(string.IsNullOrEmpty(Model.CustomerCancelReason) ? "Cancelled within 3-hour review window" : Model.CustomerCancelReason). Produce stock has been restored to your farm inventory.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -980,11 +1046,13 @@
         // Live countdown timer for 3-Hour Review Window
         let farmerRemSec = parseInt(document.getElementById('farmerReviewCountdown')?.getAttribute('data-remaining') || '0', 10);
         if (farmerRemSec > 0) {
-            setInterval(function () {
+            const farmerTimerInterval = setInterval(function () {
                 const timerEl = document.getElementById('farmerReviewCountdown');
                 if (!timerEl) return;
                 if (farmerRemSec <= 0) {
+                    clearInterval(farmerTimerInterval);
                     timerEl.textContent = "🔒 Locked for Dispatch";
+                    setTimeout(() => { location.reload(); }, 2000);
                     return;
                 }
                 const h = Math.floor(farmerRemSec / 3600);

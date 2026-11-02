@@ -398,9 +398,21 @@
                                                 }
                                                 else if (order.Status == "Accepted")
                                                 {
-                                                    <span class="badge bg-info text-dark fw-bold px-3 py-1.5 rounded-pill">
-                                                        <i class="bi bi-clock-history me-1"></i>Accepted
-                                                    </span>
+                                                    @if (order.CancellationDeadline.HasValue && DateTime.UtcNow < order.CancellationDeadline.Value)
+                                                    {
+                                                        var fRem = (int)(order.CancellationDeadline.Value - DateTime.UtcNow).TotalSeconds;
+                                                        int fh = fRem / 3600;
+                                                        int fm = (fRem % 3600) / 60;
+                                                        <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                                                            <i class="bi bi-clock-history me-1"></i>3h Review Active (@($"{fh:D2}h {fm:D2}m"))
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                                                            <i class="bi bi-lock-fill me-1"></i>Locked for Dispatch
+                                                        </span>
+                                                    }
                                                 }
                                                 else if (order.Status == "Ready for Pickup")
                                                 {

@@ -216,19 +216,19 @@ namespace AgriAI.Web.Controllers
                 return RedirectToAction(nameof(Dashboard));
             }
 
-            // Cancellation is allowed if status is "Requested" OR ("Accepted" and within the 3-hour cancellation window)
-            bool isWindowOpen = order.Status == "Requested" || 
-                (order.Status == "Accepted" && (!order.CancellationDeadline.HasValue || DateTime.UtcNow <= order.CancellationDeadline.Value));
+            // Cancellation is strictly allowed within the single 3-hour window and before dispatch / pickup ready
+            bool isWindowOpen = (order.Status == "Requested" || order.Status == "Accepted") &&
+                (!order.CancellationDeadline.HasValue || DateTime.UtcNow <= order.CancellationDeadline.Value);
 
             if (!isWindowOpen)
             {
-                TempData["ErrorMessage"] = "❌ Cancellation window has expired! This order is locked for harvest and dispatch.";
+                TempData["ErrorMessage"] = "❌ Cancellation window has expired! This order is locked for harvest packaging and dispatch.";
                 return RedirectToAction("OrderDetails", new { id = orderId });
             }
 
             order.Status = "Cancelled";
             order.IsCustomerCancelled = true;
-            order.CustomerCancelReason = string.IsNullOrWhiteSpace(reason) ? "Cancelled by buyer within review window" : reason.Trim();
+            order.CustomerCancelReason = string.IsNullOrWhiteSpace(reason) ? "Cancelled by buyer within 3-hour review window" : reason.Trim();
 
             // Restore Stock
             foreach (var item in order.OrderItems)

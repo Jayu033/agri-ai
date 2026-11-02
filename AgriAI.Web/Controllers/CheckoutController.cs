@@ -199,13 +199,14 @@ namespace AgriAI.Web.Controllers
                     CustomerId = userId,
                     OrderDate = DateTime.UtcNow,
                     TotalAmount = grandTotal,
-                    Status = "Requested",
+                    Status = "Accepted", // Directly Confirmed with Single 3-Hour Review Window
                     PaymentMethod = paymentMethod == "COD" ? "Cash on Delivery" : "Online (Escrow Protected)",
                     DeliveryOtp = generatedOtp,
                     TransportType = transportType,
                     LogisticsFee = 0m,
                     PlatformFee = platformFee,
                     ShippingAddress = deliveryAddress,
+                    FarmerAcceptanceAt = DateTime.UtcNow,
                     CancellationDeadline = DateTime.UtcNow.AddHours(3)
                 };
 
@@ -233,7 +234,7 @@ namespace AgriAI.Web.Controllers
                 HttpContext.Session.Remove(CartSessionKey);
                 Response.Cookies.Delete(CartCookieKey);
 
-                TempData["SuccessMessage"] = $"🌾 Multi-Product Order Request #{order.Id:D5} placed successfully ({cartItems.Count} crop varieties)!";
+                TempData["SuccessMessage"] = $"🌾 Multi-Product Order #{order.Id:D5} placed & confirmed ({cartItems.Count} crop varieties)! 3-hour harvest review period active.";
                 return RedirectToAction("OrderDetails", "Customer", new { id = order.Id });
             }
 
@@ -253,13 +254,14 @@ namespace AgriAI.Web.Controllers
                 CustomerId = userId,
                 OrderDate = DateTime.UtcNow,
                 TotalAmount = singleGrandTotal,
-                Status = "Requested",
+                Status = "Accepted", // Directly Confirmed with Single 3-Hour Review Window
                 PaymentMethod = paymentMethod == "COD" ? "Cash on Delivery" : "Online (Escrow Protected)",
                 DeliveryOtp = generatedOtp,
                 TransportType = transportType,
                 LogisticsFee = 0m,
                 PlatformFee = singlePlatformFee,
                 ShippingAddress = deliveryAddress,
+                FarmerAcceptanceAt = DateTime.UtcNow,
                 CancellationDeadline = DateTime.UtcNow.AddHours(3)
             };
 
@@ -281,7 +283,7 @@ namespace AgriAI.Web.Controllers
             await _context.Orders.AddAsync(singleOrder);
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"🌾 Order Request #{singleOrder.Id:D5} placed successfully! The producer will review and accept your request shortly.";
+            TempData["SuccessMessage"] = $"🌾 Order #{singleOrder.Id:D5} placed & confirmed! 3-hour harvest review period active.";
             return RedirectToAction("OrderDetails", "Customer", new { id = singleOrder.Id });
         }
 
