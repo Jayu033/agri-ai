@@ -685,8 +685,18 @@
                                             </div>
 
                                             <div class="d-flex align-items-center gap-2">
+                                                @{
+                                                    var isActParcel = order.TransportType != null && (order.TransportType.Contains("Cargo") || order.TransportType.Contains("GSRTC") || order.TransportType.Contains("Parcel"));
+                                                }
                                                 <button type="button" class="btn btn-sm btn-success rounded-pill px-3.5 py-1.5 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;" onclick="openSecurityGate(@order.Id, '@orderLabel')">
-                                                    <i class="bi bi-shield-lock-fill me-1"></i> View More Details &amp; OTP
+                                                    @if (isActParcel)
+                                                    {
+                                                        <i class="bi bi-shield-lock-fill me-1"></i> <span>View Details &amp; OTP</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-eye-fill me-1"></i> <span>View Order Details</span>
+                                                    }
                                                 </button>
                                                 <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1.5 fw-bold" onclick="printOrderInvoice('@orderNoStr', '@dateFormatted', '@userName', '@produceName', @itemQty, @unitPrice, @baseAmt, @order.LogisticsFee, @order.PlatformFee, @order.TotalAmount, '@(order.PaymentMethod ?? "Online (Escrow)")', '@(order.TransportType ?? "Direct Farm Pickup")', '@(string.IsNullOrEmpty(order.ShippingAddress) ? "Gujarat Farm Location" : order.ShippingAddress)')">
                                                     <i class="bi bi-printer me-1"></i> Print Invoice

@@ -18,6 +18,7 @@
     var itemQty = firstItem?.Quantity ?? 1;
     var unitPrice = firstItem?.UnitPrice ?? Model.TotalAmount;
     var remainingSeconds = Model.CancellationDeadline.HasValue ? (int)Math.Max(0, (Model.CancellationDeadline.Value - DateTime.UtcNow).TotalSeconds) : 0;
+    var isParcel = Model.TransportType != null && (Model.TransportType.Contains("Cargo") || Model.TransportType.Contains("GSRTC") || Model.TransportType.Contains("Parcel"));
     string returnUrl = Context.Request.Query["returnUrl"].ToString();
     string from = Context.Request.Query["from"].ToString();
     string backUrl = !string.IsNullOrEmpty(returnUrl) 
@@ -278,26 +279,33 @@
                 <i class="bi bi-check-circle-fill text-success me-1"></i> <strong>2. Quality &amp; Moisture:</strong> Check crop cleanliness, grain size purity, and appropriate moisture levels.
             </div>
             <div class="col-md-4">
-                <i class="bi bi-check-circle-fill text-success me-1"></i> <strong>3. Share Delivery OTP:</strong> Share your confidential 4-digit Delivery OTP only after complete inspection.
+                @if (isParcel)
+                {
+                    <span><i class="bi bi-check-circle-fill text-success me-1"></i> <strong>3. Share Delivery OTP:</strong> Share confidential 4-digit OTP at cargo counter only after inspecting parcel.</span>
+                }
+                else
+                {
+                    <span><i class="bi bi-check-circle-fill text-success me-1"></i> <strong>3. Confirm Direct Handover:</strong> Inspect produce in person at the farm, then take direct delivery on the spot.</span>
+                }
             </div>
         </div>
     </div>
 
-    <!-- 1. Confidential 4-Digit Delivery OTP Card (Protected by Security Gate) -->
-    @if (Model.PaymentMethod != "Cash on Delivery" && !Model.Status.Contains("Delivered") && Model.Status != "Declined" && Model.Status != "Cancelled")
+    <!-- 1. Delivery Pass / OTP Verification Card -->
+    @if (isParcel && Model.PaymentMethod != "Cash on Delivery" && !Model.Status.Contains("Delivered") && Model.Status != "Declined" && Model.Status != "Cancelled")
     {
         <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
             <div class="row align-items-center g-3">
                 <div class="col-md-7">
                     <div class="d-flex align-items-center gap-2 mb-2">
                         <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
-                            <i class="bi bi-shield-lock-fill me-1"></i>CONFIDENTIAL DELIVERY PASS
+                            <i class="bi bi-shield-lock-fill me-1"></i>CONFIDENTIAL CARGO DELIVERY PASS
                         </span>
-                        <span class="text-white-50 small">Unlocked via Security Verification</span>
+                        <span class="text-white-50 small">Remote Cargo / GSRTC Delivery</span>
                     </div>
-                    <h4 class="fw-bold text-white mb-1">Your 4-Digit Delivery Verification OTP</h4>
+                    <h4 class="fw-bold text-white mb-1">Your 4-Digit Parcel Delivery OTP</h4>
                     <p class="text-white-50 small mb-0">
-                        Give this 4-digit code to the farmer/delivery person <strong>ONLY after inspecting the quality</strong> of your harvest upon pickup.
+                        Show this 4-digit code at the parcel destination counter <strong>ONLY after inspecting the parcel</strong> to claim your harvest.
                     </p>
                 </div>
 
@@ -309,6 +317,34 @@
                         <button type="button" class="btn btn-sm btn-light rounded-pill px-3 fw-bold" onclick="navigator.clipboard.writeText('@Model.DeliveryOtp'); this.innerHTML='<i class=\'bi bi-check2\'></i> Copied!';">
                             <i class="bi bi-clipboard me-1"></i> Copy OTP
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (!isParcel && !Model.Status.Contains("Delivered") && Model.Status != "Declined" && Model.Status != "Cancelled")
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%);">
+            <div class="row align-items-center g-3">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
+                            <i class="bi bi-geo-alt-fill me-1"></i>DIRECT FARM PICKUP PASS
+                        </span>
+                        <span class="text-white-50 small">100% Escrow Funded &bull; In-Person Handover</span>
+                    </div>
+                    <h4 class="fw-bold text-white mb-1">Direct Farm Collection &bull; No OTP Needed</h4>
+                    <p class="text-white-50 small mb-0">
+                        Visit the producer's farm directly. Inspect your fresh harvest produce in person, and the farmer will confirm physical handover directly on the spot.
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="d-inline-flex flex-column align-items-md-end gap-1 bg-white bg-opacity-10 p-3 rounded-4 border border-white border-opacity-20 shadow text-end">
+                        <small class="text-white-50" style="font-size: 0.72rem;">COLLECTION STATUS</small>
+                        <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill fs-6">
+                            @(Model.Status == "Ready for Pickup" ? "Ready for Farm Pickup 🟢" : (Model.Status == "Accepted" ? "Harvest Packaging in Progress" : Model.Status))
+                        </span>
+                        <small class="text-white-50 mt-1" style="font-size: 0.70rem;">Show Order #@Model.Id.ToString("D5") to Farmer</small>
                     </div>
                 </div>
             </div>
