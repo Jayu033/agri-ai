@@ -22,6 +22,7 @@ namespace AgriAI.Web.Controllers
         {
             _context = context;
             _userManager = userManager;
+            _razorpayService = razorpayService;
         }
 
         public async Task<IActionResult> Dashboard()
