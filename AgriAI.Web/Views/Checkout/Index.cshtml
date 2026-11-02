@@ -193,13 +193,20 @@
                                 <div class="flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                         <strong class="text-dark fs-6">
-                                            <i class="bi bi-shield-lock-fill text-success me-1"></i> Online UPI / Escrow Safe Payment
+                                            <i class="bi bi-shield-lock-fill text-success me-1"></i> Online Escrow Payment (Powered by Razorpay)
                                         </strong>
                                         <span class="badge bg-success text-white px-2.5 py-1 rounded-pill small">Recommended</span>
                                     </div>
-                                    <p class="text-muted small mb-0">
-                                        Funds held securely in AgriAI Escrow. Released to farmer only after you verify produce and provide your 4-digit OTP. Allows both Self Pickup &amp; Parcel Delivery.
+                                    <p class="text-muted small mb-2">
+                                        Funds held securely in AgriAI Escrow. Released to farmer only upon safe physical handover or OTP delivery. Supports all payment modes:
                                     </p>
+                                    <div class="d-flex flex-wrap align-items-center gap-1.5">
+                                        <span class="badge bg-white text-dark border px-2 py-1 small fw-bold"><i class="bi bi-qr-code text-success me-1"></i>UPI / QR (GPay, PhonePe, Paytm)</span>
+                                        <span class="badge bg-white text-dark border px-2 py-1 small fw-bold"><i class="bi bi-credit-card-2-front text-primary me-1"></i>Debit &amp; Credit Cards</span>
+                                        <span class="badge bg-white text-dark border px-2 py-1 small fw-bold"><i class="bi bi-bank text-info me-1"></i>NetBanking</span>
+                                        <span class="badge bg-light text-muted border px-2 py-1 small"><i class="bi bi-shield-check text-success me-1"></i>Razorpay Secured</span>
+                                    </div>
+                                </p>
                                 </div>
                             </div>
                         </div>
@@ -342,8 +349,8 @@
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" id="btnPlaceOrder" class="btn btn-success btn-lg py-3 fw-bold rounded-pill shadow d-flex align-items-center justify-content-center gap-2" style="background-color: #006653; border-color: #006653;">
-                                <i class="bi bi-check-circle-fill fs-5"></i> Confirm &amp; Place Order (<span id="btnPayAmount">₹@((baseTotal + platformFee).ToString("N2"))</span>)
+                            <button type="button" id="btnPlaceOrder" onclick="handlePlaceOrderClick()" class="btn btn-success btn-lg py-3 fw-bold rounded-pill shadow d-flex align-items-center justify-content-center gap-2" style="background-color: #006653; border-color: #006653;">
+                                <i class="bi bi-shield-lock-fill fs-5" id="btnIcon"></i> <span id="btnText">Pay Securely via Razorpay</span> (<span id="btnPayAmount">₹@((baseTotal + platformFee).ToString("N2"))</span>)
                             </button>
                         </div>
 
@@ -377,9 +384,11 @@
 </div>
 
 @section Scripts {
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
         const baseTotal = @baseTotal;
         const platformFee = @platformFee;
+        const razorpayKeyId = '@(ViewBag.RazorpayKeyId ?? "")';
 
         function selectPaymentMethod(method) {
             if (method === 'Online') {
@@ -413,6 +422,8 @@
             const transPickup = document.getElementById('transPickup');
             const deliveryBadge = document.getElementById('deliveryModeBadge');
             const guaranteeNote = document.getElementById('guaranteeNoteText');
+            const btnText = document.getElementById('btnText');
+            const btnIcon = document.getElementById('btnIcon');
 
             if (isOnline) {
                 boxOnline.classList.add('active');
@@ -421,7 +432,9 @@
                 boxCargo.classList.remove('disabled');
                 transCargo.disabled = false;
                 if (deliveryBadge) deliveryBadge.textContent = "2 Options Available";
-                if (guaranteeNote) guaranteeNote.textContent = "Payment is held safe in AgriAI Escrow until you inspect harvest and share your 4-digit Delivery OTP.";
+                if (guaranteeNote) guaranteeNote.textContent = "Payment is held safe in AgriAI Escrow until you inspect harvest and confirm delivery.";
+                if (btnText) btnText.textContent = "Pay Securely via Razorpay";
+                if (btnIcon) btnIcon.className = "bi bi-shield-lock-fill fs-5";
             } else {
                 boxCOD.classList.add('active');
                 boxOnline.classList.remove('active');
@@ -432,9 +445,155 @@
                 transPickup.checked = true;
                 if (deliveryBadge) deliveryBadge.textContent = "Self Pickup Only (COD)";
                 if (guaranteeNote) guaranteeNote.textContent = "Pay cash directly to farmer after inspecting produce at farm.";
+                if (btnText) btnText.textContent = "Confirm & Place Order (Pay on Pickup)";
+                if (btnIcon) btnIcon.className = "bi bi-check-circle-fill fs-5";
             }
 
             onTransportModeChanged();
+        }
+
+        async function handlePlaceOrderClick() {
+            if (!validateCheckoutForm()) {
+                return;
+            }
+
+            const isOnline = document.getElementById('payOnline')?.checked;
+            if (!isOnline) {
+                // Submit regular COD form
+                document.getElementById('checkoutForm').submit();
+                return;
+            }
+
+            // Online Payment via Razorpay
+            await initiateRazorpayCheckout();
+        }
+
+        function resetOrderButton() {
+            const btn = document.getElementById('btnPlaceOrder');
+            const isOnline = document.getElementById('payOnline')?.checked;
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = isOnline
+                    ? '<i class="bi bi-shield-lock-fill fs-5" id="btnIcon"></i> <span id="btnText">Pay Securely via Razorpay</span> (<span id="btnPayAmount">₹' + (baseTotal + platformFee).toFixed(2) + '</span>)'
+                    : '<i class="bi bi-check-circle-fill fs-5" id="btnIcon"></i> <span id="btnText">Confirm & Place Order (Pay on Pickup)</span> (<span id="btnPayAmount">₹' + (baseTotal + platformFee).toFixed(2) + '</span>)';
+            }
+        }
+
+        async function initiateRazorpayCheckout() {
+            const btn = document.getElementById('btnPlaceOrder');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Opening Razorpay Gateway...';
+            }
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+                const isCart = @(isCart ? "true" : "false");
+                const prodId = @(product != null ? product.Id.ToString() : "null");
+                const qty = @quantity;
+                const transType = document.querySelector('input[name="transportType"]:checked')?.value || 'Direct Farm Pickup';
+                const delAddr = document.getElementById('deliveryAddressInput')?.value?.trim() || '';
+
+                const orderPayload = {
+                    productId: prodId,
+                    quantity: qty,
+                    isCart: isCart,
+                    transportType: transType,
+                    deliveryAddress: delAddr
+                };
+
+                const res = await fetch('/Checkout/CreateRazorpayOrder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(orderPayload)
+                });
+
+                if (!res.ok) {
+                    throw new Error('HTTP error ' + res.status);
+                }
+
+                const data = await res.json();
+                if (!data.success) {
+                    alert(data.message || 'Unable to initialize Razorpay payment order.');
+                    resetOrderButton();
+                    return;
+                }
+
+                const options = {
+                    key: data.keyId,
+                    amount: data.amountInPaise,
+                    currency: data.currency || 'INR',
+                    name: 'AgriAI Escrow Gateway',
+                    description: data.description || 'Gujarat Farm Direct Produce Purchase',
+                    image: 'https://cdn-icons-png.flaticon.com/512/2917/2917995.png',
+                    order_id: data.razorpayOrderId,
+                    handler: async function (response) {
+                        if (btn) {
+                            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Verifying Escrow Payment & Finalizing Harvest...';
+                        }
+
+                        try {
+                            const verifyPayload = {
+                                razorpayPaymentId: response.razorpay_payment_id,
+                                razorpayOrderId: response.razorpay_order_id,
+                                razorpaySignature: response.razorpay_signature,
+                                productId: prodId,
+                                quantity: qty,
+                                isCart: isCart,
+                                transportType: transType,
+                                deliveryAddress: delAddr
+                            };
+
+                            const verifyRes = await fetch('/Checkout/VerifyAndCompleteOrder', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'RequestVerificationToken': token
+                                },
+                                body: JSON.stringify(verifyPayload)
+                            });
+
+                            const verifyData = await verifyRes.json();
+                            if (verifyData.success) {
+                                window.location.href = verifyData.redirectUrl;
+                            } else {
+                                alert(verifyData.message || 'Payment verification failed.');
+                                resetOrderButton();
+                            }
+                        } catch (vErr) {
+                            alert('Verification Error: ' + vErr.message);
+                            resetOrderButton();
+                        }
+                    },
+                    prefill: {
+                        name: data.prefill?.name || '',
+                        email: data.prefill?.email || '',
+                        contact: data.prefill?.contact || ''
+                    },
+                    theme: {
+                        color: '#006653'
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            resetOrderButton();
+                        }
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function (err) {
+                    alert('Payment Failed: ' + (err.error?.description || 'Payment was not completed.'));
+                    resetOrderButton();
+                });
+                rzp.open();
+
+            } catch (err) {
+                alert('Connection Error: ' + err.message);
+                resetOrderButton();
+            }
         }
 
         function onTransportModeChanged() {

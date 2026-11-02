@@ -1,6 +1,7 @@
 using AgriAI.Domain.Entities;
 using AgriAI.Infrastructure.Data;
 using AgriAI.Infrastructure.Identity;
+using AgriAI.Web.Services;
 using AgriAI.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -15,16 +16,24 @@ namespace AgriAI.Web.Controllers
     public class CheckoutController : Controller
     {
         private const string CartSessionKey = "AgriAI_ShoppingCart_Session";
+        private const string CartCookieKey = "AgriAI_Cart_Cookie";
+
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IRazorpayPaymentService _razorpayService;
+        private readonly ILogger<CheckoutController> _logger;
 
-        public CheckoutController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public CheckoutController(
+            ApplicationDbContext context, 
+            UserManager<ApplicationUser> userManager,
+            IRazorpayPaymentService razorpayService,
+            ILogger<CheckoutController> logger)
         {
             _context = context;
             _userManager = userManager;
+            _razorpayService = razorpayService;
+            _logger = logger;
         }
-
-        private const string CartCookieKey = "AgriAI_Cart_Cookie";
 
         private List<CartItemViewModel> GetSessionCart()
         {
@@ -56,6 +65,8 @@ namespace AgriAI.Web.Controllers
         // GET: Checkout?productId=1&quantity=5 OR Checkout?isCart=true
         public async Task<IActionResult> Index(int? productId, int quantity = 1, bool isCart = false)
         {
+            ViewBag.RazorpayKeyId = _razorpayService.GetKeyId();
+
             if (User.IsInRole("Admin"))
             {
                 TempData["ErrorMessage"] = "🛡️ Administrators are platform regulators and cannot purchase crops or place orders.";
@@ -144,6 +155,253 @@ namespace AgriAI.Web.Controllers
             return View();
         }
 
+        /// <summary>
+        /// AJAX: Initializes a Razorpay order with total escrow amount in paise.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateRazorpayOrder([FromBody] CreateRazorpayOrderRequest request)
+        {
+            if (User.IsInRole("Admin"))
+            {
+                return Json(new { success = false, message = "Administrators cannot place crop orders." });
+            }
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+            {
+                return Json(new { success = false, message = "Please sign in to complete your checkout." });
+            }
+
+            decimal baseTotal = 0m;
+            string description = "AgriAI Escrow Purchase";
+
+            if (request.IsCart)
+            {
+                var cart = GetSessionCart();
+                if (!cart.Any())
+                {
+                    return Json(new { success = false, message = "Your cart is empty." });
+                }
+                baseTotal = cart.Sum(i => i.TotalPrice);
+                description = $"AgriAI Harvest ({cart.Count} Crop Varieties)";
+            }
+            else if (request.ProductId.HasValue)
+            {
+                var product = await _context.Products.FindAsync(request.ProductId.Value);
+                if (product == null)
+                {
+                    return Json(new { success = false, message = "Produce not found." });
+                }
+                int qty = request.Quantity < 1 ? 1 : request.Quantity;
+                baseTotal = product.Price * qty;
+                description = $"{product.Name} ({qty} Kg) Direct Farm Purchase";
+            }
+            else
+            {
+                return Json(new { success = false, message = "Invalid crop purchase parameters." });
+            }
+
+            decimal platformFee = Math.Round(baseTotal * 0.02m, 2);
+            decimal grandTotal = baseTotal + platformFee;
+            string receipt = $"rcpt_{DateTime.UtcNow.Ticks % 10000000}";
+
+            var (success, razorpayOrderId, error) = await _razorpayService.CreateOrderAsync(grandTotal, receipt, description);
+            if (!success)
+            {
+                _logger.LogError("Failed to create Razorpay order: {Error}", error);
+                return Json(new { success = false, message = $"Razorpay Error: {error}" });
+            }
+
+            long amountInPaise = (long)Math.Round(grandTotal * 100m, MidpointRounding.AwayFromZero);
+
+            return Json(new
+            {
+                success = true,
+                razorpayOrderId = razorpayOrderId,
+                amountInPaise = amountInPaise,
+                amountFormatted = grandTotal.ToString("N2"),
+                currency = "INR",
+                keyId = _razorpayService.GetKeyId(),
+                description = description,
+                prefill = new
+                {
+                    name = $"{currentUser.FirstName} {currentUser.LastName}".Trim(),
+                    email = currentUser.Email ?? "",
+                    contact = currentUser.PhoneNumber ?? ""
+                }
+            });
+        }
+
+        /// <summary>
+        /// AJAX: Verifies Razorpay payment signature, creates order & payment records, deducts stock.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerifyAndCompleteOrder([FromBody] VerifyRazorpayPaymentRequest request)
+        {
+            if (User.IsInRole("Admin"))
+            {
+                return Json(new { success = false, message = "Administrators cannot place crop orders." });
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                var currentUser = await _userManager.GetUserAsync(User);
+                userId = currentUser?.Id ?? User.Identity?.Name;
+            }
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { success = false, message = "Session expired. Please log in again." });
+            }
+
+            // 1. Cryptographically verify signature
+            bool isSignatureValid = _razorpayService.VerifyPaymentSignature(
+                request.RazorpayOrderId,
+                request.RazorpayPaymentId,
+                request.RazorpaySignature);
+
+            if (!isSignatureValid)
+            {
+                _logger.LogWarning("Untrusted Razorpay signature: Order {OrderId}, Payment {PaymentId}", request.RazorpayOrderId, request.RazorpayPaymentId);
+                return Json(new { success = false, message = "Security Warning: Payment signature verification failed. Untrusted transaction." });
+            }
+
+            // 2. Setup transport & delivery address
+            string transportType = request.TransportType ?? "Direct Farm Pickup";
+            string deliveryAddress = request.DeliveryAddress ?? "";
+            if (transportType == "Direct Farm Pickup" || string.IsNullOrWhiteSpace(deliveryAddress))
+            {
+                deliveryAddress = "Direct Farm Pickup (Gujarat Field/Godown)";
+            }
+
+            string generatedOtp = new Random().Next(1000, 9999).ToString();
+            decimal baseTotal = 0m;
+            Order order;
+
+            // 3. Process items & calculate totals
+            if (request.IsCart)
+            {
+                var cartItems = GetSessionCart();
+                if (!cartItems.Any())
+                {
+                    return Json(new { success = false, message = "Your cart is empty." });
+                }
+
+                baseTotal = cartItems.Sum(i => i.TotalPrice);
+                decimal platformFee = Math.Round(baseTotal * 0.02m, 2);
+                decimal grandTotal = baseTotal + platformFee;
+
+                order = new Order
+                {
+                    CustomerId = userId,
+                    OrderDate = DateTime.UtcNow,
+                    TotalAmount = grandTotal,
+                    Status = "Accepted",
+                    PaymentMethod = "Online (Escrow Protected)",
+                    DeliveryOtp = generatedOtp,
+                    TransportType = transportType,
+                    LogisticsFee = 0m,
+                    PlatformFee = platformFee,
+                    ShippingAddress = deliveryAddress,
+                    FarmerAcceptanceAt = DateTime.UtcNow,
+                    CancellationDeadline = DateTime.UtcNow.AddHours(3)
+                };
+
+                foreach (var item in cartItems)
+                {
+                    order.OrderItems.Add(new OrderItem
+                    {
+                        ProductId = item.ProductId,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice
+                    });
+
+                    var dbProd = await _context.Products.FindAsync(item.ProductId);
+                    if (dbProd != null && dbProd.StockQuantity >= item.Quantity)
+                    {
+                        dbProd.StockQuantity -= item.Quantity;
+                    }
+                }
+
+                // Clear session & persistent cookie cart
+                HttpContext.Session.Remove(CartSessionKey);
+                Response.Cookies.Delete(CartCookieKey);
+            }
+            else
+            {
+                Product? product = null;
+                if (request.ProductId.HasValue)
+                {
+                    product = await _context.Products.FindAsync(request.ProductId.Value);
+                }
+
+                int qty = request.Quantity < 1 ? 1 : request.Quantity;
+                baseTotal = product != null ? product.Price * qty : 0m;
+                decimal platformFee = Math.Round(baseTotal * 0.02m, 2);
+                decimal grandTotal = baseTotal + platformFee;
+
+                order = new Order
+                {
+                    CustomerId = userId,
+                    OrderDate = DateTime.UtcNow,
+                    TotalAmount = grandTotal,
+                    Status = "Accepted",
+                    PaymentMethod = "Online (Escrow Protected)",
+                    DeliveryOtp = generatedOtp,
+                    TransportType = transportType,
+                    LogisticsFee = 0m,
+                    PlatformFee = platformFee,
+                    ShippingAddress = deliveryAddress,
+                    FarmerAcceptanceAt = DateTime.UtcNow,
+                    CancellationDeadline = DateTime.UtcNow.AddHours(3)
+                };
+
+                if (product != null)
+                {
+                    order.OrderItems.Add(new OrderItem
+                    {
+                        ProductId = product.Id,
+                        Quantity = qty,
+                        UnitPrice = product.Price
+                    });
+
+                    if (product.StockQuantity >= qty)
+                    {
+                        product.StockQuantity -= qty;
+                    }
+                }
+            }
+
+            await _context.Orders.AddAsync(order);
+            await _context.SaveChangesAsync();
+
+            // 4. Save Payment record in database linked to Order
+            var payment = new Payment
+            {
+                OrderId = order.Id,
+                RazorpayOrderId = request.RazorpayOrderId,
+                RazorpayPaymentId = request.RazorpayPaymentId,
+                RazorpaySignature = request.RazorpaySignature,
+                Amount = order.TotalAmount,
+                Currency = "INR",
+                Status = "Captured"
+            };
+
+            await _context.Payments.AddAsync(payment);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"🌾 Escrow Payment Confirmed! Order #{order.Id:D5} placed successfully. (Razorpay Ref: {request.RazorpayPaymentId})";
+
+            return Json(new
+            {
+                success = true,
+                orderId = order.Id,
+                redirectUrl = Url.Action("OrderDetails", "Customer", new { id = order.Id })
+            });
+        }
+
         [HttpPost]
         public async Task<IActionResult> ProcessPayment(int? productId, int quantity = 1, bool isCart = false, string paymentMethod = "Online", string transportType = "Direct Farm Pickup", string deliveryAddress = "")
         {
@@ -199,7 +457,7 @@ namespace AgriAI.Web.Controllers
                     CustomerId = userId,
                     OrderDate = DateTime.UtcNow,
                     TotalAmount = grandTotal,
-                    Status = "Accepted", // Directly Confirmed with Single 3-Hour Review Window
+                    Status = "Accepted",
                     PaymentMethod = paymentMethod == "COD" ? "Cash on Delivery" : "Online (Escrow Protected)",
                     DeliveryOtp = generatedOtp,
                     TransportType = transportType,
@@ -254,7 +512,7 @@ namespace AgriAI.Web.Controllers
                 CustomerId = userId,
                 OrderDate = DateTime.UtcNow,
                 TotalAmount = singleGrandTotal,
-                Status = "Accepted", // Directly Confirmed with Single 3-Hour Review Window
+                Status = "Accepted",
                 PaymentMethod = paymentMethod == "COD" ? "Cash on Delivery" : "Online (Escrow Protected)",
                 DeliveryOtp = generatedOtp,
                 TransportType = transportType,
@@ -285,13 +543,6 @@ namespace AgriAI.Web.Controllers
 
             TempData["SuccessMessage"] = $"🌾 Order #{singleOrder.Id:D5} placed & confirmed! 3-hour harvest review period active.";
             return RedirectToAction("OrderDetails", "Customer", new { id = singleOrder.Id });
-        }
-
-        [HttpPost]
-        public IActionResult PaymentSuccess(string razorpay_payment_id, string razorpay_order_id, string razorpay_signature)
-        {
-            TempData["SuccessMessage"] = "Payment successful! Your order has been placed.";
-            return RedirectToAction("Dashboard", "Customer");
         }
     }
 }

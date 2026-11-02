@@ -1,3 +1,4 @@
+using AgriAI.Web.Services;
 using AgriAI.Domain.Entities;
 using AgriAI.Infrastructure.Data;
 using AgriAI.Infrastructure.Identity;
@@ -15,8 +16,9 @@ namespace AgriAI.Web.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IRazorpayPaymentService _razorpayService;
 
-        public CustomerController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public CustomerController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IRazorpayPaymentService razorpayService)
         {
             _context = context;
             _userManager = userManager;
@@ -163,6 +165,7 @@ namespace AgriAI.Web.Controllers
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
                         .ThenInclude(p => p.Category)
+                .Include(o => o.Payment)
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (order == null)
@@ -201,6 +204,7 @@ namespace AgriAI.Web.Controllers
             var order = await _context.Orders
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
+                .Include(o => o.Payment)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null)
@@ -229,6 +233,16 @@ namespace AgriAI.Web.Controllers
             order.Status = "Cancelled";
             order.IsCustomerCancelled = true;
             order.CustomerCancelReason = string.IsNullOrWhiteSpace(reason) ? "Cancelled by buyer within 3-hour review window" : reason.Trim();
+
+            // Process Razorpay Escrow Refund if paid online
+            if (order.Payment != null && !string.IsNullOrEmpty(order.Payment.RazorpayPaymentId))
+            {
+                var (refundOk, refundId, refundErr) = await _razorpayService.RefundPaymentAsync(order.Payment.RazorpayPaymentId, order.TotalAmount);
+                if (refundOk)
+                {
+                    order.Payment.Status = "Refunded";
+                }
+            }
 
             // Restore Stock
             foreach (var item in order.OrderItems)
