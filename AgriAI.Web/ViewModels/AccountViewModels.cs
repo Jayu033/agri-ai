@@ -101,10 +101,68 @@ namespace AgriAI.Web.ViewModels
         [Display(Name = "Email Address")]
         public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "You must enter your current password to save changes.")]
+        [Display(Name = "Phone Number (WhatsApp)")]
+        [Phone]
+        public string? PhoneNumber { get; set; }
+
+        public string? Role { get; set; }
+
+        public string? ProfilePicturePath { get; set; }
+
+        public IFormFile? NewProfilePictureFile { get; set; }
+
+        // Farm Location & Address
+        [Display(Name = "Village / Taluka / City")]
+        public string? City { get; set; }
+
+        [Display(Name = "Farm / Street Location")]
+        public string? Address { get; set; }
+
+        // Farmer Bank Payout Details
+        [Display(Name = "Bank Name")]
+        public string? BankName { get; set; }
+
+        [Display(Name = "Bank Account Number")]
+        [RegularExpression(@"^[0-9]{9,18}$", ErrorMessage = "Bank Account Number must be 9 to 18 numeric digits.")]
+        public string? BankAccountNumber { get; set; }
+
+        [Display(Name = "IFSC Code")]
+        [RegularExpression(@"^[A-Z]{4}0[A-Z0-9]{6}$", ErrorMessage = "Please enter a valid 11-character uppercase IFSC code (e.g. SBIN0001234).")]
+        public string? BankIfscCode { get; set; }
+
+        [Display(Name = "UPI ID")]
+        [RegularExpression(@"^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$", ErrorMessage = "Please enter a valid UPI ID (e.g. 9876543210@upi).")]
+        public string? UpiId { get; set; }
+
+        // KYC & Land Record Details
+        [Display(Name = "KYC Document Type")]
+        public string? KycDocumentType { get; set; }
+
+        public string? KycDocumentPath { get; set; }
+
+        public bool IsApprovedByAdmin { get; set; }
+
+        public string? KycRejectionReason { get; set; }
+
+        public DateTime? KycSubmittedAt { get; set; }
+
+        public IFormFile? NewKycDocumentFile { get; set; }
+
+        // Security / Verification & Change Password
+        [Required(ErrorMessage = "You must enter your current password to authorize changes.")]
         [DataType(DataType.Password)]
         [Display(Name = "Current Password")]
         public string CurrentPassword { get; set; } = string.Empty;
+
+        [DataType(DataType.Password)]
+        [Display(Name = "New Password (Optional)")]
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
+        public string? NewPassword { get; set; }
+
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm New Password")]
+        [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
+        public string? ConfirmNewPassword { get; set; }
     }
 
     public class ForgotPasswordViewModel
