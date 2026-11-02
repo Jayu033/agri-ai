@@ -1,4 +1,5 @@
 using AgriAI.Infrastructure.Identity;
+using AgriAI.Web.Services;
 using AgriAI.Web.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,23 +12,144 @@ namespace AgriAI.Web.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IWebHostEnvironment _env;
+        private readonly IWhatsAppNotificationService _whatsAppService;
 
         public AccountController(
             UserManager<ApplicationUser> userManager, 
             SignInManager<ApplicationUser> signInManager, 
             RoleManager<IdentityRole> roleManager,
-            IWebHostEnvironment env)
+            IWebHostEnvironment env,
+            IWhatsAppNotificationService whatsAppService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
             _env = env;
+            _whatsAppService = whatsAppService;
         }
 
         [HttpGet]
         public IActionResult Register()
         {
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendRegistrationOtp(string phoneNumber, string username, string email, string role)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(phoneNumber))
+                {
+                    return Json(new { success = false, message = "Please enter a valid mobile number." });
+                }
+
+                // Clean phone number (keep only digits)
+                var digitsOnly = new string(phoneNumber.Where(char.IsDigit).ToArray());
+                if (digitsOnly.Length < 10)
+                {
+                    return Json(new { success = false, message = "Please enter a valid 10-digit mobile number." });
+                }
+
+                // Check username availability
+                if (!string.IsNullOrWhiteSpace(username))
+                {
+                    var existingUser = await _userManager.FindByNameAsync(username.Trim());
+                    if (existingUser != null)
+                    {
+                        return Json(new { success = false, message = $"Username '{username}' is already taken. Please choose another username." });
+                    }
+                }
+
+                // Check email availability
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    var existingEmail = await _userManager.FindByEmailAsync(email.Trim());
+                    if (existingEmail != null)
+                    {
+                        return Json(new { success = false, message = $"Email '{email}' is already registered. Please log in or use another email." });
+                    }
+                }
+
+                // Generate 6-digit cryptographically random OTP
+                var otpCode = Random.Shared.Next(100000, 999999).ToString();
+
+                // Save in session
+                HttpContext.Session.SetString("Reg_OtpCode", otpCode);
+                HttpContext.Session.SetString("Reg_Phone", digitsOnly);
+                HttpContext.Session.SetString("Reg_Expiry", DateTime.UtcNow.AddMinutes(5).ToString("o"));
+                HttpContext.Session.Remove("Reg_Verified");
+
+                // Send via WhatsApp
+                var result = await _whatsAppService.SendRegistrationOtpAsync(digitsOnly, otpCode, role ?? "Customer");
+                if (!result.Success && !string.IsNullOrEmpty(result.ErrorMessage) && !result.ErrorMessage.Contains("simulated"))
+                {
+                    return Json(new { success = false, message = $"Could not send WhatsApp OTP: {result.ErrorMessage}" });
+                }
+
+                // Mask phone for display: e.g. +91 97245 ***47
+                var masked = digitsOnly.Length >= 10 
+                    ? $"+91 {digitsOnly.Substring(digitsOnly.Length - 10, 5)} ***{digitsOnly.Substring(digitsOnly.Length - 2)}"
+                    : phoneNumber;
+
+                return Json(new { 
+                    success = true, 
+                    maskedPhone = masked,
+                    message = "Verification OTP sent successfully to your WhatsApp." 
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error sending OTP: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult VerifyRegistrationOtp(string phoneNumber, string otp)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(otp))
+                {
+                    return Json(new { success = false, message = "Please enter the 6-digit OTP code." });
+                }
+
+                var sessionOtp = HttpContext.Session.GetString("Reg_OtpCode");
+                var sessionPhone = HttpContext.Session.GetString("Reg_Phone");
+                var expiryStr = HttpContext.Session.GetString("Reg_Expiry");
+
+                if (string.IsNullOrEmpty(sessionOtp) || string.IsNullOrEmpty(expiryStr))
+                {
+                    return Json(new { success = false, message = "OTP session expired or not found. Please click Resend Code." });
+                }
+
+                if (DateTime.TryParse(expiryStr, out var expiry) && DateTime.UtcNow > expiry)
+                {
+                    return Json(new { success = false, message = "OTP has expired. Please click Resend Code for a fresh OTP." });
+                }
+
+                // Verify digits
+                var cleanPhone = new string((phoneNumber ?? "").Where(char.IsDigit).ToArray());
+                if (!string.IsNullOrEmpty(sessionPhone) && !string.IsNullOrEmpty(cleanPhone))
+                {
+                    if (!cleanPhone.EndsWith(sessionPhone.Length >= 10 ? sessionPhone[^10..] : sessionPhone))
+                    {
+                        return Json(new { success = false, message = "Phone number mismatch. Please re-enter your mobile number." });
+                    }
+                }
+
+                if (string.Equals(sessionOtp.Trim(), otp.Trim(), StringComparison.Ordinal))
+                {
+                    HttpContext.Session.SetString("Reg_Verified", "true");
+                    return Json(new { success = true, message = "WhatsApp OTP verified successfully! ✅" });
+                }
+
+                return Json(new { success = false, message = "Incorrect OTP code. Please check your WhatsApp and enter the correct 6-digit code." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Verification error: " + ex.Message });
+            }
         }
 
         [HttpPost]
@@ -48,6 +170,18 @@ namespace AgriAI.Web.Controllers
             }
 
             var isFarmer = model.Role == "Farmer";
+
+            // Verify WhatsApp OTP
+            var isVerified = HttpContext.Session.GetString("Reg_Verified") == "true";
+            var verifiedPhone = HttpContext.Session.GetString("Reg_Phone");
+            var cleanModelPhone = new string(model.PhoneNumber?.Where(char.IsDigit).ToArray() ?? Array.Empty<char>());
+
+            if (!isVerified || string.IsNullOrEmpty(verifiedPhone) || 
+                !cleanModelPhone.EndsWith(verifiedPhone.Length >= 10 ? verifiedPhone[^10..] : verifiedPhone))
+            {
+                ModelState.AddModelError("PhoneNumber", "Please verify your mobile number with WhatsApp OTP before creating an account.");
+                return View(model);
+            }
 
             // Strict Anti-Fraud Validation for Farmers
             if (isFarmer)
@@ -176,6 +310,11 @@ namespace AgriAI.Web.Controllers
                     }
                     
                     await _userManager.AddToRoleAsync(user, model.Role);
+
+                    HttpContext.Session.Remove("Reg_OtpCode");
+                    HttpContext.Session.Remove("Reg_Phone");
+                    HttpContext.Session.Remove("Reg_Expiry");
+                    HttpContext.Session.Remove("Reg_Verified");
 
                     if (isFarmer)
                     {

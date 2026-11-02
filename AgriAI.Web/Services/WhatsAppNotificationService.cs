@@ -240,5 +240,34 @@ namespace AgriAI.Web.Services
 
             return await SendMessageAsync(buyerPhone, sb.ToString());
         }
+
+        public async Task<(bool Success, string MessageId, string ErrorMessage)> SendRegistrationOtpAsync(string phoneNumber, string otpCode, string role)
+        {
+            var roleName = string.Equals(role, "Farmer", StringComparison.OrdinalIgnoreCase) 
+                ? "ખેડૂત ભાઈ (Farmer)" 
+                : "ગ્રાહક (Customer)";
+
+            var sb = new StringBuilder();
+            sb.AppendLine("🌾 *AGRIAI ACCOUNT SECURITY OTP* 🌾");
+            sb.AppendLine("_એગ્રીએઆઈ એકાઉન્ટ સુરક્ષા વેરિફિકેશન કોડ_");
+            sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
+            sb.AppendLine($"Hello / નમસ્તે *{roleName}*,");
+            sb.AppendLine("Welcome to AgriAI! Here is your official registration verification code:");
+            sb.AppendLine("_AgriAI માં તમારું સ્વાગત છે! તમારો સત્તાવાર એકાઉન્ટ વેરિફિકેશન કોડ:_");
+            sb.AppendLine();
+            sb.AppendLine("🔐 *YOUR OTP CODE / તમારો ઓટીપી:*");
+            sb.AppendLine($"👉 *{otpCode}* 👈");
+            sb.AppendLine();
+            sb.AppendLine("⏱️ *Valid for 5 minutes only.*");
+            sb.AppendLine("_આ કોડ ફક્ત ૫ મિનિટ માટે જ માન્ય રહેશે._");
+            sb.AppendLine();
+            sb.AppendLine("⚠️ *Security Warning:*");
+            sb.AppendLine("Do NOT share this code with anyone. AgriAI representatives never ask for your OTP.");
+            sb.AppendLine("_સુરક્ષા ખાતર આ કોડ કોઈ સાથે શેર કરવો નહીં._");
+            sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
+            sb.AppendLine("🚜 *AgriAI - Direct Gujarat Farm-to-Consumer Portal* 🌾");
+
+            return await SendMessageAsync(phoneNumber, sb.ToString());
+        }
     }
 }

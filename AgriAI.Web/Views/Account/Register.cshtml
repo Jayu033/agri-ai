@@ -509,6 +509,91 @@
     </div>
 </div>
 
+
+<!-- WhatsApp Registration OTP Verification Modal -->
+<div class="modal fade" id="whatsappOtpModal" tabindex="-1" aria-labelledby="whatsappOtpModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <!-- Header with WhatsApp Green Gradient -->
+            <div class="modal-header border-0 py-3.5 px-4 text-white" style="background: linear-gradient(135deg, #128C7E 0%, #25D366 100%);">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-white text-success d-flex align-items-center justify-content-center shadow-sm" style="width: 46px; height: 46px;">
+                        <i class="bi bi-whatsapp fs-3" style="color: #25D366;"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0.5 text-white" id="whatsappOtpModalLabel">WhatsApp Verification</h5>
+                        <small class="text-white-50" style="font-size: 0.78rem;">એગ્રીએઆઈ સુરક્ષા વેરિફિકેશન</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close" onclick="resetOtpModal()"></button>
+            </div>
+
+            <div class="modal-body p-4 text-center bg-white">
+                <div class="mb-3">
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1.5 rounded-pill fw-bold small">
+                        <i class="bi bi-shield-check me-1"></i>Official WhatsApp OTP Sent
+                    </span>
+                </div>
+
+                <p class="text-muted small mb-1">
+                    We sent a 6-digit security code to your WhatsApp:
+                </p>
+                <h6 class="fw-bold text-dark font-monospace mb-2" id="otpPhoneDisplay">
+                    +91 ••••• •••47
+                </h6>
+                <p class="text-muted" style="font-size: 0.76rem;">
+                    <em>તમારા WhatsApp પર મોકલેલો ૬ આંકડાનો કોડ અહીં લખો:</em>
+                </p>
+
+                <!-- OTP Input Field -->
+                <div class="my-3">
+                    <input type="text" id="whatsappOtpInput" maxlength="6" inputmode="numeric" 
+                           class="form-control text-center font-monospace fw-extrabold shadow-sm"
+                           placeholder="• • • • • •"
+                           style="font-size: 2rem; letter-spacing: 12px; height: 60px; border: 2px solid #25D366; border-radius: 16px; color: #128C7E;"
+                           autocomplete="one-time-code" />
+                </div>
+
+                <!-- Error Alert Box -->
+                <div id="otpErrorAlert" class="alert alert-danger small p-2.5 mb-3 rounded-3 d-none text-start" role="alert">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>
+                    <span id="otpErrorMsg">Incorrect OTP code.</span>
+                </div>
+
+                <!-- Success Alert Box -->
+                <div id="otpSuccessAlert" class="alert alert-success small p-2.5 mb-3 rounded-3 d-none text-start" role="alert">
+                    <i class="bi bi-check-circle-fill me-1"></i>
+                    <span>OTP Verified! Creating your account...</span>
+                </div>
+
+                <!-- Verify Button -->
+                <button type="button" id="btnConfirmOtp" class="btn btn-success w-100 py-3 fw-bold rounded-pill shadow d-inline-flex align-items-center justify-content-center gap-2" style="background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); border: none; font-size: 1rem;" onclick="verifyOtpAndRegister()">
+                    <span id="btnConfirmOtpText">Verify &amp; Create Account</span>
+                    <i class="bi bi-check2-circle fs-5" id="btnConfirmOtpIcon"></i>
+                    <div class="spinner-border spinner-border-sm text-white d-none" id="btnConfirmOtpSpinner" role="status"></div>
+                </button>
+
+                <!-- Resend Timer Row -->
+                <div class="d-flex align-items-center justify-content-between mt-3 px-2">
+                    <span class="text-muted small" id="otpTimerText" style="font-size: 0.78rem;">
+                        <i class="bi bi-clock me-1"></i>Resend in <strong id="otpTimerSeconds">45</strong>s
+                    </span>
+                    <button type="button" id="btnResendOtp" class="btn btn-link text-success fw-bold text-decoration-none p-0 small disabled" onclick="resendOtpViaWhatsApp()" style="font-size: 0.80rem;">
+                        <i class="bi bi-arrow-repeat me-1"></i>Resend Code
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-light border-top py-2.5 px-4 d-flex justify-content-between">
+                <button type="button" class="btn btn-link text-muted text-decoration-none small p-0" data-bs-dismiss="modal" onclick="resetOtpModal()" style="font-size: 0.78rem;">
+                    <i class="bi bi-pencil me-1"></i>Change Mobile Number
+                </button>
+                <small class="text-muted" style="font-size: 0.72rem;">AgriAI Escrow &amp; Security</small>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
@@ -1049,5 +1134,290 @@
                 }, 300);
             }
         }
+    
+        /* ============================================================ */
+        /* WhatsApp Direct Registration OTP Verification Logic         */
+        /* ============================================================ */
+        let isOtpVerified = false;
+        let otpCountdownTimer = null;
+        let currentOtpPhone = '';
+
+        const regForm = document.getElementById('registerForm');
+        if (regForm) {
+            regForm.addEventListener('submit', function (e) {
+                if (isOtpVerified) {
+                    return; // Proceed with normal submission
+                }
+
+                e.preventDefault();
+
+                const role = document.querySelector('input[name="Role"]:checked')?.value || 'Customer';
+                const phoneInput = document.getElementById('regPhone');
+                const phoneNumber = phoneInput ? phoneInput.value.trim() : '';
+
+                // Step 1 validation check
+                const fName = document.getElementById('regFirstName')?.value.trim();
+                const lName = document.getElementById('regLastName')?.value.trim();
+                const uName = document.getElementById('regUsername')?.value.trim();
+                const email = document.getElementById('regEmail')?.value.trim();
+                const pwd = document.getElementById('regPassword')?.value;
+                const cPwd = document.getElementById('regConfirmPassword')?.value;
+
+                if (!fName || !lName || !uName || !email || !pwd) {
+                    showStep1Error('Please fill in all required profile details.');
+                    return;
+                }
+
+                if (pwd !== cPwd) {
+                    showStep1Error('Password and Confirm Password do not match.');
+                    return;
+                }
+
+                if (!phoneNumber) {
+                    showStep1Error('Please enter your mobile number for WhatsApp verification.');
+                    if (phoneInput) phoneInput.focus();
+                    return;
+                }
+
+                const digitsOnly = phoneNumber.replace(/\D/g, '');
+                if (digitsOnly.length < 10) {
+                    showStep1Error('Please enter a valid 10-digit mobile number.');
+                    if (phoneInput) phoneInput.focus();
+                    return;
+                }
+
+                // If Farmer, validate step 2 fields
+                if (role === 'Farmer') {
+                    const step2 = document.getElementById('registerStep2');
+                    if (step2 && step2.style.display === 'none') {
+                        goToStep2();
+                        return;
+                    }
+                    const bankNum = document.getElementById('BankAccountNumber')?.value?.trim();
+                    const ifsc = document.getElementById('BankIfscCode')?.value?.trim();
+                    const kycFile = document.getElementById('KycDocumentFile');
+                    if (!bankNum || !ifsc) {
+                        alert('Bank Account Number and IFSC code are required for Farmer registration.');
+                        return;
+                    }
+                    if (!kycFile || !kycFile.files || kycFile.files.length === 0) {
+                        alert('Please upload your 7/12 (Satbara) or Aadhaar Card document.');
+                        return;
+                    }
+                }
+
+                // Show loading spinner on active submit button
+                const submitBtn = role === 'Farmer'
+                    ? document.querySelector('#registerStep2 button[type="submit"]')
+                    : document.getElementById('btnCustomerSubmit');
+
+                const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span><span>Sending WhatsApp OTP...</span>';
+                }
+
+                const formData = new FormData();
+                formData.append('phoneNumber', phoneNumber);
+                formData.append('username', uName);
+                formData.append('email', email);
+                formData.append('role', role);
+
+                fetch('/Account/SendRegistrationOtp', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnHtml;
+                    }
+
+                    if (data.success) {
+                        currentOtpPhone = digitsOnly;
+                        document.getElementById('otpPhoneDisplay').textContent = data.maskedPhone || phoneNumber;
+                        document.getElementById('whatsappOtpInput').value = '';
+                        document.getElementById('otpErrorAlert').classList.add('d-none');
+                        document.getElementById('otpSuccessAlert').classList.add('d-none');
+
+                        // Show WhatsApp OTP Modal
+                        const modalEl = document.getElementById('whatsappOtpModal');
+                        const otpModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                        otpModal.show();
+
+                        setTimeout(() => {
+                            const inp = document.getElementById('whatsappOtpInput');
+                            if (inp) inp.focus();
+                        }, 400);
+
+                        startOtpTimer(45);
+                    } else {
+                        showStep1Error(data.message || 'Could not send WhatsApp OTP.');
+                    }
+                })
+                .catch(err => {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnHtml;
+                    }
+                    showStep1Error('Network error while connecting to WhatsApp service: ' + err.message);
+                });
+            });
+        }
+
+        function verifyOtpAndRegister() {
+            const otpInput = document.getElementById('whatsappOtpInput');
+            const otp = otpInput ? otpInput.value.trim() : '';
+
+            if (!otp || otp.length < 6) {
+                showOtpError('Please enter the 6-digit code received on WhatsApp.');
+                if (otpInput) otpInput.focus();
+                return;
+            }
+
+            const btn = document.getElementById('btnConfirmOtp');
+            const txt = document.getElementById('btnConfirmOtpText');
+            const icon = document.getElementById('btnConfirmOtpIcon');
+            const spinner = document.getElementById('btnConfirmOtpSpinner');
+
+            if (btn) btn.disabled = true;
+            if (txt) txt.textContent = 'Verifying...';
+            if (icon) icon.classList.add('d-none');
+            if (spinner) spinner.classList.remove('d-none');
+
+            const formData = new FormData();
+            formData.append('phoneNumber', currentOtpPhone);
+            formData.append('otp', otp);
+
+            fetch('/Account/VerifyRegistrationOtp', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('otpErrorAlert').classList.add('d-none');
+                    document.getElementById('otpSuccessAlert').classList.remove('d-none');
+
+                    isOtpVerified = true;
+
+                    setTimeout(() => {
+                        const modalEl = document.getElementById('whatsappOtpModal');
+                        const otpModal = bootstrap.Modal.getInstance(modalEl);
+                        if (otpModal) otpModal.hide();
+
+                        // Submit the form
+                        document.getElementById('registerForm').submit();
+                    }, 800);
+                } else {
+                    if (btn) btn.disabled = false;
+                    if (txt) txt.textContent = 'Verify & Create Account';
+                    if (icon) icon.classList.remove('d-none');
+                    if (spinner) spinner.classList.add('d-none');
+
+                    showOtpError(data.message || 'Incorrect OTP code. Please check WhatsApp.');
+                    if (otpInput) {
+                        otpInput.focus();
+                        otpInput.select();
+                    }
+                }
+            })
+            .catch(err => {
+                if (btn) btn.disabled = false;
+                if (txt) txt.textContent = 'Verify & Create Account';
+                if (icon) icon.classList.remove('d-none');
+                if (spinner) spinner.classList.add('d-none');
+                showOtpError('Verification request failed: ' + err.message);
+            });
+        }
+
+        function startOtpTimer(seconds) {
+            if (otpCountdownTimer) clearInterval(otpCountdownTimer);
+            let remaining = seconds;
+            const secEl = document.getElementById('otpTimerSeconds');
+            const resendBtn = document.getElementById('btnResendOtp');
+            const timerText = document.getElementById('otpTimerText');
+
+            if (resendBtn) resendBtn.classList.add('disabled');
+            if (timerText) timerText.style.display = 'inline-block';
+
+            otpCountdownTimer = setInterval(() => {
+                remaining--;
+                if (secEl) secEl.textContent = remaining;
+                if (remaining <= 0) {
+                    clearInterval(otpCountdownTimer);
+                    if (resendBtn) resendBtn.classList.remove('disabled');
+                    if (timerText) timerText.style.display = 'none';
+                }
+            }, 1000);
+        }
+
+        function resendOtpViaWhatsApp() {
+            const resendBtn = document.getElementById('btnResendOtp');
+            if (resendBtn && resendBtn.classList.contains('disabled')) return;
+
+            const phoneInput = document.getElementById('regPhone');
+            const phoneNumber = phoneInput ? phoneInput.value.trim() : '';
+            const role = document.querySelector('input[name="Role"]:checked')?.value || 'Customer';
+            const username = document.getElementById('regUsername')?.value || '';
+            const email = document.getElementById('regEmail')?.value || '';
+
+            if (resendBtn) {
+                resendBtn.classList.add('disabled');
+                resendBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Resending...';
+            }
+
+            const formData = new FormData();
+            formData.append('phoneNumber', phoneNumber);
+            formData.append('username', username);
+            formData.append('email', email);
+            formData.append('role', role);
+
+            fetch('/Account/SendRegistrationOtp', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (resendBtn) {
+                    resendBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Resend Code';
+                }
+                if (data.success) {
+                    document.getElementById('otpErrorAlert').classList.add('d-none');
+                    startOtpTimer(45);
+                } else {
+                    showOtpError(data.message || 'Could not resend OTP.');
+                }
+            })
+            .catch(err => {
+                if (resendBtn) {
+                    resendBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Resend Code';
+                }
+                showOtpError('Error resending OTP: ' + err.message);
+            });
+        }
+
+        function showOtpError(msg) {
+            const errBox = document.getElementById('otpErrorAlert');
+            const errMsg = document.getElementById('otpErrorMsg');
+            if (errMsg) errMsg.textContent = msg;
+            if (errBox) errBox.classList.remove('d-none');
+        }
+
+        function resetOtpModal() {
+            if (otpCountdownTimer) clearInterval(otpCountdownTimer);
+            document.getElementById('otpErrorAlert')?.classList.add('d-none');
+            document.getElementById('otpSuccessAlert')?.classList.add('d-none');
+        }
+
+        // Auto-advance or submit on 6th digit
+        document.getElementById('whatsappOtpInput')?.addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+            if (this.value.length === 6) {
+                verifyOtpAndRegister();
+            }
+        });
+
     </script>
 }
