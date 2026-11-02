@@ -11,6 +11,8 @@ namespace AgriAI.Web.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<WhatsAppNotificationService> _logger;
 
+        private readonly string _provider;
+        private readonly string _apiHost;
         private readonly string _instanceId;
         private readonly string _token;
         private readonly bool _isEnabled;
@@ -21,6 +23,8 @@ namespace AgriAI.Web.Services
             _configuration = configuration;
             _logger = logger;
 
+            _provider = _configuration["WhatsApp:Provider"] ?? "GreenAPI";
+            _apiHost = _configuration["WhatsApp:ApiUrl"] ?? "https://api.green-api.com";
             _instanceId = _configuration["WhatsApp:InstanceId"] ?? "";
             _token = _configuration["WhatsApp:Token"] ?? "";
             _isEnabled = _configuration.GetValue<bool>("WhatsApp:IsEnabled", true);
@@ -64,43 +68,82 @@ namespace AgriAI.Web.Services
                 // If not configured or disabled, log as simulation / sandbox
                 if (!_isEnabled || string.IsNullOrWhiteSpace(_instanceId) || string.IsNullOrWhiteSpace(_token) || _instanceId.Contains("YOUR_"))
                 {
-                    _logger.LogInformation("📲 [SIMULATED WHATSAPP NOTIFICATION to +{Phone}]:\n{Message}", cleanPhone, messageBody);
+                    _logger.LogInformation("📲 [SIMULATED WHATSAPP NOTIFICATION to +{Phone} via {Provider}]:\n{Message}", cleanPhone, _provider, messageBody);
                     return (true, "simulated_" + Guid.NewGuid().ToString("N")[..8], string.Empty);
                 }
 
-                // UltraMsg Official REST API
-                var endpoint = $"https://api.ultramsg.com/{_instanceId}/messages/chat";
-
-                var formValues = new Dictionary<string, string>
+                // 1. GREEN-API (Free Developer Tier)
+                if (string.Equals(_provider, "GreenAPI", StringComparison.OrdinalIgnoreCase))
                 {
-                    { "token", _token },
-                    { "to", cleanPhone },
-                    { "body", messageBody }
-                };
+                    var host = string.IsNullOrWhiteSpace(_apiHost) ? "https://api.green-api.com" : _apiHost.TrimEnd('/');
+                    var endpoint = $"{host}/waInstance{_instanceId}/sendMessage/{_token}";
 
-                using var formContent = new FormUrlEncodedContent(formValues);
-                var response = await _httpClient.PostAsync(endpoint, formContent);
-                var responseString = await response.Content.ReadAsStringAsync();
+                    var payload = new
+                    {
+                        chatId = $"{cleanPhone}@c.us",
+                        message = messageBody
+                    };
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    _logger.LogError("UltraMsg API returned status {Status}: {Body}", response.StatusCode, responseString);
-                    return (false, string.Empty, $"UltraMsg API error ({response.StatusCode}): {responseString}");
+                    var jsonString = JsonSerializer.Serialize(payload);
+                    using var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
+
+                    var response = await _httpClient.PostAsync(endpoint, content);
+                    var responseString = await response.Content.ReadAsStringAsync();
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogError("Green-API returned status {Status}: {Body}", response.StatusCode, responseString);
+                        return (false, string.Empty, $"Green-API error ({response.StatusCode}): {responseString}");
+                    }
+
+                    var jsonNode = JsonNode.Parse(responseString);
+                    var idMessage = jsonNode?["idMessage"]?.ToString();
+
+                    if (!string.IsNullOrEmpty(idMessage))
+                    {
+                        _logger.LogInformation("✅ Automated Green-API WhatsApp message delivered to +{Phone}. ID: {MsgId}", cleanPhone, idMessage);
+                        return (true, idMessage, string.Empty);
+                    }
+
+                    _logger.LogWarning("Green-API message response: {Body}", responseString);
+                    return (true, "greenapi_ok", string.Empty);
                 }
-
-                var jsonNode = JsonNode.Parse(responseString);
-                var isSent = jsonNode?["sent"]?.ToString();
-                var messageId = jsonNode?["id"]?.ToString() ?? "msg_ok";
-
-                if (string.Equals(isSent, "true", StringComparison.OrdinalIgnoreCase))
+                else
                 {
-                    _logger.LogInformation("✅ Automated WhatsApp message successfully delivered to +{Phone}. ID: {MsgId}", cleanPhone, messageId);
-                    return (true, messageId, string.Empty);
-                }
+                    // 2. UltraMsg REST API Fallback
+                    var endpoint = $"https://api.ultramsg.com/{_instanceId}/messages/chat";
 
-                var errMsg = jsonNode?["message"]?.ToString() ?? responseString;
-                _logger.LogWarning("UltraMsg reported message unsent: {Error}", errMsg);
-                return (false, string.Empty, errMsg);
+                    var formValues = new Dictionary<string, string>
+                    {
+                        { "token", _token },
+                        { "to", cleanPhone },
+                        { "body", messageBody }
+                    };
+
+                    using var formContent = new FormUrlEncodedContent(formValues);
+                    var response = await _httpClient.PostAsync(endpoint, formContent);
+                    var responseString = await response.Content.ReadAsStringAsync();
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogError("UltraMsg API returned status {Status}: {Body}", response.StatusCode, responseString);
+                        return (false, string.Empty, $"UltraMsg API error ({response.StatusCode}): {responseString}");
+                    }
+
+                    var jsonNode = JsonNode.Parse(responseString);
+                    var isSent = jsonNode?["sent"]?.ToString();
+                    var messageId = jsonNode?["id"]?.ToString() ?? "msg_ok";
+
+                    if (string.Equals(isSent, "true", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.LogInformation("✅ Automated UltraMsg WhatsApp message delivered to +{Phone}. ID: {MsgId}", cleanPhone, messageId);
+                        return (true, messageId, string.Empty);
+                    }
+
+                    var errMsg = jsonNode?["message"]?.ToString() ?? responseString;
+                    _logger.LogWarning("UltraMsg reported unsent: {Error}", errMsg);
+                    return (false, string.Empty, errMsg);
+                }
             }
             catch (Exception ex)
             {
@@ -159,7 +202,7 @@ namespace AgriAI.Web.Services
             sb.AppendLine();
             sb.AppendLine("📍 *BUYER INFO / ગ્રાહક વિગતો:*");
             sb.AppendLine($"• *Name / નામ:* {safeBuyerName}");
-            sb.AppendLine($"• *Location / સરનામું:* {deliveryAddr}");
+            sb.AppendLine($"• *Location / સ્થળ:* {deliveryAddr}");
             sb.AppendLine();
             sb.AppendLine("⏳ Please review order & prepare harvest packaging.");
             sb.AppendLine("_કૃપા કરીને ઓર્ડર ચકાસી ખેતરે ઉપજ તૈયાર રાખવા વિનંતી._");
@@ -175,42 +218,25 @@ namespace AgriAI.Web.Services
             var firstItem = order.OrderItems.FirstOrDefault();
             var cropName = firstItem?.Product?.Name ?? "ખેતી પાક (Produce)";
             int totalQty = order.OrderItems.Sum(oi => oi.Quantity);
-            if (order.OrderItems.Count > 1)
-            {
-                cropName += $" (+{order.OrderItems.Count - 1} varieties)";
-            }
-
-            var safeBuyerName = string.IsNullOrWhiteSpace(buyerName) ? "Buyer" : buyerName.Trim();
-            var safeFarmerName = string.IsNullOrWhiteSpace(farmerName) ? "Verified Farmer" : farmerName.Trim();
 
             var sb = new StringBuilder();
-            sb.AppendLine("🌾 *AGRIAI - ORDER CONFIRMATION* 🌾");
-            sb.AppendLine("_ઓર્ડર સફળતાપૂર્વક પ્લેસ થયો_");
+            sb.AppendLine("🌾 *AGRIAI ORDER CONFIRMATION* 🌾");
+            sb.AppendLine("_ઓર્ડર કન્ફર્મેશન રસીદ_");
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
-            sb.AppendLine($"Hello / નમસ્તે *{safeBuyerName}* જી,");
-            sb.AppendLine("Thank you for purchasing direct farm produce!");
-            sb.AppendLine("_સીધા સ્થાનિક ખેડૂત પાસેથી તાજો પાક ખરીદવા બદલ આભાર!_");
+            sb.AppendLine($"Hello / નમસ્તે *{buyerName}* જી,");
+            sb.AppendLine("Thank you for buying direct from our Gujarat Farmers!");
+            sb.AppendLine("_ખેડૂત પાસેથી સીધી ખરીદી કરવા બદલ તમારો ખૂબ ખૂબ આભાર._");
             sb.AppendLine();
-            sb.AppendLine("📋 *ORDER SUMMARY / ઓર્ડર વિગતો:*");
-            sb.AppendLine($"• *Order ID / ઓર્ડર નં:* #{order.Id:D5}");
-            sb.AppendLine($"• *Produce / પાક:* *{cropName}* ({totalQty} Kg)");
-            sb.AppendLine($"• *Total Paid / ચૂકવેલ રકમ:* *₹{order.TotalAmount:N2}*");
-            sb.AppendLine($"• *Logistics / ડિલિવરી:* {order.TransportType ?? "Direct Farm Pickup"}");
-            sb.AppendLine($"• *Producer / ખેડૂત:* *{safeFarmerName}*");
+            sb.AppendLine("📋 *ORDER SUMMARY:*");
+            sb.AppendLine($"• *Order ID:* #{order.Id:D5}");
+            sb.AppendLine($"• *Produce:* *{cropName}* ({totalQty} Kg)");
+            sb.AppendLine($"• *Farmer / ખેડૂત:* *{farmerName}*");
+            sb.AppendLine($"• *Total Paid:* *₹{order.TotalAmount:N2}*");
+            sb.AppendLine("• *Status:* 100% Escrow Secured ✅");
             sb.AppendLine();
-            sb.AppendLine("🛡️ *100% ESCROW PROTECTION:*");
-            if (order.PaymentMethod != "Cash on Delivery")
-            {
-                sb.AppendLine("🔒 Your funds are held safely in AgriAI Escrow.");
-                sb.AppendLine("_તમારા પૈસા એસ્ક્રોમાં સુરક્ષિત છે. માલ મળ્યા પછી જ ખેડૂતને ચૂકવાશે._");
-            }
-            else
-            {
-                sb.AppendLine("💵 Cash on Delivery selected. Pay cash directly at farm after harvest inspection.");
-            }
-            sb.AppendLine();
+            sb.AppendLine("Track your order live on the AgriAI portal!");
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
-            sb.AppendLine("🚜 *AgriAI - Empowering Gujarat Agriculture* 🌾");
+            sb.AppendLine("🚜 *AgriAI - Pure Direct Farm Marketplace* 🌾");
 
             return await SendMessageAsync(buyerPhone, sb.ToString());
         }
