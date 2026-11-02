@@ -10,31 +10,32 @@
 
 @section Styles {
     <style>
-        .profile-page-wrapper {
-            max-width: 1440px;
+        .profile-container {
+            max-width: 1480px;
             margin: 0 auto;
         }
 
         /* 1. Hero Header Banner */
-        .profile-hero {
+        .profile-hero-header {
             background: linear-gradient(135deg, #006653 0%, #047857 100%);
             border-radius: 1.25rem;
-            padding: 2rem 2.25rem;
+            padding: 2.25rem 2rem;
             color: #ffffff;
-            margin-bottom: 2rem;
+            margin-bottom: 1.75rem;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0, 102, 83, 0.12);
+            box-shadow: 0 10px 30px rgba(0, 50, 35, 0.08);
+            animation: profileFadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
 
-        .profile-hero::after {
+        .profile-hero-header::after {
             content: "";
             position: absolute;
-            right: -20px;
-            bottom: -20px;
-            width: 200px;
-            height: 200px;
-            background: rgba(255, 255, 255, 0.05);
+            right: -30px;
+            bottom: -30px;
+            width: 220px;
+            height: 220px;
+            background: rgba(255, 255, 255, 0.06);
             border-radius: 50%;
             pointer-events: none;
         }
@@ -42,80 +43,113 @@
         .profile-hero-badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            background: rgba(255, 255, 255, 0.18);
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.16);
             border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 5px 14px;
-            border-radius: 20px;
+            padding: 6px 16px;
+            border-radius: 30px;
             color: #ffffff;
-            font-size: 0.80rem;
+            font-size: 0.82rem;
             font-weight: 700;
-            margin-bottom: 8px;
-            backdrop-filter: blur(6px);
+            letter-spacing: 0.3px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(8px);
         }
 
         .profile-hero-title {
-            font-size: 2rem;
+            font-size: 2.15rem;
             font-weight: 800;
             color: #ffffff;
-            margin-bottom: 4px;
             letter-spacing: -0.5px;
+            margin-bottom: 6px;
         }
 
-        .profile-hero-sub {
-            font-size: 0.92rem;
+        .profile-hero-subtitle {
+            font-size: 0.95rem;
             color: rgba(255, 255, 255, 0.9);
+            max-width: 760px;
             margin-bottom: 0;
-            max-width: 720px;
+            line-height: 1.5;
         }
 
-        /* 2. Sidebar Profile Card */
-        .profile-side-card {
+        /* 2. Unified Master Card (Consolidates Everything in One Elegant Container Box) */
+        .profile-unified-card {
             background: #ffffff;
+            border-radius: 24px;
             border: 1px solid #e2e8f0;
-            border-radius: 18px;
-            padding: 1.75rem 1.5rem;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 50, 35, 0.05), 0 1px 4px rgba(0, 0, 0, 0.02);
+            padding: 2.25rem 2.5rem;
+            margin-bottom: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            animation: profileFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
         }
 
-        .profile-avatar-box {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 1rem;
+        .profile-unified-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #006653 0%, #10b981 50%, #cb9d46 100%);
+        }
+
+        .profile-card-header {
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        /* 3. Left Column Showcase Box */
+        .profile-showcase-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 2rem 1.75rem;
+            text-align: center;
+            transition: all 0.25s ease;
+        }
+
+        .profile-showcase-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
         }
 
         .profile-avatar-circle {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #006653 0%, #10b981 100%);
+            width: 96px;
+            height: 96px;
+            font-size: 2.5rem;
+            font-weight: 800;
             color: #ffffff;
+            background: linear-gradient(135deg, #006653 0%, #10b981 100%);
+            border: 4px solid #ffffff;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.2rem;
-            font-weight: 800;
-            border: 3px solid #f0fdf4;
-            box-shadow: 0 4px 12px rgba(0, 102, 83, 0.2);
-            object-fit: cover;
+            box-shadow: 0 8px 20px rgba(0, 102, 83, 0.2);
+            margin: 0 auto;
+            transition: all 0.3s ease;
         }
 
         .profile-avatar-img {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            border: 3px solid #f0fdf4;
-            box-shadow: 0 4px 12px rgba(0, 102, 83, 0.2);
+            width: 96px;
+            height: 96px;
             object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid #ffffff;
+            box-shadow: 0 8px 20px rgba(0, 102, 83, 0.2);
+            margin: 0 auto;
+            display: block;
         }
 
         .profile-avatar-btn {
             position: absolute;
             bottom: 0;
             right: 0;
-            width: 30px;
-            height: 30px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             background: #006653;
             color: #ffffff;
@@ -123,9 +157,8 @@
             align-items: center;
             justify-content: center;
             border: 2px solid #ffffff;
-            font-size: 0.82rem;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
             transition: all 0.2s ease;
         }
 
@@ -134,111 +167,151 @@
             transform: scale(1.08);
         }
 
+        .profile-details-list {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1.25rem;
+            margin-top: 1.25rem;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+
         .profile-stat-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0.65rem 0;
-            border-bottom: 1px dashed #e2e8f0;
-            font-size: 0.84rem;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.88rem;
         }
 
-        /* 3. Form Section Cards (Main Body) */
-        .profile-content-card {
-            background: #ffffff;
+        .profile-stat-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .profile-escrow-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.25rem;
+            transition: all 0.25s ease;
+        }
+
+        /* 4. Right Column Section Cards */
+        .profile-section-card {
+            background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 18px;
-            padding: 1.75rem 2rem;
+            padding: 1.6rem 1.75rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+            transition: all 0.25s ease;
+        }
+
+        .profile-section-card:hover {
+            border-color: #cbd5e1;
         }
 
         .profile-card-title-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0;
             padding-bottom: 1rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 1.25rem;
+        }
+
+        .profile-icon-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
         .profile-form-label {
             font-size: 0.84rem;
             font-weight: 700;
-            color: #334155;
-            margin-bottom: 0.4rem;
-            display: block;
-        }
-
-        .profile-input {
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 0.65rem 0.95rem;
-            font-size: 0.92rem;
             color: #1e293b;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            width: 100%;
-        }
-
-        .profile-input:focus {
-            border-color: #006653;
-            box-shadow: 0 0 0 3px rgba(0, 102, 83, 0.12);
-            outline: none;
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .profile-input-group {
             display: flex;
+            align-items: stretch;
             width: 100%;
         }
 
         .profile-input-group .input-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 0.85rem;
-            background: #f8fafc;
-            border: 1.5px solid #e2e8f0;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
             border-right: none;
             border-top-left-radius: 10px;
             border-bottom-left-radius: 10px;
+            padding: 0.65rem 0.95rem;
             color: #64748b;
-            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
         }
 
         .profile-input-group .form-control {
-            border: 1.5px solid #e2e8f0;
+            border: 1.5px solid #cbd5e1;
+            border-left: none;
             border-top-right-radius: 10px;
             border-bottom-right-radius: 10px;
             padding: 0.65rem 0.95rem;
             font-size: 0.92rem;
-            color: #1e293b;
+            box-shadow: none;
+            transition: all 0.2s ease;
+            background: #ffffff;
+        }
+
+        .profile-input-group .form-control:not(:last-child) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right: none;
         }
 
         .profile-input-group .form-control:focus {
             border-color: #006653;
-            box-shadow: 0 0 0 3px rgba(0, 102, 83, 0.12);
         }
 
-        .pwd-toggle-btn {
-            border: 1.5px solid #e2e8f0;
+        .profile-input-group:focus-within .input-icon {
+            border-color: #006653;
+            color: #006653;
+        }
+
+        .profile-input-group:focus-within .form-control {
+            border-color: #006653;
+        }
+
+        .profile-input-group .pwd-toggle-btn {
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
             border-left: none;
             border-top-right-radius: 10px;
             border-bottom-right-radius: 10px;
-            background: #f8fafc;
+            padding: 0.65rem 0.95rem;
             color: #64748b;
-            padding: 0 0.85rem;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: color 0.15s ease;
+            transition: all 0.2s ease;
         }
 
-        .pwd-toggle-btn:hover {
+        .profile-input-group .pwd-toggle-btn:hover {
             color: #006653;
+            background: #f8fafc;
         }
 
-        /* 4. Action Buttons */
+        /* 5. Buttons */
         .btn-save-main {
             background: linear-gradient(135deg, #006653 0%, #047857 100%);
             color: #ffffff;
@@ -261,8 +334,8 @@
         }
 
         .btn-cancel-main {
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
             color: #475569;
             font-weight: 700;
             font-size: 0.95rem;
@@ -275,37 +348,49 @@
         }
 
         .btn-cancel-main:hover {
-            background: #e2e8f0;
+            background: #f1f5f9;
             color: #1e293b;
         }
 
+        @@keyframes profileFadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         @@media (max-width: 991px) {
-            .profile-content-card { padding: 1.25rem; }
-            .profile-hero { padding: 1.5rem; }
+            .profile-unified-card { padding: 1.5rem; }
+            .profile-section-card { padding: 1.25rem; }
+            .profile-hero-header { padding: 1.5rem; }
             .profile-hero-title { font-size: 1.65rem; }
         }
     </style>
 }
 
-<div class="profile-page-wrapper py-3 px-2 px-md-3 px-xl-4">
+<div class="profile-container py-3 px-2 px-md-3 px-xl-4">
     
-    <!-- Top Hero Banner -->
-    <div class="profile-hero">
+    <!-- 1. Hero Header Banner -->
+    <div class="profile-hero-header">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <div>
                 <div class="profile-hero-badge">
-                    <i class="bi bi-person-badge-fill"></i>
-                    <span>@userRole Account Profile</span>
+                    <i class="bi bi-shield-check"></i>
+                    <span>Verified Security Gate</span>
                 </div>
                 <h1 class="profile-hero-title">
                     Account Profile &amp; Settings
                 </h1>
-                <p class="profile-hero-sub">
-                    View and update your personal credentials, farm address, banking payout details, and security passwords.
+                <p class="profile-hero-subtitle">
+                    Manage your personal credentials, digital security, verified farm details, and payout banking settings.
                 </p>
             </div>
             <div>
-                <a asp-controller="@dashCtrl" asp-action="Dashboard" class="btn btn-light rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2 text-success">
+                <a asp-controller="@dashCtrl" asp-action="Dashboard" class="btn btn-outline-light rounded-pill px-4 py-2.5 fw-semibold d-inline-flex align-items-center gap-2">
                     <i class="bi bi-arrow-left"></i> Back to Dashboard
                 </a>
             </div>
@@ -324,419 +409,443 @@
         </div>
     }
 
-    <!-- Main Grid Form -->
-    <form asp-action="Index" method="post" enctype="multipart/form-data">
-        @Html.AntiForgeryToken()
-        <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-3 mb-4 rounded-3 border-0"></div>
+    <!-- 2. Unified Master Card (Contains both columns in one elegant box) -->
+    <div class="profile-unified-card shadow-sm">
+        
+        <div class="profile-card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+                <h4 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                    <i class="bi bi-person-gear text-success"></i>
+                    Personal Credentials &amp; Account Settings
+                </h4>
+                <p class="text-muted small mb-0">Update your account information, farm location, banking payout details, and security passwords.</p>
+            </div>
+            <div>
+                <span class="badge @(isFarmer ? "bg-success bg-opacity-10 text-success border border-success border-opacity-25" : "bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25") px-3 py-2 rounded-pill fw-semibold">
+                    <i class="bi bi-person-badge me-1"></i> @userRole Account
+                </span>
+            </div>
+        </div>
 
-        <div class="row g-4 align-items-start">
-            
-            <!-- Left Sidebar: Profile Overview Card (col-lg-4 col-xl-3) -->
-            <div class="col-lg-4 col-xl-3">
-                <div class="profile-side-card mb-4">
-                    <!-- Avatar with Camera Change Button -->
-                    <div class="profile-avatar-box">
-                        @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
-                        {
-                            <img src="@Model.ProfilePicturePath" id="profileAvatarDisplay" class="profile-avatar-img" alt="Profile Picture" />
-                        }
-                        else
-                        {
-                            <div class="profile-avatar-circle" id="profileAvatarInitial">
+        <form asp-action="Index" method="post" enctype="multipart/form-data" id="profileForm">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-3 mb-4 rounded-3 border-0"></div>
+
+            <div class="row g-4 g-xl-5 align-items-start">
+                
+                <!-- Left Column: Showcase Card & Escrow Badge (col-lg-4) -->
+                <div class="col-lg-4">
+                    <div class="profile-showcase-card mb-4">
+                        
+                        <!-- Avatar with Camera Button & Safe Initial Fallback -->
+                        <div class="position-relative d-inline-block mx-auto mb-3">
+                            @{
+                                var hasValidPhoto = !string.IsNullOrWhiteSpace(Model.ProfilePicturePath);
+                            }
+                            <img src="@(hasValidPhoto ? Model.ProfilePicturePath : "")" 
+                                 id="profileAvatarDisplay" 
+                                 class="profile-avatar-img" 
+                                 alt="@Model.FirstName" 
+                                 style="@(hasValidPhoto ? "" : "display:none;")"
+                                 onerror="this.style.display='none'; var f=document.getElementById('profileAvatarInitial'); if(f) f.style.display='flex';" />
+
+                            <div class="profile-avatar-circle" id="profileAvatarInitial" style="@(hasValidPhoto ? "display:none;" : "")">
                                 @userInitial
                             </div>
-                        }
-                        <label for="newProfilePicInput" class="profile-avatar-btn" title="Change Photo">
-                            <i class="bi bi-camera-fill"></i>
-                        </label>
-                        <input type="file" id="newProfilePicInput" name="NewProfilePictureFile" class="d-none" accept="image/*" onchange="previewNewPhoto(this)" />
-                    </div>
-                    
-                    <h5 class="fw-bold text-dark mb-0.5">
-                        @(string.IsNullOrEmpty(Model.FirstName) && string.IsNullOrEmpty(Model.LastName) ? Model.Username : $"{Model.FirstName} {Model.LastName}")
-                    </h5>
-                    <p class="text-muted small mb-2 text-truncate">
-                        <i class="bi bi-envelope text-success me-1"></i>@Model.Email
-                    </p>
-                    
-                    <div class="d-inline-flex align-items-center gap-1.5 px-3 py-1 bg-success bg-opacity-10 text-success rounded-pill fw-bold small border border-success border-opacity-25 mb-3">
-                        <i class="bi bi-patch-check-fill"></i>
-                        <span>@userRole Account</span>
+
+                            <label for="newProfilePicInput" class="profile-avatar-btn" title="Change Photo">
+                                <i class="bi bi-camera-fill"></i>
+                            </label>
+                            <input type="file" id="newProfilePicInput" name="NewProfilePictureFile" class="d-none" accept="image/*" onchange="previewNewPhoto(this)" />
+                        </div>
+                        
+                        <h5 class="fw-bold text-dark mb-0.5">
+                            @(string.IsNullOrEmpty(Model.FirstName) && string.IsNullOrEmpty(Model.LastName) ? Model.Username : $"{Model.FirstName} {Model.LastName}")
+                        </h5>
+                        <p class="text-muted small mb-2 text-truncate">
+                            <i class="bi bi-envelope text-success me-1"></i>@Model.Email
+                        </p>
+                        
+                        <div class="d-inline-flex align-items-center gap-1.5 px-3 py-1 bg-success bg-opacity-10 text-success rounded-pill fw-bold small border border-success border-opacity-25 mb-3">
+                            <i class="bi bi-patch-check-fill"></i>
+                            <span>@userRole Account</span>
+                        </div>
+
+                        <!-- Details List -->
+                        <div class="profile-details-list">
+                            <div class="profile-stat-row">
+                                <span class="text-muted"><i class="bi bi-at text-muted me-1"></i>Username:</span>
+                                <strong class="text-dark font-monospace">@@@Model.Username</strong>
+                            </div>
+                            <div class="profile-stat-row">
+                                <span class="text-muted"><i class="bi bi-whatsapp text-success me-1"></i>WhatsApp:</span>
+                                <strong class="text-dark">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Not added" : Model.PhoneNumber)</strong>
+                            </div>
+                            @if (isFarmer)
+                            {
+                                <div class="profile-stat-row">
+                                    <span class="text-muted"><i class="bi bi-shield-check text-success me-1"></i>KYC Status:</span>
+                                    @if (Model.IsApprovedByAdmin)
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill">Verified 🟢</span>
+                                    }
+                                    else if (!string.IsNullOrEmpty(Model.KycRejectionReason))
+                                    {
+                                        <span class="badge bg-danger bg-opacity-10 text-danger fw-bold px-2.5 py-1 rounded-pill">Rejected 🔴</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning bg-opacity-10 text-warning fw-bold px-2.5 py-1 rounded-pill">Under Review ⏳</span>
+                                    }
+                                </div>
+                                <div class="profile-stat-row">
+                                    <span class="text-muted"><i class="bi bi-bank text-primary me-1"></i>Bank:</span>
+                                    <strong class="text-dark text-truncate" style="max-width: 140px;">@(Model.BankName ?? "Not Set")</strong>
+                                </div>
+                            }
+                            <div class="profile-stat-row border-0 pb-0">
+                                <span class="text-muted"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Region:</span>
+                                <strong class="text-dark text-truncate" style="max-width: 140px;">@(string.IsNullOrEmpty(Model.City) ? "Gujarat" : Model.City)</strong>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Details List -->
-                    <div class="text-start">
-                        <div class="profile-stat-row">
-                            <span class="text-muted"><i class="bi bi-at text-muted me-1"></i>Username:</span>
-                            <strong class="text-dark font-monospace">@@@Model.Username</strong>
+                    <!-- Escrow Trust Box -->
+                    <div class="profile-escrow-box">
+                        <div class="d-flex align-items-start gap-2.5">
+                            <i class="bi bi-shield-lock-fill text-success fs-5 mt-0.5"></i>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1 small">Escrow &amp; Banking Protected</h6>
+                                <p class="text-muted small mb-0" style="font-size: 0.78rem; line-height: 1.45;">
+                                    Your personal credentials and bank payout details are protected under digital escrow security standards.
+                                </p>
+                            </div>
                         </div>
-                        <div class="profile-stat-row">
-                            <span class="text-muted"><i class="bi bi-whatsapp text-success me-1"></i>WhatsApp:</span>
-                            <strong class="text-dark">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Not added" : Model.PhoneNumber)</strong>
+                    </div>
+                </div>
+
+                <!-- Right Column: Form Section Boxes (col-lg-8) -->
+                <div class="col-lg-8">
+
+                    <!-- Section 1: Personal Information Box -->
+                    <div class="profile-section-card">
+                        <div class="profile-card-title-bar">
+                            <div class="d-flex align-items-center gap-2.5">
+                                <div class="profile-icon-badge bg-success bg-opacity-10 text-success">
+                                    <i class="bi bi-person-badge-fill fs-5"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold text-dark mb-0">Personal Information</h5>
+                                    <small class="text-muted">Basic profile details, identity, and contact information</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-white text-muted border small">Profile Info</span>
                         </div>
-                        @if (isFarmer)
-                        {
-                            <div class="profile-stat-row">
-                                <span class="text-muted"><i class="bi bi-shield-check text-success me-1"></i>KYC Status:</span>
+
+                        <!-- First & Last Name -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="FirstName" class="profile-form-label">First Name</label>
+                                <div class="profile-input-group">
+                                    <span class="input-icon"><i class="bi bi-person"></i></span>
+                                    <input asp-for="FirstName" class="form-control" placeholder="First Name" />
+                                </div>
+                                <span asp-validation-for="FirstName" class="text-danger small mt-1 d-block"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="LastName" class="profile-form-label">Last Name</label>
+                                <div class="profile-input-group">
+                                    <span class="input-icon"><i class="bi bi-person"></i></span>
+                                    <input asp-for="LastName" class="form-control" placeholder="Last Name" />
+                                </div>
+                                <span asp-validation-for="LastName" class="text-danger small mt-1 d-block"></span>
+                            </div>
+                        </div>
+
+                        <!-- Username & WhatsApp Phone -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Username" class="profile-form-label">Username (Login ID)</label>
+                                <div class="profile-input-group">
+                                    <span class="input-icon fw-bold font-monospace">@@</span>
+                                    <input asp-for="Username" class="form-control font-monospace" placeholder="Username" />
+                                </div>
+                                <span asp-validation-for="Username" class="text-danger small mt-1 d-block"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="PhoneNumber" class="profile-form-label">
+                                    WhatsApp Mobile Number
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 ms-1 fw-normal" style="font-size: 0.70rem;">OTP Verified</span>
+                                </label>
+                                <div class="profile-input-group">
+                                    <span class="input-icon text-success"><i class="bi bi-whatsapp"></i></span>
+                                    <input asp-for="PhoneNumber" class="form-control font-monospace" placeholder="+91 98765 43210" />
+                                </div>
+                                <span asp-validation-for="PhoneNumber" class="text-danger small mt-1 d-block"></span>
+                            </div>
+                        </div>
+
+                        <!-- Email (Readonly) -->
+                        <div class="mb-0">
+                            <label class="profile-form-label">Registered Primary Email</label>
+                            <div class="profile-input-group">
+                                <span class="input-icon"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control bg-light text-muted" value="@Model.Email" readonly />
+                                <span class="input-icon border-start border-end-0 text-muted" style="border-right: 1.5px solid #cbd5e1 !important; border-top-right-radius: 10px; border-bottom-right-radius: 10px;"><i class="bi bi-lock-fill"></i></span>
+                            </div>
+                            <small class="text-muted d-block mt-1" style="font-size: 0.76rem;"><i class="bi bi-shield-check me-1 text-success"></i>Verified primary email. Used for transaction receipts and official alerts.</small>
+                        </div>
+                    </div>
+
+                    @if (isFarmer)
+                    {
+                        <!-- Section 2: Farm Location & Address Box -->
+                        <div class="profile-section-card">
+                            <div class="profile-card-title-bar">
+                                <div class="d-flex align-items-center gap-2.5">
+                                    <div class="profile-icon-badge bg-success bg-opacity-10 text-success">
+                                        <i class="bi bi-geo-alt-fill fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-0">Farm &amp; Field Location</h5>
+                                        <small class="text-muted">Where your agricultural crops are cultivated or stored for pickup</small>
+                                    </div>
+                                </div>
+                                <span class="badge bg-white text-muted border small">Dispatch Address</span>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <label asp-for="City" class="profile-form-label">Village / Taluka / District</label>
+                                    <div class="profile-input-group">
+                                        <span class="input-icon"><i class="bi bi-buildings"></i></span>
+                                        <input asp-for="City" class="form-control" placeholder="e.g. Gondal, Rajkot" />
+                                    </div>
+                                </div>
+                                <div class="col-md-7">
+                                    <label asp-for="Address" class="profile-form-label">Farm / Street Location / Survey No.</label>
+                                    <div class="profile-input-group">
+                                        <span class="input-icon"><i class="bi bi-pin-map"></i></span>
+                                        <input asp-for="Address" class="form-control" placeholder="e.g. Survey No. 42, Near APMC Market Road" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Bank Account & Payout Details Box -->
+                        <div class="profile-section-card">
+                            <div class="profile-card-title-bar">
+                                <div class="d-flex align-items-center gap-2.5">
+                                    <div class="profile-icon-badge bg-success bg-opacity-10 text-success">
+                                        <i class="bi bi-bank fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-0">Bank Payout Information</h5>
+                                        <small class="text-muted">Sale proceeds from AgriAI Escrow are transferred directly to this account</small>
+                                    </div>
+                                </div>
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 small fw-bold">100% Escrow Direct</span>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label asp-for="BankName" class="profile-form-label">Bank Name</label>
+                                    <div class="profile-input-group">
+                                        <span class="input-icon"><i class="bi bi-bank"></i></span>
+                                        <input asp-for="BankName" class="form-control" placeholder="e.g. State Bank of India (SBI)" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="BankAccountNumber" class="profile-form-label">Bank Account Number</label>
+                                    <div class="profile-input-group">
+                                        <span class="input-icon"><i class="bi bi-credit-card"></i></span>
+                                        <input asp-for="BankAccountNumber" class="form-control font-monospace" placeholder="e.g. 123456789012" />
+                                    </div>
+                                    <span asp-validation-for="BankAccountNumber" class="text-danger small mt-1 d-block"></span>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="BankIfscCode" class="profile-form-label">IFSC Code</label>
+                                    <div class="profile-input-group">
+                                        <span class="input-icon"><i class="bi bi-hash"></i></span>
+                                        <input asp-for="BankIfscCode" class="form-control font-monospace text-uppercase" placeholder="e.g. SBIN0001234" />
+                                    </div>
+                                    <span asp-validation-for="BankIfscCode" class="text-danger small mt-1 d-block"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="UpiId" class="profile-form-label">UPI ID (Optional)</label>
+                                    <div class="profile-input-group">
+                                        <span class="input-icon"><i class="bi bi-qr-code"></i></span>
+                                        <input asp-for="UpiId" class="form-control font-monospace" placeholder="e.g. 9724560047@upi" />
+                                    </div>
+                                    <span asp-validation-for="UpiId" class="text-danger small mt-1 d-block"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 4: Land Record & KYC Verification Box -->
+                        <div class="profile-section-card">
+                            <div class="profile-card-title-bar">
+                                <div class="d-flex align-items-center gap-2.5">
+                                    <div class="profile-icon-badge bg-success bg-opacity-10 text-success">
+                                        <i class="bi bi-file-earmark-check-fill fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-0">Land Record &amp; KYC Verification</h5>
+                                        <small class="text-muted">Official 7/12 (Satbara) or Aadhaar Card documentation</small>
+                                    </div>
+                                </div>
                                 @if (Model.IsApprovedByAdmin)
                                 {
-                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill">Verified 🟢</span>
+                                    <span class="badge bg-success text-white px-3 py-1.5 rounded-pill small fw-bold">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Verified by Admin
+                                    </span>
                                 }
                                 else if (!string.IsNullOrEmpty(Model.KycRejectionReason))
                                 {
-                                    <span class="badge bg-danger bg-opacity-10 text-danger fw-bold px-2.5 py-1 rounded-pill">Rejected 🔴</span>
+                                    <span class="badge bg-danger text-white px-3 py-1.5 rounded-pill small fw-bold">
+                                        <i class="bi bi-x-circle-fill me-1"></i>Action Required
+                                    </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-warning bg-opacity-10 text-warning fw-bold px-2.5 py-1 rounded-pill">Under Review ⏳</span>
+                                    <span class="badge bg-warning text-dark px-3 py-1.5 rounded-pill small fw-bold">
+                                        <i class="bi bi-hourglass-split me-1"></i>Under Admin Review
+                                    </span>
                                 }
                             </div>
-                            <div class="profile-stat-row">
-                                <span class="text-muted"><i class="bi bi-bank text-primary me-1"></i>Bank:</span>
-                                <strong class="text-dark text-truncate" style="max-width: 130px;">@(Model.BankName ?? "Not Set")</strong>
-                            </div>
-                        }
-                        <div class="profile-stat-row border-0 pb-0">
-                            <span class="text-muted"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Region:</span>
-                            <strong class="text-dark text-truncate" style="max-width: 130px;">@(string.IsNullOrEmpty(Model.City) ? "Gujarat" : Model.City)</strong>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Trust Box -->
-                <div class="p-3 rounded-4 bg-light border border-slate-200 text-start">
-                    <div class="d-flex align-items-start gap-2.5">
-                        <i class="bi bi-shield-lock-fill text-success fs-5 mt-0.5"></i>
-                        <div>
-                            <h6 class="fw-bold text-dark mb-1 small">Escrow &amp; Banking Protected</h6>
-                            <p class="text-muted small mb-0" style="font-size: 0.76rem; line-height: 1.45;">
-                                Your personal credentials and bank payout details are protected under digital escrow security standards.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                            @if (!string.IsNullOrEmpty(Model.KycRejectionReason))
+                            {
+                                <div class="alert alert-danger p-3 rounded-3 small mb-3">
+                                    <strong>Admin Rejection Note:</strong> @Model.KycRejectionReason
+                                    <div class="mt-1">Please re-upload a clear document image or PDF below to resubmit for verification.</div>
+                                </div>
+                            }
 
-            <!-- Right Main Column: Full Details (col-lg-8 col-xl-9) -->
-            <div class="col-lg-8 col-xl-9">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-5">
+                                    <label class="profile-form-label">Document Type</label>
+                                    <div class="profile-input-group">
+                                        <span class="input-icon"><i class="bi bi-card-checklist"></i></span>
+                                        <select asp-for="KycDocumentType" class="form-select" style="border: 1.5px solid #cbd5e1; border-top-right-radius: 10px; border-bottom-right-radius: 10px; padding: 0.65rem 0.95rem; font-size: 0.92rem;">
+                                            <option value="7/12 (Satbara Utaro)">7/12 (Satbara Utaro)</option>
+                                            <option value="Aadhaar Card">Aadhaar Card</option>
+                                            <option value="Kisan Credit Card (KCC)">Kisan Credit Card (KCC)</option>
+                                        </select>
+                                    </div>
+                                </div>
 
-                <!-- 1. PERSONAL CREDENTIALS -->
-                <div class="profile-content-card">
-                    <div class="profile-card-title-bar">
-                        <div class="d-flex align-items-center gap-2.5">
-                            <div class="rounded-circle bg-success bg-opacity-10 text-success p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                                <i class="bi bi-person-badge-fill fs-5"></i>
-                            </div>
-                            <div>
-                                <h5 class="fw-bold text-dark mb-0">Personal Information</h5>
-                                <small class="text-muted">Basic profile details, identity, and contact information</small>
+                                <div class="col-md-7">
+                                    <label class="profile-form-label">Current Document &amp; Update</label>
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        @if (!string.IsNullOrEmpty(Model.KycDocumentPath))
+                                        {
+                                            <a href="@Model.KycDocumentPath" target="_blank" class="btn btn-outline-success py-2 px-3.5 rounded-pill fw-bold small d-inline-flex align-items-center gap-1.5 shadow-xs">
+                                                <i class="bi bi-file-earmark-arrow-down-fill fs-6"></i> View Current 7/12 File
+                                            </a>
+                                        }
+                                        <button type="button" class="btn btn-outline-secondary py-2 px-3.5 rounded-pill fw-bold small d-inline-flex align-items-center gap-1.5" onclick="document.getElementById('newKycInput').click()">
+                                            <i class="bi bi-cloud-arrow-up-fill fs-6"></i> Upload New File
+                                        </button>
+                                        <input type="file" id="newKycInput" name="NewKycDocumentFile" class="d-none" accept="image/*,.pdf" onchange="showKycFileSelected(this)" />
+                                    </div>
+                                    <div id="kycFileStatusText" class="mt-1.5" style="min-height: 20px;"></div>
+                                </div>
                             </div>
                         </div>
-                        <span class="badge bg-light text-muted border small">Profile Info</span>
-                    </div>
+                    }
 
-                    <!-- First & Last Name -->
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label asp-for="FirstName" class="profile-form-label">First Name</label>
-                            <div class="profile-input-group">
-                                <span class="input-icon"><i class="bi bi-person"></i></span>
-                                <input asp-for="FirstName" class="form-control" placeholder="First Name" />
-                            </div>
-                            <span asp-validation-for="FirstName" class="text-danger small mt-1 d-block"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="LastName" class="profile-form-label">Last Name</label>
-                            <div class="profile-input-group">
-                                <span class="input-icon"><i class="bi bi-person"></i></span>
-                                <input asp-for="LastName" class="form-control" placeholder="Last Name" />
-                            </div>
-                            <span asp-validation-for="LastName" class="text-danger small mt-1 d-block"></span>
-                        </div>
-                    </div>
-
-                    <!-- Username & Phone -->
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label asp-for="Username" class="profile-form-label">Username (Login ID)</label>
-                            <div class="profile-input-group">
-                                <span class="input-icon fw-bold font-monospace">@@</span>
-                                <input asp-for="Username" class="form-control font-monospace" placeholder="Username" />
-                            </div>
-                            <span asp-validation-for="Username" class="text-danger small mt-1 d-block"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="PhoneNumber" class="profile-form-label">
-                                WhatsApp Mobile Number
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 ms-1 fw-normal" style="font-size: 0.70rem;">OTP Verified</span>
-                            </label>
-                            <div class="profile-input-group">
-                                <span class="input-icon text-success"><i class="bi bi-whatsapp"></i></span>
-                                <input asp-for="PhoneNumber" class="form-control font-monospace" placeholder="+91 98765 43210" />
-                            </div>
-                            <span asp-validation-for="PhoneNumber" class="text-danger small mt-1 d-block"></span>
-                        </div>
-                    </div>
-
-                    <!-- Email (Readonly) -->
-                    <div class="mb-0">
-                        <label class="profile-form-label">Registered Primary Email</label>
-                        <div class="profile-input-group">
-                            <span class="input-icon"><i class="bi bi-envelope"></i></span>
-                            <input type="email" class="form-control bg-light text-muted" value="@Model.Email" readonly />
-                            <span class="input-icon border-start border-end-0 text-muted" style="border-right: 1.5px solid #e2e8f0 !important; border-top-right-radius: 10px; border-bottom-right-radius: 10px;"><i class="bi bi-lock-fill"></i></span>
-                        </div>
-                        <small class="text-muted d-block mt-1" style="font-size: 0.76rem;"><i class="bi bi-shield-check me-1 text-success"></i>Verified primary email. Used for transaction receipts and official alerts.</small>
-                    </div>
-                </div>
-
-                @if (isFarmer)
-                {
-                    <!-- 2. FARM LOCATION & ADDRESS -->
-                    <div class="profile-content-card">
-                        <div class="profile-card-title-bar">
+                    <!-- Section 5: Change Password (Optional) Box -->
+                    <div class="profile-section-card" style="background: #f0fdf4; border: 1.5px solid #bbf7d0;">
+                        <div class="profile-card-title-bar" style="border-bottom-color: #dcfce7;">
                             <div class="d-flex align-items-center gap-2.5">
-                                <div class="rounded-circle bg-success bg-opacity-10 text-success p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                                    <i class="bi bi-geo-alt-fill fs-5"></i>
+                                <div class="profile-icon-badge bg-success bg-opacity-20 text-success">
+                                    <i class="bi bi-shield-lock-fill fs-5"></i>
                                 </div>
                                 <div>
-                                    <h5 class="fw-bold text-dark mb-0">Farm &amp; Field Location</h5>
-                                    <small class="text-muted">Where your agricultural crops are cultivated or stored for pickup</small>
+                                    <h5 class="fw-bold text-dark mb-0">Change Account Password</h5>
+                                    <small class="text-muted">Leave fields blank if you do not want to change your password</small>
                                 </div>
                             </div>
-                            <span class="badge bg-light text-muted border small">Dispatch Address</span>
-                        </div>
-
-                        <div class="row g-3">
-                            <div class="col-md-5">
-                                <label asp-for="City" class="profile-form-label">Village / Taluka / District</label>
-                                <div class="profile-input-group">
-                                    <span class="input-icon"><i class="bi bi-buildings"></i></span>
-                                    <input asp-for="City" class="form-control" placeholder="e.g. Gondal, Rajkot" />
-                                </div>
-                            </div>
-                            <div class="col-md-7">
-                                <label asp-for="Address" class="profile-form-label">Farm / Street Location / Survey No.</label>
-                                <div class="profile-input-group">
-                                    <span class="input-icon"><i class="bi bi-pin-map"></i></span>
-                                    <input asp-for="Address" class="form-control" placeholder="e.g. Survey No. 42, Near APMC Market Road" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 3. BANK PAYOUT DETAILS -->
-                    <div class="profile-content-card">
-                        <div class="profile-card-title-bar">
-                            <div class="d-flex align-items-center gap-2.5">
-                                <div class="rounded-circle bg-success bg-opacity-10 text-success p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                                    <i class="bi bi-bank fs-5"></i>
-                                </div>
-                                <div>
-                                    <h5 class="fw-bold text-dark mb-0">Bank Payout Information</h5>
-                                    <small class="text-muted">Sale proceeds from AgriAI Escrow are transferred directly to this account</small>
-                                </div>
-                            </div>
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 small fw-bold">100% Escrow Direct</span>
-                        </div>
-
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="BankName" class="profile-form-label">Bank Name</label>
-                                <div class="profile-input-group">
-                                    <span class="input-icon"><i class="bi bi-bank"></i></span>
-                                    <input asp-for="BankName" class="form-control" placeholder="e.g. State Bank of India (SBI)" />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="BankAccountNumber" class="profile-form-label">Bank Account Number</label>
-                                <div class="profile-input-group">
-                                    <span class="input-icon"><i class="bi bi-credit-card"></i></span>
-                                    <input asp-for="BankAccountNumber" class="form-control font-monospace" placeholder="e.g. 123456789012" />
-                                </div>
-                                <span asp-validation-for="BankAccountNumber" class="text-danger small mt-1 d-block"></span>
-                            </div>
+                            <span class="badge bg-white text-dark border small fw-bold">Optional</span>
                         </div>
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label asp-for="BankIfscCode" class="profile-form-label">IFSC Code</label>
+                                <label asp-for="NewPassword" class="profile-form-label">New Password</label>
                                 <div class="profile-input-group">
-                                    <span class="input-icon"><i class="bi bi-hash"></i></span>
-                                    <input asp-for="BankIfscCode" class="form-control font-monospace text-uppercase" placeholder="e.g. SBIN0001234" />
-                                </div>
-                                <span asp-validation-for="BankIfscCode" class="text-danger small mt-1 d-block"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="UpiId" class="profile-form-label">UPI ID (Optional)</label>
-                                <div class="profile-input-group">
-                                    <span class="input-icon"><i class="bi bi-qr-code"></i></span>
-                                    <input asp-for="UpiId" class="form-control font-monospace" placeholder="e.g. 9724560047@upi" />
-                                </div>
-                                <span asp-validation-for="UpiId" class="text-danger small mt-1 d-block"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 4. LAND RECORD & KYC VERIFICATION -->
-                    <div class="profile-content-card">
-                        <div class="profile-card-title-bar">
-                            <div class="d-flex align-items-center gap-2.5">
-                                <div class="rounded-circle bg-success bg-opacity-10 text-success p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                                    <i class="bi bi-file-earmark-check-fill fs-5"></i>
-                                </div>
-                                <div>
-                                    <h5 class="fw-bold text-dark mb-0">Land Record &amp; KYC Verification</h5>
-                                    <small class="text-muted">Official 7/12 (Satbara) or Aadhaar Card documentation</small>
-                                </div>
-                            </div>
-                            @if (Model.IsApprovedByAdmin)
-                            {
-                                <span class="badge bg-success text-white px-3 py-1.5 rounded-pill small fw-bold">
-                                    <i class="bi bi-check-circle-fill me-1"></i>Verified by Admin
-                                </span>
-                            }
-                            else if (!string.IsNullOrEmpty(Model.KycRejectionReason))
-                            {
-                                <span class="badge bg-danger text-white px-3 py-1.5 rounded-pill small fw-bold">
-                                    <i class="bi bi-x-circle-fill me-1"></i>Action Required
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-warning text-dark px-3 py-1.5 rounded-pill small fw-bold">
-                                    <i class="bi bi-hourglass-split me-1"></i>Under Admin Review
-                                </span>
-                            }
-                        </div>
-
-                        @if (!string.IsNullOrEmpty(Model.KycRejectionReason))
-                        {
-                            <div class="alert alert-danger p-3 rounded-3 small mb-3">
-                                <strong>Admin Rejection Note:</strong> @Model.KycRejectionReason
-                                <div class="mt-1">Please re-upload a clear document image or PDF below to resubmit for verification.</div>
-                            </div>
-                        }
-
-                        <div class="row g-3 align-items-end">
-                            <div class="col-md-5">
-                                <label class="profile-form-label">Document Type</label>
-                                <div class="profile-input-group">
-                                    <span class="input-icon"><i class="bi bi-card-checklist"></i></span>
-                                    <select asp-for="KycDocumentType" class="form-select" style="border: 1.5px solid #e2e8f0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; padding: 0.65rem 0.95rem; font-size: 0.92rem;">
-                                        <option value="7/12 (Satbara Utaro)">7/12 (Satbara Utaro)</option>
-                                        <option value="Aadhaar Card">Aadhaar Card</option>
-                                        <option value="Kisan Credit Card (KCC)">Kisan Credit Card (KCC)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="col-md-7">
-                                <label class="profile-form-label">Current Document &amp; Update</label>
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    @if (!string.IsNullOrEmpty(Model.KycDocumentPath))
-                                    {
-                                        <a href="@Model.KycDocumentPath" target="_blank" class="btn btn-outline-success py-2 px-3.5 rounded-pill fw-bold small d-inline-flex align-items-center gap-1.5 shadow-xs">
-                                            <i class="bi bi-file-earmark-arrow-down-fill fs-6"></i> View Current 7/12 File
-                                        </a>
-                                    }
-                                    <button type="button" class="btn btn-outline-secondary py-2 px-3.5 rounded-pill fw-bold small d-inline-flex align-items-center gap-1.5" onclick="document.getElementById('newKycInput').click()">
-                                        <i class="bi bi-cloud-arrow-up-fill fs-6"></i> Upload New File
+                                    <span class="input-icon"><i class="bi bi-key"></i></span>
+                                    <input asp-for="NewPassword" type="password" id="inputNewPassword" class="form-control" placeholder="Min. 6 characters" />
+                                    <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('inputNewPassword', this)">
+                                        <i class="bi bi-eye"></i>
                                     </button>
-                                    <input type="file" id="newKycInput" name="NewKycDocumentFile" class="d-none" accept="image/*,.pdf" onchange="showKycFileSelected(this)" />
                                 </div>
-                                <div id="kycFileStatusText" class="mt-1.5" style="min-height: 20px;"></div>
+                                <span asp-validation-for="NewPassword" class="text-danger small mt-1 d-block"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="ConfirmNewPassword" class="profile-form-label">Confirm New Password</label>
+                                <div class="profile-input-group">
+                                    <span class="input-icon"><i class="bi bi-shield-check"></i></span>
+                                    <input asp-for="ConfirmNewPassword" type="password" id="inputConfirmPassword" class="form-control" placeholder="Repeat new password" />
+                                    <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('inputConfirmPassword', this)">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="ConfirmNewPassword" class="text-danger small mt-1 d-block"></span>
                             </div>
                         </div>
-                    </div>
-                }
-
-                <!-- 5. CHANGE PASSWORD SECTION -->
-                <div class="profile-content-card" style="background: #f0fdf4; border: 1.5px solid #bbf7d0;">
-                    <div class="profile-card-title-bar" style="border-bottom-color: #dcfce7;">
-                        <div class="d-flex align-items-center gap-2.5">
-                            <div class="rounded-circle bg-success bg-opacity-20 text-success p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                                <i class="bi bi-shield-lock-fill fs-5"></i>
-                            </div>
-                            <div>
-                                <h5 class="fw-bold text-dark mb-0">Change Account Password</h5>
-                                <small class="text-muted">Leave fields blank if you do not want to change your password</small>
-                            </div>
-                        </div>
-                        <span class="badge bg-white text-dark border small fw-bold">Optional</span>
                     </div>
 
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label asp-for="NewPassword" class="profile-form-label">New Password</label>
-                            <div class="profile-input-group">
-                                <span class="input-icon"><i class="bi bi-key"></i></span>
-                                <input asp-for="NewPassword" type="password" id="inputNewPassword" class="form-control" placeholder="Min. 6 characters" />
-                                <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('inputNewPassword', this)">
-                                    <i class="bi bi-eye"></i>
-                                </button>
+                    <!-- Section 6: Current Password Authorization Box (Required to Save) -->
+                    <div class="profile-section-card" style="background: #fff5f5; border: 1.5px solid #fed7d7;">
+                        <div class="profile-card-title-bar" style="border-bottom-color: #fee2e2;">
+                            <div class="d-flex align-items-center gap-2.5">
+                                <div class="profile-icon-badge bg-danger bg-opacity-10 text-danger">
+                                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold text-danger mb-0">Current Password Authorization</h5>
+                                    <small class="text-muted">Enter your current password to authorize changes to your profile and banking information</small>
+                                </div>
                             </div>
-                            <span asp-validation-for="NewPassword" class="text-danger small mt-1 d-block"></span>
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 small fw-bold">Required</span>
                         </div>
-                        <div class="col-md-6">
-                            <label asp-for="ConfirmNewPassword" class="profile-form-label">Confirm New Password</label>
-                            <div class="profile-input-group">
-                                <span class="input-icon"><i class="bi bi-shield-check"></i></span>
-                                <input asp-for="ConfirmNewPassword" type="password" id="inputConfirmPassword" class="form-control" placeholder="Repeat new password" />
-                                <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('inputConfirmPassword', this)">
-                                    <i class="bi bi-eye"></i>
-                                </button>
+
+                        <div class="row g-3">
+                            <div class="col-md-7 col-lg-6">
+                                <label asp-for="CurrentPassword" class="profile-form-label">
+                                    <span>Current Account Password <span class="text-danger">*</span></span>
+                                </label>
+                                <div class="profile-input-group">
+                                    <span class="input-icon text-danger"><i class="bi bi-lock-fill"></i></span>
+                                    <input asp-for="CurrentPassword" type="password" id="inputCurrentPassword" class="form-control" placeholder="Enter current password" required />
+                                    <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('inputCurrentPassword', this)">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="CurrentPassword" class="text-danger small mt-1 d-block"></span>
                             </div>
-                            <span asp-validation-for="ConfirmNewPassword" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
+
+                    <!-- Section 7: Action Buttons -->
+                    <div class="d-flex align-items-center justify-content-end gap-3 pt-3 mt-4 border-top">
+                        <a asp-controller="@dashCtrl" asp-action="Dashboard" class="btn-cancel-main">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn-save-main">
+                            <i class="bi bi-check2-circle fs-5 me-1"></i> Save Profile &amp; Settings
+                        </button>
+                    </div>
+
                 </div>
-
-                <!-- 6. AUTHORIZATION PASSWORD (REQUIRED TO SAVE) -->
-                <div class="profile-content-card" style="background: #fff5f5; border: 1.5px solid #fed7d7;">
-                    <div class="profile-card-title-bar" style="border-bottom-color: #fee2e2;">
-                        <div class="d-flex align-items-center gap-2.5">
-                            <div class="rounded-circle bg-danger bg-opacity-10 text-danger p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-                            </div>
-                            <div>
-                                <h5 class="fw-bold text-danger mb-0">Current Password Authorization</h5>
-                                <small class="text-muted">Enter your current password to authorize changes to your profile and banking information</small>
-                            </div>
-                        </div>
-                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 small fw-bold">Required</span>
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label asp-for="CurrentPassword" class="profile-form-label">
-                                Current Account Password <span class="text-danger">*</span>
-                            </label>
-                            <div class="profile-input-group">
-                                <span class="input-icon text-danger"><i class="bi bi-lock-fill"></i></span>
-                                <input asp-for="CurrentPassword" type="password" id="inputCurrentPassword" class="form-control" placeholder="Enter current password" required />
-                                <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('inputCurrentPassword', this)">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </div>
-                            <span asp-validation-for="CurrentPassword" class="text-danger small mt-1 d-block"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 7. SUBMIT & CANCEL BUTTONS -->
-                <div class="d-flex align-items-center justify-content-end gap-3 pt-2">
-                    <a asp-controller="@dashCtrl" asp-action="Dashboard" class="btn-cancel-main">
-                        Cancel
-                    </a>
-                    <button type="submit" class="btn-save-main">
-                        <i class="bi bi-check2-circle fs-5 me-1"></i> Save Profile &amp; Settings
-                    </button>
-                </div>
-
             </div>
-        </div>
-    </form>
+        </form>
+
+    </div>
 
 </div>
 
@@ -751,8 +860,10 @@
                     const initialCircle = document.getElementById('profileAvatarInitial');
                     if (avatarImg) {
                         avatarImg.src = e.target.result;
-                    } else if (initialCircle) {
-                        initialCircle.outerHTML = '<img src="' + e.target.result + '" id="profileAvatarDisplay" class="profile-avatar-img" alt="Profile Picture" />';
+                        avatarImg.style.display = 'block';
+                    }
+                    if (initialCircle) {
+                        initialCircle.style.display = 'none';
                     }
                 };
                 reader.readAsDataURL(input.files[0]);
