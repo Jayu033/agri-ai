@@ -21,17 +21,20 @@ namespace AgriAI.Web.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IRazorpayPaymentService _razorpayService;
+        private readonly IWhatsAppNotificationService _whatsAppService;
         private readonly ILogger<CheckoutController> _logger;
 
         public CheckoutController(
             ApplicationDbContext context, 
             UserManager<ApplicationUser> userManager,
             IRazorpayPaymentService razorpayService,
+            IWhatsAppNotificationService whatsAppService,
             ILogger<CheckoutController> logger)
         {
             _context = context;
             _userManager = userManager;
             _razorpayService = razorpayService;
+            _whatsAppService = whatsAppService;
             _logger = logger;
         }
 
@@ -392,6 +395,9 @@ namespace AgriAI.Web.Controllers
             await _context.Payments.AddAsync(payment);
             await _context.SaveChangesAsync();
 
+            // Trigger 100% Automated Background WhatsApp Notification
+            _ = TriggerAutomatedWhatsAppAlertsAsync(order, userId);
+
             TempData["SuccessMessage"] = $"🌾 Escrow Payment Confirmed! Order #{order.Id:D5} placed successfully. (Razorpay Ref: {request.RazorpayPaymentId})";
 
             return Json(new
@@ -492,6 +498,9 @@ namespace AgriAI.Web.Controllers
                 HttpContext.Session.Remove(CartSessionKey);
                 Response.Cookies.Delete(CartCookieKey);
 
+                // Trigger 100% Automated Background WhatsApp Notification
+                _ = TriggerAutomatedWhatsAppAlertsAsync(order, userId);
+
                 TempData["SuccessMessage"] = $"🌾 Multi-Product Order #{order.Id:D5} placed & confirmed ({cartItems.Count} crop varieties)! 3-hour harvest review period active.";
                 return RedirectToAction("OrderDetails", "Customer", new { id = order.Id });
             }
@@ -541,8 +550,53 @@ namespace AgriAI.Web.Controllers
             await _context.Orders.AddAsync(singleOrder);
             await _context.SaveChangesAsync();
 
+            // Trigger 100% Automated Background WhatsApp Notification
+            _ = TriggerAutomatedWhatsAppAlertsAsync(singleOrder, userId);
+
             TempData["SuccessMessage"] = $"🌾 Order #{singleOrder.Id:D5} placed & confirmed! 3-hour harvest review period active.";
             return RedirectToAction("OrderDetails", "Customer", new { id = singleOrder.Id });
+        }
+        private async Task TriggerAutomatedWhatsAppAlertsAsync(Order order, string buyerUserId)
+        {
+            try
+            {
+                var buyerUser = await _userManager.FindByIdAsync(buyerUserId) ?? await _userManager.FindByNameAsync(buyerUserId);
+                var buyerName = $"{buyerUser?.FirstName} {buyerUser?.LastName}".Trim();
+                if (string.IsNullOrEmpty(buyerName)) buyerName = "Customer";
+                var buyerPhone = buyerUser?.PhoneNumber ?? "";
+
+                // Find primary farmer for the crop
+                var firstProdId = order.OrderItems.FirstOrDefault()?.ProductId;
+                if (firstProdId.HasValue)
+                {
+                    var prod = await _context.Products.FindAsync(firstProdId.Value);
+                    if (prod != null && !string.IsNullOrEmpty(prod.FarmerId))
+                    {
+                        var farmerUser = await _userManager.FindByIdAsync(prod.FarmerId) ?? await _userManager.FindByNameAsync(prod.FarmerId);
+                        var farmerPhone = farmerUser?.PhoneNumber ?? "";
+                        var farmerName = $"{farmerUser?.FirstName} {farmerUser?.LastName}".Trim();
+                        if (string.IsNullOrEmpty(farmerName)) farmerName = "Farmer";
+
+                        decimal farmerEarnings = order.OrderItems.Sum(oi => oi.UnitPrice * oi.Quantity);
+
+                        // 1. Send automated WhatsApp message to Farmer
+                        if (!string.IsNullOrEmpty(farmerPhone))
+                        {
+                            await _whatsAppService.SendOrderNotificationToFarmerAsync(order, farmerPhone, farmerName, buyerName, farmerEarnings);
+                        }
+
+                        // 2. Send automated WhatsApp confirmation to Buyer
+                        if (!string.IsNullOrEmpty(buyerPhone))
+                        {
+                            await _whatsAppService.SendOrderConfirmationToBuyerAsync(order, buyerPhone, buyerName, farmerName);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Background automated WhatsApp notification error for Order #{OrderId}", order.Id);
+            }
         }
     }
 }

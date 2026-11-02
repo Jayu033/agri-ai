@@ -39,6 +39,7 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<AgriAI.Web.Services.ILiveMandiService, AgriAI.Web.Services.LiveMandiService>();
 builder.Services.AddHttpClient<AgriAI.Web.Services.IRazorpayPaymentService, AgriAI.Web.Services.RazorpayPaymentService>();
+builder.Services.AddHttpClient<AgriAI.Web.Services.IWhatsAppNotificationService, AgriAI.Web.Services.WhatsAppNotificationService>();
 builder.Services.AddSingleton<AgriAI.Web.Services.IGujaratAgroDataService, AgriAI.Web.Services.GujaratAgroDataService>();
 
 builder.Services.AddSession(options => {
