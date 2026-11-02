@@ -215,7 +215,7 @@
                 </div>
 
                 <!-- Action Button: Customer Direct Submit -->
-                <button type="submit" id="btnCustomerSubmit" class="btn-register-submit">
+                <button type="button" id="btnCustomerSubmit" class="btn-register-submit" onclick="triggerRegistrationProcess()">
                     <span>Create Customer Account</span>
                     <i class="bi bi-arrow-right-circle-fill fs-5"></i>
                 </button>
@@ -400,7 +400,7 @@
                     <button type="button" class="btn btn-outline-secondary rounded-pill py-2.5 px-4 fw-bold small" onclick="goToStep1()">
                         <i class="bi bi-arrow-left me-1"></i> Back to Step 1
                     </button>
-                    <button type="submit" class="btn-register-submit flex-grow-1 m-0">
+                    <button type="button" id="btnFarmerSubmit" class="btn-register-submit flex-grow-1 m-0" onclick="triggerRegistrationProcess()">
                         <span>Submit Farmer Registration</span>
                         <i class="bi bi-check-circle-fill fs-5"></i>
                     </button>
@@ -1135,6 +1135,7 @@
             }
         }
     
+        
         /* ============================================================ */
         /* WhatsApp Direct Registration OTP Verification Logic         */
         /* ============================================================ */
@@ -1142,127 +1143,146 @@
         let otpCountdownTimer = null;
         let currentOtpPhone = '';
 
-        const regForm = document.getElementById('registerForm');
-        if (regForm) {
-            regForm.addEventListener('submit', function (e) {
-                if (isOtpVerified) {
-                    return; // Proceed with normal submission
-                }
+        function showStep1Error(msg) {
+            const errorAlert = document.getElementById('step1ErrorAlert');
+            const errorMsg = document.getElementById('step1ErrorMsg');
+            if (errorMsg) errorMsg.textContent = msg;
+            if (errorAlert) {
+                errorAlert.classList.remove('d-none');
+                errorAlert.classList.add('d-flex');
+                errorAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                alert(msg);
+            }
+        }
 
-                e.preventDefault();
+        function triggerRegistrationProcess() {
+            const role = document.querySelector('input[name="Role"]:checked')?.value || 'Customer';
+            const phoneInput = document.getElementById('regPhone');
+            const phoneNumber = phoneInput ? phoneInput.value.trim() : '';
 
-                const role = document.querySelector('input[name="Role"]:checked')?.value || 'Customer';
-                const phoneInput = document.getElementById('regPhone');
-                const phoneNumber = phoneInput ? phoneInput.value.trim() : '';
+            // Validate Step 1 fields
+            const fName = document.getElementById('regFirstName')?.value.trim();
+            const lName = document.getElementById('regLastName')?.value.trim();
+            const uName = document.getElementById('regUsername')?.value.trim();
+            const email = document.getElementById('regEmail')?.value.trim();
+            const pwd = document.getElementById('regPassword')?.value;
+            const cPwd = document.getElementById('regConfirmPassword')?.value;
 
-                // Step 1 validation check
-                const fName = document.getElementById('regFirstName')?.value.trim();
-                const lName = document.getElementById('regLastName')?.value.trim();
-                const uName = document.getElementById('regUsername')?.value.trim();
-                const email = document.getElementById('regEmail')?.value.trim();
-                const pwd = document.getElementById('regPassword')?.value;
-                const cPwd = document.getElementById('regConfirmPassword')?.value;
+            if (!fName || !lName || !uName || !email || !pwd || !cPwd) {
+                showStep1Error('Please fill in all mandatory account details (Name, Username, Email, Password).');
+                return;
+            }
 
-                if (!fName || !lName || !uName || !email || !pwd) {
-                    showStep1Error('Please fill in all required profile details.');
+            if (pwd.length < 6) {
+                showStep1Error('Password must be at least 6 characters long.');
+                return;
+            }
+
+            if (pwd !== cPwd) {
+                showStep1Error('Password and Confirm Password do not match.');
+                return;
+            }
+
+            if (!phoneNumber) {
+                showStep1Error('Please enter your mobile number for WhatsApp OTP verification.');
+                if (phoneInput) phoneInput.focus();
+                return;
+            }
+
+            const digitsOnly = phoneNumber.replace(/\D/g, '');
+            if (digitsOnly.length < 10) {
+                showStep1Error('Please enter a valid 10-digit mobile number.');
+                if (phoneInput) phoneInput.focus();
+                return;
+            }
+
+            // If Farmer, validate Step 2 fields
+            if (role === 'Farmer') {
+                const step2 = document.getElementById('registerStep2');
+                if (step2 && step2.style.display === 'none') {
+                    goToStep2();
                     return;
                 }
-
-                if (pwd !== cPwd) {
-                    showStep1Error('Password and Confirm Password do not match.');
+                const bankNum = document.getElementById('BankAccountNumber')?.value?.trim();
+                const ifsc = document.getElementById('BankIfscCode')?.value?.trim();
+                const kycFile = document.getElementById('KycDocumentFile');
+                if (!bankNum || !ifsc) {
+                    alert('Bank Account Number and IFSC Code are required for Farmer registration.');
                     return;
                 }
-
-                if (!phoneNumber) {
-                    showStep1Error('Please enter your mobile number for WhatsApp verification.');
-                    if (phoneInput) phoneInput.focus();
+                if (!kycFile || !kycFile.files || kycFile.files.length === 0) {
+                    alert('Please upload your 7/12 (Satbara) or Aadhaar Card document photo or PDF.');
                     return;
                 }
+            }
 
-                const digitsOnly = phoneNumber.replace(/\D/g, '');
-                if (digitsOnly.length < 10) {
-                    showStep1Error('Please enter a valid 10-digit mobile number.');
-                    if (phoneInput) phoneInput.focus();
-                    return;
-                }
+            // Hide any previous errors
+            const errorAlert = document.getElementById('step1ErrorAlert');
+            if (errorAlert) {
+                errorAlert.classList.add('d-none');
+                errorAlert.classList.remove('d-flex');
+            }
 
-                // If Farmer, validate step 2 fields
-                if (role === 'Farmer') {
-                    const step2 = document.getElementById('registerStep2');
-                    if (step2 && step2.style.display === 'none') {
-                        goToStep2();
-                        return;
-                    }
-                    const bankNum = document.getElementById('BankAccountNumber')?.value?.trim();
-                    const ifsc = document.getElementById('BankIfscCode')?.value?.trim();
-                    const kycFile = document.getElementById('KycDocumentFile');
-                    if (!bankNum || !ifsc) {
-                        alert('Bank Account Number and IFSC code are required for Farmer registration.');
-                        return;
-                    }
-                    if (!kycFile || !kycFile.files || kycFile.files.length === 0) {
-                        alert('Please upload your 7/12 (Satbara) or Aadhaar Card document.');
-                        return;
-                    }
-                }
+            // Button loading state
+            const submitBtn = role === 'Farmer'
+                ? document.getElementById('btnFarmerSubmit')
+                : document.getElementById('btnCustomerSubmit');
 
-                // Show loading spinner on active submit button
-                const submitBtn = role === 'Farmer'
-                    ? document.querySelector('#registerStep2 button[type="submit"]')
-                    : document.getElementById('btnCustomerSubmit');
+            const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span><span>Sending WhatsApp OTP...</span>';
+            }
 
-                const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+            const formData = new FormData();
+            formData.append('phoneNumber', phoneNumber);
+            formData.append('username', uName);
+            formData.append('email', email);
+            formData.append('role', role);
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            if (token) formData.append('__RequestVerificationToken', token);
+
+            fetch('/Account/SendRegistrationOtp', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
                 if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span><span>Sending WhatsApp OTP...</span>';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
                 }
 
-                const formData = new FormData();
-                formData.append('phoneNumber', phoneNumber);
-                formData.append('username', uName);
-                formData.append('email', email);
-                formData.append('role', role);
+                if (data.success) {
+                    currentOtpPhone = digitsOnly;
+                    document.getElementById('otpPhoneDisplay').textContent = data.maskedPhone || phoneNumber;
+                    document.getElementById('whatsappOtpInput').value = '';
+                    document.getElementById('otpErrorAlert').classList.add('d-none');
+                    document.getElementById('otpSuccessAlert').classList.add('d-none');
 
-                fetch('/Account/SendRegistrationOtp', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnHtml;
-                    }
+                    // Open WhatsApp OTP Modal
+                    const modalEl = document.getElementById('whatsappOtpModal');
+                    const otpModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    otpModal.show();
 
-                    if (data.success) {
-                        currentOtpPhone = digitsOnly;
-                        document.getElementById('otpPhoneDisplay').textContent = data.maskedPhone || phoneNumber;
-                        document.getElementById('whatsappOtpInput').value = '';
-                        document.getElementById('otpErrorAlert').classList.add('d-none');
-                        document.getElementById('otpSuccessAlert').classList.add('d-none');
+                    setTimeout(() => {
+                        const inp = document.getElementById('whatsappOtpInput');
+                        if (inp) inp.focus();
+                    }, 400);
 
-                        // Show WhatsApp OTP Modal
-                        const modalEl = document.getElementById('whatsappOtpModal');
-                        const otpModal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                        otpModal.show();
-
-                        setTimeout(() => {
-                            const inp = document.getElementById('whatsappOtpInput');
-                            if (inp) inp.focus();
-                        }, 400);
-
-                        startOtpTimer(45);
-                    } else {
-                        showStep1Error(data.message || 'Could not send WhatsApp OTP.');
-                    }
-                })
-                .catch(err => {
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnHtml;
-                    }
-                    showStep1Error('Network error while connecting to WhatsApp service: ' + err.message);
-                });
+                    startOtpTimer(45);
+                } else {
+                    showStep1Error(data.message || 'Could not send WhatsApp OTP.');
+                }
+            })
+            .catch(err => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
+                showStep1Error('Network error while connecting to WhatsApp service: ' + err.message);
             });
         }
 
@@ -1290,6 +1310,9 @@
             formData.append('phoneNumber', currentOtpPhone);
             formData.append('otp', otp);
 
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            if (token) formData.append('__RequestVerificationToken', token);
+
             fetch('/Account/VerifyRegistrationOtp', {
                 method: 'POST',
                 body: formData
@@ -1307,7 +1330,7 @@
                         const otpModal = bootstrap.Modal.getInstance(modalEl);
                         if (otpModal) otpModal.hide();
 
-                        // Submit the form
+                        // Submit the form natively
                         document.getElementById('registerForm').submit();
                     }, 800);
                 } else {
@@ -1373,6 +1396,9 @@
             formData.append('username', username);
             formData.append('email', email);
             formData.append('role', role);
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            if (token) formData.append('__RequestVerificationToken', token);
 
             fetch('/Account/SendRegistrationOtp', {
                 method: 'POST',

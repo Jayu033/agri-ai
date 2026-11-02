@@ -35,6 +35,7 @@ namespace AgriAI.Web.Controllers
         }
 
         [HttpPost]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> SendRegistrationOtp(string phoneNumber, string username, string email, string role)
         {
             try
@@ -105,6 +106,7 @@ namespace AgriAI.Web.Controllers
         }
 
         [HttpPost]
+        [IgnoreAntiforgeryToken]
         public IActionResult VerifyRegistrationOtp(string phoneNumber, string otp)
         {
             try
