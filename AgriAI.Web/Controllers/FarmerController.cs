@@ -273,7 +273,7 @@ namespace AgriAI.Web.Controllers
                 // Trigger automated WhatsApp notification when produce is ready or dispatched
                 if (status.Contains("Ready", StringComparison.OrdinalIgnoreCase))
                 {
-                    _ = TriggerProduceReadyWhatsAppAlertAsync(order.Id);
+                    await TriggerProduceReadyWhatsAppAlertAsync(order.Id);
                 }
 
                 TempData["SuccessMessage"] = $"✅ Order #{order.Id:D5} status marked as '{status}' successfully! WhatsApp notification sent to customer.";
@@ -357,7 +357,7 @@ namespace AgriAI.Web.Controllers
             await _context.SaveChangesAsync();
 
             // Trigger automated WhatsApp dispatch alert to buyer
-            _ = TriggerProduceDispatchedWhatsAppAlertAsync(order.Id);
+            await TriggerProduceDispatchedWhatsAppAlertAsync(order.Id);
 
             TempData["SuccessMessage"] = $"🚚 Bilty #{order.BiltyNumber} uploaded! Order #{order.Id:D5} marked as Dispatched via {order.CargoServiceName}. WhatsApp notification sent to customer.";
             return RedirectToFarmerOrder(orderId, returnUrl);

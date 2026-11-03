@@ -395,8 +395,8 @@ namespace AgriAI.Web.Controllers
             await _context.Payments.AddAsync(payment);
             await _context.SaveChangesAsync();
 
-            // Trigger 100% Automated Background WhatsApp Notification
-            _ = TriggerAutomatedWhatsAppAlertsAsync(order, userId);
+            // Trigger 100% Automated WhatsApp Notification safely before returning
+            await TriggerAutomatedWhatsAppAlertsAsync(order, userId);
 
             TempData["SuccessMessage"] = $"🌾 Escrow Payment Confirmed! Order #{order.Id:D5} placed successfully. (Razorpay Ref: {request.RazorpayPaymentId})";
 
@@ -498,8 +498,8 @@ namespace AgriAI.Web.Controllers
                 HttpContext.Session.Remove(CartSessionKey);
                 Response.Cookies.Delete(CartCookieKey);
 
-                // Trigger 100% Automated Background WhatsApp Notification
-                _ = TriggerAutomatedWhatsAppAlertsAsync(order, userId);
+                // Trigger 100% Automated WhatsApp Notification safely before redirecting
+                await TriggerAutomatedWhatsAppAlertsAsync(order, userId);
 
                 TempData["SuccessMessage"] = $"🌾 Multi-Product Order #{order.Id:D5} placed & confirmed ({cartItems.Count} crop varieties)! 3-hour harvest review period active.";
                 return RedirectToAction("OrderDetails", "Customer", new { id = order.Id });
@@ -550,8 +550,8 @@ namespace AgriAI.Web.Controllers
             await _context.Orders.AddAsync(singleOrder);
             await _context.SaveChangesAsync();
 
-            // Trigger 100% Automated Background WhatsApp Notification
-            _ = TriggerAutomatedWhatsAppAlertsAsync(singleOrder, userId);
+            // Trigger 100% Automated WhatsApp Notification safely before redirecting
+            await TriggerAutomatedWhatsAppAlertsAsync(singleOrder, userId);
 
             TempData["SuccessMessage"] = $"🌾 Order #{singleOrder.Id:D5} placed & confirmed! 3-hour harvest review period active.";
             return RedirectToAction("OrderDetails", "Customer", new { id = singleOrder.Id });
