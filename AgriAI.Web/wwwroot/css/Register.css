@@ -325,15 +325,29 @@ input.btn-check:checked + .role-card-option .role-radio-badge::after,
 }
 
 /* Eye button */
+/* Disable native Edge / IE password reveal button */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* Eye button */
 .password-toggle-btn {
     position: absolute;
-    right: 12px;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
     background: none;
     border: none;
     color: #94a3b8;
     cursor: pointer;
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     padding: 0;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -342,6 +356,10 @@ input.btn-check:checked + .role-card-option .role-radio-badge::after,
 
 .password-toggle-btn:hover {
     color: #166534;
+}
+
+.modern-form-control.pe-5 {
+    padding-right: 48px !important;
 }
 
 /* Submit Action Button */

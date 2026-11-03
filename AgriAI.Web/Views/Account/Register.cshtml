@@ -96,18 +96,18 @@
                     </div>
 
                     <!-- Compact Action Buttons -->
-                    <div class="d-flex align-items-center gap-1.5">
-                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-2.5 py-1 shadow-sm d-inline-flex align-items-center gap-1" style="font-size: 0.76rem;" data-bs-toggle="modal" data-bs-target="#cameraCaptureModal" onclick="startCameraStream()" title="Take Photo with Camera">
+                    <div class="d-flex align-items-center gap-2" style="gap: 8px;">
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-3 py-1.5 shadow-sm d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem;" data-bs-toggle="modal" data-bs-target="#cameraCaptureModal" onclick="startCameraStream()" title="Take Photo with Camera">
                             <i class="bi bi-camera-fill"></i>
                             <span>Camera</span>
                         </button>
 
-                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-2.5 py-1 shadow-sm d-inline-flex align-items-center gap-1" style="font-size: 0.76rem;" onclick="document.getElementById('profilePicInput').click()" title="Upload File from Device">
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-3 py-1.5 shadow-sm d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem;" onclick="document.getElementById('profilePicInput').click()" title="Upload File from Device">
                             <i class="bi bi-folder-fill"></i>
                             <span>Upload</span>
                         </button>
 
-                        <button type="button" id="btnRemovePhoto" class="btn btn-sm text-danger p-0 ms-1" style="display: none; font-size: 0.90rem;" onclick="resetProfilePhoto()" title="Remove Photo">
+                        <button type="button" id="btnRemovePhoto" class="btn btn-sm text-danger p-0 ms-1.5" style="display: none; font-size: 0.95rem;" onclick="resetProfilePhoto()" title="Remove Photo">
                             <i class="bi bi-x-circle-fill"></i>
                         </button>
                     </div>
@@ -232,16 +232,7 @@
             <!-- ==================================================== -->
             <div id="registerStep2" style="display: none;">
                 
-                <div class="d-flex align-items-center justify-content-between p-2.5 mb-3 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-shield-check text-success fs-5"></i>
-                        <div>
-                            <h6 class="fw-bold text-dark mb-0 small">Farmer Verification &amp; Bank Payout Setup</h6>
-                            <span class="text-muted" style="font-size: 0.72rem;">Bank account for sale payouts &amp; 7/12 land verification</span>
-                        </div>
-                    </div>
-                    <span class="badge bg-success text-white px-2.5 py-1 rounded-pill small">Step 2 of 2</span>
-                </div>
+                
 
                 <!-- Farm Location Row -->
                 <div class="row g-2 mb-2">
@@ -268,71 +259,71 @@
                 <!-- Bank Details Row -->
                 <div class="row g-2 mb-2">
                     <div class="col-md-6">
-                        <div class="modern-input-group position-relative" id="bankSelectWrapper">
+                        <div class="modern-input-group">
                             <label asp-for="BankName" class="modern-label">Bank Name</label>
-                            <div class="input-icon-box position-relative">
-                                <input asp-for="BankName" id="regBankNameInput" class="modern-form-control pe-4" placeholder="Select or search bank..." autocomplete="off" />
+                            <div class="input-icon-box">
+                                <select asp-for="BankName" id="regBankNameSelect" class="modern-form-control pe-4" style="cursor: pointer;">
+                                    <option value="">-- Select Your Bank (બેંક પસંદ કરો) --</option>
+                                    <optgroup label="🏛️ Public Sector Banks (સરકારી બેંકો)">
+                                        <option value="State Bank of India (SBI)">State Bank of India (SBI)</option>
+                                        <option value="Bank of Baroda (BOB)">Bank of Baroda (BOB)</option>
+                                        <option value="Punjab National Bank (PNB)">Punjab National Bank (PNB)</option>
+                                        <option value="Canara Bank">Canara Bank</option>
+                                        <option value="Union Bank of India">Union Bank of India</option>
+                                        <option value="Bank of India (BOI)">Bank of India (BOI)</option>
+                                        <option value="Central Bank of India">Central Bank of India</option>
+                                        <option value="Indian Bank">Indian Bank</option>
+                                        <option value="Indian Overseas Bank">Indian Overseas Bank</option>
+                                        <option value="UCO Bank">UCO Bank</option>
+                                        <option value="Bank of Maharashtra">Bank of Maharashtra</option>
+                                        <option value="Punjab & Sind Bank">Punjab &amp; Sind Bank</option>
+                                    </optgroup>
+                                    <optgroup label="🏢 Private Sector Banks (ખાનગી બેંકો)">
+                                        <option value="HDFC Bank">HDFC Bank</option>
+                                        <option value="ICICI Bank">ICICI Bank</option>
+                                        <option value="Axis Bank">Axis Bank</option>
+                                        <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+                                        <option value="IndusInd Bank">IndusInd Bank</option>
+                                        <option value="Federal Bank">Federal Bank</option>
+                                        <option value="IDBI Bank">IDBI Bank</option>
+                                        <option value="Yes Bank">Yes Bank</option>
+                                        <option value="Bandhan Bank">Bandhan Bank</option>
+                                        <option value="AU Small Finance Bank">AU Small Finance Bank</option>
+                                    </optgroup>
+                                    <optgroup label="🌾 Regional Rural / Gramin Banks (ખેડૂત ગ્રામીણ બેંક)">
+                                        <option value="Saurashtra Gramin Bank">Saurashtra Gramin Bank</option>
+                                        <option value="Baroda Gujarat Gramin Bank (BGGB)">Baroda Gujarat Gramin Bank (BGGB)</option>
+                                    </optgroup>
+                                    <optgroup label="🤝 Gujarat District Co-operative Banks (સહકારી બેંકો)">
+                                        <option value="Gujarat State Co-operative Bank (GSC Bank)">Gujarat State Co-operative Bank (GSC Bank)</option>
+                                        <option value="Rajkot District Co-operative Bank (RDC Bank)">Rajkot District Co-operative Bank (RDC Bank)</option>
+                                        <option value="Ahmedabad District Co-operative Bank (ADC Bank)">Ahmedabad District Co-operative Bank (ADC Bank)</option>
+                                        <option value="Surat District Co-operative Bank">Surat District Co-operative Bank</option>
+                                        <option value="Mehsana Urban Co-operative Bank">Mehsana Urban Co-operative Bank</option>
+                                        <option value="Banaskantha District Central Co-op Bank">Banaskantha District Central Co-op Bank</option>
+                                        <option value="Sabarkantha District Central Co-op Bank">Sabarkantha District Central Co-op Bank</option>
+                                        <option value="Kheda District Central Co-operative Bank">Kheda District Central Co-operative Bank</option>
+                                        <option value="Vadodara District Central Co-op Bank">Vadodara District Central Co-op Bank</option>
+                                        <option value="Amreli Jilla Madhyastha Sahakari Bank">Amreli Jilla Madhyastha Sahakari Bank</option>
+                                        <option value="Bhavnagar District Co-operative Bank">Bhavnagar District Co-operative Bank</option>
+                                        <option value="Junagadh Jilla Sahakari Bank">Junagadh Jilla Sahakari Bank</option>
+                                        <option value="Jamnagar District Co-operative Bank">Jamnagar District Co-operative Bank</option>
+                                        <option value="Bharuch District Central Co-op Bank">Bharuch District Central Co-op Bank</option>
+                                        <option value="Panchmahal District Co-op Bank">Panchmahal District Co-op Bank</option>
+                                    </optgroup>
+                                    <optgroup label="📮 Payment & Post Banks">
+                                        <option value="India Post Payments Bank (IPPB)">India Post Payments Bank (IPPB)</option>
+                                        <option value="Airtel Payments Bank">Airtel Payments Bank</option>
+                                        <option value="Paytm Payments Bank">Paytm Payments Bank</option>
+                                        <option value="Fino Payments Bank">Fino Payments Bank</option>
+                                    </optgroup>
+                                    <optgroup label="✨ Other Bank">
+                                        <option value="Other Bank">Other Bank (અન્ય બેંક)</option>
+                                    </optgroup>
+                                </select>
                                 <i class="bi bi-bank input-leading-icon"></i>
-                                <button type="button" class="password-toggle-btn p-0 me-2" id="btnToggleBankDropdown" tabindex="-1" aria-label="Toggle bank list" style="width: 24px; height: 24px;">
-                                    <i class="bi bi-chevron-down text-muted" style="font-size: 0.75rem;"></i>
-                                </button>
                             </div>
-                            
-                            <!-- Custom Styled Popup Menu attached directly under the input -->
-                            <div id="customBankMenu" class="bank-custom-dropdown position-absolute start-0 w-100 mt-1 d-none" style="z-index: 1060;">
-                                <div class="bank-opt-group-header">🏛️ Public Sector Banks</div>
-                                <div class="bank-opt-item" data-bank="State Bank of India (SBI)"><span>State Bank of India (SBI)</span><span class="bank-badge">Public</span></div>
-                                <div class="bank-opt-item" data-bank="Bank of Baroda (BOB)"><span>Bank of Baroda (BOB)</span><span class="bank-badge">Public</span></div>
-                                <div class="bank-opt-item" data-bank="Punjab National Bank (PNB)"><span>Punjab National Bank (PNB)</span><span class="bank-badge">Public</span></div>
-                                <div class="bank-opt-item" data-bank="Canara Bank"><span>Canara Bank</span><span class="bank-badge">Public</span></div>
-                                <div class="bank-opt-item" data-bank="Union Bank of India"><span>Union Bank of India</span><span class="bank-badge">Public</span></div>
-                                <div class="bank-opt-item" data-bank="Bank of India (BOI)"><span>Bank of India (BOI)</span><span class="bank-badge">Public</span></div>
-                                <div class="bank-opt-item" data-bank="Central Bank of India"><span>Central Bank of India</span><span class="bank-badge">Public</span></div>
-                                <div class="bank-opt-item" data-bank="Indian Bank"><span>Indian Bank</span><span class="bank-badge">Public</span></div>
-                                <div class="bank-opt-item" data-bank="Indian Overseas Bank"><span>Indian Overseas Bank</span><span class="bank-badge">Public</span></div>
-                                <div class="bank-opt-item" data-bank="UCO Bank"><span>UCO Bank</span><span class="bank-badge">Public</span></div>
-                                <div class="bank-opt-item" data-bank="Bank of Maharashtra"><span>Bank of Maharashtra</span><span class="bank-badge">Public</span></div>
-                                <div class="bank-opt-item" data-bank="Punjab & Sind Bank"><span>Punjab &amp; Sind Bank</span><span class="bank-badge">Public</span></div>
-
-                                <div class="bank-opt-group-header">🏢 Private Sector Banks</div>
-                                <div class="bank-opt-item" data-bank="HDFC Bank"><span>HDFC Bank</span><span class="bank-badge">Private</span></div>
-                                <div class="bank-opt-item" data-bank="ICICI Bank"><span>ICICI Bank</span><span class="bank-badge">Private</span></div>
-                                <div class="bank-opt-item" data-bank="Axis Bank"><span>Axis Bank</span><span class="bank-badge">Private</span></div>
-                                <div class="bank-opt-item" data-bank="Kotak Mahindra Bank"><span>Kotak Mahindra Bank</span><span class="bank-badge">Private</span></div>
-                                <div class="bank-opt-item" data-bank="IndusInd Bank"><span>IndusInd Bank</span><span class="bank-badge">Private</span></div>
-                                <div class="bank-opt-item" data-bank="Federal Bank"><span>Federal Bank</span><span class="bank-badge">Private</span></div>
-                                <div class="bank-opt-item" data-bank="IDBI Bank"><span>IDBI Bank</span><span class="bank-badge">Private</span></div>
-                                <div class="bank-opt-item" data-bank="Yes Bank"><span>Yes Bank</span><span class="bank-badge">Private</span></div>
-                                <div class="bank-opt-item" data-bank="Bandhan Bank"><span>Bandhan Bank</span><span class="bank-badge">Private</span></div>
-                                <div class="bank-opt-item" data-bank="AU Small Finance Bank"><span>AU Small Finance Bank</span><span class="bank-badge">Private</span></div>
-
-                                <div class="bank-opt-group-header">🌾 Regional Rural / Gramin Banks (Farmer)</div>
-                                <div class="bank-opt-item" data-bank="Saurashtra Gramin Bank"><span>Saurashtra Gramin Bank</span><span class="bank-badge text-success bg-success bg-opacity-10 fw-bold">Gramin</span></div>
-                                <div class="bank-opt-item" data-bank="Baroda Gujarat Gramin Bank (BGGB)"><span>Baroda Gujarat Gramin Bank (BGGB)</span><span class="bank-badge text-success bg-success bg-opacity-10 fw-bold">Gramin</span></div>
-
-                                <div class="bank-opt-group-header">🤝 Gujarat District Co-operative Banks</div>
-                                <div class="bank-opt-item" data-bank="Gujarat State Co-operative Bank (GSC Bank)"><span>Gujarat State Co-operative Bank</span><span class="bank-badge">Co-op</span></div>
-                                <div class="bank-opt-item" data-bank="Rajkot District Co-operative Bank (RDC Bank)"><span>Rajkot District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
-                                <div class="bank-opt-item" data-bank="Ahmedabad District Co-operative Bank (ADC Bank)"><span>Ahmedabad District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
-                                <div class="bank-opt-item" data-bank="Surat District Co-operative Bank"><span>Surat District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
-                                <div class="bank-opt-item" data-bank="Mehsana Urban Co-operative Bank"><span>Mehsana Urban Co-op Bank</span><span class="bank-badge">Co-op</span></div>
-                                <div class="bank-opt-item" data-bank="Banaskantha District Central Co-op Bank"><span>Banaskantha District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
-                                <div class="bank-opt-item" data-bank="Sabarkantha District Central Co-op Bank"><span>Sabarkantha District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
-                                <div class="bank-opt-item" data-bank="Kheda District Central Co-operative Bank"><span>Kheda District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
-                                <div class="bank-opt-item" data-bank="Vadodara District Central Co-op Bank"><span>Vadodara District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
-                                <div class="bank-opt-item" data-bank="Amreli Jilla Madhyastha Sahakari Bank"><span>Amreli Jilla Sahakari Bank</span><span class="bank-badge">Co-op</span></div>
-                                <div class="bank-opt-item" data-bank="Bhavnagar District Co-operative Bank"><span>Bhavnagar District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
-                                <div class="bank-opt-item" data-bank="Junagadh Jilla Sahakari Bank"><span>Junagadh Jilla Sahakari Bank</span><span class="bank-badge">Co-op</span></div>
-                                <div class="bank-opt-item" data-bank="Jamnagar District Co-operative Bank"><span>Jamnagar District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
-                                <div class="bank-opt-item" data-bank="Bharuch District Central Co-op Bank"><span>Bharuch District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
-                                <div class="bank-opt-item" data-bank="Panchmahal District Co-op Bank"><span>Panchmahal District Co-op Bank</span><span class="bank-badge">Co-op</span></div>
-
-                                <div class="bank-opt-group-header">📮 Payment &amp; Post Banks</div>
-                                <div class="bank-opt-item" data-bank="India Post Payments Bank (IPPB)"><span>India Post Payments Bank (IPPB)</span><span class="bank-badge">Postal</span></div>
-                                <div class="bank-opt-item" data-bank="Airtel Payments Bank"><span>Airtel Payments Bank</span><span class="bank-badge">Payments</span></div>
-                                <div class="bank-opt-item" data-bank="Paytm Payments Bank"><span>Paytm Payments Bank</span><span class="bank-badge">Payments</span></div>
-                                <div class="bank-opt-item" data-bank="Fino Payments Bank"><span>Fino Payments Bank</span><span class="bank-badge">Payments</span></div>
-                            </div>
+                            <span asp-validation-for="BankName" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -665,89 +656,106 @@
         });
 
         // ==========================================
-        // CUSTOM STYLED BANK SEARCHABLE DROPDOWN
+        // AUTO-SAVE & RESTORE REGISTRATION FORM DRAFT
         // ==========================================
-        const bankInput = document.getElementById('regBankNameInput');
-        const bankMenu = document.getElementById('customBankMenu');
-        const bankToggleBtn = document.getElementById('btnToggleBankDropdown');
-        const bankWrapper = document.getElementById('bankSelectWrapper');
+        const REG_STORAGE_KEY = 'agriai_reg_draft_v2';
 
-        function openBankMenu() {
-            if (bankMenu) {
-                bankMenu.classList.remove('d-none');
-                filterBankItems(bankInput?.value || '');
+        function saveRegistrationDraft() {
+            try {
+                const roleEl = document.querySelector('input[name="Role"]:checked');
+                const draft = {
+                    role: roleEl ? roleEl.value : 'Customer',
+                    firstName: document.getElementById('regFirstName')?.value || '',
+                    lastName: document.getElementById('regLastName')?.value || '',
+                    username: document.getElementById('regUsername')?.value || '',
+                    email: document.getElementById('regEmail')?.value || '',
+                    phone: document.getElementById('regPhone')?.value || '',
+                    password: document.getElementById('regPassword')?.value || '',
+                    confirmPassword: document.getElementById('regConfirmPassword')?.value || '',
+                    city: document.querySelector('input[name="City"]')?.value || '',
+                    address: document.querySelector('input[name="Address"]')?.value || '',
+                    bankName: document.getElementById('regBankNameSelect')?.value || '',
+                    bankAccountNumber: document.querySelector('input[name="BankAccountNumber"]')?.value || '',
+                    bankIfscCode: document.querySelector('input[name="BankIfscCode"]')?.value || '',
+                    upiId: document.querySelector('input[name="UpiId"]')?.value || '',
+                    kycDocumentType: document.querySelector('select[name="KycDocumentType"]')?.value || '',
+                    capturedPhotoBase64: document.getElementById('capturedPhotoInput')?.value || '',
+                    avatarSrc: document.getElementById('avatarPreview')?.src || '',
+                    isStep2Active: (document.getElementById('registerStep2')?.style.display !== 'none')
+                };
+                localStorage.setItem(REG_STORAGE_KEY, JSON.stringify(draft));
+            } catch (err) {
+                console.warn('Draft auto-save warning:', err);
             }
         }
 
-        function closeBankMenu() {
-            if (bankMenu) {
-                bankMenu.classList.add('d-none');
-            }
-        }
+        function restoreRegistrationDraft() {
+            try {
+                const raw = localStorage.getItem(REG_STORAGE_KEY);
+                if (!raw) return;
+                const draft = JSON.parse(raw);
+                if (!draft) return;
 
-        function filterBankItems(query) {
-            const q = query.toLowerCase().trim();
-            const items = bankMenu?.querySelectorAll('.bank-opt-item');
-            const headers = bankMenu?.querySelectorAll('.bank-opt-group-header');
+                if (draft.firstName && document.getElementById('regFirstName')) document.getElementById('regFirstName').value = draft.firstName;
+                if (draft.lastName && document.getElementById('regLastName')) document.getElementById('regLastName').value = draft.lastName;
+                if (draft.username && document.getElementById('regUsername')) document.getElementById('regUsername').value = draft.username;
+                if (draft.email && document.getElementById('regEmail')) document.getElementById('regEmail').value = draft.email;
+                if (draft.phone && document.getElementById('regPhone')) document.getElementById('regPhone').value = draft.phone;
+                if (draft.password && document.getElementById('regPassword')) document.getElementById('regPassword').value = draft.password;
+                if (draft.confirmPassword && document.getElementById('regConfirmPassword')) document.getElementById('regConfirmPassword').value = draft.confirmPassword;
 
-            items?.forEach(item => {
-                const text = item.getAttribute('data-bank')?.toLowerCase() || item.textContent.toLowerCase();
-                if (!q || text.includes(q)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-
-            headers?.forEach(header => {
-                let sibling = header.nextElementSibling;
-                let hasVisible = false;
-                while (sibling && !sibling.classList.contains('bank-opt-group-header')) {
-                    if (sibling.style.display !== 'none') {
-                        hasVisible = true;
-                        break;
+                if (draft.capturedPhotoBase64 && document.getElementById('capturedPhotoInput')) {
+                    document.getElementById('capturedPhotoInput').value = draft.capturedPhotoBase64;
+                    capturedDataUrl = draft.capturedPhotoBase64;
+                    if (draft.avatarSrc && document.getElementById('avatarPreview')) {
+                        document.getElementById('avatarPreview').src = draft.avatarSrc;
+                        const badge = document.getElementById('photoTypeBadge');
+                        if (badge) badge.style.display = 'block';
+                        const removeBtn = document.getElementById('btnRemovePhoto');
+                        if (removeBtn) removeBtn.style.display = 'inline-block';
+                        const statusTxt = document.getElementById('photoStatusText');
+                        if (statusTxt) statusTxt.textContent = '📷 Restored profile photo';
                     }
-                    sibling = sibling.nextElementSibling;
-                }
-                header.style.display = hasVisible ? 'block' : 'none';
-            });
-        }
-
-        if (bankInput) {
-            bankInput.addEventListener('focus', openBankMenu);
-            bankInput.addEventListener('input', function () {
-                openBankMenu();
-                filterBankItems(this.value);
-            });
-        }
-
-        if (bankToggleBtn) {
-            bankToggleBtn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                if (bankMenu?.classList.contains('d-none')) {
-                    bankInput?.focus();
-                    openBankMenu();
                 } else {
-                    closeBankMenu();
+                    updateAvatarInitials();
                 }
-            });
+
+                if (draft.city && document.querySelector('input[name="City"]')) document.querySelector('input[name="City"]').value = draft.city;
+                if (draft.address && document.querySelector('input[name="Address"]')) document.querySelector('input[name="Address"]').value = draft.address;
+                if (draft.bankName && document.getElementById('regBankNameSelect')) document.getElementById('regBankNameSelect').value = draft.bankName;
+                if (draft.bankAccountNumber && document.querySelector('input[name="BankAccountNumber"]')) document.querySelector('input[name="BankAccountNumber"]').value = draft.bankAccountNumber;
+                if (draft.bankIfscCode && document.querySelector('input[name="BankIfscCode"]')) document.querySelector('input[name="BankIfscCode"]').value = draft.bankIfscCode;
+                if (draft.upiId && document.querySelector('input[name="UpiId"]')) document.querySelector('input[name="UpiId"]').value = draft.upiId;
+                if (draft.kycDocumentType && document.querySelector('select[name="KycDocumentType"]')) document.querySelector('select[name="KycDocumentType"]').value = draft.kycDocumentType;
+
+                if (draft.role === 'Farmer') {
+                    const farmerRadio = document.getElementById('roleFarmer');
+                    if (farmerRadio) {
+                        farmerRadio.checked = true;
+                        toggleRoleView();
+                    }
+                    if (draft.isStep2Active) {
+                        goToStep2();
+                    }
+                } else {
+                    const customerRadio = document.getElementById('roleCustomer');
+                    if (customerRadio) {
+                        customerRadio.checked = true;
+                        toggleRoleView();
+                    }
+                }
+            } catch (err) {
+                console.warn('Draft restore warning:', err);
+            }
         }
 
-        bankMenu?.querySelectorAll('.bank-opt-item')?.forEach(item => {
-            item.addEventListener('click', function () {
-                const selectedBank = this.getAttribute('data-bank');
-                if (bankInput) {
-                    bankInput.value = selectedBank;
-                }
-                closeBankMenu();
-            });
-        });
-
-        document.addEventListener('click', function (e) {
-            if (bankWrapper && !bankWrapper.contains(e.target)) {
-                closeBankMenu();
-            }
-        });
+        // Attach listeners for form inputs & restore draft
+        const regFormElement = document.getElementById('registerForm');
+        if (regFormElement) {
+            regFormElement.addEventListener('input', saveRegistrationDraft);
+            regFormElement.addEventListener('change', saveRegistrationDraft);
+        }
+        document.addEventListener('DOMContentLoaded', restoreRegistrationDraft);
 
         function goToStep2() {
             const errorAlert = document.getElementById('step1ErrorAlert');
@@ -1330,7 +1338,8 @@
                         const otpModal = bootstrap.Modal.getInstance(modalEl);
                         if (otpModal) otpModal.hide();
 
-                        // Submit the form natively
+                        // Clear saved draft and submit the form natively
+                        try { localStorage.removeItem(REG_STORAGE_KEY); } catch(e) {}
                         document.getElementById('registerForm').submit();
                     }, 800);
                 } else {
