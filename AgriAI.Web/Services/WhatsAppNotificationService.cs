@@ -152,6 +152,7 @@ namespace AgriAI.Web.Services
             }
         }
 
+        // 1. Farmer gets incoming order notification when Customer pays
         public async Task<(bool Success, string MessageId, string ErrorMessage)> SendOrderNotificationToFarmerAsync(
             Order order, string farmerPhone, string farmerName, string buyerName, decimal farmerEarnings, string buyerPhone = "")
         {
@@ -209,7 +210,7 @@ namespace AgriAI.Web.Services
             sb.AppendLine($"• *Location / સ્થળ:* {deliveryAddr}");
             sb.AppendLine();
             sb.AppendLine("⏳ *Action Required / આગળનું પગલું:*");
-            sb.AppendLine("Please review order & mark ready when harvest packaging is done.");
+            sb.AppendLine("Please review order & mark ready on portal when harvest packaging is done.");
             sb.AppendLine("_કૃપા કરીને ઓર્ડર ચકાસી ખેતરે ઉપજ તૈયાર કરી પોર્ટલ પર 'Ready for Pickup' માર્ક કરવા વિનંતી._");
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
             sb.AppendLine("🚜 *AgriAI - Direct Gujarat Farm-to-Consumer Portal* 🌾");
@@ -217,6 +218,7 @@ namespace AgriAI.Web.Services
             return await SendMessageAsync(farmerPhone, sb.ToString());
         }
 
+        // 2. Customer gets strictly Payment Successful & Order Confirmed (NO OTP)
         public async Task<(bool Success, string MessageId, string ErrorMessage)> SendOrderConfirmationToBuyerAsync(
             Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone = "", string pickupAddress = "")
         {
@@ -230,43 +232,32 @@ namespace AgriAI.Web.Services
 
             var safeBuyerName = string.IsNullOrWhiteSpace(buyerName) ? "Customer" : buyerName.Trim();
             var safeFarmerName = string.IsNullOrWhiteSpace(farmerName) ? "ખેડૂત મિત્ર" : farmerName.Trim();
-            var farmLoc = string.IsNullOrWhiteSpace(pickupAddress) ? order.ShippingAddress : pickupAddress;
 
             var sb = new StringBuilder();
-            sb.AppendLine("🌾 *AGRIAI ORDER CONFIRMATION* 🌾");
-            sb.AppendLine("_ઓર્ડર અને પેમેન્ટ કન્ફર્મેશન રસીદ_");
+            sb.AppendLine("🌾 *AGRIAI PAYMENT SUCCESSFUL* 🌾");
+            sb.AppendLine("_પેમેન્ટ અને ઓર્ડર સફળતાપૂર્વક કન્ફર્મ થયેલ છે_");
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
             sb.AppendLine($"Hello / નમસ્તે *{safeBuyerName}* જી,");
-            sb.AppendLine("Thank you for buying direct from Gujarat Farmers!");
-            sb.AppendLine("_ખેડૂત પાસેથી સીધી ખરીદી કરવા બદલ તમારો ખૂબ ખૂબ આભાર._");
+            sb.AppendLine("Your payment has been successfully received and order is confirmed!");
+            sb.AppendLine("_તમારું પેમેન્ટ સફળતાપૂર્વક થઈ ગયું છે અને ઓર્ડર કન્ફર્મ થઈ ગયો છે!_");
             sb.AppendLine();
             sb.AppendLine("📋 *ORDER SUMMARY / ઓર્ડર વિગતો:*");
             sb.AppendLine($"• *Order ID / ઓર્ડર નં:* #{order.Id:D5}");
             sb.AppendLine($"• *Produce / પાક:* *{cropName}* ({totalQty} Kg)");
             sb.AppendLine($"• *Farmer / ખેડૂત:* *{safeFarmerName}*");
-            if (!string.IsNullOrEmpty(farmerPhone))
-            {
-                sb.AppendLine($"• *Farmer Phone / સંપર્ક:* {farmerPhone}");
-            }
             sb.AppendLine($"• *Total Paid / ચૂકવેલ રકમ:* *₹{order.TotalAmount:N2}*");
-            sb.AppendLine("• *Status:* 100% Escrow Secured ✅");
+            sb.AppendLine("• *Status / સ્થિતિ:* 100% Escrow Secured ✅");
             sb.AppendLine();
-            sb.AppendLine("🔐 *YOUR DELIVERY OTP / ડિલિવરી ઓટીપી:*");
-            sb.AppendLine($"👉 *{order.DeliveryOtp}* 👈");
-            sb.AppendLine("_આ ૪-અંકનો સિક્રેટ OTP સાચવી રાખવો. માલ મેળવતી વખતે જ ખેડૂત ભાઈને આપવો._");
-            sb.AppendLine();
-            sb.AppendLine("📍 *FARM LOCATION / ખેતરનું સ્થળ:*");
-            sb.AppendLine($"• {farmLoc}");
-            sb.AppendLine();
-            sb.AppendLine("🛡️ *Escrow Guarantee / સુરક્ષા ખાતરી:*");
-            sb.AppendLine("Your money is safely locked in AgriAI Escrow until you collect and inspect your produce.");
-            sb.AppendLine("_જ્યાં સુધી તમે પાક ચકાસીને ના લો ત્યાં સુધી તમારા પૈસા સંપૂર્ણ સુરક્ષિત છે._");
+            sb.AppendLine("🌾 *Next Step / હવે પછીનું પગલું:*");
+            sb.AppendLine("The farmer is packing your produce. You will receive a WhatsApp message as soon as it is 'Ready for Pickup'.");
+            sb.AppendLine("_ખેડૂત ભાઈ તમારો પાક તૈયાર કરશે એટલે તમને તરત જ WhatsApp મેસેજ દ્વારા જાણ કરવામાં આવશે._");
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
             sb.AppendLine("🚜 *AgriAI - Pure Direct Farm Marketplace* 🌾");
 
             return await SendMessageAsync(buyerPhone, sb.ToString());
         }
 
+        // 3. Customer gets Ready for Pickup notification when Farmer marks ready (NO OTP)
         public async Task<(bool Success, string MessageId, string ErrorMessage)> SendProduceReadyNotificationAsync(
             Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone, string pickupAddress)
         {
@@ -280,15 +271,15 @@ namespace AgriAI.Web.Services
 
             var safeBuyerName = string.IsNullOrWhiteSpace(buyerName) ? "Customer" : buyerName.Trim();
             var safeFarmerName = string.IsNullOrWhiteSpace(farmerName) ? "ખેડૂત મિત્ર" : farmerName.Trim();
-            var farmLoc = string.IsNullOrWhiteSpace(pickupAddress) ? (order.ShippingAddress ?? "Gujarat Farm") : pickupAddress;
+            var farmLoc = string.IsNullOrWhiteSpace(pickupAddress) ? (order.ShippingAddress ?? "Gujarat Farm Location") : pickupAddress;
 
             var sb = new StringBuilder();
-            sb.AppendLine("🌾 *AGRIAI PRODUCE READY FOR PICKUP* 🌾");
-            sb.AppendLine("_તમારો ખેતી પાક ખેતરેથી મેળવવા માટે તૈયાર છે!_");
+            sb.AppendLine("🌾 *AGRIAI - PRODUCE READY FOR PICKUP* 🌾");
+            sb.AppendLine("_તમારો ખેતી પાક ખેતરે તૈયાર છે!_");
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
             sb.AppendLine($"Hello / નમસ્તે *{safeBuyerName}* જી,");
-            sb.AppendLine($"Farmer *{safeFarmerName}* has harvested and packed your produce!");
-            sb.AppendLine($"_ખેડૂત ભાઈ *{safeFarmerName}* એ તમારો પાક પેક કરીને ખેતરે તૈયાર કરી લીધો છે!_");
+            sb.AppendLine($"Great news! Farmer *{safeFarmerName}* has harvested and packed your produce!");
+            sb.AppendLine($"_ખેડૂત ભાઈએ તમારો પાક પેક કરીને ખેતરે તૈયાર કરી લીધો છે!_");
             sb.AppendLine();
             sb.AppendLine("📋 *ORDER DETAILS / ઓર્ડર વિગતો:*");
             sb.AppendLine($"• *Order ID / ઓર્ડર નં:* #{order.Id:D5}");
@@ -296,25 +287,22 @@ namespace AgriAI.Web.Services
             sb.AppendLine($"• *Farmer / ખેડૂત:* *{safeFarmerName}*");
             if (!string.IsNullOrEmpty(farmerPhone))
             {
-                sb.AppendLine($"• *Farmer Phone / સંપર્ક:* {farmerPhone}");
+                sb.AppendLine($"• *Farmer Phone / ખેડૂત ફોન:* {farmerPhone}");
             }
             sb.AppendLine();
-            sb.AppendLine("📍 *PICKUP FARM LOCATION / ખેતરનું સરનામું:*");
+            sb.AppendLine("📍 *PICKUP FARM LOCATION / ખેતરનું સ્થળ:*");
             sb.AppendLine($"• {farmLoc}");
             sb.AppendLine();
-            sb.AppendLine("🔐 *YOUR DELIVERY OTP / ડિલિવરી ઓટીપી:*");
-            sb.AppendLine($"👉 *{order.DeliveryOtp}* 👈");
-            sb.AppendLine("_જ્યારે તમે ખેતરેથી માલ મેળવો ત્યારે આ ૪-અંકનો OTP ખેડૂત ભાઈને ચકાસણી માટે આપવો._");
-            sb.AppendLine();
-            sb.AppendLine("🛡️ *Escrow Payout Release:*");
-            sb.AppendLine("Once OTP is verified, AgriAI releases payment to the farmer.");
-            sb.AppendLine("_તમે ઓટીપી આપશો એટલે તમારા વતી ખેડૂત ભાઈને પેમેન્ટ રિલીઝ થશે._");
+            sb.AppendLine("🚜 *Collection Note / સૂચના:*");
+            sb.AppendLine("Please collect your fresh produce from the farm location mentioned above.");
+            sb.AppendLine("_કૃપા કરીને ઉપર જણાવેલ સ્થળેથી તમારો તાજો ખેતી પાક મેળવી લેવા વિનંતી._");
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
             sb.AppendLine("🚜 *AgriAI - Direct Gujarat Farm-to-Consumer Portal* 🌾");
 
             return await SendMessageAsync(buyerPhone, sb.ToString());
         }
 
+        // 4. Customer gets Dispatched notification when Farmer dispatches via Cargo/Bus (NO OTP)
         public async Task<(bool Success, string MessageId, string ErrorMessage)> SendProduceDispatchedNotificationAsync(
             Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone, string cargoServiceName, string biltyNumber)
         {
@@ -346,19 +334,16 @@ namespace AgriAI.Web.Services
             sb.AppendLine($"• *Bilty / LR No:* *{safeBilty}*");
             if (!string.IsNullOrEmpty(farmerPhone))
             {
-                sb.AppendLine($"• *Farmer Contact:* {farmerPhone}");
+                sb.AppendLine($"• *Farmer Contact / ખેડૂત ફોન:* {farmerPhone}");
             }
             sb.AppendLine($"• *Delivery Address / સ્થળ:* {order.ShippingAddress}");
-            sb.AppendLine();
-            sb.AppendLine("🔐 *YOUR DELIVERY OTP / ડિલિવરી ઓટીપી:*");
-            sb.AppendLine($"👉 *{order.DeliveryOtp}* 👈");
-            sb.AppendLine("_પાર્સલ મેળવતી વખતે આ OTP ડિલિવરી સ્ટાફને શેર કરવો._");
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
             sb.AppendLine("🚜 *AgriAI - Direct Gujarat Farm-to-Consumer Portal* 🌾");
 
             return await SendMessageAsync(buyerPhone, sb.ToString());
         }
 
+        // 5. Account Registration OTP
         public async Task<(bool Success, string MessageId, string ErrorMessage)> SendRegistrationOtpAsync(string phoneNumber, string otpCode, string role)
         {
             var roleName = string.Equals(role, "Farmer", StringComparison.OrdinalIgnoreCase) 
