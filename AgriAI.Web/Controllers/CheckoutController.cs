@@ -560,6 +560,8 @@ namespace AgriAI.Web.Controllers
         {
             try
             {
+                _logger.LogInformation("🚀 [WhatsApp Automation] Starting automated order alerts for Order #{OrderId} (Buyer: {BuyerId})", order.Id, buyerUserId);
+
                 // Reload full order with products and payment details
                 var fullOrder = await _context.Orders
                     .Include(o => o.OrderItems)
@@ -582,35 +584,49 @@ namespace AgriAI.Web.Controllers
                     farmerId = p?.FarmerId;
                 }
 
+                ApplicationUser? farmerUser = null;
                 if (!string.IsNullOrEmpty(farmerId))
                 {
-                    var farmerUser = await _userManager.FindByIdAsync(farmerId) ?? await _userManager.FindByNameAsync(farmerId);
-                    var farmerPhone = farmerUser?.PhoneNumber ?? "";
-                    var farmerName = $"{farmerUser?.FirstName} {farmerUser?.LastName}".Trim();
-                    if (string.IsNullOrEmpty(farmerName)) farmerName = "Farmer";
+                    farmerUser = await _userManager.FindByIdAsync(farmerId) ?? await _userManager.FindByNameAsync(farmerId);
+                }
 
-                    var farmerAddress = !string.IsNullOrWhiteSpace(farmerUser?.Address)
-                        ? $"{farmerUser.Address}, {farmerUser.City}"
-                        : (farmerUser?.City ?? "Gujarat Farm Location");
+                var farmerPhone = farmerUser?.PhoneNumber ?? "";
+                var farmerName = $"{farmerUser?.FirstName} {farmerUser?.LastName}".Trim();
+                if (string.IsNullOrEmpty(farmerName)) farmerName = "Farmer";
 
-                    decimal farmerEarnings = fullOrder.OrderItems.Sum(oi => oi.UnitPrice * oi.Quantity);
+                var farmerAddress = !string.IsNullOrWhiteSpace(farmerUser?.Address)
+                    ? $"{farmerUser.Address}, {farmerUser.City}"
+                    : (farmerUser?.City ?? "Gujarat Farm Location");
 
-                    // 1. Send automated WhatsApp message to Farmer
-                    if (!string.IsNullOrEmpty(farmerPhone))
-                    {
-                        await _whatsAppService.SendOrderNotificationToFarmerAsync(fullOrder, farmerPhone, farmerName, buyerName, farmerEarnings, buyerPhone);
-                    }
+                decimal farmerEarnings = fullOrder.OrderItems.Sum(oi => oi.UnitPrice * oi.Quantity);
 
-                    // 2. Send automated WhatsApp confirmation to Buyer
-                    if (!string.IsNullOrEmpty(buyerPhone))
-                    {
-                        await _whatsAppService.SendOrderConfirmationToBuyerAsync(fullOrder, buyerPhone, buyerName, farmerName, farmerPhone, farmerAddress);
-                    }
+                // 1. Send automated WhatsApp confirmation to Buyer (Payment Confirmed - NO OTP)
+                if (!string.IsNullOrEmpty(buyerPhone))
+                {
+                    var buyerRes = await _whatsAppService.SendOrderConfirmationToBuyerAsync(fullOrder, buyerPhone, buyerName, farmerName, farmerPhone, farmerAddress);
+                    _logger.LogInformation("✅ [WhatsApp Automation] Buyer alert sent to {Phone}. Success={Success}, MsgId={MsgId}, Err={Err}", 
+                        buyerPhone, buyerRes.Success, buyerRes.MessageId, buyerRes.ErrorMessage);
+                }
+                else
+                {
+                    _logger.LogWarning("⚠️ [WhatsApp Automation] Buyer {BuyerId} has no phone number in profile. Skipping buyer WhatsApp alert.", buyerUserId);
+                }
+
+                // 2. Send automated WhatsApp message to Farmer (New Order Notification)
+                if (!string.IsNullOrEmpty(farmerPhone))
+                {
+                    var farmerRes = await _whatsAppService.SendOrderNotificationToFarmerAsync(fullOrder, farmerPhone, farmerName, buyerName, farmerEarnings, buyerPhone);
+                    _logger.LogInformation("✅ [WhatsApp Automation] Farmer alert sent to {Phone}. Success={Success}, MsgId={MsgId}, Err={Err}", 
+                        farmerPhone, farmerRes.Success, farmerRes.MessageId, farmerRes.ErrorMessage);
+                }
+                else
+                {
+                    _logger.LogWarning("⚠️ [WhatsApp Automation] Farmer {FarmerId} has no phone number in profile. Skipping farmer WhatsApp alert.", farmerId);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Background automated WhatsApp notification error for Order #{OrderId}", order.Id);
+                _logger.LogError(ex, "❌ [WhatsApp Automation] Error sending automated WhatsApp notification for Order #{OrderId}", order.Id);
             }
         }
     }

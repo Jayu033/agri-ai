@@ -367,6 +367,8 @@ namespace AgriAI.Web.Controllers
         {
             try
             {
+                _logger.LogInformation("🚀 [Farmer WhatsApp] Processing Produce Ready alert for Order #{OrderId}", orderId);
+
                 var order = await _context.Orders
                     .Include(o => o.OrderItems)
                         .ThenInclude(oi => oi.Product)
@@ -379,23 +381,41 @@ namespace AgriAI.Web.Controllers
                 var buyerName = $"{buyerUser?.FirstName} {buyerUser?.LastName}".Trim();
                 if (string.IsNullOrEmpty(buyerName)) buyerName = "Customer";
 
-                var currentFarmer = await _userManager.GetUserAsync(User);
-                var farmerName = $"{currentFarmer?.FirstName} {currentFarmer?.LastName}".Trim();
-                if (string.IsNullOrEmpty(farmerName)) farmerName = "Farmer";
-                var farmerPhone = currentFarmer?.PhoneNumber ?? "";
+                // Resolve farmer profile from order crop or logged in farmer
+                var firstProd = order.OrderItems.FirstOrDefault()?.Product;
+                var farmerId = firstProd?.FarmerId;
+                ApplicationUser? farmerUser = null;
+                if (!string.IsNullOrEmpty(farmerId))
+                {
+                    farmerUser = await _userManager.FindByIdAsync(farmerId) ?? await _userManager.FindByNameAsync(farmerId);
+                }
+                if (farmerUser == null && User != null)
+                {
+                    farmerUser = await _userManager.GetUserAsync(User);
+                }
 
-                var pickupAddress = !string.IsNullOrWhiteSpace(currentFarmer?.Address)
-                    ? $"{currentFarmer.Address}, {currentFarmer.City}"
-                    : (currentFarmer?.City ?? "Gujarat Farm Location");
+                var farmerName = $"{farmerUser?.FirstName} {farmerUser?.LastName}".Trim();
+                if (string.IsNullOrEmpty(farmerName)) farmerName = "Farmer";
+                var farmerPhone = farmerUser?.PhoneNumber ?? "";
+
+                var pickupAddress = !string.IsNullOrWhiteSpace(farmerUser?.Address)
+                    ? $"{farmerUser.Address}, {farmerUser.City}"
+                    : (farmerUser?.City ?? "Gujarat Farm Location");
 
                 if (!string.IsNullOrEmpty(buyerPhone))
                 {
-                    await _whatsAppService.SendProduceReadyNotificationAsync(order, buyerPhone, buyerName, farmerName, farmerPhone, pickupAddress);
+                    var res = await _whatsAppService.SendProduceReadyNotificationAsync(order, buyerPhone, buyerName, farmerName, farmerPhone, pickupAddress);
+                    _logger.LogInformation("✅ [Farmer WhatsApp] Produce Ready alert sent to Buyer {Phone}. Success={Success}, MsgId={MsgId}, Err={Err}", 
+                        buyerPhone, res.Success, res.MessageId, res.ErrorMessage);
+                }
+                else
+                {
+                    _logger.LogWarning("⚠️ [Farmer WhatsApp] Buyer {BuyerId} has no phone number. Skipping Produce Ready WhatsApp alert.", order.CustomerId);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send Produce Ready WhatsApp alert for Order #{OrderId}", orderId);
+                _logger.LogError(ex, "❌ [Farmer WhatsApp] Failed to send Produce Ready WhatsApp alert for Order #{OrderId}", orderId);
             }
         }
 
@@ -403,6 +423,8 @@ namespace AgriAI.Web.Controllers
         {
             try
             {
+                _logger.LogInformation("🚀 [Farmer WhatsApp] Processing Produce Dispatched alert for Order #{OrderId}", orderId);
+
                 var order = await _context.Orders
                     .Include(o => o.OrderItems)
                         .ThenInclude(oi => oi.Product)
@@ -415,14 +437,26 @@ namespace AgriAI.Web.Controllers
                 var buyerName = $"{buyerUser?.FirstName} {buyerUser?.LastName}".Trim();
                 if (string.IsNullOrEmpty(buyerName)) buyerName = "Customer";
 
-                var currentFarmer = await _userManager.GetUserAsync(User);
-                var farmerName = $"{currentFarmer?.FirstName} {currentFarmer?.LastName}".Trim();
+                // Resolve farmer profile
+                var firstProd = order.OrderItems.FirstOrDefault()?.Product;
+                var farmerId = firstProd?.FarmerId;
+                ApplicationUser? farmerUser = null;
+                if (!string.IsNullOrEmpty(farmerId))
+                {
+                    farmerUser = await _userManager.FindByIdAsync(farmerId) ?? await _userManager.FindByNameAsync(farmerId);
+                }
+                if (farmerUser == null && User != null)
+                {
+                    farmerUser = await _userManager.GetUserAsync(User);
+                }
+
+                var farmerName = $"{farmerUser?.FirstName} {farmerUser?.LastName}".Trim();
                 if (string.IsNullOrEmpty(farmerName)) farmerName = "Farmer";
-                var farmerPhone = currentFarmer?.PhoneNumber ?? "";
+                var farmerPhone = farmerUser?.PhoneNumber ?? "";
 
                 if (!string.IsNullOrEmpty(buyerPhone))
                 {
-                    await _whatsAppService.SendProduceDispatchedNotificationAsync(
+                    var res = await _whatsAppService.SendProduceDispatchedNotificationAsync(
                         order, 
                         buyerPhone, 
                         buyerName, 
@@ -430,11 +464,18 @@ namespace AgriAI.Web.Controllers
                         farmerPhone, 
                         order.CargoServiceName ?? "GSRTC ST Bus Parcel", 
                         order.BiltyNumber ?? "LR-Direct");
+
+                    _logger.LogInformation("✅ [Farmer WhatsApp] Produce Dispatched alert sent to Buyer {Phone}. Success={Success}, MsgId={MsgId}, Err={Err}", 
+                        buyerPhone, res.Success, res.MessageId, res.ErrorMessage);
+                }
+                else
+                {
+                    _logger.LogWarning("⚠️ [Farmer WhatsApp] Buyer {BuyerId} has no phone number. Skipping Produce Dispatched WhatsApp alert.", order.CustomerId);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send Produce Dispatched WhatsApp alert for Order #{OrderId}", orderId);
+                _logger.LogError(ex, "❌ [Farmer WhatsApp] Failed to send Produce Dispatched WhatsApp alert for Order #{OrderId}", orderId);
             }
         }
 
