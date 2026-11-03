@@ -30,38 +30,6 @@
     var rzpRef = Model.Payment != null && !string.IsNullOrEmpty(Model.Payment.RazorpayPaymentId) ? Model.Payment.RazorpayPaymentId : "Razorpay Escrow";
     var buyerUserDisplay = User.Identity?.Name ?? "Buyer";
     var deliveryAddrDisplay = string.IsNullOrEmpty(Model.ShippingAddress) ? "Direct Farm Pickup (Gujarat Field)" : Model.ShippingAddress;
-
-    var waLines = new List<string>
-    {
-        "🌾 *AGRIAI PRODUCE ORDER RECEIPT* 🌾",
-        "_ખેતી પાક ઓર્ડર સત્તાવાર રસીદ_",
-        "━━━━━━━━━━━━━━━━━━━━━━━━",
-        $"Hello / નમસ્તે *{fDisplayName}* જી,",
-        "A new direct farm order has been placed!",
-        "_તમારી પાસેથી પાક ખરીદીનો નવો ઓર્ડર મળ્યો છે!_",
-        "",
-        "📋 *ORDER DETAILS / ઓર્ડર વિગતો:*",
-        $"• *Order ID / ઓર્ડર નં:* #{Model.Id:D5}",
-        $"• *Produce / પાક:* *{produceName}* ({itemQty} Kg)",
-        $"• *Total Bill / કુલ રકમ:* *₹{Model.TotalAmount:N2}*",
-        $"• *Logistics / ડિલિવરી:* {Model.TransportType ?? "Direct Farm Pickup"}",
-        "",
-        "💳 *ESCROW PROTECTION / પેમેન્ટ સુરક્ષા:*",
-        "✅ *100% Payment Successful (Razorpay Secured)*",
-        $"🔒 *₹{baseAmount:N2}* is safely locked in AgriAI Escrow Vault!",
-        "_તમારા પૈસા એસ્ક્રો વૉલ્ટમાં ૧૦૦% સુરક્ષિત છે. માલ મળતાં જ ખાતામાં જમા થશે._",
-        $"• *Ref ID:* {rzpRef}",
-        "",
-        "📍 *BUYER INFO / ગ્રાહક વિગતો:*",
-        $"• *Name / નામ:* {buyerUserDisplay}",
-        $"• *Location / સ્થળ:* {deliveryAddrDisplay}",
-        "",
-        "⏳ Please review order & prepare harvest packaging.",
-        "_કૃપા કરીને ઓર્ડર ચકાસી ખેતરે ઉપજ તૈયાર રાખવા વિનંતી._",
-        "━━━━━━━━━━━━━━━━━━━━━━━━",
-        "🚜 *AgriAI - Direct Gujarat Farm-to-Consumer Portal* 🌾"
-    };
-    var custMsg = Uri.EscapeDataString(string.Join("\n", waLines));
 }
 
 <div class="container-fluid py-4 my-2 px-3 px-md-4 px-lg-5" style="max-width: 1380px;">
@@ -328,37 +296,6 @@
         </div>
     </div>
 
-    <!-- WhatsApp Instant Notification to Farmer Banner -->
-    @if (farmerUser != null && !string.IsNullOrEmpty(farmerUser.PhoneNumber))
-    {
-        var fPhone = farmerUser.PhoneNumber.Replace("+", "").Replace(" ", "");
-
-        <div class="card border-0 rounded-4 p-3.5 mb-4 shadow-sm text-dark position-relative overflow-hidden" style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1.5px solid #86efac !important;">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-circle text-white d-flex align-items-center justify-content-center shadow" style="background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); width: 52px; height: 52px;">
-                        <i class="bi bi-whatsapp fs-2"></i>
-                    </div>
-                    <div>
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <span class="badge bg-success text-white fw-bold px-2.5 py-1 rounded-pill small shadow-sm">
-                                <i class="bi bi-broadcast me-1"></i>Automated Dispatch Active
-                            </span>
-                            <span class="badge bg-white text-dark border small fw-bold">English + ગુજરાતી Receipt</span>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-0.5">Instant WhatsApp Order Confirmation Sent! 📲</h5>
-                        <p class="text-muted small mb-0">System dispatched the order receipt to <strong>@fDisplayName</strong> (+@farmerUser.PhoneNumber). Click below if you wish to chat directly.</p>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <a href="https://wa.me/@fPhone?text=@custMsg" target="_blank" class="btn btn-success rounded-pill px-4 py-2.5 fw-bold shadow d-inline-flex align-items-center gap-2" style="background-color: #25D366; border-color: #25D366;">
-                        <i class="bi bi-whatsapp fs-5"></i> Open in WhatsApp
-                    </a>
-                </div>
-            </div>
-        </div>
-    }
-
     <!-- 1. Delivery Pass / OTP Verification Card -->
     @if (isParcel && Model.PaymentMethod != "Cash on Delivery" && !Model.Status.Contains("Delivered") && Model.Status != "Declined" && Model.Status != "Cancelled")
     {
@@ -495,14 +432,7 @@
                         </div>
                     </div>
 
-                    <div class="d-flex gap-2">
-                        <a href="tel:@farmerPhone" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold">
-                            <i class="bi bi-telephone-fill me-1"></i> Call Farmer
-                        </a>
-                        <a href="https://wa.me/@(farmerPhone.Replace("+","").Replace(" ",""))?text=@custMsg" target="_blank" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #25D366; border-color: #25D366;">
-                            <i class="bi bi-whatsapp me-1"></i> WhatsApp
-                        </a>
-                    </div>
+                    <a href="tel:@farmerPhone" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold"><i class="bi bi-telephone-fill me-1"></i> Call Farmer</a>
                 </div>
             </div>
 

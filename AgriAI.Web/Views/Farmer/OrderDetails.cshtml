@@ -876,33 +876,6 @@
                             <a href="tel:@buyerPhone" class="btn-call-custom">
                                 <i class="bi bi-telephone-fill"></i> Call Customer
                             </a>
-                            @{
-                                var farmerWaLines = new List<string>
-                                {
-                                    "👨‍🌾 *AgriAI - ખેડૂત તરફથી ઓર્ડર અપડેટ* 🚜",
-                                    "━━━━━━━━━━━━━━━━━━━━",
-                                    $"નમસ્તે *{buyerName}* જી,",
-                                    $"તમારો ઓર્ડર *#{orderNoStr}* મને મળી ગયો છે!",
-                                    "",
-                                    "🌾 *ઓર્ડર વિગતો:*",
-                                    $"• *ઓર્ડર:* #{orderNoStr}",
-                                    $"• *પાક:* {produceName} ({itemQty} Kg)",
-                                    $"• *રકમ:* ₹{baseAmount:N2}",
-                                    $"• *ડિલિવરી:* {Model.TransportType ?? "Direct Farm Pickup"}",
-                                    "• *પેમેન્ટ:* એસ્ક્રોમાં ૧૦૦% સુરક્ષિત ✅",
-                                    "",
-                                    "📦 *હાલની સ્થિતિ:*",
-                                    "અમે તમારા માટે ખેતરમાંથી એકદમ તાજી ઉપજ પેક કરી રહ્યા છીએ.",
-                                    "",
-                                    "🙏 AgriAI પર સીધા ખેડૂત પાસેથી ખરીદી કરવા બદલ ખૂબ ખૂબ આભાર!",
-                                    "━━━━━━━━━━━━━━━━━━━━",
-                                    "_AgriAI - ખેડૂતથી સીધા ગ્રાહક સુધી 🌾_"
-                                };
-                                var fMsgFormatted = Uri.EscapeDataString(string.Join("\n", farmerWaLines));
-                            }
-                            <a href="https://wa.me/@(buyerPhone.Replace("+","").Replace(" ",""))?text=@fMsgFormatted" target="_blank" class="btn-whatsapp-custom">
-                                <i class="bi bi-whatsapp"></i> WhatsApp Message
-                            </a>
                         </div>
                     </div>
 
