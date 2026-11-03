@@ -3,6 +3,7 @@ using AgriAI.Domain.Entities;
 using AgriAI.Infrastructure.Data;
 using AgriAI.Infrastructure.Identity;
 using AgriAI.Web.ViewModels;
+using AgriAI.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,17 +18,23 @@ namespace AgriAI.Web.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IWhatsAppNotificationService _whatsAppService;
+        private readonly ILogger<AdminController> _logger;
 
         public AdminController(
             IUnitOfWork unitOfWork, 
             UserManager<ApplicationUser> userManager, 
             ApplicationDbContext context,
-            IWebHostEnvironment webHostEnvironment)
+            IWebHostEnvironment webHostEnvironment,
+            IWhatsAppNotificationService whatsAppService,
+            ILogger<AdminController> logger)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _whatsAppService = whatsAppService;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Dashboard(string? tab)
@@ -409,6 +416,24 @@ namespace AgriAI.Web.Controllers
             user.KycRejectionReason = null;
             user.KycApprovedAt = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
+
+            // Automated WhatsApp KYC Approval Notification
+            if (!string.IsNullOrEmpty(user.PhoneNumber))
+            {
+                var farmerName = $"{user.FirstName} {user.LastName}".Trim();
+                if (string.IsNullOrEmpty(farmerName)) farmerName = user.UserName ?? "Farmer";
+
+                try
+                {
+                    var waRes = await _whatsAppService.SendFarmerKycApprovedNotificationAsync(user.PhoneNumber, farmerName);
+                    _logger.LogInformation("✅ [Admin KYC Approval] WhatsApp notification sent to {Phone}. Success={Success}, MsgId={MsgId}",
+                        user.PhoneNumber, waRes.Success, waRes.MessageId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "❌ Failed to send WhatsApp KYC Approval notification to {Phone}", user.PhoneNumber);
+                }
+            }
 
             TempData["SuccessMessage"] = $"Farmer '{user.UserName}' has been approved and activated successfully.";
             return RedirectToAction(nameof(Dashboard), new { tab = "users" });

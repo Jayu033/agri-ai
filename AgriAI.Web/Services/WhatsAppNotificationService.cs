@@ -372,5 +372,34 @@ namespace AgriAI.Web.Services
 
             return await SendMessageAsync(phoneNumber, sb.ToString());
         }
+
+        // 6. Farmer KYC Approved Notification by Admin
+        public async Task<(bool Success, string MessageId, string ErrorMessage)> SendFarmerKycApprovedNotificationAsync(
+            string farmerPhone, string farmerName)
+        {
+            var safeFarmerName = string.IsNullOrWhiteSpace(farmerName) ? "ખેડૂત મિત્ર" : farmerName.Trim();
+
+            var sb = new StringBuilder();
+            sb.AppendLine("🌾 *AGRIAI - FARMER KYC APPROVED* 🌾");
+            sb.AppendLine("_અભિનંદન! તમારું ખેડૂત એકાઉન્ટ મંજૂર થયેલ છે_");
+            sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
+            sb.AppendLine($"Hello / નમસ્તે *{safeFarmerName}* જી,");
+            sb.AppendLine();
+            sb.AppendLine("Congratulations! Your farmer KYC documentation has been officially verified and approved by the AgriAI Admin team!");
+            sb.AppendLine("_ખૂબ ખૂબ અભિનંદન! તમારા ખેતી દસ્તાવેજો (૭/૧૨) ની ચકાસણી પૂર્ણ થઈ છે અને તમારું AgriAI ખેડૂત એકાઉન્ટ સત્તાવાર રીતે ચાલુ થઈ ગયું છે._");
+            sb.AppendLine();
+            sb.AppendLine("📋 *ACCOUNT STATUS / એકાઉન્ટ સ્થિતિ:*");
+            sb.AppendLine($"• *Farmer Name / ખેડૂત:* {safeFarmerName}");
+            sb.AppendLine("• *Status / સ્ટેટસ:* 🟢 100% KYC Verified & Active");
+            sb.AppendLine("• *Selling Access / વેચાણ અધિકાર:* મંજૂર (Approved ✅)");
+            sb.AppendLine();
+            sb.AppendLine("🚜 *START SELLING / હવે શું કરવું:*");
+            sb.AppendLine("You can now log in to your Farmer Dashboard, list your fresh farm crops, and start receiving direct orders with 100% Escrow security!");
+            sb.AppendLine("_હવે તમે તમારા ખેડૂત એકાઉન્ટમાં લોગિન કરીને પાકનું લિસ્ટિંગ કરી શકો છો અને સીધા ગ્રાહકો પાસેથી ઓર્ડર મેળવવાનું શરૂ કરી શકો છો._");
+            sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
+            sb.AppendLine("🚜 *AgriAI - Empowering Gujarat Farmers* 🌾");
+
+            return await SendMessageAsync(farmerPhone, sb.ToString());
+        }
     }
 }

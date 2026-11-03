@@ -20,5 +20,8 @@ namespace AgriAI.Web.Services
         
         Task<(bool Success, string MessageId, string ErrorMessage)> SendRegistrationOtpAsync(
             string phoneNumber, string otpCode, string role);
+            
+        Task<(bool Success, string MessageId, string ErrorMessage)> SendFarmerKycApprovedNotificationAsync(
+            string farmerPhone, string farmerName);
     }
 }
