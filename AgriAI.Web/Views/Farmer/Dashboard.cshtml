@@ -1203,6 +1203,13 @@
             if (btn) {
                 btn.classList.add('active');
             }
+
+            // Immediately clear any query parameters from address bar so refresh always reloads default dashboard
+            try {
+                if (window.location.search) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            } catch (e) { }
         }
 
         function calculateFarmerMaund() {
@@ -1240,16 +1247,22 @@
 
         setInterval(updateFarmerCountdowns, 1000);
 
-        // Auto-activate tab from URL query (?tab=farmerPurchasesTab)
+        // Auto-activate tab from URL query once (?tab=farmerPurchasesTab), then clear address bar immediately
         document.addEventListener('DOMContentLoaded', function () {
             const params = new URLSearchParams(window.location.search);
             const tab = params.get('tab');
-            if (tab) {
+            if (tab && tab !== 'farmerOverviewTab') {
                 const btn = document.querySelector(`[onclick*="${tab}"]`);
                 if (btn) {
                     switchDashTab(tab, btn);
                 }
             }
+            // Clear URL search params immediately so subsequent browser refreshes (F5) load the normal Dashboard Overview
+            try {
+                if (window.location.search) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            } catch (e) { }
         });
 
         function updateFarmerCartQty(productId, qty) {
