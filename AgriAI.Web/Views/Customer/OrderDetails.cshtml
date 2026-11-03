@@ -21,10 +21,15 @@
     var isParcel = Model.TransportType != null && (Model.TransportType.Contains("Cargo") || Model.TransportType.Contains("GSRTC") || Model.TransportType.Contains("Parcel"));
     string returnUrl = Context.Request.Query["returnUrl"].ToString();
     string from = Context.Request.Query["from"].ToString();
+    var isFarmerUser = User.IsInRole("Farmer");
     string backUrl = !string.IsNullOrEmpty(returnUrl) 
         ? returnUrl 
-        : (from == "farmer" ? "/Farmer/Dashboard?tab=farmerPurchasesTab" : (from == "totalPurchases" ? "/Customer/TotalPurchases" : (from == "active" ? "/Customer/Dashboard?tab=activeOrdersTab" : "/Customer/Dashboard?tab=ordersTab")));
-    string backLabel = from == "farmer" ? "Back to My Purchases" : (from == "totalPurchases" ? "Back to Total Purchases" : (from == "active" ? "Back to Active Orders" : "Back to Order History"));
+        : (isFarmerUser || from == "farmer" 
+            ? "/Farmer/Dashboard?tab=farmerPurchasesTab" 
+            : (from == "totalPurchases" ? "/Customer/TotalPurchases" : (from == "active" ? "/Customer/Dashboard?tab=activeOrdersTab" : "/Customer/Dashboard?tab=ordersTab")));
+    string backLabel = isFarmerUser || from == "farmer" 
+        ? "Back to My Purchases" 
+        : (from == "totalPurchases" ? "Back to Total Purchases" : (from == "active" ? "Back to Active Orders" : "Back to Order History"));
 
     var fDisplayName = !string.IsNullOrEmpty(farmerName) ? farmerName : "ખેડૂત ભાઈ (Farmer)";
     var rzpRef = Model.Payment != null && !string.IsNullOrEmpty(Model.Payment.RazorpayPaymentId) ? Model.Payment.RazorpayPaymentId : "Razorpay Escrow";

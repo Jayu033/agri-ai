@@ -27,6 +27,11 @@ namespace AgriAI.Web.Controllers
 
         public async Task<IActionResult> Dashboard()
         {
+            if (User.IsInRole("Farmer"))
+            {
+                return Redirect("/Farmer/Dashboard?tab=farmerPurchasesTab");
+            }
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userName = User.Identity?.Name;
             var currentUser = await _userManager.GetUserAsync(User);
@@ -104,6 +109,11 @@ namespace AgriAI.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> TotalPurchases()
         {
+            if (User.IsInRole("Farmer"))
+            {
+                return Redirect("/Farmer/Dashboard?tab=farmerPurchasesTab");
+            }
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userName = User.Identity?.Name;
             var currentUser = await _userManager.GetUserAsync(User);
@@ -178,14 +188,14 @@ namespace AgriAI.Web.Controllers
             if (order == null)
             {
                 TempData["ErrorMessage"] = "Order not found.";
-                return RedirectToAction(nameof(Dashboard));
+                return User.IsInRole("Farmer") ? Redirect("/Farmer/Dashboard?tab=farmerPurchasesTab") : RedirectToAction(nameof(Dashboard));
             }
 
             // Verify order ownership
             if (!User.IsInRole("Admin") && order.CustomerId != userId && order.CustomerId != userName && order.CustomerId != "guest-user")
             {
                 TempData["ErrorMessage"] = "You do not have authorization to view this order.";
-                return RedirectToAction(nameof(Dashboard));
+                return User.IsInRole("Farmer") ? Redirect("/Farmer/Dashboard?tab=farmerPurchasesTab") : RedirectToAction(nameof(Dashboard));
             }
 
             // Load Farmer contact info if associated

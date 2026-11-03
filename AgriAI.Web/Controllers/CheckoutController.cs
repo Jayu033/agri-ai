@@ -101,7 +101,7 @@ namespace AgriAI.Web.Controllers
                 if (!cart.Any())
                 {
                     TempData["ErrorMessage"] = "Your cart is empty. Please add crops to your cart before proceeding to checkout.";
-                    return Redirect("/Customer/Dashboard?tab=shopTab");
+                    return User.IsInRole("Farmer") ? Redirect("/Farmer/Dashboard?tab=farmerPurchasesTab") : Redirect("/Customer/Dashboard?tab=shopTab");
                 }
 
                 decimal cartBaseTotal = cart.Sum(i => i.TotalPrice);
@@ -404,7 +404,7 @@ namespace AgriAI.Web.Controllers
             {
                 success = true,
                 orderId = order.Id,
-                redirectUrl = Url.Action("OrderDetails", "Customer", new { id = order.Id })
+                redirectUrl = Url.Action("OrderDetails", "Customer", new { id = order.Id, from = User.IsInRole("Farmer") ? "farmer" : "" })
             });
         }
 
@@ -451,7 +451,7 @@ namespace AgriAI.Web.Controllers
                 if (!cartItems.Any())
                 {
                     TempData["ErrorMessage"] = "Cart is empty.";
-                    return Redirect("/Customer/Dashboard?tab=cartTab");
+                    return User.IsInRole("Farmer") ? Redirect("/Farmer/Dashboard?tab=farmerPurchasesTab") : Redirect("/Customer/Dashboard?tab=cartTab");
                 }
 
                 baseTotal = cartItems.Sum(i => i.TotalPrice);
@@ -502,7 +502,7 @@ namespace AgriAI.Web.Controllers
                 await TriggerAutomatedWhatsAppAlertsAsync(order, userId);
 
                 TempData["SuccessMessage"] = $"🌾 Multi-Product Order #{order.Id:D5} placed & confirmed ({cartItems.Count} crop varieties)! 3-hour harvest review period active.";
-                return RedirectToAction("OrderDetails", "Customer", new { id = order.Id });
+                return RedirectToAction("OrderDetails", "Customer", new { id = order.Id, from = User.IsInRole("Farmer") ? "farmer" : "" });
             }
 
             // Case B: Single-Product Checkout
@@ -554,7 +554,7 @@ namespace AgriAI.Web.Controllers
             await TriggerAutomatedWhatsAppAlertsAsync(singleOrder, userId);
 
             TempData["SuccessMessage"] = $"🌾 Order #{singleOrder.Id:D5} placed & confirmed! 3-hour harvest review period active.";
-            return RedirectToAction("OrderDetails", "Customer", new { id = singleOrder.Id });
+            return RedirectToAction("OrderDetails", "Customer", new { id = singleOrder.Id, from = User.IsInRole("Farmer") ? "farmer" : "" });
         }
         private async Task TriggerAutomatedWhatsAppAlertsAsync(Order order, string buyerUserId)
         {
