@@ -41,6 +41,17 @@
     border: 3px solid #ffffff;
 }
 
+.dash-avatar-img {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto 12px auto;
+    box-shadow: 0 6px 16px rgba(0, 102, 83, 0.25);
+    border: 3px solid #ffffff;
+}
+
 .dash-user-name {
     font-size: 1.1rem;
     font-weight: 800;

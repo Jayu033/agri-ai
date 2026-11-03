@@ -42,6 +42,8 @@ namespace AgriAI.Web.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userName = User.Identity?.Name;
 
+            var currentUser = await _userManager.GetUserAsync(User);
+            ViewBag.ProfilePicturePath = currentUser?.ProfilePicturePath;
             ViewBag.ActiveTab = string.IsNullOrEmpty(tab) ? "overview" : tab.Trim();
             
             // Get only crops listed by THIS logged-in farmer

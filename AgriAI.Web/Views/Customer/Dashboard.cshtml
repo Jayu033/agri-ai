@@ -100,9 +100,26 @@
                 <div class="dashboard-sidebar-card">
                     <!-- User Avatar Header -->
                     <div class="dash-user-profile-header">
-                        <div class="dash-avatar-circle">
-                            @userInitial
-                        </div>
+                        @{
+                            var customerProfilePic = ViewBag.ProfilePicturePath as string;
+                            var hasCustomerPhoto = !string.IsNullOrWhiteSpace(customerProfilePic);
+                        }
+                        @if (hasCustomerPhoto)
+                        {
+                            <img src="@customerProfilePic" 
+                                 class="dash-avatar-img" 
+                                 alt="@userName" 
+                                 onerror="this.style.display='none'; var f=document.getElementById('customerDashAvatarInitial'); if(f) f.style.display='flex';" />
+                            <div class="dash-avatar-circle" id="customerDashAvatarInitial" style="display: none;">
+                                @userInitial
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="dash-avatar-circle">
+                                @userInitial
+                            </div>
+                        }
                         <h4 class="dash-user-name">@userName.Split('@')[0]</h4>
                         <span class="dash-user-role-badge">
                             <i class="bi bi-shield-check me-1"></i>Verified Buyer

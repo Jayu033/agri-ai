@@ -69,9 +69,26 @@
                 <div class="dashboard-sidebar-card">
                     <!-- Farmer Avatar Header -->
                     <div class="dash-user-profile-header">
-                        <div class="dash-avatar-circle" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);">
-                            @userInitial
-                        </div>
+                        @{
+                            var farmerProfilePic = ViewBag.ProfilePicturePath as string;
+                            var hasFarmerPhoto = !string.IsNullOrWhiteSpace(farmerProfilePic);
+                        }
+                        @if (hasFarmerPhoto)
+                        {
+                            <img src="@farmerProfilePic" 
+                                 class="dash-avatar-img" 
+                                 alt="@userName" 
+                                 onerror="this.style.display='none'; var f=document.getElementById('farmerDashAvatarInitial'); if(f) f.style.display='flex';" />
+                            <div class="dash-avatar-circle" id="farmerDashAvatarInitial" style="display: none; background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);">
+                                @userInitial
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="dash-avatar-circle" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);">
+                                @userInitial
+                            </div>
+                        }
                         <h4 class="dash-user-name">@userName.Split('@')[0]</h4>
                         <span class="dash-user-role-badge" style="background: #f0fdf4; color: #15803d; border-color: #86efac;">
                             <i class="bi bi-patch-check-fill me-1"></i>Verified Producer / Farmer

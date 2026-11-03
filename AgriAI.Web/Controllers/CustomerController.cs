@@ -29,6 +29,8 @@ namespace AgriAI.Web.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userName = User.Identity?.Name;
+            var currentUser = await _userManager.GetUserAsync(User);
+            ViewBag.ProfilePicturePath = currentUser?.ProfilePicturePath;
 
             var products = await _context.Products
                 .Include(p => p.Category)
@@ -104,6 +106,8 @@ namespace AgriAI.Web.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userName = User.Identity?.Name;
+            var currentUser = await _userManager.GetUserAsync(User);
+            ViewBag.ProfilePicturePath = currentUser?.ProfilePicturePath;
 
             var customerOrders = await _context.Orders
                 .Where(o => o.CustomerId == userId || o.CustomerId == userName || o.CustomerId == "guest-user")
@@ -158,6 +162,8 @@ namespace AgriAI.Web.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userName = User.Identity?.Name;
+            var currentUser = await _userManager.GetUserAsync(User);
+            ViewBag.ProfilePicturePath = currentUser?.ProfilePicturePath;
 
             var order = await _context.Orders
                 .Include(o => o.OrderItems)
@@ -201,6 +207,8 @@ namespace AgriAI.Web.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userName = User.Identity?.Name;
+            var currentUser = await _userManager.GetUserAsync(User);
+            ViewBag.ProfilePicturePath = currentUser?.ProfilePicturePath;
 
             var order = await _context.Orders
                 .Include(o => o.OrderItems)
