@@ -23,8 +23,8 @@
     string from = Context.Request.Query["from"].ToString();
     string backUrl = !string.IsNullOrEmpty(returnUrl) 
         ? returnUrl 
-        : (from == "totalPurchases" ? "/Customer/TotalPurchases" : (from == "active" ? "/Customer/Dashboard?tab=activeOrdersTab" : "/Customer/Dashboard?tab=ordersTab"));
-    string backLabel = from == "totalPurchases" ? "Back to Total Purchases" : (from == "active" ? "Back to Active Orders" : "Back to Order History");
+        : (from == "farmer" ? "/Farmer/Dashboard?tab=farmerPurchasesTab" : (from == "totalPurchases" ? "/Customer/TotalPurchases" : (from == "active" ? "/Customer/Dashboard?tab=activeOrdersTab" : "/Customer/Dashboard?tab=ordersTab")));
+    string backLabel = from == "farmer" ? "Back to My Purchases" : (from == "totalPurchases" ? "Back to Total Purchases" : (from == "active" ? "Back to Active Orders" : "Back to Order History"));
 
     var fDisplayName = !string.IsNullOrEmpty(farmerName) ? farmerName : "ખેડૂત ભાઈ (Farmer)";
     var rzpRef = Model.Payment != null && !string.IsNullOrEmpty(Model.Payment.RazorpayPaymentId) ? Model.Payment.RazorpayPaymentId : "Razorpay Escrow";

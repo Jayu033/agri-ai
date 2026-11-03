@@ -68,6 +68,10 @@ namespace AgriAI.Web.Controllers
         [HttpGet]
         public IActionResult Index()
         {
+            if (User.IsInRole("Farmer"))
+            {
+                return Redirect("/Farmer/Dashboard?tab=farmerPurchasesTab");
+            }
             return Redirect("/Customer/Dashboard?tab=cartTab");
         }
 

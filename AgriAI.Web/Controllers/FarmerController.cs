@@ -2,6 +2,7 @@ using AgriAI.Web.Services;
 using AgriAI.Domain.Entities;
 using AgriAI.Infrastructure.Data;
 using AgriAI.Infrastructure.Identity;
+using AgriAI.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -36,10 +37,12 @@ namespace AgriAI.Web.Controllers
             _logger = logger;
         }
 
-        public async Task<IActionResult> Dashboard()
+        public async Task<IActionResult> Dashboard(string? tab)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userName = User.Identity?.Name;
+
+            ViewBag.ActiveTab = string.IsNullOrEmpty(tab) ? "overview" : tab.Trim();
             
             // Get only crops listed by THIS logged-in farmer
             var products = await _context.Products
@@ -99,6 +102,60 @@ namespace AgriAI.Web.Controllers
             ViewBag.PendingOrdersCount = incomingOrders.Count(o => o.Status == "Pending" || o.Status == "Requested");
             ViewBag.Orders = incomingOrders;
             ViewBag.CustomerUsers = usersDict;
+
+            // Load orders PLACED BY this farmer (Sourced / Purchased from other farmers)
+            var purchasedOrders = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.Images)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.Category)
+                .Include(o => o.Payment)
+                .Where(o => o.CustomerId == userId || (!string.IsNullOrEmpty(userName) && o.CustomerId == userName))
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            var sellerFarmerIds = purchasedOrders
+                .SelectMany(o => o.OrderItems)
+                .Select(oi => oi.Product?.FarmerId)
+                .Where(fId => !string.IsNullOrEmpty(fId))
+                .Distinct()
+                .ToList();
+
+            var sellerUsersList = await _userManager.Users
+                .Where(u => sellerFarmerIds.Contains(u.Id) || (u.UserName != null && sellerFarmerIds.Contains(u.UserName)))
+                .ToListAsync();
+
+            var sellerDict = new Dictionary<string, ApplicationUser>();
+            foreach (var u in sellerUsersList)
+            {
+                sellerDict[u.Id] = u;
+                if (!string.IsNullOrEmpty(u.UserName)) sellerDict[u.UserName] = u;
+            }
+
+            // Session Cart
+            var cartSessionJson = HttpContext.Session.GetString("AgriAI_ShoppingCart_Session");
+            if (string.IsNullOrEmpty(cartSessionJson) && HttpContext.Request.Cookies.TryGetValue("AgriAI_Cart_Cookie", out var cookieJson))
+            {
+                cartSessionJson = cookieJson;
+            }
+
+            var cartItems = new List<CartItemViewModel>();
+            if (!string.IsNullOrEmpty(cartSessionJson))
+            {
+                try
+                {
+                    cartItems = System.Text.Json.JsonSerializer.Deserialize<List<CartItemViewModel>>(cartSessionJson) ?? new List<CartItemViewModel>();
+                }
+                catch { }
+            }
+
+            var cartSummary = new CartSummaryViewModel { Items = cartItems };
+
+            ViewBag.PurchasedOrders = purchasedOrders;
+            ViewBag.SellerUsers = sellerDict;
+            ViewBag.CartSummary = cartSummary;
             
             return View(products);
         }
