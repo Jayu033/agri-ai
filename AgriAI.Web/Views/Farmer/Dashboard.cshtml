@@ -479,19 +479,29 @@
                                         }
                                         @if (order.PaymentMethod != "Cash on Delivery")
                                         {
-                                            <div class="mx-3.5 mb-2 p-2.5 rounded-3 border d-flex flex-wrap justify-content-between align-items-center gap-2" style="background-color: #ecfdf5; border-color: #86efac !important;">
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <i class="bi bi-shield-fill-check text-success fs-5"></i>
+                                            <div class="mx-3 mb-3 p-3 rounded-3 border d-flex flex-wrap justify-content-between align-items-center gap-2.5 shadow-xs" style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1.5px solid #86efac !important;">
+                                                <div class="d-flex align-items-center gap-2.5">
+                                                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0 shadow-xs" style="width: 38px; height: 38px; background-color: #dcfce7; border: 1px solid #86efac; color: #16a34a;">
+                                                        <i class="bi bi-shield-fill-check fs-5"></i>
+                                                    </div>
                                                     <div>
-                                                        <strong class="text-success small d-block">₹@activeOrdFarmerEarning.ToString("N2") Funded &amp; Locked in AgriAI Escrow Vault</strong>
-                                                        <span class="text-muted small">Customer has paid via Razorpay. Money is secured in Escrow and will be credited to you upon handover.</span>
+                                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                            <strong class="text-success small">₹@activeOrdFarmerEarning.ToString("N2") Funded &amp; Locked in AgriAI Escrow Vault</strong>
+                                                            <span class="badge rounded-pill fw-bold" style="background-color: #dcfce7; color: #15803d; font-size: 0.70rem; border: 1px solid #86efac; padding: 2px 7px;">
+                                                                100% Escrow Secured
+                                                            </span>
+                                                        </div>
+                                                        <span class="text-muted small d-block" style="font-size: 0.80rem; line-height: 1.35; margin-top: 2px;">Customer has paid via Razorpay. Money is secured in Escrow and will be credited to you upon handover.</span>
                                                     </div>
                                                 </div>
                                                 @if (order.Payment != null && !string.IsNullOrEmpty(order.Payment.RazorpayPaymentId))
                                                 {
-                                                    <span class="badge bg-white text-dark border font-monospace small shadow-sm">
-                                                        <i class="bi bi-credit-card-2-front-fill text-success me-1"></i>RZP: @order.Payment.RazorpayPaymentId
-                                                    </span>
+                                                    <div class="d-flex align-items-center ms-auto ms-md-0">
+                                                        <span class="badge bg-white text-dark border font-monospace shadow-xs px-2.5 py-1.5 rounded-pill d-inline-flex align-items-center gap-1.5" style="font-size: 0.75rem; border-color: #86efac !important;">
+                                                            <i class="bi bi-credit-card-2-front-fill text-success"></i>
+                                                            <span>RZP: @order.Payment.RazorpayPaymentId</span>
+                                                        </span>
+                                                    </div>
                                                 }
                                             </div>
                                         }
