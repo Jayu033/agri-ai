@@ -14,12 +14,27 @@
 }
 
 <style>
-    .checkout-card {
+    /* Master Unified Container Card (Same Box as Empty State / Dashboard) */
+    .checkout-main-container {
         background: #ffffff;
         border: 1px solid #e2e8f0;
+        border-radius: 1.5rem;
+        padding: 2.25rem 2.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        margin-bottom: 2.5rem;
+    }
+    @media (max-width: 768px) {
+        .checkout-main-container {
+            padding: 1.25rem 1rem;
+            border-radius: 1.25rem;
+        }
+    }
+    .checkout-card {
+        background: #ffffff;
+        border: 1.5px solid #e2e8f0;
         border-radius: 1.25rem;
         padding: 1.5rem !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
         margin-bottom: 1.5rem;
         transition: all 0.2s ease;
     }
@@ -48,11 +63,11 @@
         border-color: #cbd5e1;
     }
     .price-breakdown-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
         border-radius: 1.25rem;
         padding: 1.75rem !important;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
     }
 </style>
 
@@ -81,7 +96,8 @@
 
     @if (hasItems)
     {
-        <form asp-action="ProcessPayment" method="post" id="checkoutForm" onsubmit="return validateCheckoutForm()">
+        <div class="checkout-main-container">
+            <form asp-action="ProcessPayment" method="post" id="checkoutForm" onsubmit="return validateCheckoutForm()">
             @if (isCart)
             {
                 <input type="hidden" name="isCart" value="true" />
@@ -363,10 +379,11 @@
 
             </div>
         </form>
+        </div>
     }
     else
     {
-        <div class="alert alert-warning rounded-4 p-5 text-center my-4 bg-white border shadow-sm">
+        <div class="checkout-main-container text-center py-5">
             <i class="bi bi-cart-x display-4 text-warning mb-3 d-block"></i>
             <h5 class="fw-bold text-dark mb-2">No items selected for checkout</h5>
             <p class="text-muted small mb-4">Please explore available farm crops from Gujarat farmers and add items to your cart or choose a direct crop.</p>
