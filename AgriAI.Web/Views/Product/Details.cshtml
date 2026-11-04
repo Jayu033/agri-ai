@@ -26,22 +26,7 @@
 
     if (string.IsNullOrEmpty(returnUrl))
     {
-        if (isAdmin)
-        {
-            returnUrl = "/Admin/Dashboard?tab=adminProductsTab";
-        }
-        else if (isFarmer)
-        {
-            returnUrl = "/Farmer/Dashboard?tab=farmerProductsTab";
-        }
-        else if (User.IsInRole("Customer"))
-        {
-            returnUrl = "/Customer/Dashboard?tab=shopTab";
-        }
-        else
-        {
-            returnUrl = Url.Action("Index", "Product") ?? "/Product";
-        }
+        returnUrl = Url.Action("Index", "Product") ?? "/Product";
     }
 }
 

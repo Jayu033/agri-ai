@@ -404,7 +404,7 @@ namespace AgriAI.Web.Controllers
             {
                 success = true,
                 orderId = order.Id,
-                redirectUrl = Url.Action("OrderDetails", "Customer", new { id = order.Id, from = User.IsInRole("Farmer") ? "farmer" : "" })
+                redirectUrl = Url.Action("OrderDetails", "Customer", new { id = order.Id, from = User.IsInRole("Farmer") ? "farmer" : "active" })
             });
         }
 
@@ -502,7 +502,7 @@ namespace AgriAI.Web.Controllers
                 await TriggerAutomatedWhatsAppAlertsAsync(order, userId);
 
                 TempData["SuccessMessage"] = $"🌾 Multi-Product Order #{order.Id:D5} placed & confirmed ({cartItems.Count} crop varieties)! 3-hour harvest review period active.";
-                return RedirectToAction("OrderDetails", "Customer", new { id = order.Id, from = User.IsInRole("Farmer") ? "farmer" : "" });
+                return RedirectToAction("OrderDetails", "Customer", new { id = order.Id, from = User.IsInRole("Farmer") ? "farmer" : "active" });
             }
 
             // Case B: Single-Product Checkout
@@ -554,7 +554,7 @@ namespace AgriAI.Web.Controllers
             await TriggerAutomatedWhatsAppAlertsAsync(singleOrder, userId);
 
             TempData["SuccessMessage"] = $"🌾 Order #{singleOrder.Id:D5} placed & confirmed! 3-hour harvest review period active.";
-            return RedirectToAction("OrderDetails", "Customer", new { id = singleOrder.Id, from = User.IsInRole("Farmer") ? "farmer" : "" });
+            return RedirectToAction("OrderDetails", "Customer", new { id = singleOrder.Id, from = User.IsInRole("Farmer") ? "farmer" : "active" });
         }
         private async Task TriggerAutomatedWhatsAppAlertsAsync(Order order, string buyerUserId)
         {

@@ -71,6 +71,12 @@ namespace AgriAI.Web.Controllers
                 .Where(o => o.Status != "Cancelled" && o.Status != "Declined")
                 .Sum(o => o.TotalAmount);
 
+            var successfulOrders = customerOrders
+                .Where(o => o.Status != "Cancelled" && o.Status != "Declined")
+                .ToList();
+
+            decimal estimatedSavings = Math.Round(totalSpent * 0.18m, 2);
+
             // Load shopping cart items from session or persistent cookie
             var cartJson = HttpContext.Session.GetString("AgriAI_ShoppingCart_Session");
             if (string.IsNullOrEmpty(cartJson) && HttpContext.Request.Cookies.TryGetValue("AgriAI_Cart_Cookie", out var cookieJson))
@@ -101,51 +107,23 @@ namespace AgriAI.Web.Controllers
             ViewBag.CompletedOrdersCount = completedOrders.Count;
             ViewBag.TotalSpent = totalSpent;
             ViewBag.TotalKgPurchased = totalKgPurchased;
+            ViewBag.TotalKg = totalKgPurchased;
+            ViewBag.EstimatedSavings = estimatedSavings;
+            ViewBag.SuccessfulOrdersCount = successfulOrders.Count;
+            ViewBag.AllOrders = customerOrders;
             ViewBag.CartSummary = cartSummary;
 
             return View(products);
         }
 
         [HttpGet]
-        public async Task<IActionResult> TotalPurchases()
+        public IActionResult TotalPurchases()
         {
             if (User.IsInRole("Farmer"))
             {
                 return Redirect("/Farmer/Dashboard?tab=farmerPurchasesTab");
             }
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userName = User.Identity?.Name;
-            var currentUser = await _userManager.GetUserAsync(User);
-            ViewBag.ProfilePicturePath = currentUser?.ProfilePicturePath;
-
-            var customerOrders = await _context.Orders
-                .Where(o => o.CustomerId == userId || o.CustomerId == userName || o.CustomerId == "guest-user")
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                        .ThenInclude(p => p.Images)
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                        .ThenInclude(p => p.Category)
-                .OrderByDescending(o => o.OrderDate)
-                .ToListAsync();
-
-            var successfulOrders = customerOrders
-                .Where(o => o.Status != "Cancelled" && o.Status != "Declined")
-                .ToList();
-
-            decimal totalSpent = successfulOrders.Sum(o => o.TotalAmount);
-            int totalKg = successfulOrders.SelectMany(o => o.OrderItems).Sum(oi => oi.Quantity);
-            decimal estimatedSavings = Math.Round(totalSpent * 0.18m, 2); // 18% direct-from-farm APMC savings
-
-            ViewBag.TotalSpent = totalSpent;
-            ViewBag.TotalKg = totalKg;
-            ViewBag.EstimatedSavings = estimatedSavings;
-            ViewBag.SuccessfulOrdersCount = successfulOrders.Count;
-            ViewBag.TotalOrdersCount = customerOrders.Count;
-            ViewBag.AllOrders = customerOrders;
-
-            return View(customerOrders);
+            return Redirect("/Customer/Dashboard?tab=totalPurchasesTab");
         }
 
         [HttpPost]

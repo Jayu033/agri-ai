@@ -26,10 +26,10 @@
         ? returnUrl 
         : (isFarmerUser || from == "farmer" 
             ? "/Farmer/Dashboard?tab=farmerPurchasesTab" 
-            : (from == "totalPurchases" ? "/Customer/TotalPurchases" : (from == "active" ? "/Customer/Dashboard?tab=activeOrdersTab" : "/Customer/Dashboard?tab=ordersTab")));
+            : (from == "totalPurchases" ? "/Customer/Dashboard?tab=totalPurchasesTab" : (from == "history" || from == "ordersTab" ? "/Customer/Dashboard?tab=ordersTab" : (from == "overview" ? "/Customer/Dashboard?tab=overviewTab" : "/Customer/Dashboard?tab=activeOrdersTab"))));
     string backLabel = isFarmerUser || from == "farmer" 
         ? "Back to My Purchases" 
-        : (from == "totalPurchases" ? "Back to Total Purchases" : (from == "active" ? "Back to Active Orders" : "Back to Order History"));
+        : (from == "totalPurchases" ? "Back to Total Purchases" : (from == "history" || from == "ordersTab" ? "Back to Order History" : (from == "overview" ? "Back to Overview" : "Back to Active Orders")));
 
     var fDisplayName = !string.IsNullOrEmpty(farmerName) ? farmerName : "ખેડૂત ભાઈ (Farmer)";
     var rzpRef = Model.Payment != null && !string.IsNullOrEmpty(Model.Payment.RazorpayPaymentId) ? Model.Payment.RazorpayPaymentId : "Razorpay Escrow";
@@ -37,201 +37,370 @@
     var deliveryAddrDisplay = string.IsNullOrEmpty(Model.ShippingAddress) ? "Direct Farm Pickup (Gujarat Field)" : Model.ShippingAddress;
 }
 
-<div class="container-fluid py-4 my-2 px-3 px-md-4 px-lg-5" style="max-width: 1380px;">
+<style>
+    /* Master Unified Container Card (Matches Checkout & Dashboard Master Box) */
+    .order-main-container {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 1.5rem;
+        padding: 1.75rem 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        margin-bottom: 2rem;
+    }
+    @@media (max-width: 768px) {
+        .order-main-container {
+            padding: 1.25rem 1rem;
+            border-radius: 1.25rem;
+        }
+    }
+    .order-section-card {
+        background: #ffffff;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 1.25rem;
+        padding: 1.5rem !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        margin-bottom: 1.5rem;
+        transition: all 0.2s ease;
+    }
+    .price-breakdown-card {
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 1.25rem;
+        padding: 1.75rem !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    }
+    .order-alert-hero {
+        border-radius: 1.25rem;
+        padding: 1.5rem 1.75rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+        position: relative;
+        overflow: hidden;
+    }
+    .order-hero-green {
+        background: linear-gradient(135deg, #006653 0%, #047857 100%);
+        color: #ffffff;
+    }
+    .order-hero-navy {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #ffffff;
+    }
+    .order-hero-blue {
+        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+        color: #ffffff;
+    }
+    .inspection-guide-card {
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 1.25rem;
+        padding: 1.25rem 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+    .inspection-step-box {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.85rem;
+        padding: 0.85rem 1rem;
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        height: 100%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+</style>
+
+<div class="container-fluid py-3 px-2 px-md-3 px-xl-4" style="max-width: 1680px;">
     
-    <!-- Top Header Bar with Clean Single Back Navigation -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-        <div class="d-flex align-items-center gap-3">
-            <h2 class="fw-extrabold text-dark mb-0">Order #@Model.Id.ToString("D5")</h2>
-            @if (Model.Status == "Requested")
+    <div class="order-main-container">
+
+        <!-- Top Header Bar inside Unified Master Box -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-2.5 mb-1">
+                    <h2 class="fw-extrabold text-dark mb-0" style="letter-spacing: -0.5px;">Order #@Model.Id.ToString("D5")</h2>
+                    @if (Model.Status == "Requested")
+                    {
+                        <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                            <i class="bi bi-hourglass-top me-1"></i> Request Sent ⏳
+                        </span>
+                    }
+                    else if (Model.Status == "Accepted")
+                    {
+                        @if (Model.CancellationDeadline.HasValue && DateTime.UtcNow < Model.CancellationDeadline.Value)
+                        {
+                            <span class="badge bg-info text-dark fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                                <i class="bi bi-clock-history me-1"></i> Accepted (3h Review Window)
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                                <i class="bi bi-lock-fill me-1"></i> Locked for Harvest &amp; Dispatch
+                            </span>
+                        }
+                    }
+                    else if (Model.Status == "Declined")
+                    {
+                        <span class="badge bg-danger text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                            <i class="bi bi-x-circle-fill me-1"></i> Declined (Refunded)
+                        </span>
+                    }
+                    else if (Model.Status == "Cancelled")
+                    {
+                        <span class="badge bg-secondary text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                            <i class="bi bi-slash-circle me-1"></i> Cancelled (Refunded)
+                        </span>
+                    }
+                    else if (Model.Status.Contains("Delivered") || Model.Status.Contains("Settled"))
+                    {
+                        <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                            <i class="bi bi-check-circle-fill me-1"></i> Completed 🟢
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+                            <i class="bi bi-truck me-1"></i> @Model.Status
+                        </span>
+                    }
+                </div>
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-calendar3 me-1"></i> Placed on <strong>@dateFormatted</strong> &bull;
+                    <i class="bi bi-shield-check text-success ms-1 me-1"></i> 100% AgriAI Escrow Protected &bull;
+                    <i class="bi bi-truck ms-1 me-1"></i> @(isParcel ? "ST Bus Parcel / Cargo" : "Direct Farm Handover")
+                </p>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <a asp-controller="Product" asp-action="Index" class="btn btn-outline-success rounded-pill px-3.5 py-2 fw-bold small shadow-sm d-inline-flex align-items-center gap-1.5">
+                    <i class="bi bi-shop"></i> Continue Shopping
+                </a>
+                <a href="@backUrl" class="btn btn-outline-secondary rounded-pill px-3.5 py-2 fw-bold small shadow-sm d-inline-flex align-items-center gap-1.5">
+                    <i class="bi bi-arrow-left"></i> @backLabel
+                </a>
+                <button type="button" class="btn btn-success rounded-pill px-3.5 py-2 fw-bold small shadow-sm d-inline-flex align-items-center gap-1.5" style="background-color: #006653; border-color: #006653;" onclick="printOrderInvoice('@orderNoStr', '@dateFormatted', '@User.Identity?.Name', '@produceName', @itemQty, @unitPrice, @baseAmount, @Model.LogisticsFee, @Model.PlatformFee, @Model.TotalAmount, '@(Model.PaymentMethod ?? "Online (Escrow)")', '@(Model.TransportType ?? "Direct Farm Pickup")', '@(string.IsNullOrEmpty(Model.ShippingAddress) ? "Gujarat Farm Location" : Model.ShippingAddress)')">
+                    <i class="bi bi-printer"></i> Print Tax Invoice
+                </button>
+            </div>
+        </div>
+
+        <!-- 1. Order Status Notification Hero Banner -->
+        @if (Model.Status == "Requested")
+        {
+            <div class="order-alert-hero bg-warning bg-opacity-10 border border-warning border-opacity-50 text-dark mb-4">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
+                                <i class="bi bi-hourglass-split me-1"></i> AWAITING PRODUCER ACCEPTANCE
+                            </span>
+                            <span class="text-muted small">100% Escrow Protected</span>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-1">Your Order Request has been sent to the Producer</h5>
+                        <p class="text-muted small mb-0">
+                            The farmer will review and accept your order shortly. You can cancel with an instant 100% refund at any time before dispatch lock.
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <button type="button" class="btn btn-outline-danger rounded-pill px-3.5 py-2 fw-bold shadow-sm" onclick="openCancelModal()">
+                            <i class="bi bi-x-circle me-1"></i> Cancel Request (100% Refund)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (Model.Status == "Accepted")
+        {
+            @if (Model.CancellationDeadline.HasValue && DateTime.UtcNow < Model.CancellationDeadline.Value)
             {
-                <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill shadow-sm">
-                    <i class="bi bi-hourglass-top me-1"></i>Request Sent ⏳
-                </span>
-            }
-            else if (Model.Status == "Accepted")
-            {
-                @if (Model.CancellationDeadline.HasValue && DateTime.UtcNow < Model.CancellationDeadline.Value)
-                {
-                    <span class="badge bg-info text-dark fw-bold px-3 py-1.5 rounded-pill">
-                        <i class="bi bi-clock-history me-1"></i>Accepted (3h Review Window)
-                    </span>
-                }
-                else
-                {
-                    <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill">
-                        <i class="bi bi-lock-fill me-1"></i>Locked for Harvest &amp; Dispatch
-                    </span>
-                }
-            }
-            else if (Model.Status == "Declined")
-            {
-                <span class="badge bg-danger text-white fw-bold px-3 py-1.5 rounded-pill">
-                    <i class="bi bi-x-circle-fill me-1"></i>Declined (Refunded)
-                </span>
-            }
-            else if (Model.Status == "Cancelled")
-            {
-                <span class="badge bg-secondary text-white fw-bold px-3 py-1.5 rounded-pill">
-                    <i class="bi bi-slash-circle me-1"></i>Cancelled (Refunded)
-                </span>
-            }
-            else if (Model.Status.Contains("Delivered") || Model.Status.Contains("Settled"))
-            {
-                <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill">
-                    <i class="bi bi-check-circle-fill me-1"></i>Completed 🟢
-                </span>
+                <div class="order-alert-hero order-hero-green mb-4">
+                    <div class="row align-items-center g-3">
+                        <div class="col-md-7">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
+                                    <i class="bi bi-clock-history me-1"></i> 3-HOUR CANCELLATION WINDOW ACTIVE
+                                </span>
+                                <span class="text-white-50 small">100% Instant Refund Available</span>
+                            </div>
+                            <h4 class="fw-bold text-white mb-1">Your Order is in the 3-Hour Review Period</h4>
+                            <p class="text-white-50 small mb-0">
+                                The farmer accepted your order! You have a 3-hour window to review or cancel for an immediate refund. When the countdown reaches zero, the order will lock for fresh harvest packaging.
+                            </p>
+                        </div>
+                        <div class="col-md-5 text-md-end">
+                            <div class="d-inline-block bg-black bg-opacity-25 p-3 rounded-4 border border-white border-opacity-20 text-center shadow-sm">
+                                <small class="text-white-50 d-block mb-1" style="font-size: 0.75rem;">CANCELLATION COUNTDOWN</small>
+                                <span class="fs-2 fw-extrabold text-warning font-monospace d-block" id="customerCountdownTimer" data-remaining="@remainingSeconds">
+                                    @{
+                                        int ch = remainingSeconds / 3600;
+                                        int cm = (remainingSeconds % 3600) / 60;
+                                        int cs = remainingSeconds % 60;
+                                        @($"{ch:D2}h {cm:D2}m {cs:D2}s")
+                                    }
+                                </span>
+                                <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1 fw-bold mt-2" onclick="openCancelModal()">
+                                    <i class="bi bi-x-circle me-1"></i> Cancel &amp; Instant Refund
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             }
             else
             {
-                <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill">
-                    <i class="bi bi-truck me-1"></i>@Model.Status
-                </span>
-            }
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-            <a href="@backUrl" class="btn btn-outline-secondary rounded-pill px-3.5 py-2 fw-bold small">
-                <i class="bi bi-arrow-left me-1"></i> @backLabel
-            </a>
-            <button type="button" class="btn btn-success rounded-pill px-3.5 py-2 fw-bold small shadow-sm" style="background-color: #006653; border-color: #006653;" onclick="printOrderInvoice('@orderNoStr', '@dateFormatted', '@User.Identity?.Name', '@produceName', @itemQty, @unitPrice, @baseAmount, @Model.LogisticsFee, @Model.PlatformFee, @Model.TotalAmount, '@(Model.PaymentMethod ?? "Online (Escrow)")', '@(Model.TransportType ?? "Direct Farm Pickup")', '@(string.IsNullOrEmpty(Model.ShippingAddress) ? "Gujarat Farm Location" : Model.ShippingAddress)')">
-                <i class="bi bi-printer me-1"></i> Print Tax Invoice
-            </button>
-        </div>
-    </div>
-
-    <!-- Step 2: 3-Hour Cancellation & Review Window Card -->
-    @if (Model.Status == "Requested")
-    {
-        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-dark bg-warning bg-opacity-10 border border-warning border-opacity-25">
-            <div class="row align-items-center g-3">
-                <div class="col-md-8">
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
-                            <i class="bi bi-hourglass-split me-1"></i>AWAITING PRODUCER ACCEPTANCE
-                        </span>
-                        <span class="text-muted small">100% Escrow Protected</span>
+                <div class="alert alert-success border-0 shadow-sm rounded-4 p-3.5 mb-4 d-flex align-items-center gap-3" style="background-color: #d1fae5; color: #065f46;">
+                    <i class="bi bi-lock-fill fs-3"></i>
+                    <div>
+                        <strong>Order Locked for Harvest &amp; Dispatch:</strong>
+                        <p class="small mb-0">The 3-hour review window has concluded. The farmer is now preparing and packing your fresh harvest produce.</p>
                     </div>
-                    <h5 class="fw-bold text-dark mb-1">Your Order Request has been sent to the Producer</h5>
-                    <p class="text-muted small mb-0">
-                        The farmer will review and accept your order shortly. You can cancel with an instant 100% refund at any time before dispatch lock.
-                    </p>
                 </div>
-                <div class="col-md-4 text-md-end">
-                    <button type="button" class="btn btn-outline-danger rounded-pill px-3.5 py-2 fw-bold shadow-sm" onclick="openCancelModal()">
-                        <i class="bi bi-x-circle me-1"></i> Cancel Request (100% Refund)
-                    </button>
+            }
+        }
+        else if (Model.Status == "Declined")
+        {
+            <div class="alert alert-danger border-0 shadow-sm rounded-4 p-3.5 mb-4 d-flex align-items-center gap-3" style="background-color: #fee2e2; color: #991b1b;">
+                <i class="bi bi-x-circle-fill fs-3"></i>
+                <div>
+                    <strong>Order Declined by Farmer:</strong>
+                    <p class="small mb-0">Reason: @(string.IsNullOrEmpty(Model.FarmerDeclineReason) ? "Stock unavailable / logistics constraint" : Model.FarmerDeclineReason). Total payment of ₹@Model.TotalAmount.ToString("N2") has been refunded to your payment method.</p>
                 </div>
             </div>
-        </div>
-    }
-    else if (Model.Status == "Accepted")
-    {
-        @if (Model.CancellationDeadline.HasValue && DateTime.UtcNow < Model.CancellationDeadline.Value)
+        }
+        else if (Model.Status == "Cancelled")
         {
-            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%);">
+            <div class="alert alert-secondary border-0 shadow-sm rounded-4 p-3.5 mb-4 d-flex align-items-center gap-3">
+                <i class="bi bi-slash-circle-fill fs-3 text-secondary"></i>
+                <div>
+                    <strong>Order Cancelled by Buyer:</strong>
+                    <p class="small mb-0">Reason: @(string.IsNullOrEmpty(Model.CustomerCancelReason) ? "Cancelled within review window" : Model.CustomerCancelReason). 100% refund of ₹@Model.TotalAmount.ToString("N2") has been credited back.</p>
+                </div>
+            </div>
+        }
+
+        <!-- 2. GSRTC / Private Cargo Bilty Dispatch Card (If Parcel Dispatched) -->
+        @if (Model.TransportType != null && (Model.TransportType.Contains("Cargo") || Model.TransportType.Contains("GSRTC") || Model.TransportType.Contains("Parcel")) && (!string.IsNullOrEmpty(Model.BiltyNumber) || !string.IsNullOrEmpty(Model.BiltyImageUrl)))
+        {
+            <div class="order-alert-hero order-hero-blue mb-4">
                 <div class="row align-items-center g-3">
                     <div class="col-md-7">
                         <div class="d-flex align-items-center gap-2 mb-2">
                             <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
-                                <i class="bi bi-clock-history me-1"></i>3-HOUR CANCELLATION WINDOW ACTIVE
+                                <i class="bi bi-bus-front-fill me-1"></i> GSRTC / CARGO DISPATCHED
                             </span>
-                            <span class="text-white-50 small">100% Instant Refund Available</span>
+                            <span class="text-white-50 small">"To-Pay" Parcel Model</span>
                         </div>
-                        <h4 class="fw-bold text-white mb-1">Your Order is in the 3-Hour Review Period</h4>
-                        <p class="text-white-50 small mb-0">
-                            The farmer accepted your order! You have a 3-hour window to review or cancel for an immediate refund. When the countdown reaches zero, the order will lock for fresh harvest packaging.
+                        <h4 class="fw-bold text-white mb-1">Harvest Dispatched via @(Model.CargoServiceName ?? "GSRTC ST Bus Parcel")</h4>
+                        <p class="text-white-50 small mb-2">
+                            Your produce is in transit! Show the Bilty LR Number at the parcel counter in your city and collect your harvest by paying the nominal counter parcel fee.
                         </p>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="text-white-50 small"><i class="bi bi-clock-history me-1"></i>Dispatched: @(Model.DispatchedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "Recently")</span>
+                        </div>
                     </div>
+
                     <div class="col-md-5 text-md-end">
-                        <div class="d-inline-block bg-black bg-opacity-25 p-3 rounded-4 border border-white border-opacity-20 text-center">
-                            <small class="text-white-50 d-block mb-1" style="font-size: 0.75rem;">CANCELLATION COUNTDOWN</small>
-                            <span class="fs-2 fw-extrabold text-warning font-monospace d-block" id="customerCountdownTimer" data-remaining="@remainingSeconds">
-                                @{
-                                    int ch = remainingSeconds / 3600;
-                                    int cm = (remainingSeconds % 3600) / 60;
-                                    int cs = remainingSeconds % 60;
-                                    @($"{ch:D2}h {cm:D2}m {cs:D2}s")
-                                }
-                            </span>
-                            <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1 fw-bold mt-2" onclick="openCancelModal()">
-                                <i class="bi bi-x-circle me-1"></i> Cancel &amp; Instant Refund
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="alert alert-success border-0 shadow-sm rounded-4 p-3.5 mb-4 d-flex align-items-center gap-3" style="background-color: #d1fae5; color: #065f46;">
-                <i class="bi bi-lock-fill fs-3"></i>
-                <div>
-                    <strong>Order Locked for Harvest &amp; Dispatch:</strong>
-                    <p class="small mb-0">The 3-hour review window has concluded. The farmer is now preparing and packing your fresh harvest produce.</p>
-                </div>
-            </div>
-        }
-    }
-    else if (Model.Status == "Declined")
-    {
-        <div class="alert alert-danger border-0 shadow-sm rounded-4 p-3.5 mb-4 d-flex align-items-center gap-3" style="background-color: #fee2e2; color: #991b1b;">
-            <i class="bi bi-x-circle-fill fs-3"></i>
-            <div>
-                <strong>Order Declined by Farmer:</strong>
-                <p class="small mb-0">Reason: @(string.IsNullOrEmpty(Model.FarmerDeclineReason) ? "Stock unavailable / logistics constraint" : Model.FarmerDeclineReason). Total payment of ₹@Model.TotalAmount.ToString("N2") has been refunded to your payment method.</p>
-            </div>
-        </div>
-    }
-    else if (Model.Status == "Cancelled")
-    {
-        <div class="alert alert-secondary border-0 shadow-sm rounded-4 p-3.5 mb-4 d-flex align-items-center gap-3">
-            <i class="bi bi-slash-circle-fill fs-3 text-secondary"></i>
-            <div>
-                <strong>Order Cancelled by Buyer:</strong>
-                <p class="small mb-0">Reason: @(string.IsNullOrEmpty(Model.CustomerCancelReason) ? "Cancelled within review window" : Model.CustomerCancelReason). 100% refund of ₹@Model.TotalAmount.ToString("N2") has been credited back.</p>
-            </div>
-        </div>
-    }
-
-    <!-- GSRTC / Private Cargo Bilty Dispatch Card (Step 5 Blueprint - Parcel Only) -->
-    @if (Model.TransportType != null && (Model.TransportType.Contains("Cargo") || Model.TransportType.Contains("GSRTC") || Model.TransportType.Contains("Parcel")) && (!string.IsNullOrEmpty(Model.BiltyNumber) || !string.IsNullOrEmpty(Model.BiltyImageUrl)))
-    {
-        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);">
-            <div class="row align-items-center g-3">
-                <div class="col-md-7">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
-                            <i class="bi bi-bus-front-fill me-1"></i>GSRTC / CARGO DISPATCHED
-                        </span>
-                        <span class="text-white-50 small">"To-Pay" Parcel Model</span>
-                    </div>
-                    <h4 class="fw-bold text-white mb-1">Harvest Dispatched via @(Model.CargoServiceName ?? "GSRTC ST Bus Parcel")</h4>
-                    <p class="text-white-50 small mb-2">
-                        Your produce is in transit! Show the Bilty LR Number at the parcel counter in your city and collect your harvest by paying the nominal counter parcel fee.
-                    </p>
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="text-white-50 small"><i class="bi bi-clock-history me-1"></i>Dispatched: @(Model.DispatchedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "Recently")</span>
-                    </div>
-                </div>
-
-                <div class="col-md-5 text-md-end">
-                    <div class="d-inline-flex flex-column align-items-md-end gap-2 bg-white bg-opacity-10 p-3 rounded-4 border border-white border-opacity-20 shadow">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="text-white-50 small">BILTY / LR NO:</span>
-                            <span class="fs-4 fw-extrabold text-warning letter-spacing-2 font-monospace">
-                                @Model.BiltyNumber
-                            </span>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-sm btn-light rounded-pill px-3 fw-bold shadow-sm" onclick="navigator.clipboard.writeText('@Model.BiltyNumber'); this.innerHTML='<i class=\'bi bi-check2\'></i> Copied!';">
-                                <i class="bi bi-clipboard me-1"></i> Copy Bilty #
-                            </button>
-                            @if (!string.IsNullOrEmpty(Model.BiltyImageUrl))
-                            {
-                                <button type="button" class="btn btn-sm btn-warning text-dark rounded-pill px-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#biltyViewerModal">
-                                    <i class="bi bi-receipt-cutoff me-1"></i> View Bilty Slip 📄
+                        <div class="d-inline-flex flex-column align-items-md-end gap-2 bg-white bg-opacity-10 p-3 rounded-4 border border-white border-opacity-20 shadow">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-white-50 small">BILTY / LR NO:</span>
+                                <span class="fs-4 fw-extrabold text-warning letter-spacing-2 font-monospace">
+                                    @Model.BiltyNumber
+                                </span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-light rounded-pill px-3 fw-bold shadow-sm" onclick="navigator.clipboard.writeText('@Model.BiltyNumber'); this.innerHTML='<i class=\'bi bi-check2\'></i> Copied!';">
+                                    <i class="bi bi-clipboard me-1"></i> Copy Bilty #
                                 </button>
+                                @if (!string.IsNullOrEmpty(Model.BiltyImageUrl))
+                                {
+                                    <button type="button" class="btn btn-sm btn-warning text-dark rounded-pill px-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#biltyViewerModal">
+                                        <i class="bi bi-receipt-cutoff me-1"></i> View Bilty Slip 📄
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.BiltyImageUrl))
+            {
+                <!-- Modal for viewing Bilty Slip in HD -->
+                <div class="modal fade" id="biltyViewerModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
+                            <div class="modal-header bg-dark text-white p-3.5 px-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-receipt-cutoff text-warning fs-5"></i>
+                                    <h5 class="modal-title fw-bold mb-0">Official Bilty / LR Slip: @Model.BiltyNumber</h5>
+                                </div>
+                                <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-4 text-center bg-light">
+                                <div class="mb-3 d-flex justify-content-between align-items-center bg-white p-2.5 px-3 rounded-3 border">
+                                    <span class="text-muted small">
+                                        <i class="bi bi-truck text-primary me-1"></i> Transport Service: <strong>@(string.IsNullOrEmpty(Model.CargoServiceName) ? "GSRTC / Cargo" : Model.CargoServiceName)</strong>
+                                    </span>
+                                    <a href="@Model.BiltyImageUrl" target="_blank" download class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold">
+                                        <i class="bi bi-download me-1"></i> Download / Open Original
+                                    </a>
+                                </div>
+                                <div class="rounded-3 overflow-hidden border shadow-sm bg-white p-2 text-center">
+                                    <img src="@Model.BiltyImageUrl" alt="Bilty Receipt" class="img-fluid rounded" style="max-height: 520px; object-fit: contain; width: 100%;" />
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-white p-3 px-4 d-flex justify-content-between">
+                                <small class="text-muted">Show this official parcel slip at the ST counter to receive your produce.</small>
+                                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+
+        <!-- 3. Quality & Weight Inspection Checklist -->
+        <div class="inspection-guide-card mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-1 border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-patch-check-fill text-success fs-5"></i>
+                    <h6 class="fw-bold text-dark mb-0">Buyer Pre-Delivery Quality Inspection Guide</h6>
+                </div>
+                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1 small fw-bold" style="font-size: 0.72rem; border: 1px solid rgba(22, 163, 74, 0.2);">
+                    <i class="bi bi-shield-check me-1"></i> Escrow Protection Active
+                </span>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="inspection-step-box">
+                        <i class="bi bi-check-circle-fill text-success fs-5 flex-shrink-0 mt-0.5"></i>
+                        <div>
+                            <strong class="d-block text-dark small mb-0.5">1. Bag Seals &amp; Weight</strong>
+                            <span class="text-muted small" style="font-size: 0.78rem;">Inspect packaging seals and ensure total measured weight matches invoice.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="inspection-step-box">
+                        <i class="bi bi-check-circle-fill text-success fs-5 flex-shrink-0 mt-0.5"></i>
+                        <div>
+                            <strong class="d-block text-dark small mb-0.5">2. Quality &amp; Moisture</strong>
+                            <span class="text-muted small" style="font-size: 0.78rem;">Check crop cleanliness, grain size purity, and appropriate moisture levels.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="inspection-step-box">
+                        <i class="bi bi-check-circle-fill text-success fs-5 flex-shrink-0 mt-0.5"></i>
+                        <div>
+                            @if (isParcel)
+                            {
+                                <strong class="d-block text-dark small mb-0.5">3. Share Delivery OTP</strong>
+                                <span class="text-muted small" style="font-size: 0.78rem;">Share confidential 4-digit OTP at parcel counter only after inspecting parcel.</span>
+                            }
+                            else
+                            {
+                                <strong class="d-block text-dark small mb-0.5">3. Confirm Direct Handover</strong>
+                                <span class="text-muted small" style="font-size: 0.78rem;">Inspect produce in person at the farm, then take direct delivery on the spot.</span>
                             }
                         </div>
                     </div>
@@ -239,286 +408,250 @@
             </div>
         </div>
 
-        @if (!string.IsNullOrEmpty(Model.BiltyImageUrl))
+        <!-- 4. Delivery Pass / OTP Verification Card -->
+        @if (isParcel && Model.PaymentMethod != "Cash on Delivery" && !Model.Status.Contains("Delivered") && Model.Status != "Declined" && Model.Status != "Cancelled")
         {
-            <!-- Modal for viewing Bilty Slip in HD -->
-            <div class="modal fade" id="biltyViewerModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
-                        <div class="modal-header bg-dark text-white p-3.5 px-4">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="bi bi-receipt-cutoff text-warning fs-5"></i>
-                                <h5 class="modal-title fw-bold mb-0">Official Bilty / LR Slip: @Model.BiltyNumber</h5>
-                            </div>
-                            <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="order-alert-hero order-hero-navy mb-4">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-7">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
+                                <i class="bi bi-shield-lock-fill me-1"></i> CONFIDENTIAL CARGO DELIVERY PASS
+                            </span>
+                            <span class="text-white-50 small">Remote Cargo / GSRTC Delivery</span>
                         </div>
-                        <div class="modal-body p-4 text-center bg-light">
-                            <div class="mb-3 d-flex justify-content-between align-items-center bg-white p-2.5 px-3 rounded-3 border">
-                                <span class="text-muted small">
-                                    <i class="bi bi-truck text-primary me-1"></i> Transport Service: <strong>@(string.IsNullOrEmpty(Model.CargoServiceName) ? "GSRTC / Cargo" : Model.CargoServiceName)</strong>
-                                </span>
-                                <a href="@Model.BiltyImageUrl" target="_blank" download class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold">
-                                    <i class="bi bi-download me-1"></i> Download / Open Original
-                                </a>
-                            </div>
-                            <div class="rounded-3 overflow-hidden border shadow-sm bg-white p-2 text-center">
-                                <img src="@Model.BiltyImageUrl" alt="Bilty Receipt" class="img-fluid rounded" style="max-height: 520px; object-fit: contain; width: 100%;" />
-                            </div>
-                        </div>
-                        <div class="modal-footer bg-white p-3 px-4 d-flex justify-content-between">
-                            <small class="text-muted">Show this official parcel slip at the ST counter to receive your produce.</small>
-                            <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                        <h4 class="fw-bold text-white mb-1">Your 4-Digit Parcel Delivery OTP</h4>
+                        <p class="text-white-50 small mb-0">
+                            Show this 4-digit code at the parcel destination counter <strong>ONLY after inspecting the parcel</strong> to claim your harvest.
+                        </p>
+                    </div>
+
+                    <div class="col-md-5 text-md-end">
+                        <div class="d-inline-flex align-items-center gap-3 bg-white bg-opacity-10 p-2.5 px-4 rounded-4 border border-white border-opacity-20 shadow">
+                            <span class="fs-2 fw-extrabold text-warning letter-spacing-3 font-monospace" id="confidentialOtp">
+                                @(string.IsNullOrEmpty(Model.DeliveryOtp) ? "7492" : Model.DeliveryOtp)
+                            </span>
+                            <button type="button" class="btn btn-sm btn-light rounded-pill px-3 py-1.5 fw-bold shadow-sm" onclick="navigator.clipboard.writeText('@Model.DeliveryOtp'); this.innerHTML='<i class=\'bi bi-check2\'></i> Copied!';">
+                                <i class="bi bi-clipboard me-1"></i> Copy OTP
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         }
-    }
-
-    <!-- Quality & Weight Inspection Checklist (Step 6 Blueprint) -->
-    <div class="card border-0 shadow-sm rounded-4 p-3.5 mb-4 bg-light border border-success border-opacity-25">
-        <div class="d-flex align-items-center gap-2 mb-2">
-            <i class="bi bi-patch-check-fill text-success fs-5"></i>
-            <h6 class="fw-bold text-dark mb-0">Buyer Pre-Delivery Quality Inspection Guide</h6>
-        </div>
-        <div class="row g-2 small text-muted">
-            <div class="col-md-4">
-                <i class="bi bi-check-circle-fill text-success me-1"></i> <strong>1. Bag Seals &amp; Weight:</strong> Inspect packaging seals and ensure total measured weight matches invoice.
-            </div>
-            <div class="col-md-4">
-                <i class="bi bi-check-circle-fill text-success me-1"></i> <strong>2. Quality &amp; Moisture:</strong> Check crop cleanliness, grain size purity, and appropriate moisture levels.
-            </div>
-            <div class="col-md-4">
-                @if (isParcel)
-                {
-                    <span><i class="bi bi-check-circle-fill text-success me-1"></i> <strong>3. Share Delivery OTP:</strong> Share confidential 4-digit OTP at cargo counter only after inspecting parcel.</span>
-                }
-                else
-                {
-                    <span><i class="bi bi-check-circle-fill text-success me-1"></i> <strong>3. Confirm Direct Handover:</strong> Inspect produce in person at the farm, then take direct delivery on the spot.</span>
-                }
-            </div>
-        </div>
-    </div>
-
-    <!-- 1. Delivery Pass / OTP Verification Card -->
-    @if (isParcel && Model.PaymentMethod != "Cash on Delivery" && !Model.Status.Contains("Delivered") && Model.Status != "Declined" && Model.Status != "Cancelled")
-    {
-        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
-            <div class="row align-items-center g-3">
-                <div class="col-md-7">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
-                            <i class="bi bi-shield-lock-fill me-1"></i>CONFIDENTIAL CARGO DELIVERY PASS
-                        </span>
-                        <span class="text-white-50 small">Remote Cargo / GSRTC Delivery</span>
+        else if (!isParcel && !Model.Status.Contains("Delivered") && Model.Status != "Declined" && Model.Status != "Cancelled")
+        {
+            <div class="order-alert-hero order-hero-green mb-4">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
+                                <i class="bi bi-geo-alt-fill me-1"></i> DIRECT FARM PICKUP PASS
+                            </span>
+                            <span class="text-white-50 small">100% Escrow Funded &bull; In-Person Handover</span>
+                        </div>
+                        <h4 class="fw-bold text-white mb-1">Direct Farm Collection &bull; No OTP Needed</h4>
+                        <p class="text-white-50 small mb-0">
+                            Visit the producer's farm directly. Inspect your fresh harvest produce in person, and the farmer will confirm physical handover directly on the spot.
+                        </p>
                     </div>
-                    <h4 class="fw-bold text-white mb-1">Your 4-Digit Parcel Delivery OTP</h4>
-                    <p class="text-white-50 small mb-0">
-                        Show this 4-digit code at the parcel destination counter <strong>ONLY after inspecting the parcel</strong> to claim your harvest.
-                    </p>
-                </div>
 
-                <div class="col-md-5 text-md-end">
-                    <div class="d-inline-flex align-items-center gap-3 bg-white bg-opacity-10 p-2.5 px-4 rounded-4 border border-white border-opacity-20 shadow">
-                        <span class="fs-2 fw-extrabold text-warning letter-spacing-3 font-monospace" id="confidentialOtp">
-                            @(string.IsNullOrEmpty(Model.DeliveryOtp) ? "7492" : Model.DeliveryOtp)
-                        </span>
-                        <button type="button" class="btn btn-sm btn-light rounded-pill px-3 fw-bold" onclick="navigator.clipboard.writeText('@Model.DeliveryOtp'); this.innerHTML='<i class=\'bi bi-check2\'></i> Copied!';">
-                            <i class="bi bi-clipboard me-1"></i> Copy OTP
-                        </button>
+                    <div class="col-md-4 text-md-end">
+                        <div class="d-inline-flex flex-column align-items-md-end gap-1 bg-white bg-opacity-10 p-3 rounded-4 border border-white border-opacity-20 shadow text-end">
+                            <small class="text-white-50" style="font-size: 0.72rem;">COLLECTION STATUS</small>
+                            <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill fs-6">
+                                @(Model.Status == "Ready for Pickup" ? "Ready for Farm Pickup 🟢" : (Model.Status == "Accepted" ? "Harvest Packaging in Progress" : Model.Status))
+                            </span>
+                            <small class="text-white-50 mt-1" style="font-size: 0.70rem;">Show Order #@Model.Id.ToString("D5") to Farmer</small>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    }
-    else if (!isParcel && !Model.Status.Contains("Delivered") && Model.Status != "Declined" && Model.Status != "Cancelled")
-    {
-        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%);">
-            <div class="row align-items-center g-3">
-                <div class="col-md-8">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
-                            <i class="bi bi-geo-alt-fill me-1"></i>DIRECT FARM PICKUP PASS
-                        </span>
-                        <span class="text-white-50 small">100% Escrow Funded &bull; In-Person Handover</span>
-                    </div>
-                    <h4 class="fw-bold text-white mb-1">Direct Farm Collection &bull; No OTP Needed</h4>
-                    <p class="text-white-50 small mb-0">
-                        Visit the producer's farm directly. Inspect your fresh harvest produce in person, and the farmer will confirm physical handover directly on the spot.
-                    </p>
-                </div>
-                <div class="col-md-4 text-md-end">
-                    <div class="d-inline-flex flex-column align-items-md-end gap-1 bg-white bg-opacity-10 p-3 rounded-4 border border-white border-opacity-20 shadow text-end">
-                        <small class="text-white-50" style="font-size: 0.72rem;">COLLECTION STATUS</small>
-                        <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill fs-6">
-                            @(Model.Status == "Ready for Pickup" ? "Ready for Farm Pickup 🟢" : (Model.Status == "Accepted" ? "Harvest Packaging in Progress" : Model.Status))
-                        </span>
-                        <small class="text-white-50 mt-1" style="font-size: 0.70rem;">Show Order #@Model.Id.ToString("D5") to Farmer</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
+        }
 
-    <div class="row g-4">
-        
-        <!-- Left Column: Ordered Produce & Farm Farmer Info -->
-        <div class="col-lg-7">
+        <!-- 5. Main 2-Column Grid Layout (Produce, Producer, Price Breakdown, Timeline) -->
+        <div class="row g-4 g-lg-4">
             
-            <!-- Produce Items Card -->
-            <div class="bg-white rounded-4 p-4 border shadow-sm mb-4">
-                <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-                    <i class="bi bi-basket-fill text-success"></i> Purchased Farm Produce
-                </h5>
+            <!-- Left Column: Ordered Produce & Farmer Contact -->
+            <div class="col-lg-7">
+                
+                <!-- Produce Items Card -->
+                <div class="order-section-card">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                        <h5 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2">
+                            <i class="bi bi-basket-fill text-success fs-5"></i> Purchased Farm Produce
+                        </h5>
+                        <span class="badge rounded-pill px-3 py-1 fw-bold shadow-sm" style="background-color: #ecfdf5; color: #047857; border: 1px solid #86efac; font-size: 0.78rem;">
+                            <i class="bi bi-patch-check-fill me-1 text-success"></i> Direct Farm Harvest
+                        </span>
+                    </div>
 
-                @foreach (var item in Model.OrderItems)
-                {
-                    var itemImg = item.Product?.Images?.FirstOrDefault()?.ImageUrl;
-                    <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 border mb-3">
-                        @if (!string.IsNullOrEmpty(itemImg))
+                    <div class="d-flex flex-column gap-3 mb-3">
+                        @foreach (var item in Model.OrderItems)
                         {
-                            <img src="@itemImg" class="rounded-3 shadow-sm" alt="@(item.Product?.Name ?? "Produce")" style="width: 75px; height: 75px; object-fit: cover;" />
-                        }
-                        else
-                        {
-                            <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 75px; height: 75px;">
-                                <i class="bi bi-tree text-success fs-2"></i>
+                            var itemImg = item.Product?.Images?.FirstOrDefault()?.ImageUrl;
+                            <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-4 border">
+                                @if (!string.IsNullOrEmpty(itemImg))
+                                {
+                                    <img src="@itemImg" class="rounded-3 shadow-sm" alt="@(item.Product?.Name ?? "Produce")" style="width: 75px; height: 75px; object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 75px; height: 75px;">
+                                        <i class="bi bi-tree text-success fs-2"></i>
+                                    </div>
+                                }
+
+                                <div class="flex-grow-1">
+                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-0.5 rounded-pill small mb-1 border border-success border-opacity-25" style="font-size: 0.70rem;">
+                                        @(item.Product?.Category?.Name ?? "Farm Produce")
+                                    </span>
+                                    <h6 class="mb-1 fw-bold text-dark fs-6">@(item.Product?.Name ?? "Farm Produce")</h6>
+                                    <div class="text-muted small">Rate: ₹@item.UnitPrice.ToString("N2")/Kg</div>
+                                </div>
+
+                                <div class="text-end">
+                                    <span class="badge bg-white text-dark border px-3 py-1 mb-1 d-inline-block fw-bold shadow-sm">
+                                        @item.Quantity Kg
+                                    </span>
+                                    <div class="fw-extrabold text-success fs-5">
+                                        ₹@((item.UnitPrice * item.Quantity).ToString("N2"))
+                                    </div>
+                                </div>
                             </div>
                         }
+                    </div>
 
-                        <div class="flex-grow-1">
-                            <span class="badge bg-success bg-opacity-10 text-success fw-bold small mb-1">
-                                @(item.Product?.Category?.Name ?? "Farm Produce")
-                            </span>
-                            <h5 class="fw-bold text-dark mb-1">@(item.Product?.Name ?? "Farm Produce")</h5>
-                            <span class="text-muted small">Unit Rate: ₹@item.UnitPrice.ToString("N2")</span>
-                        </div>
+                    <!-- Fulfillment / Pickup Location Card -->
+                    <div class="p-3 bg-light rounded-4 border">
+                        <strong class="text-dark small d-block mb-1">
+                            <i class="bi bi-geo-alt-fill text-success me-1"></i> Delivery &amp; Pickup Location
+                        </strong>
+                        <span class="text-muted small">
+                            @(string.IsNullOrEmpty(Model.ShippingAddress) ? "Gujarat Direct Farm Pickup Location" : Model.ShippingAddress)
+                        </span>
+                    </div>
+                </div>
 
-                        <div class="text-end">
-                            <span class="badge bg-white text-dark border px-2.5 py-1 mb-1 d-inline-block fw-bold">
-                                @item.Quantity unit(s)
-                            </span>
-                            <div class="fw-extrabold text-success fs-5">
-                                ₹@((item.UnitPrice * item.Quantity).ToString("N2"))
+                <!-- Farmer / Producer Direct Contact Card -->
+                <div class="order-section-card">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                        <h5 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2">
+                            <i class="bi bi-person-badge-fill text-success fs-5"></i> Farmer &amp; Producer Contact
+                        </h5>
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1 small fw-bold">
+                            <i class="bi bi-patch-check-fill me-1"></i> Verified Gujarat Farmer
+                        </span>
+                    </div>
+
+                    <div class="d-flex flex-wrap justify-content-between align-items-center p-3 bg-light rounded-4 border gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold fs-5 shadow-sm" style="width: 50px; height: 50px; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">
+                                @(!string.IsNullOrEmpty(farmerName) ? farmerName.Substring(0, 1).ToUpper() : "F")
+                            </div>
+                            <div>
+                                <strong class="text-dark d-block fs-6">@farmerName</strong>
+                                <span class="text-muted small d-block mt-0.5"><i class="bi bi-telephone text-success me-1"></i>@farmerPhone</span>
                             </div>
                         </div>
-                    </div>
-                }
 
-                <!-- Fulfillment / Pickup Location Card -->
-                <div class="p-3 bg-light rounded-3 border">
-                    <strong class="text-dark small d-block mb-1">
-                        <i class="bi bi-geo-alt-fill text-success me-1"></i> Delivery &amp; Pickup Location
-                    </strong>
-                    <span class="text-muted small">
-                        @(string.IsNullOrEmpty(Model.ShippingAddress) ? "Gujarat Direct Farm Pickup Location" : Model.ShippingAddress)
-                    </span>
+                        <a href="tel:@farmerPhone" class="btn btn-outline-success rounded-pill px-3.5 py-2 fw-bold small shadow-sm d-inline-flex align-items-center gap-1.5">
+                            <i class="bi bi-telephone-fill"></i> Call Farmer
+                        </a>
+                    </div>
                 </div>
+
             </div>
 
-            <!-- Farmer / Producer Direct Contact Card -->
-            <div class="bg-white rounded-4 p-4 border shadow-sm">
-                <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-                    <i class="bi bi-person-badge-fill text-success"></i> Farmer &amp; Producer Contact
-                </h5>
+            <!-- Right Column: Itemized Price Breakdown & Fulfillment Timeline -->
+            <div class="col-lg-5">
+                
+                <!-- Itemized Price Breakdown Card -->
+                <div class="price-breakdown-card mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                        <h5 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2">
+                            <i class="bi bi-calculator-fill text-success fs-5"></i> Itemized Invoice Breakdown
+                        </h5>
+                        <span class="badge bg-success text-white px-2.5 py-1 rounded-pill small">Paid</span>
+                    </div>
 
-                <div class="d-flex flex-wrap justify-content-between align-items-center p-3 bg-light rounded-3 border gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold fs-5 shadow-sm" style="width: 48px; height: 48px; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">
-                            @(!string.IsNullOrEmpty(farmerName) ? farmerName.Substring(0, 1).ToUpper() : "F")
+                    <div class="d-flex justify-content-between text-muted mb-2 small">
+                        <span>Base Produce Cost (@itemQty Kg)</span>
+                        <strong class="text-dark">₹@baseAmount.ToString("N2")</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between text-muted mb-2 small">
+                        <span>Transport / Logistics (@Model.TransportType)</span>
+                        <strong class="text-dark">₹@Model.LogisticsFee.ToString("N2")</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between text-muted mb-3 small">
+                        <span>Platform Safety &amp; Escrow Fee (2%)</span>
+                        <strong class="text-dark">₹@Model.PlatformFee.ToString("N2")</strong>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-6 fw-bold text-dark">Total Amount Paid</span>
+                        <span class="fs-4 fw-extrabold text-success">₹@Model.TotalAmount.ToString("N2")</span>
+                    </div>
+
+                    <div class="p-3 bg-white rounded-3 border small text-muted shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span>Payment Method:</span>
+                            <strong class="text-success"><i class="bi bi-shield-check me-1"></i>@(Model.PaymentMethod ?? "Online (Escrow Protected)")</strong>
                         </div>
-                        <div>
-                            <strong class="text-dark d-block fs-6">@farmerName</strong>
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 small">
-                                <i class="bi bi-patch-check-fill me-1"></i>Verified Gujarat Farmer
-                            </span>
-                            <span class="text-muted small d-block mt-0.5"><i class="bi bi-telephone text-success me-1"></i>@farmerPhone</span>
+                        @if (Model.Payment != null && !string.IsNullOrEmpty(Model.Payment.RazorpayPaymentId))
+                        {
+                            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                                <span>Razorpay Escrow Ref:</span>
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 font-monospace">@Model.Payment.RazorpayPaymentId</span>
+                            </div>
+                        }
+                        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                            <span>Order Date &amp; Time:</span>
+                            <strong class="text-dark">@dateFormatted</strong>
                         </div>
                     </div>
-
-                    <a href="tel:@farmerPhone" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold"><i class="bi bi-telephone-fill me-1"></i> Call Farmer</a>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Right Column: Itemized Invoice & Order Timeline -->
-        <div class="col-lg-5">
-            
-            <!-- Itemized Price Breakdown Card -->
-            <div class="bg-white rounded-4 p-4 border shadow-sm mb-4">
-                <h5 class="fw-bold text-dark mb-3">Itemized Invoice Breakdown</h5>
-
-                <div class="d-flex justify-content-between text-muted mb-2 small">
-                    <span>Base Produce Cost (@itemQty units)</span>
-                    <strong class="text-dark">₹@baseAmount.ToString("N2")</strong>
                 </div>
 
-                <div class="d-flex justify-content-between text-muted mb-2 small">
-                    <span>Transport / Logistics (@Model.TransportType)</span>
-                    <strong class="text-dark">₹@Model.LogisticsFee.ToString("N2")</strong>
-                </div>
-
-                <div class="d-flex justify-content-between text-muted mb-3 small">
-                    <span>Platform Safety Fee (2%)</span>
-                    <strong class="text-dark">₹@Model.PlatformFee.ToString("N2")</strong>
-                </div>
-
-                <hr class="my-3">
-
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="fs-6 fw-bold text-dark">Total Amount Paid</span>
-                    <span class="fs-4 fw-extrabold text-success">₹@Model.TotalAmount.ToString("N2")</span>
-                </div>
-
-                <div class="p-2.5 bg-light rounded-3 border small text-muted">
-                    <div class="d-flex justify-content-between">
-                        <span>Payment Method:</span>
-                        <strong class="text-success">@(Model.PaymentMethod ?? "Online (Escrow Protected)")</strong>
+                <!-- Order Fulfillment Progress Timeline Card -->
+                <div class="order-section-card">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                        <h5 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2">
+                            <i class="bi bi-clock-history text-success fs-5"></i> Fulfillment Progress
+                        </h5>
+                        <span class="badge bg-light text-dark border px-2 py-0.5 small">Live Tracking</span>
                     </div>
-                    @if (Model.Payment != null && !string.IsNullOrEmpty(Model.Payment.RazorpayPaymentId))
-                    {
-                        <div class="d-flex justify-content-between align-items-center mt-1 pt-1 border-top">
-                            <span>Razorpay Escrow Ref:</span>
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 font-monospace">@Model.Payment.RazorpayPaymentId</span>
+
+                    <div class="position-relative ps-4 border-start border-2 border-success ms-2 my-3">
+                        <div class="mb-3 position-relative">
+                            <span class="position-absolute top-0 start-0 translate-middle p-1.5 bg-success rounded-circle border border-white shadow-sm"></span>
+                            <strong class="small text-dark d-block">Order Placed &amp; Escrow Secured</strong>
+                            <span class="text-muted small">@dateFormatted</span>
                         </div>
-                    }
-                    <div class="d-flex justify-content-between mt-1">
-                        <span>Order Date &amp; Time:</span>
-                        <strong class="text-dark">@dateFormatted</strong>
+
+                        <div class="mb-3 position-relative">
+                            <span class="position-absolute top-0 start-0 translate-middle p-1.5 @(Model.Status != "Pending" && Model.Status != "Requested" ? "bg-success" : "bg-warning") rounded-circle border border-white shadow-sm"></span>
+                            <strong class="small text-dark d-block">Harvest Packed &amp; Prepared</strong>
+                            <span class="text-muted small">@(Model.Status != "Pending" && Model.Status != "Requested" ? "Ready at Gujarat Farm" : "Farmer preparing produce")</span>
+                        </div>
+
+                        <div class="position-relative">
+                            <span class="position-absolute top-0 start-0 translate-middle p-1.5 @(Model.Status.Contains("Delivered") || Model.Status.Contains("Settled") ? "bg-success" : "bg-secondary") rounded-circle border border-white shadow-sm"></span>
+                            <strong class="small text-dark d-block">Handover / Delivery Completed</strong>
+                            <span class="text-muted small">@(Model.Status.Contains("Delivered") || Model.Status.Contains("Settled") ? "Completed 🟢" : "Pending Handover Verification")</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Order Fulfillment Progress Timeline -->
-            <div class="bg-white rounded-4 p-4 border shadow-sm">
-                <h5 class="fw-bold text-dark mb-3">Fulfillment Progress</h5>
-
-                <div class="position-relative ps-4 border-start border-2 border-success ms-2 my-2">
-                    <div class="mb-3 position-relative">
-                        <span class="position-absolute top-0 start-0 translate-middle p-1.5 bg-success rounded-circle border border-white"></span>
-                        <strong class="small text-dark d-block">Order Placed &amp; Escrow Secured</strong>
-                        <span class="text-muted small">@dateFormatted</span>
-                    </div>
-
-                    <div class="mb-3 position-relative">
-                        <span class="position-absolute top-0 start-0 translate-middle p-1.5 @(Model.Status != "Pending" ? "bg-success" : "bg-warning") rounded-circle border border-white"></span>
-                        <strong class="small text-dark d-block">Harvest Packed &amp; Ready for Pickup</strong>
-                        <span class="text-muted small">@(Model.Status != "Pending" ? "Ready at Gujarat Farm" : "Farmer preparing produce")</span>
-                    </div>
-
-                    <div class="position-relative">
-                        <span class="position-absolute top-0 start-0 translate-middle p-1.5 @(Model.Status.Contains("Delivered") ? "bg-success" : "bg-secondary") rounded-circle border border-white"></span>
-                        <strong class="small text-dark d-block">OTP Verified &amp; Completed</strong>
-                        <span class="text-muted small">@(Model.Status.Contains("Delivered") ? "Completed 🟢" : "Pending Handover Verification")</span>
-                    </div>
-                </div>
             </div>
 
         </div>
 
     </div>
+
 </div>
 
 <!-- Customer Cancel Order Confirmation Modal -->
