@@ -1,3 +1,50 @@
+
+<style>
+    /* Guaranteed Eye Icon Fix: Disable Edge native reveal and center custom toggle inside box */
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear,
+    input[type="text"]::-ms-clear {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        pointer-events: none !important;
+    }
+    .login-input-wrapper {
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+        width: 100% !important;
+    }
+    .login-form-input {
+        width: 100% !important;
+        padding-left: 42px !important;
+        padding-right: 48px !important;
+        box-sizing: border-box !important;
+    }
+    .login-eye-toggle {
+        position: absolute !important;
+        right: 12px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: 32px !important;
+        height: 32px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: transparent !important;
+        border: none !important;
+        color: #64748b !important;
+        font-size: 1.15rem !important;
+        border-radius: 50% !important;
+        cursor: pointer !important;
+        z-index: 10 !important;
+        line-height: 1 !important;
+    }
+    .login-eye-toggle:hover {
+        color: #007b49 !important;
+        background-color: rgba(0, 123, 73, 0.08) !important;
+    }
+</style>
 @model AgriAI.Web.ViewModels.LoginViewModel
 
 @{
@@ -64,10 +111,10 @@
             <!-- Password -->
             <div class="login-field-group">
                 <label asp-for="Password" class="login-field-label">Password</label>
-                <div class="login-input-wrapper">
-                    <input asp-for="Password" type="password" id="loginPasswordInput" class="login-form-input pe-5" placeholder="Enter your password" />
-                    <i class="bi bi-lock-fill login-input-icon"></i>
-                    <button type="button" class="login-eye-toggle" id="loginPwdToggleBtn" tabindex="-1" aria-label="Toggle password visibility">
+                <div class="login-input-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <input asp-for="Password" type="password" id="loginPasswordInput" class="login-form-input" placeholder="Enter your password" autocomplete="current-password" style="width: 100% !important; padding-left: 42px !important; padding-right: 48px !important; height: 46px !important; box-sizing: border-box !important;" />
+                    <i class="bi bi-lock-fill login-input-icon" style="position: absolute !important; left: 14px !important; top: 50% !important; transform: translateY(-50%) !important; pointer-events: none !important; font-size: 1.05rem !important; color: #94a3b8 !important; z-index: 2 !important; margin: 0 !important;"></i>
+                    <button type="button" class="login-eye-toggle" id="loginPwdToggleBtn" tabindex="-1" aria-label="Toggle password visibility" title="Show/Hide password" style="position: absolute !important; right: 12px !important; top: 50% !important; transform: translateY(-50%) !important; width: 32px !important; height: 32px !important; border: none !important; background: transparent !important; padding: 0 !important; margin: 0 !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; color: #64748b !important; font-size: 1.15rem !important; z-index: 10 !important; border-radius: 50% !important; outline: none !important; line-height: 1 !important;">
                         <i class="bi bi-eye"></i>
                     </button>
                 </div>
