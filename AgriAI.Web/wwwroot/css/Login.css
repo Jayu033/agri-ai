@@ -120,9 +120,21 @@
     transition: color 0.2s ease;
 }
 
+/* Disable native Edge / IE / Webkit password reveal and clear buttons */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="text"]::-ms-clear {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    pointer-events: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+}
+
 .login-form-input {
     width: 100%;
-    padding: 11px 14px 11px 42px;
+    padding: 11px 44px 11px 42px;
     border-radius: 10px;
     border: 1.5px solid #e2e8f0;
     font-size: 0.9rem;
@@ -130,37 +142,54 @@
     background-color: #ffffff;
     outline: none;
     transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.login-form-input.pe-5 {
+    padding-right: 44px !important;
 }
 
 .login-form-input:focus {
-    border-color: #16a34a;
-    box-shadow: 0 0 0 3.5px rgba(22, 163, 74, 0.15);
+    border-color: #007b49;
+    box-shadow: 0 0 0 3.5px rgba(0, 123, 73, 0.15);
     background-color: #ffffff;
 }
 
 .login-form-input:focus ~ .login-input-icon,
 .login-form-input:focus + .login-input-icon {
-    color: #16a34a;
+    color: #007b49;
 }
 
 /* Show/Hide Password Eye Button */
 .login-eye-toggle {
     position: absolute;
-    right: 12px;
-    background: none;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: transparent;
     border: none;
-    color: #94a3b8;
+    color: #64748b;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.2s ease;
+    z-index: 5;
+    transition: all 0.2s ease;
 }
 
 .login-eye-toggle:hover {
-    color: #166534;
+    color: #007b49;
+    background-color: rgba(0, 123, 73, 0.08);
+}
+
+.login-eye-toggle:focus {
+    outline: none;
+    color: #007b49;
 }
 
 /* Remember Me & Forgot Password Row */

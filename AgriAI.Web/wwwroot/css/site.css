@@ -725,3 +725,15 @@ button:hover i {
     margin-bottom: 0 !important;
     line-height: 1.5 !important;
 }
+
+/* Global reset to prevent browser native password reveal icons colliding with custom eye buttons */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="text"]::-ms-clear {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    pointer-events: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+}

@@ -147,16 +147,21 @@
             const pwdToggleBtn = document.getElementById('loginPwdToggleBtn');
             const pwdInput = document.getElementById('loginPasswordInput');
             if (pwdToggleBtn && pwdInput) {
-                pwdToggleBtn.addEventListener('click', function () {
+                pwdToggleBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
                     const icon = this.querySelector('i');
                     if (pwdInput.type === 'password') {
                         pwdInput.type = 'text';
-                        icon.classList.remove('bi-eye');
-                        icon.classList.add('bi-eye-slash');
+                        if (icon) {
+                            icon.classList.remove('bi-eye');
+                            icon.classList.add('bi-eye-slash');
+                        }
                     } else {
                         pwdInput.type = 'password';
-                        icon.classList.remove('bi-eye-slash');
-                        icon.classList.add('bi-eye');
+                        if (icon) {
+                            icon.classList.remove('bi-eye-slash');
+                            icon.classList.add('bi-eye');
+                        }
                     }
                 });
             }
