@@ -1,6 +1,22 @@
 @model IEnumerable<AgriAI.Domain.Entities.Product>
 @inject Microsoft.AspNetCore.Identity.UserManager<AgriAI.Infrastructure.Identity.ApplicationUser> UserManager
 
+@functions {
+    public static string GetChipIcon(string? name)
+    {
+        var lower = (name ?? "").ToLower();
+        if (lower.Contains("veg")) return "🥬";
+        if (lower.Contains("fruit")) return "🍎";
+        if (lower.Contains("grain") || lower.Contains("cereal")) return "🌾";
+        if (lower.Contains("pulse")) return "🌱";
+        if (lower.Contains("oilseed")) return "🥜";
+        if (lower.Contains("spice") || lower.Contains("jeera")) return "🌿";
+        if (lower.Contains("dairy")) return "🥛";
+        if (lower.Contains("seed") || lower.Contains("fertilizer")) return "🌻";
+        return "📦";
+    }
+}
+
 @{
     ViewData["Title"] = "Farm Fresh Produce Marketplace";
     var currentUserId = UserManager.GetUserId(User);
@@ -57,8 +73,8 @@
         position: absolute;
         right: -30px;
         bottom: -30px;
-        width: 200px;
-        height: 200px;
+        width: 220px;
+        height: 220px;
         background: rgba(255, 255, 255, 0.06);
         border-radius: 50%;
         pointer-events: none;
@@ -337,18 +353,46 @@
                 <button type="button" class="filter-chip-btn active" onclick="filterMarketplace('all', this)">
                     All Harvests (@Model.Count())
                 </button>
-                <button type="button" class="filter-chip-btn" onclick="filterMarketplace('grains', this)">
-                    🌾 Grains &amp; Cereals
-                </button>
-                <button type="button" class="filter-chip-btn" onclick="filterMarketplace('oilseeds', this)">
-                    🥜 Oilseeds
-                </button>
-                <button type="button" class="filter-chip-btn" onclick="filterMarketplace('spices', this)">
-                    🌿 Spices &amp; Jeera
-                </button>
-                <button type="button" class="filter-chip-btn" onclick="filterMarketplace('pulses', this)">
-                    🌱 Pulses
-                </button>
+                @{
+                    var dbCategories = ViewBag.Categories as List<AgriAI.Domain.Entities.Category>;
+                }
+                @if (dbCategories != null && dbCategories.Any())
+                {
+                    @foreach (var cat in dbCategories)
+                    {
+                        var filterKey = cat.Name.ToLower();
+                        <button type="button" class="filter-chip-btn" onclick="filterMarketplace('@filterKey', this)">
+                            @GetChipIcon(cat.Name) @cat.Name
+                        </button>
+                    }
+                }
+                else
+                {
+                    <button type="button" class="filter-chip-btn" onclick="filterMarketplace('vegetables', this)">
+                        🥬 Vegetables
+                    </button>
+                    <button type="button" class="filter-chip-btn" onclick="filterMarketplace('fruits', this)">
+                        🍎 Fruits
+                    </button>
+                    <button type="button" class="filter-chip-btn" onclick="filterMarketplace('grains & cereals', this)">
+                        🌾 Grains &amp; Cereals
+                    </button>
+                    <button type="button" class="filter-chip-btn" onclick="filterMarketplace('pulses', this)">
+                        🌱 Pulses
+                    </button>
+                    <button type="button" class="filter-chip-btn" onclick="filterMarketplace('oilseeds', this)">
+                        🥜 Oilseeds
+                    </button>
+                    <button type="button" class="filter-chip-btn" onclick="filterMarketplace('spices & jeera', this)">
+                        🌿 Spices &amp; Jeera
+                    </button>
+                    <button type="button" class="filter-chip-btn" onclick="filterMarketplace('dairy produce', this)">
+                        🥛 Dairy Produce
+                    </button>
+                    <button type="button" class="filter-chip-btn" onclick="filterMarketplace('seeds & fertilizers', this)">
+                        🌻 Seeds &amp; Fertilizers
+                    </button>
+                }
             </div>
 
             <div class="d-flex align-items-center gap-2">
@@ -497,7 +541,7 @@
                     <div class="p-4 d-flex flex-column flex-grow-1">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <span class="badge bg-success bg-opacity-10 text-success fw-bold border border-success border-opacity-25 rounded-pill px-2.5 py-1" style="font-size: 0.72rem;">
-                                @catName
+                                @GetChipIcon(catName) @catName
                             </span>
                             <span class="text-muted small fw-semibold" style="font-size: 0.72rem;">
                                 <i class="bi bi-geo-alt-fill text-success"></i> Gujarat APMC
@@ -692,7 +736,7 @@
             const name = (card.getAttribute('data-name') || '').toLowerCase();
             const cat = (card.getAttribute('data-category') || '').toLowerCase();
 
-            const matchesCat = (currentSearchCategory === 'all') || cat.includes(currentSearchCategory);
+            const matchesCat = (currentSearchCategory === 'all') || cat === currentSearchCategory || cat.includes(currentSearchCategory) || currentSearchCategory.includes(cat);
             const matchesQuery = !searchVal || name.includes(searchVal) || cat.includes(searchVal);
 
             if (matchesCat && matchesQuery) {

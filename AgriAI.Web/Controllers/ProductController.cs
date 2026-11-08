@@ -32,12 +32,17 @@ namespace AgriAI.Web.Controllers
                 .Include(p => p.Images)
                 .ToListAsync();
 
+            var categories = await _context.Categories
+                .OrderBy(c => c.Id)
+                .ToListAsync();
+
             var soldQuantities = await _context.OrderItems
                 .Where(oi => oi.Order.Status != "Cancelled" && oi.Order.Status != "Declined")
                 .GroupBy(oi => oi.ProductId)
                 .Select(g => new { ProductId = g.Key, Sold = g.Sum(oi => oi.Quantity) })
                 .ToDictionaryAsync(x => x.ProductId, x => x.Sold);
 
+            ViewBag.Categories = categories;
             ViewBag.SoldQuantities = soldQuantities;
             return View(products);
         }
@@ -52,25 +57,26 @@ namespace AgriAI.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var categories = await _context.Categories.ToListAsync();
+            var categories = await _context.Categories.OrderBy(c => c.Id).ToListAsync();
             if (!categories.Any())
             {
                 categories = new List<Category>
                 {
-                    new Category { Name = "Vegetables", Description = "Fresh organic vegetables" },
-                    new Category { Name = "Fruits", Description = "Fresh farm fruits" },
-                    new Category { Name = "Grains", Description = "Quality grains and pulses" },
-                    new Category { Name = "Dairy", Description = "Fresh milk and dairy products" },
-                    new Category { Name = "Fertilizers", Description = "Organic fertilizers" },
-                    new Category { Name = "Seeds", Description = "High-yield seeds" },
-                    new Category { Name = "Equipment", Description = "Farming tools and machinery" }
+                    new Category { Name = "Vegetables", Description = "Fresh green vegetables, potatoes, tomatoes, onions, and farm greens" },
+                    new Category { Name = "Fruits", Description = "Fresh seasonal farm fruits, mangoes, bananas, citrus, and orchard harvests" },
+                    new Category { Name = "Grains & Cereals", Description = "Quality wheat, bajra, desi sweet corn, rice, and agricultural grains" },
+                    new Category { Name = "Pulses", Description = "Fresh organic pulses, lentils, tuver dal, moong, and chana" },
+                    new Category { Name = "Oilseeds", Description = "Groundnut, mustard, sesame, castor, and premium oilseeds" },
+                    new Category { Name = "Spices & Jeera", Description = "Pure Saurashtra cumin (jeera), coriander, fennel, and farm spices" },
+                    new Category { Name = "Dairy Produce", Description = "Fresh farm milk, pure desi Gir cow ghee, and dairy products" },
+                    new Category { Name = "Seeds & Fertilizers", Description = "Certified high-yield farm seeds and organic compost fertilizers" }
                 };
                 await _context.Categories.AddRangeAsync(categories);
                 await _context.SaveChangesAsync();
-                categories = await _context.Categories.ToListAsync();
+                categories = await _context.Categories.OrderBy(c => c.Id).ToListAsync();
             }
 
-            ViewData["CategoryId"] = new SelectList(categories, "Id", "Name");
+            ViewData["CategoryId"] = GetCategorySelectList(categories);
             return View();
         }
 
@@ -149,8 +155,8 @@ namespace AgriAI.Web.Controllers
                 }
             }
 
-            var categoriesList = await _context.Categories.ToListAsync();
-            ViewData["CategoryId"] = new SelectList(categoriesList, "Id", "Name", product.CategoryId);
+            var categoriesList = await _context.Categories.OrderBy(c => c.Id).ToListAsync();
+            ViewData["CategoryId"] = GetCategorySelectList(categoriesList, product.CategoryId);
             return View(product);
         }
 
@@ -234,8 +240,8 @@ namespace AgriAI.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var categories = await _context.Categories.ToListAsync();
-            ViewData["CategoryId"] = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(categories, "Id", "Name", product.CategoryId);
+            var categories = await _context.Categories.OrderBy(c => c.Id).ToListAsync();
+            ViewData["CategoryId"] = GetCategorySelectList(categories, product.CategoryId);
             return View(product);
         }
 
@@ -397,6 +403,30 @@ namespace AgriAI.Web.Controllers
             }
 
             return RedirectToAction(nameof(Details), new { id });
+        }
+        private SelectList GetCategorySelectList(IEnumerable<Category> categories, int? selectedId = null)
+        {
+            var items = categories.Select(c => new
+            {
+                Id = c.Id,
+                DisplayName = $"{GetCategoryEmoji(c.Name)} {c.Name}"
+            });
+            return new SelectList(items, "Id", "DisplayName", selectedId);
+        }
+
+        private static string GetCategoryEmoji(string? name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return "📦";
+            var lower = name.ToLower();
+            if (lower.Contains("veg")) return "🥬";
+            if (lower.Contains("fruit")) return "🍎";
+            if (lower.Contains("grain") || lower.Contains("cereal")) return "🌾";
+            if (lower.Contains("pulse")) return "🌱";
+            if (lower.Contains("oilseed")) return "🥜";
+            if (lower.Contains("spice") || lower.Contains("jeera")) return "🌿";
+            if (lower.Contains("dairy")) return "🥛";
+            if (lower.Contains("seed") || lower.Contains("fertilizer")) return "🌻";
+            return "📦";
         }
     }
 }

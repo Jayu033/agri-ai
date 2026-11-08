@@ -98,13 +98,14 @@ namespace AgriAI.Infrastructure.Data
             {
                 var defaultCategories = new List<Category>
                 {
-                    new Category { Name = "Vegetables", Description = "Fresh green organic vegetables", CreatedAt = DateTime.UtcNow },
-                    new Category { Name = "Fruits", Description = "Fresh seasonal farm fruits", CreatedAt = DateTime.UtcNow },
-                    new Category { Name = "Grains", Description = "Quality wheat, rice, pulses, and food grains", CreatedAt = DateTime.UtcNow },
-                    new Category { Name = "Dairy", Description = "Pure milk, butter, ghee, and dairy products", CreatedAt = DateTime.UtcNow },
-                    new Category { Name = "Fertilizers", Description = "Organic fertilizers and crop boosters", CreatedAt = DateTime.UtcNow },
-                    new Category { Name = "Seeds", Description = "High yield quality farm seeds", CreatedAt = DateTime.UtcNow },
-                    new Category { Name = "Equipment", Description = "Modern farming tools and irrigation equipment", CreatedAt = DateTime.UtcNow }
+                    new Category { Name = "Vegetables", Description = "Fresh green vegetables, potatoes, tomatoes, onions, and farm greens", CreatedAt = DateTime.UtcNow },
+                    new Category { Name = "Fruits", Description = "Fresh seasonal farm fruits, mangoes, bananas, citrus, and orchard harvests", CreatedAt = DateTime.UtcNow },
+                    new Category { Name = "Grains & Cereals", Description = "Quality wheat, bajra, desi sweet corn, rice, and agricultural grains", CreatedAt = DateTime.UtcNow },
+                    new Category { Name = "Pulses", Description = "Fresh organic pulses, lentils, tuver dal, moong, and chana", CreatedAt = DateTime.UtcNow },
+                    new Category { Name = "Oilseeds", Description = "Groundnut, mustard, sesame, castor, and premium oilseeds", CreatedAt = DateTime.UtcNow },
+                    new Category { Name = "Spices & Jeera", Description = "Pure Saurashtra cumin (jeera), coriander, fennel, and farm spices", CreatedAt = DateTime.UtcNow },
+                    new Category { Name = "Dairy Produce", Description = "Fresh farm milk, pure desi Gir cow ghee, and dairy products", CreatedAt = DateTime.UtcNow },
+                    new Category { Name = "Seeds & Fertilizers", Description = "Certified high-yield farm seeds and organic compost fertilizers", CreatedAt = DateTime.UtcNow }
                 };
 
                 await dbContext.Categories.AddRangeAsync(defaultCategories);

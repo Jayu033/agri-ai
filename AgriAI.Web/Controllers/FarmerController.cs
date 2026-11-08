@@ -571,8 +571,8 @@ namespace AgriAI.Web.Controllers
                 }
             }
 
-            var categories = await _context.Categories.ToListAsync();
-            ViewData["CategoryId"] = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(categories, "Id", "Name", product.CategoryId);
+            var categories = await _context.Categories.OrderBy(c => c.Id).ToListAsync();
+            ViewData["CategoryId"] = GetCategorySelectList(categories, product.CategoryId);
             return View(product);
         }
 
@@ -664,9 +664,33 @@ namespace AgriAI.Web.Controllers
                 }
             }
 
-            var categories = await _context.Categories.ToListAsync();
-            ViewData["CategoryId"] = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(categories, "Id", "Name", product.CategoryId);
+            var categories = await _context.Categories.OrderBy(c => c.Id).ToListAsync();
+            ViewData["CategoryId"] = GetCategorySelectList(categories, product.CategoryId);
             return View(product);
+        }
+        private Microsoft.AspNetCore.Mvc.Rendering.SelectList GetCategorySelectList(IEnumerable<AgriAI.Domain.Entities.Category> categories, int? selectedId = null)
+        {
+            var items = categories.Select(c => new
+            {
+                Id = c.Id,
+                DisplayName = $"{GetCategoryEmoji(c.Name)} {c.Name}"
+            });
+            return new Microsoft.AspNetCore.Mvc.Rendering.SelectList(items, "Id", "DisplayName", selectedId);
+        }
+
+        private static string GetCategoryEmoji(string? name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return "📦";
+            var lower = name.ToLower();
+            if (lower.Contains("veg")) return "🥬";
+            if (lower.Contains("fruit")) return "🍎";
+            if (lower.Contains("grain") || lower.Contains("cereal")) return "🌾";
+            if (lower.Contains("pulse")) return "🌱";
+            if (lower.Contains("oilseed")) return "🥜";
+            if (lower.Contains("spice") || lower.Contains("jeera")) return "🌿";
+            if (lower.Contains("dairy")) return "🥛";
+            if (lower.Contains("seed") || lower.Contains("fertilizer")) return "🌻";
+            return "📦";
         }
     }
 }

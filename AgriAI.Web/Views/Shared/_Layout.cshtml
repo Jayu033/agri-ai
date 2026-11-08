@@ -3,7 +3,17 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - AgriAI Platform</title>
+    @{
+        var rawTitle = ViewData["Title"]?.ToString();
+        var isHomeOrEmpty = string.IsNullOrEmpty(rawTitle) || rawTitle.Contains("National Agricultural Market");
+        var tabTitle = isHomeOrEmpty ? "AgriAI - Smart Farm & Market" : (rawTitle.StartsWith("AgriAI") ? rawTitle : $"AgriAI | {rawTitle}");
+    }
+    <title>@tabTitle</title>
+
+    <!-- Browser Tab Favicon (AgriAI Logo) -->
+    <link rel="icon" type="image/jpeg" href="~/images/agriai-tab-logo.jpg?v=3" />
+    <link rel="shortcut icon" href="~/images/agriai-tab-logo.jpg?v=3" />
+    <link rel="apple-touch-icon" href="~/images/agriai-tab-logo.jpg?v=3" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     
     <!-- Modularized Farm2Home CSS -->
@@ -63,15 +73,60 @@
         .navbar-brand-custom { color: #166534; font-weight: 700; font-size: 1.05rem; text-decoration: none; display: flex; align-items: center; gap: 6px; }
         .menu-btn { background: none; border: none; font-size: 1.25rem; color: #4b5563; cursor: pointer; padding: 0; margin-right: 12px; display: flex; align-items: center;}
         
-        /* Footer */
-        .footer-custom { background-color: #1b5e20; color: #ffffff; padding: 35px 0 20px 0; margin-top: auto;}
-        .footer-logo { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .footer-text { font-size: 0.85rem; color: #a5d6a7; margin-bottom: 16px; max-width: 300px; }
-        .footer-heading { font-size: 0.9rem; font-weight: 600; margin-bottom: 12px; color: #ffffff; }
-        .footer-link { color: #a5d6a7; text-decoration: none; font-size: 0.82rem; display: block; margin-bottom: 6px; }
-        .footer-link:hover { color: #ffffff; text-decoration: underline; }
-        .social-icons a { color: #ffffff; font-size: 1.1rem; margin-right: 12px; }
-        .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-top: 24px; text-align: center; font-size: 0.78rem; color: #a5d6a7; }
+        /* Footer (Theme matching Head Box: linear-gradient(135deg, #006653 0%, #047857 100%)) */
+        .footer-custom { 
+            background: linear-gradient(135deg, #006653 0%, #047857 100%); 
+            color: #ffffff; 
+            padding: 38px 0 22px 0; 
+            margin-top: auto;
+            position: relative;
+            overflow: hidden;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .footer-custom::after {
+            content: "";
+            position: absolute;
+            right: -40px;
+            bottom: -40px;
+            width: 220px;
+            height: 220px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .footer-logo { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; color: #ffffff; letter-spacing: -0.2px; }
+        .footer-text { font-size: 0.86rem; color: rgba(255, 255, 255, 0.85); margin-bottom: 16px; max-width: 320px; line-height: 1.55; }
+        .footer-heading { font-size: 0.95rem; font-weight: 700; margin-bottom: 12px; color: #ffffff; letter-spacing: 0.2px; }
+        .footer-link { color: rgba(255, 255, 255, 0.82); text-decoration: none; font-size: 0.85rem; display: block; margin-bottom: 7px; transition: all 0.2s ease; }
+        .footer-link:hover { color: #ffffff; text-decoration: none; transform: translateX(3px); }
+        .social-icons a { 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 34px; 
+            height: 34px; 
+            background: rgba(255, 255, 255, 0.12); 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            border-radius: 50%; 
+            color: #ffffff; 
+            font-size: 1rem; 
+            margin-right: 10px; 
+            text-decoration: none; 
+            transition: all 0.2s ease; 
+        }
+        .social-icons a:hover { 
+            background: rgba(255, 255, 255, 0.25); 
+            color: #ffffff; 
+            transform: translateY(-2px); 
+        }
+        .footer-bottom { 
+            border-top: 1px solid rgba(255, 255, 255, 0.15); 
+            padding-top: 14px; 
+            margin-top: 26px; 
+            text-align: center; 
+            font-size: 0.8rem; 
+            color: rgba(255, 255, 255, 0.78); 
+        }
 
         @@media print {
             #openChatBtn, #agriAiChatbot, .floating-chatbot, .gov-top-bar, .gov-main-header, footer, .app-footer, .global-notification-container, .toast-container, #globalNotificationModal {
@@ -116,7 +171,7 @@
                 <a asp-controller="Home" asp-action="Index" class="gov-emblem-section text-decoration-none d-flex align-items-center gap-2">
                     <img src="~/images/agriai-logo.png" alt="AgriAI Logo" class="rounded-circle shadow-sm" style="height: 48px; width: 48px; object-fit: cover;" />
                     <div>
-                        <strong class="d-block fw-extrabold fs-4" style="letter-spacing: -0.5px; line-height: 1.1;"><span class="text-dark">Agri</span><span style="color: #cb9d46;">AI</span></strong>
+                        <strong class="d-block fw-extrabold fs-4" style="letter-spacing: -0.5px; line-height: 1.1;"><span style="color: #007b49;">Agri</span><span style="color: #cb9d46;">AI</span></strong>
                         <span class="small text-success fw-bold" style="font-size: 0.72rem;">Smart Farm &amp; Market</span>
                     </div>
                 </a>
@@ -286,7 +341,7 @@
             <a asp-controller="Home" asp-action="Index" class="offcanvas-brand d-flex align-items-center gap-2 text-decoration-none">
                 <img src="~/images/agriai-logo.png" alt="AgriAI Logo" class="rounded-circle shadow-sm" style="height: 52px; width: 52px; object-fit: cover;" />
                 <div>
-                    <h5 class="offcanvas-brand-title mb-0 fs-4"><span class="text-dark">Agri</span><span style="color: #cb9d46;">AI</span></h5>
+                    <h5 class="offcanvas-brand-title mb-0 fs-4"><span style="color: #007b49;">Agri</span><span style="color: #cb9d46;">AI</span></h5>
                     <span class="offcanvas-brand-subtitle">Smart Farm Platform</span>
                 </div>
             </a>

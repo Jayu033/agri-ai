@@ -637,22 +637,28 @@ button:hover i {
     100% { transform: scaleX(0); }
 }
 /* =========================================================================
-   Unified Page Hero Header Boards (Consistent across all 5 main pages)
+   Unified Page Hero Header Boards (Consistent across all main pages)
+   Exact match to Helpdesk: signature gradient + crisp translucent white circle
    ========================================================================= */
 .agri-unified-hero,
 .live-mandi-header-hero,
 .marketplace-hero,
 .crop-predictor-hero,
 .predictor-header,
-.helpdesk-hero {
-    background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #006653 100%) !important;
-    border-radius: 20px !important;
+.helpdesk-hero-header,
+.helpdesk-hero,
+.produce-hero-header,
+.order-hero-header,
+.profile-hero-header,
+.order-alert-hero {
+    background: linear-gradient(135deg, #006653 0%, #047857 100%) !important;
+    border-radius: 1.25rem !important;
     padding: 2.25rem 2rem !important;
     color: #ffffff !important;
     margin-bottom: 2rem !important;
     position: relative !important;
     overflow: hidden !important;
-    box-shadow: 0 10px 30px rgba(0, 102, 83, 0.16) !important;
+    box-shadow: 0 10px 30px rgba(0, 50, 35, 0.05), 0 1px 4px rgba(0, 0, 0, 0.02) !important;
     text-align: left !important;
 }
 
@@ -661,14 +667,19 @@ button:hover i {
 .marketplace-hero::after,
 .crop-predictor-hero::after,
 .predictor-header::after,
-.helpdesk-hero::after {
+.helpdesk-hero-header::after,
+.helpdesk-hero::after,
+.produce-hero-header::after,
+.order-hero-header::after,
+.profile-hero-header::after,
+.order-alert-hero::after {
     content: "" !important;
     position: absolute !important;
-    right: -40px !important;
-    bottom: -40px !important;
+    right: -30px !important;
+    bottom: -30px !important;
     width: 220px !important;
     height: 220px !important;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
     border-radius: 50% !important;
     pointer-events: none !important;
 }

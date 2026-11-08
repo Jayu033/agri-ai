@@ -108,7 +108,7 @@
     }
 </style>
 
-<div class="container-fluid py-4 px-3 px-lg-5" style="max-width: 1360px;">
+<div class="container-fluid py-3 px-2 px-md-3 px-xl-4" style="max-width: 1680px;">
     
     @if (TempData["SuccessMessage"] != null)
     {
@@ -125,23 +125,24 @@
         </div>
     }
 
-    <!-- Navigation Header -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-        <a href="@returnUrl" class="btn btn-outline-success rounded-pill fw-bold px-4 py-2 shadow-sm d-inline-flex align-items-center gap-2">
-            <i class="bi bi-arrow-left"></i> Back to Products
-        </a>
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1.5 fw-bold">
-                <i class="bi bi-patch-check-fill me-1"></i> Verified Direct Farm Produce
-            </span>
-            <span class="badge bg-light text-muted border rounded-pill px-3 py-1.5 fw-bold">
-                <i class="bi bi-geo-alt-fill text-success me-1"></i> Gujarat Origin
-            </span>
-        </div>
-    </div>
-
     <!-- Main Product Details Card -->
     <div class="product-details-hero-card mb-4">
+        
+        <!-- Navigation Header inside Card Box -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center pb-3 mb-4 border-bottom gap-3">
+            <a href="@returnUrl" class="btn btn-outline-success rounded-pill fw-bold px-4 py-2 shadow-sm d-inline-flex align-items-center gap-2" style="border-color: #006653; color: #006653;">
+                <i class="bi bi-arrow-left"></i> Back to Products
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1.5 fw-bold">
+                    <i class="bi bi-patch-check-fill me-1"></i> Verified Direct Farm Produce
+                </span>
+                <span class="badge bg-light text-muted border rounded-pill px-3 py-1.5 fw-bold">
+                    <i class="bi bi-geo-alt-fill text-success me-1"></i> Gujarat Origin
+                </span>
+            </div>
+        </div>
+
         <div class="row g-4 g-lg-5">
             
             <!-- Left Column: Hero Crop Photo & Trust Seals -->
@@ -197,8 +198,21 @@
                 <div>
                     <!-- Category & Stock Status Breakdown -->
                     <div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
+                        @{
+                            var dCatName = Model.Category?.Name ?? "Farm Produce";
+                            string dCatIcon = "📦";
+                            var dcl = dCatName.ToLower();
+                            if (dcl.Contains("veg")) dCatIcon = "🥬";
+                            else if (dcl.Contains("fruit")) dCatIcon = "🍎";
+                            else if (dcl.Contains("grain") || dcl.Contains("cereal")) dCatIcon = "🌾";
+                            else if (dcl.Contains("pulse")) dCatIcon = "🌱";
+                            else if (dcl.Contains("oilseed")) dCatIcon = "🥜";
+                            else if (dcl.Contains("spice") || dcl.Contains("jeera")) dCatIcon = "🌿";
+                            else if (dcl.Contains("dairy")) dCatIcon = "🥛";
+                            else if (dcl.Contains("seed") || dcl.Contains("fertilizer")) dCatIcon = "🌻";
+                        }
                         <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="background-color: #f0fdf4; color: #006653; border: 1px solid #bbf7d0; font-size: 0.78rem;">
-                            🌾 @(Model.Category?.Name ?? "Farm Produce")
+                            @dCatIcon @dCatName
                         </span>
                         <div class="d-flex align-items-center gap-2 flex-wrap">
                             @{
@@ -424,36 +438,78 @@
             const btnAmountPreview = document.getElementById("btnAmountPreview");
 
             if (qtyInput && btnMinus && btnPlus) {
-                function updatePrice() {
-                    let qty = parseInt(qtyInput.value) || 1;
-                    if (qty < 1) qty = 1;
-                    if (qty > maxStock && maxStock > 0) qty = maxStock;
-                    qtyInput.value = qty;
-
-                    const total = (qty * unitPrice).toFixed(2);
+                function renderPrice(qty) {
+                    const validQty = Math.max(1, qty || 0);
+                    const total = (validQty * unitPrice).toFixed(2);
                     const formatted = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(total);
                     
                     if (totalPricePreview) totalPricePreview.textContent = formatted;
                     if (btnAmountPreview) btnAmountPreview.textContent = formatted;
                 }
 
+                // Auto-select value on focus so typing directly replaces existing number
+                qtyInput.addEventListener("focus", function () {
+                    this.select();
+                });
+
+                // While user is typing, allow erasing (empty field) without snapping back to 1
+                qtyInput.addEventListener("input", function () {
+                    const val = qtyInput.value.trim();
+                    if (val === "") {
+                        // Allow backspace to clear the field so user can enter e.g. 25
+                        renderPrice(0);
+                        return;
+                    }
+
+                    let qty = parseInt(val, 10);
+                    if (isNaN(qty)) return;
+
+                    // Clamp to maxStock if exceeded
+                    if (maxStock > 0 && qty > maxStock) {
+                        qty = maxStock;
+                        qtyInput.value = maxStock;
+                    }
+                    renderPrice(qty);
+                });
+
+                // When user finishes typing and leaves the field (blur), validate fallback
+                qtyInput.addEventListener("blur", function () {
+                    let qty = parseInt(qtyInput.value, 10);
+                    if (isNaN(qty) || qty < 1) {
+                        qty = 1;
+                    } else if (maxStock > 0 && qty > maxStock) {
+                        qty = maxStock;
+                    }
+                    qtyInput.value = qty;
+                    renderPrice(qty);
+                });
+
                 btnMinus.addEventListener("click", function () {
-                    let current = parseInt(qtyInput.value) || 1;
+                    let current = parseInt(qtyInput.value, 10) || 1;
                     if (current > 1) {
                         qtyInput.value = current - 1;
-                        updatePrice();
+                        renderPrice(current - 1);
                     }
                 });
 
                 btnPlus.addEventListener("click", function () {
-                    let current = parseInt(qtyInput.value) || 1;
-                    if (current < maxStock) {
+                    let current = parseInt(qtyInput.value, 10) || 0;
+                    if (maxStock <= 0 || current < maxStock) {
                         qtyInput.value = current + 1;
-                        updatePrice();
+                        renderPrice(current + 1);
                     }
                 });
 
-                qtyInput.addEventListener("input", updatePrice);
+                // Buy Now form submit validation safeguard
+                const buyForm = qtyInput.closest("form");
+                if (buyForm) {
+                    buyForm.addEventListener("submit", function () {
+                        let qty = parseInt(qtyInput.value, 10);
+                        if (isNaN(qty) || qty < 1) {
+                            qtyInput.value = 1;
+                        }
+                    });
+                }
             }
         });
 
@@ -484,7 +540,12 @@
         }
 
         function addToCartFromDetails() {
-            const qty = parseInt(document.getElementById("qtyInput")?.value) || 1;
+            let qty = parseInt(document.getElementById("qtyInput")?.value, 10);
+            if (isNaN(qty) || qty < 1) {
+                qty = 1;
+                const input = document.getElementById("qtyInput");
+                if (input) input.value = 1;
+            }
             fetch('/Cart/AddToCart', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

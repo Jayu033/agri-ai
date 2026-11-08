@@ -1,7 +1,7 @@
-﻿@model IEnumerable<AgriAI.Domain.Entities.Product>
+@model IEnumerable<AgriAI.Domain.Entities.Product>
 
 @{
-    ViewData["Title"] = "National Agricultural Market & AI Price Intelligence Portal";
+    ViewData["Title"] = "AgriAI - Smart Farm & Market";
 }
 
 
@@ -494,56 +494,251 @@
     </div>
 
     <!-- 5. Featured Fresh Farm Produce Grid -->
-    <div class="container mb-5">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <div>
-                <h3 class="fw-bold text-dark mb-1">Direct Farmer Produce Listings</h3>
-                <p class="text-muted mb-0">Buy 100% verified, fresh organic harvests from local Gujarat farmers</p>
-            </div>
-            <a asp-controller="Product" asp-action="Index" class="btn btn-outline-success rounded-pill px-4 fw-bold">
-                Explore All Products <i class="bi bi-arrow-right"></i>
+    <style>
+        .home-product-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.25rem;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+        }
+        .home-product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 32px rgba(0, 102, 83, 0.12);
+            border-color: #86efac;
+        }
+        .home-product-img-wrapper {
+            position: relative;
+            height: 205px;
+            background: #f8fafc;
+            overflow: hidden;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .home-product-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .home-product-card:hover .home-product-img-wrapper img {
+            transform: scale(1.06);
+        }
+        .home-badge-organic {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: linear-gradient(135deg, #006653 0%, #16a34a 100%);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.72rem;
+            padding: 5px 11px;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            z-index: 2;
+        }
+        .home-badge-stock {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 0.72rem;
+            padding: 5px 11px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            backdrop-filter: blur(4px);
+            z-index: 2;
+        }
+        .home-product-body {
+            padding: 1.25rem 1.25rem 1.15rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .home-product-title {
+            font-size: 1.12rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.35rem;
+            letter-spacing: -0.2px;
+            line-height: 1.35;
+        }
+        .home-product-desc {
+            color: #64748b;
+            font-size: 0.85rem;
+            line-height: 1.45;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 38px;
+            margin-bottom: 0.85rem;
+        }
+        .home-price-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.65rem 0.85rem;
+            margin-bottom: 0.95rem;
+        }
+        .home-btn-details {
+            border: 1.5px solid #006653;
+            color: #006653;
+            font-weight: 700;
+            font-size: 0.84rem;
+            padding: 0.52rem 0.75rem;
+            border-radius: 9999px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex: 1 1 0;
+            background: transparent;
+        }
+        .home-btn-details:hover {
+            background: #006653;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 83, 0.2);
+        }
+        .home-btn-buy {
+            background: #006653;
+            border: 1.5px solid #006653;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.84rem;
+            padding: 0.52rem 0.75rem;
+            border-radius: 9999px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex: 1 1 0;
+        }
+        .home-btn-buy:hover {
+            background: #047857;
+            border-color: #047857;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 83, 0.25);
+        }
+    </style>
+
+    <section class="home-produce-section py-5 my-2" style="padding-top: 55px !important; padding-bottom: 55px !important;">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                <div>
+                    <h3 class="fw-bold text-dark mb-1" style="font-size: 1.85rem; letter-spacing: -0.4px;">Direct Farmer Produce Listings</h3>
+                    <p class="text-muted mb-0" style="font-size: 0.98rem;">Buy 100% verified, fresh organic harvests from local Gujarat farmers</p>
+                </div>
+            <a asp-controller="Product" asp-action="Index" class="btn btn-outline-success rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2" style="border-color: #006653; color: #006653;">
+                <span>Explore All Products</span>
+                <i class="bi bi-arrow-right"></i>
             </a>
         </div>
 
+        @{
+            var prodList = Model != null ? Model.Take(8).ToList() : new List<AgriAI.Domain.Entities.Product>();
+            var prodTotal = prodList.Count;
+            var colClass = prodTotal <= 2 
+                ? "col-12 col-sm-6 col-lg-5 col-xl-4" 
+                : (prodTotal == 3 ? "col-12 col-sm-6 col-lg-4" : "col-12 col-sm-6 col-md-4 col-lg-3");
+        }
+
         <div class="row g-4">
-            @if (Model != null && Model.Any())
+            @if (prodList.Any())
             {
-                foreach (var item in Model.Take(4))
+                foreach (var item in prodList)
                 {
                     var imgUrl = item.Images?.FirstOrDefault()?.ImageUrl;
-                    <div class="col-sm-6 col-md-4 col-lg-3">
-                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden product-card bg-white">
-                            <div class="position-relative">
+                    var catName = item.Category?.Name ?? "Farm Produce";
+                    var maundPrice = item.Price * 20;
+
+                    <div class="@colClass">
+                        <div class="home-product-card bg-white">
+                            <div class="home-product-img-wrapper">
                                 @if (!string.IsNullOrEmpty(imgUrl))
                                 {
-                                    <img src="@imgUrl" class="card-img-top" alt="@item.Name" style="height: 190px; object-fit: cover;">
+                                    <img src="@imgUrl" alt="@item.Name">
                                 }
                                 else
                                 {
-                                    <div class="bg-light d-flex align-items-center justify-content-center" style="height: 190px;">
-                                        <i class="bi bi-basket text-success display-4"></i>
+                                    <div class="d-flex align-items-center justify-content-center h-100 bg-light text-success">
+                                        <i class="bi bi-basket display-4 opacity-50"></i>
                                     </div>
                                 }
-                                <span class="position-absolute top-0 end-0 m-3 badge bg-success fw-bold px-2.5 py-1.5 shadow-sm">
-                                    Farm Fresh
+                                <span class="home-badge-organic">
+                                    <i class="bi bi-patch-check-fill me-1"></i>100% Farm Fresh
+                                </span>
+                                <span class="home-badge-stock">
+                                    @if (item.StockQuantity > 0)
+                                    {
+                                        <span class="text-success fw-bold">● @item.StockQuantity Kg in Stock</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger fw-bold">● Sold Out</span>
+                                    }
                                 </span>
                             </div>
 
-                            <div class="card-body d-flex flex-column p-3.5">
-                                <small class="text-success fw-bold text-uppercase mb-1" style="font-size: 0.72rem;">
-                                    @(item.Category?.Name ?? "Farm Produce")
-                                </small>
-                                <h6 class="card-title fw-bold text-dark mb-2">@item.Name</h6>
-                                <p class="card-text text-muted small mb-3 flex-grow-1" style="font-size: 0.8rem;">
-                                    @(item.Description != null && item.Description.Length > 60 ? item.Description.Substring(0, 60) + "..." : item.Description)
+                            <div class="home-product-body">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    @{
+                                        string homeCatIcon = "📦";
+                                        var hcl = (catName ?? "").ToLower();
+                                        if (hcl.Contains("veg")) homeCatIcon = "🥬";
+                                        else if (hcl.Contains("fruit")) homeCatIcon = "🍎";
+                                        else if (hcl.Contains("grain") || hcl.Contains("cereal")) homeCatIcon = "🌾";
+                                        else if (hcl.Contains("pulse")) homeCatIcon = "🌱";
+                                        else if (hcl.Contains("oilseed")) homeCatIcon = "🥜";
+                                        else if (hcl.Contains("spice") || hcl.Contains("jeera")) homeCatIcon = "🌿";
+                                        else if (hcl.Contains("dairy")) homeCatIcon = "🥛";
+                                        else if (hcl.Contains("seed") || hcl.Contains("fertilizer")) homeCatIcon = "🌻";
+                                    }
+                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold border border-success border-opacity-25 rounded-pill px-2.5 py-1" style="font-size: 0.72rem; letter-spacing: 0.3px;">
+                                        @homeCatIcon @catName
+                                    </span>
+                                    <span class="text-muted small fw-semibold" style="font-size: 0.72rem;">
+                                        <i class="bi bi-geo-alt-fill text-success"></i> Gujarat APMC
+                                    </span>
+                                </div>
+
+                                <h5 class="home-product-title text-truncate" title="@item.Name">
+                                    @item.Name
+                                </h5>
+
+                                <p class="home-product-desc" title="@item.Description">
+                                    @(string.IsNullOrEmpty(item.Description) ? "Fresh organic farm crop harvested directly by local Gujarat farmers." : item.Description)
                                 </p>
-                                
-                                <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top">
-                                    <div>
-                                        <span class="fs-5 fw-extrabold text-success">₹@item.Price.ToString("F2")</span>
+
+                                <div class="home-price-box">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="fs-5 fw-extrabold text-success">₹@item.Price.ToString("N2")</span>
+                                            <small class="text-muted fw-bold">/ Kg</small>
+                                        </div>
+                                        <span class="badge bg-white text-dark border py-1 px-2 rounded-pill fw-bold" style="font-size: 0.70rem;">
+                                            ₹@maundPrice.ToString("N0") / Maund
+                                        </span>
                                     </div>
-                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-success rounded-circle p-2 shadow-sm" title="View Details">
-                                        <i class="bi bi-eye-fill"></i>
+                                </div>
+
+                                <div class="mt-auto pt-1 d-flex gap-2 align-items-center">
+                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="home-btn-details shadow-sm">
+                                        <i class="bi bi-eye"></i> Details
+                                    </a>
+                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="home-btn-buy shadow-sm">
+                                        <i class="bi bi-cart-plus"></i> Buy Now
                                     </a>
                                 </div>
                             </div>
@@ -553,14 +748,16 @@
             }
             else
             {
-                <div class="col-12 text-center py-4 bg-white rounded-3 border">
-                    <i class="bi bi-basket text-muted display-4 mb-2"></i>
-                    <h6 class="text-muted fw-bold">No farm products listed currently.</h6>
-                    <a asp-controller="Product" asp-action="Index" class="btn btn-success btn-sm mt-2 fw-bold">Explore Marketplace</a>
+                <div class="col-12 text-center py-5 bg-white rounded-4 border shadow-sm">
+                    <i class="bi bi-basket display-4 text-success opacity-50 mb-3 d-block"></i>
+                    <h5 class="fw-bold text-dark mb-2">No farm produce listed currently.</h5>
+                    <p class="text-muted small mb-3">Fresh harvests will be listed by local farmers soon.</p>
+                    <a asp-controller="Product" asp-action="Index" class="btn btn-success rounded-pill px-4 py-2 fw-bold" style="background-color: #006653; border-color: #006653;">Explore Marketplace</a>
                 </div>
             }
         </div>
     </div>
+    </section>
 
     <!-- 6. National Krishi Statistics Counter Bar -->
     <div class="gov-stats-bar">
