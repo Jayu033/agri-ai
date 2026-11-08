@@ -44,6 +44,27 @@
         color: #007b49 !important;
         background-color: rgba(0, 123, 73, 0.08) !important;
     }
+    .register-brand-icon-box {
+        background: transparent !important;
+        box-shadow: none !important;
+        width: auto !important;
+        height: auto !important;
+        border-radius: 0 !important;
+        margin: 0 auto 10px auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    .register-brand-logo-img {
+        height: 68px !important;
+        width: 68px !important;
+        object-fit: contain !important;
+        filter: drop-shadow(0 4px 10px rgba(0, 102, 83, 0.12)) !important;
+        transition: transform 0.25s ease !important;
+    }
+    .register-brand-logo-img:hover {
+        transform: scale(1.06) !important;
+    }
 </style>
 @model AgriAI.Web.ViewModels.RegisterViewModel
 
@@ -53,9 +74,9 @@
 
 <div class="register-page-bg">
     <div class="modern-register-card">
-        <!-- Brand Icon -->
-        <div class="register-brand-icon-box">
-            <i class="bi bi-tree-fill"></i>
+        <!-- Brand Logo (Pure Transparent Emblem, No Background Box) -->
+        <div class="register-brand-icon-box" style="background: transparent !important; box-shadow: none !important; width: auto !important; height: auto !important; margin: 0 auto 10px auto !important; border-radius: 0 !important;">
+            <img src="~/images/agriai-emblem-pure-trans.png" alt="AgriAI Logo" class="register-brand-logo-img" style="height: 68px; width: 68px; object-fit: contain; display: inline-block; filter: drop-shadow(0 4px 10px rgba(0, 102, 83, 0.12));" />
         </div>
 
         <!-- Header -->

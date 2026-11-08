@@ -42,17 +42,28 @@
 }
 
 .login-brand-icon-box {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
-    color: #ffffff;
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    margin: 0 auto 14px auto;
-    box-shadow: 0 6px 16px rgba(22, 101, 52, 0.3);
+    margin: 0 auto 10px auto;
+    box-shadow: none;
+}
+
+.login-brand-logo-img {
+    height: 68px;
+    width: 68px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 10px rgba(0, 102, 83, 0.12));
+    transition: transform 0.25s ease;
+}
+
+.login-brand-logo-img:hover {
+    transform: scale(1.06);
 }
 
 .login-card-title.brand-logo-title {
