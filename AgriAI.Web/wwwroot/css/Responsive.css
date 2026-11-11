@@ -208,6 +208,69 @@ img, video, canvas, svg {
         font-size: 0.68rem !important;
         padding: 3px 8px !important;
     }
+
+    /* Product Details View Page Mobile Optimization (< 768px) */
+    .product-details-hero-card {
+        padding: 14px 12px !important;
+        border-radius: 16px !important;
+        margin-bottom: 15px !important;
+    }
+
+    .product-details-img-box {
+        min-height: unset !important;
+        height: 250px !important;
+        border-radius: 14px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .product-details-img-box img {
+        height: 100% !important;
+        max-height: 250px !important;
+        object-fit: cover !important;
+    }
+
+    .trust-badge-card {
+        padding: 8px 4px !important;
+        border-radius: 10px !important;
+    }
+
+    .trust-badge-card i {
+        font-size: 1.15rem !important;
+        margin-bottom: 2px !important;
+    }
+
+    .trust-badge-card strong {
+        font-size: 0.72rem !important;
+        line-height: 1.15 !important;
+        white-space: nowrap !important;
+    }
+
+    .trust-badge-card small {
+        display: none !important;
+    }
+
+    .details-box {
+        padding: 12px 14px !important;
+        border-radius: 14px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .product-details-title {
+        font-size: 1.4rem !important;
+        margin-bottom: 6px !important;
+    }
+
+    .qty-control-btn {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 10px !important;
+    }
+
+    .qty-display-input {
+        width: 56px !important;
+        height: 36px !important;
+        font-size: 0.95rem !important;
+    }
 }
 
 @media (max-width: 576px) {
