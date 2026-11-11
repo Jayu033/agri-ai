@@ -29,8 +29,9 @@
 <div id="agri3dIntroOverlay" class="agri3d-intro-screen" aria-hidden="true">
     <div class="agri3d-intro-backdrop"></div>
     
-    <!-- Cinematic Video Player (7-Second 3D AgriAi Launch) -->
-    <video id="agri3dIntroVideo" class="agri3d-intro-video" src="@Url.Content("~/videos/agriai-intro-3d.mp4")" poster="@Url.Content("~/videos/agriai-intro-poster.jpg")" playsinline muted autoplay preload="auto">
+    <!-- Cinematic Video Player (7-Second 3D AgriAi Launch - Mobile & Desktop Responsive) -->
+    <video id="agri3dIntroVideo" class="agri3d-intro-video" playsinline muted autoplay preload="auto">
+        <source src="@Url.Content("~/videos/agriai-intro-mobile.mp4")" media="(max-width: 768px)" type="video/mp4" />
         <source src="@Url.Content("~/videos/agriai-intro-3d.mp4")" type="video/mp4" />
         <source src="/videos/agriai-intro-3d.mp4" type="video/mp4" />
     </video>
@@ -1201,6 +1202,21 @@
             try {
                 sessionStorage.setItem('agriai_3d_intro_shown', 'true');
             } catch (e) {}
+
+            // Select mobile vs desktop video based on screen width
+            if (window.innerWidth <= 768) {
+                const mobSrc = '@Url.Content("~/videos/agriai-intro-mobile.mp4")';
+                if (!introVideo.currentSrc || !introVideo.currentSrc.includes('agriai-intro-mobile.mp4')) {
+                    introVideo.src = mobSrc;
+                    try { introVideo.load(); } catch (e) {}
+                }
+            } else {
+                const deskSrc = '@Url.Content("~/videos/agriai-intro-3d.mp4")';
+                if (!introVideo.currentSrc || !introVideo.currentSrc.includes('agriai-intro-3d.mp4')) {
+                    introVideo.src = deskSrc;
+                    try { introVideo.load(); } catch (e) {}
+                }
+            }
 
             let isDismissed = false;
 

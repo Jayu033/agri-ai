@@ -512,3 +512,395 @@ img, video, canvas, svg {
         font-size: 1rem !important;
     }
 }
+
+/* --------------------------------------------------------------------------
+   11. HOMEPAGE / LANDING PAGE MOBILE OPTIMIZATION (< 768px & < 576px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    /* 3D Intro Screen on Phones */
+    .agri3d-intro-screen {
+        width: 100vw !important;
+        height: 100vh !important;
+    }
+
+    .agri3d-intro-video {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+    }
+
+    .agri3d-intro-topbar {
+        top: 16px !important;
+        left: 16px !important;
+        right: 16px !important;
+    }
+
+    .agri3d-brand-tag {
+        font-size: 0.74rem !important;
+        padding: 5px 12px !important;
+    }
+
+    .agri3d-skip-btn {
+        font-size: 0.76rem !important;
+        padding: 6px 14px !important;
+    }
+
+    .agri3d-intro-bottombar {
+        bottom: 16px !important;
+        left: 16px !important;
+        right: 16px !important;
+    }
+
+    /* Hero Carousel Banner */
+    .gov-hero-banner,
+    .gov-carousel-wrapper,
+    .gov-carousel-slide {
+        height: auto !important;
+        min-height: 420px !important;
+    }
+
+    .slide-diagonal-container {
+        height: auto !important;
+        min-height: 420px !important;
+        padding-top: 30px !important;
+        padding-bottom: 40px !important;
+    }
+
+    .slide-diagonal-text {
+        max-width: 100% !important;
+        padding: 10px 0 !important;
+    }
+
+    .slide-diagonal-image-bg {
+        width: 100% !important;
+        opacity: 0.18 !important;
+        clip-path: none !important;
+    }
+
+    .slide-diagonal-accent-line {
+        display: none !important;
+    }
+
+    .gov-slider-control-prev {
+        left: 8px !important;
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.95rem !important;
+    }
+
+    .gov-slider-control-next {
+        right: 8px !important;
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.95rem !important;
+    }
+
+    /* Kisan Tools Section */
+    .kisan-tools-section {
+        padding: 24px 0 !important;
+    }
+
+    .kisan-tool-card {
+        padding: 18px 16px !important;
+        border-radius: 16px !important;
+    }
+
+    .converter-preset-pills {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        padding-bottom: 8px !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .preset-chip-btn {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+    }
+
+    /* Benchmark Section & Table */
+    .gov-benchmark-section {
+        padding: 24px 0 !important;
+    }
+
+    .gov-table-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        padding: 14px 16px !important;
+    }
+
+    .gov-table-header > .d-flex:last-child {
+        width: 100% !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .gov-table-header > .d-flex:last-child .btn {
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    .gov-table-footer {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        padding: 14px 16px !important;
+    }
+
+    .gov-table-footer .btn {
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    /* Benchmark Modal Responsive */
+    .gov-year-tab-container {
+        overflow-x: auto !important;
+        flex-wrap: nowrap !important;
+        padding: 10px 14px !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .gov-year-tab-btn {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        font-size: 0.78rem !important;
+    }
+
+    .gov-table-filter-bar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        padding: 12px 14px !important;
+    }
+
+    .gov-table-filter-bar > div:first-child {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .gov-table-filter-bar .d-flex {
+        width: 100% !important;
+    }
+
+    .gov-table-filter-bar select {
+        width: 50% !important;
+        flex-grow: 1 !important;
+    }
+
+    .modal-footer {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+
+    .modal-footer .d-flex {
+        width: 100% !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .modal-footer .btn {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Hero Section Details on Phones */
+    .agriai-hero-title {
+        font-size: 1.45rem !important;
+        line-height: 1.25 !important;
+        margin-bottom: 8px !important;
+    }
+
+    .agriai-hero-desc {
+        font-size: 0.84rem !important;
+        line-height: 1.4 !important;
+        margin-bottom: 16px !important;
+    }
+
+    .agriai-hero-badge {
+        font-size: 0.72rem !important;
+        padding: 3px 10px !important;
+    }
+
+    .slide-diagonal-text .d-flex.flex-wrap {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 9px !important;
+    }
+
+    .btn-hero-primary,
+    .btn-hero-outline {
+        width: 100% !important;
+        justify-content: center !important;
+        font-size: 0.86rem !important;
+        padding: 10px 16px !important;
+        text-align: center !important;
+    }
+
+    .slide-banner-brand-container {
+        padding: 30px 12px !important;
+        text-align: center !important;
+    }
+
+    .slide-banner-brand-img {
+        max-width: 90% !important;
+        height: auto !important;
+    }
+
+    /* Flash Ticker Bar */
+    .gov-flash-ticker {
+        padding: 4px 0 !important;
+    }
+
+    .gov-ticker-badge {
+        padding: 4px 9px !important;
+        font-size: 0.68rem !important;
+    }
+
+    .ticker-chip {
+        font-size: 0.76rem !important;
+        padding: 2px 7px !important;
+    }
+
+    /* Kisan Tool Header */
+    .kisan-tool-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+    }
+
+    /* Home Produce Section */
+    .home-produce-section {
+        padding-top: 28px !important;
+        padding-bottom: 28px !important;
+    }
+
+    .home-produce-section .d-flex.flex-wrap {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .home-produce-section .d-flex.flex-wrap > a {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
+    .home-product-img-wrapper {
+        height: 185px !important;
+    }
+
+    .home-product-body {
+        padding: 14px 12px !important;
+    }
+
+    .home-product-title {
+        font-size: 1rem !important;
+    }
+
+    .home-product-desc {
+        font-size: 0.8rem !important;
+        min-height: unset !important;
+    }
+
+    .home-btn-details,
+    .home-btn-buy {
+        font-size: 0.8rem !important;
+        padding: 8px 10px !important;
+    }
+
+    /* Stats Bar */
+    .gov-stats-bar {
+        padding: 22px 0 !important;
+    }
+
+    .gov-stat-num {
+        font-size: 1.45rem !important;
+    }
+
+    .gov-stat-label {
+        font-size: 0.72rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Kisan Maund Calculator Results Grid Stacking */
+    .converter-result-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+        padding: 10px 12px !important;
+    }
+
+    .converter-result-item {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 6px 4px !important;
+    }
+
+    .converter-result-item.border-start.border-end {
+        border-left: none !important;
+        border-right: none !important;
+        border-top: 1px dashed rgba(22, 163, 74, 0.3) !important;
+        border-bottom: 1px dashed rgba(22, 163, 74, 0.3) !important;
+    }
+
+    .converter-result-label {
+        margin-bottom: 0 !important;
+        font-size: 0.72rem !important;
+        text-align: left !important;
+    }
+
+    .converter-result-val {
+        font-size: 1.05rem !important;
+        text-align: right !important;
+    }
+
+    /* Gainer Crop Rows */
+    .gainer-crop-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        padding: 10px 12px !important;
+    }
+
+    .gainer-rate-box {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding-top: 7px !important;
+        border-top: 1px dashed #e2e8f0 !important;
+    }
+
+    .gainer-rate-box .d-flex {
+        justify-content: flex-start !important;
+    }
+}
+
+@media (max-width: 360px) {
+    /* Ultra-small phones (320px - 360px, e.g. iPhone SE / JioPhone) */
+    .agriai-hero-title {
+        font-size: 1.25rem !important;
+    }
+
+    .gov-section-title {
+        font-size: 1.22rem !important;
+    }
+
+    .gov-section-subtitle {
+        font-size: 0.78rem !important;
+    }
+
+    .gov-stat-num {
+        font-size: 1.25rem !important;
+    }
+
+    .gov-stat-label {
+        font-size: 0.68rem !important;
+    }
+}
+
