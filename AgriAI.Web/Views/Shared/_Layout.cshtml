@@ -163,16 +163,16 @@
     <header class="gov-main-header">
         <div class="container-fluid px-3 px-xl-4 d-flex align-items-center justify-content-between" style="max-width: 1400px;">
             <!-- Left Brand Logo -->
-            <div class="d-flex align-items-center">
-                <button class="menu-btn d-lg-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#globalMenu" aria-controls="globalMenu">
+            <div class="d-flex align-items-center flex-nowrap flex-shrink-0">
+                <button class="menu-btn d-lg-none me-1.5 p-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#globalMenu" aria-controls="globalMenu">
                     <i class="bi bi-list fs-3"></i>
                 </button>
 
-                <a asp-controller="Home" asp-action="Index" class="gov-emblem-section text-decoration-none d-flex align-items-center gap-2">
-                    <img src="~/images/agriai-logo.png" alt="AgriAI Logo" class="rounded-circle shadow-sm" style="height: 48px; width: 48px; object-fit: cover;" />
-                    <div>
-                        <strong class="d-block fw-extrabold fs-4" style="letter-spacing: -0.5px; line-height: 1.1;"><span style="color: #007b49;">Agri</span><span style="color: #cb9d46;">AI</span></strong>
-                        <span class="small text-success fw-bold" style="font-size: 0.72rem;">Smart Farm &amp; Market</span>
+                <a asp-controller="Home" asp-action="Index" class="gov-emblem-section text-decoration-none d-flex align-items-center gap-2 flex-nowrap">
+                    <img src="~/images/agriai-logo.png" alt="AgriAI Logo" class="gov-header-logo rounded-circle shadow-sm" style="height: 42px; width: 42px; object-fit: cover;" />
+                    <div class="lh-1">
+                        <strong class="d-block fw-extrabold fs-4 gov-brand-title" style="letter-spacing: -0.5px; line-height: 1.1;"><span style="color: #007b49;">Agri</span><span style="color: #cb9d46;">AI</span></strong>
+                        <span class="small text-success fw-bold d-none d-sm-block text-nowrap" style="font-size: 0.72rem;">Smart Farm &amp; Market</span>
                     </div>
                 </a>
             </div>
@@ -257,7 +257,7 @@
             </ul>
 
             <!-- Right Official Login / Account Button -->
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-1.5 flex-shrink-0">
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
                     var userInit = User.Identity.Name?.Substring(0, 1).ToUpper() ?? "U";
@@ -320,12 +320,12 @@
                 {
                     <a asp-controller="Account" asp-action="Login" class="gov-btn-official-login">
                         <i class="bi bi-shield-lock-fill"></i>
-                        <span>Official Login</span>
+                        <span class="d-none d-sm-inline">Official </span><span>Login</span>
                     </a>
                 }
 
-                <div class="d-lg-none ms-1">
-                    <select class="form-select form-select-sm border-success text-dark bg-white shadow-none app-language-select" style="width: 95px; height: 28px; font-size: 0.72rem; padding: 2px 4px;">
+                <div class="d-lg-none ms-1 flex-shrink-0">
+                    <select class="form-select form-select-sm border-success text-dark bg-white shadow-none app-language-select" style="width: 82px; height: 30px; font-size: 0.72rem; padding: 2px 4px;">
                         <option value="en">English</option>
                         <option value="gu">ગુજરાતી</option>
                         <option value="hi">हिंदी</option>
@@ -575,7 +575,7 @@
                     </div>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-1.5 flex-shrink-0">
                 <div class="chat-header-lang-switch d-flex align-items-center bg-black bg-opacity-25 rounded-pill p-0.5 border border-white border-opacity-25">
                     <button type="button" class="btn btn-sm text-white p-0 px-1.5 fw-bold chat-lang-pill" data-lang="en" style="font-size: 0.68rem; border-radius: 10px; line-height: 1.4;">EN</button>
                     <button type="button" class="btn btn-sm p-0 px-1.5 fw-bold chat-lang-pill active bg-white text-dark" data-lang="gu" style="font-size: 0.68rem; border-radius: 10px; line-height: 1.4;">ગુજ</button>

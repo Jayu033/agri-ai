@@ -81,6 +81,29 @@ img, video, canvas, svg {
         padding: 10px 12px !important;
         font-size: 0.9rem !important;
     }
+
+    /* Government Main Header & Brand Bar on Mobile */
+    .gov-main-header {
+        padding: 6px 0 !important;
+    }
+
+    .gov-header-logo {
+        height: 38px !important;
+        width: 38px !important;
+    }
+
+    .gov-brand-title {
+        font-size: 1.25rem !important;
+        line-height: 1.1 !important;
+    }
+
+    .gov-btn-official-login {
+        padding: 6px 10px !important;
+        font-size: 0.78rem !important;
+        border-radius: 6px !important;
+        gap: 4px !important;
+        white-space: nowrap !important;
+    }
 }
 
 /* --------------------------------------------------------------------------
@@ -561,9 +584,8 @@ img, video, canvas, svg {
 
     .slide-diagonal-container {
         height: auto !important;
-        min-height: 420px !important;
-        padding-top: 30px !important;
-        padding-bottom: 40px !important;
+        min-height: 400px !important;
+        padding: 24px 14px 36px 14px !important;
     }
 
     .slide-diagonal-text {
@@ -581,18 +603,10 @@ img, video, canvas, svg {
         display: none !important;
     }
 
-    .gov-slider-control-prev {
-        left: 8px !important;
-        width: 32px !important;
-        height: 32px !important;
-        font-size: 0.95rem !important;
-    }
-
+    /* Hide Side Carousel Arrow Circles on Phones so they never overlap the hero text */
+    .gov-slider-control-prev,
     .gov-slider-control-next {
-        right: 8px !important;
-        width: 32px !important;
-        height: 32px !important;
-        font-size: 0.95rem !important;
+        display: none !important;
     }
 
     /* Kisan Tools Section */
