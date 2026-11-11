@@ -147,35 +147,35 @@
                     <span asp-validation-for="Role" class="text-danger small mt-1 d-block"></span>
                 </div>
 
-                <!-- Super Compact Profile Photo Selector (Space-Saving Row) -->
-                <div class="d-flex align-items-center justify-content-between p-2 px-3 bg-light rounded-4 border mb-2.5">
-                    <div class="d-flex align-items-center gap-2.5">
+                <!-- Modern Mandatory Profile Photo Selector -->
+                <div class="d-flex align-items-center justify-content-between p-2.5 px-3 bg-light rounded-4 border mb-2.5 shadow-xs">
+                    <div class="d-flex align-items-center gap-2">
                         <div class="position-relative d-inline-block">
                             <img id="avatarPreview" src="https://ui-avatars.com/api/?name=User&background=15803d&color=fff&size=128" 
-                                 class="rounded-circle border border-2 border-success shadow-sm" style="width: 44px; height: 44px; object-fit: cover;" alt="Profile Avatar" />
-                            <span id="photoTypeBadge" class="badge bg-success position-absolute bottom-0 end-0 rounded-circle p-0.5 shadow border border-white" style="display: none; width: 14px; height: 14px; font-size: 0.55rem;" title="Photo selected">
+                                 class="rounded-circle border border-2 border-success shadow-sm" style="width: 46px; height: 46px; object-fit: cover;" alt="Profile Avatar" />
+                            <span id="photoTypeBadge" class="badge bg-success position-absolute bottom-0 end-0 rounded-circle p-0.5 shadow border border-white" style="display: none; width: 16px; height: 16px; font-size: 0.60rem;" title="Photo selected">
                                 <i class="bi bi-check"></i>
                             </span>
                         </div>
-                        <div class="lh-sm text-start">
-                            <strong class="text-dark small d-block" style="font-size: 0.82rem;">Profile Photo <span class="text-muted fw-normal" style="font-size: 0.70rem;">(Optional)</span></strong>
+                        <div class="lh-sm text-start ps-1">
+                            <strong class="text-dark small d-block" style="font-size: 0.83rem;">Profile Photo <span class="text-danger fw-bold" style="font-size: 0.76rem;">* (Mandatory)</span></strong>
                             <small class="text-muted" id="photoStatusText" style="font-size: 0.70rem;">Camera or local file upload</small>
                         </div>
                     </div>
 
-                    <!-- Compact Action Buttons -->
-                    <div class="d-flex align-items-center gap-2" style="gap: 8px;">
-                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill fw-bold px-3 py-1.5 shadow-sm d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem;" data-bs-toggle="modal" data-bs-target="#cameraCaptureModal" onclick="startCameraStream()" title="Take Photo with Camera">
-                            <i class="bi bi-camera-fill"></i>
+                    <!-- Clean Action Buttons with crisp icon spacing -->
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-success rounded-pill fw-bold px-3 py-1.5 shadow-sm d-inline-flex align-items-center" style="font-size: 0.80rem; background-color: #15803d; border-color: #15803d;" data-bs-toggle="modal" data-bs-target="#cameraCaptureModal" onclick="startCameraStream()" title="Take Photo with Camera">
+                            <i class="bi bi-camera-fill me-1.5" style="margin-right: 6px;"></i>
                             <span>Camera</span>
                         </button>
 
-                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-3 py-1.5 shadow-sm d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem;" onclick="document.getElementById('profilePicInput').click()" title="Upload File from Device">
-                            <i class="bi bi-folder-fill"></i>
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-3 py-1.5 shadow-sm d-inline-flex align-items-center" style="font-size: 0.80rem;" onclick="document.getElementById('profilePicInput').click()" title="Upload File from Device">
+                            <i class="bi bi-cloud-arrow-up-fill me-1.5" style="margin-right: 6px;"></i>
                             <span>Upload</span>
                         </button>
 
-                        <button type="button" id="btnRemovePhoto" class="btn btn-sm text-danger p-0 ms-1.5" style="display: none; font-size: 0.95rem;" onclick="resetProfilePhoto()" title="Remove Photo">
+                        <button type="button" id="btnRemovePhoto" class="btn btn-sm text-danger p-0 ms-1" style="display: none; font-size: 1rem;" onclick="resetProfilePhoto()" title="Remove Photo">
                             <i class="bi bi-x-circle-fill"></i>
                         </button>
                     </div>
@@ -507,28 +507,30 @@
                         <div class="text-white-50 mt-1" style="font-size: 0.70rem;">(If browser asks, please click <strong>"Allow"</strong>)</div>
                     </div>
 
-                    <!-- Viewfinder Overlay Circle -->
+                    <!-- Viewfinder Overlay Circle (Only active during live video stream) -->
                     <div id="viewfinderOverlay" class="position-absolute top-50 start-50 translate-middle rounded-circle border border-2 border-white border-opacity-75 d-none" 
-                         style="width: 180px; height: 180px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35); pointer-events: none;">
+                         style="width: 170px; height: 170px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45); pointer-events: none; z-index: 2;">
                     </div>
 
-                    <!-- Camera Error Notice / Fallback Choice -->
-                    <div id="cameraErrorBox" class="position-absolute top-50 start-50 translate-middle w-100 px-3 d-none text-white text-center">
-                        <div class="rounded-circle bg-danger bg-opacity-25 text-danger d-inline-flex p-2 mb-2">
+                    <!-- Clean, Modern Camera Error / Fallback Box -->
+                    <div id="cameraErrorBox" class="position-absolute top-0 start-0 w-100 h-100 p-3 d-none d-flex flex-column justify-content-center align-items-center text-white text-center" style="background-color: #0f172a; z-index: 10;">
+                        <div class="rounded-circle bg-danger bg-opacity-20 text-danger d-inline-flex p-2.5 mb-2 shadow-sm">
                             <i class="bi bi-camera-video-off fs-4"></i>
                         </div>
                         <h6 class="fw-bold mb-1 text-white fs-6">Live Camera Not Accessible</h6>
-                        <p class="text-white-50 small mb-3" id="cameraErrorMessage" style="font-size: 0.74rem;">
-                            Webcam permission was blocked or camera is in use. You can take or choose a photo directly:
+                        <p class="text-white-50 small mb-2.5 px-2" id="cameraErrorMessage" style="font-size: 0.74rem; line-height: 1.35;">
+                            Camera permission was denied or camera is unavailable. Please select an option below:
                         </p>
-                        <div class="d-flex flex-column gap-2 align-items-center">
-                            <button type="button" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm w-100" style="background-color: #006653;" onclick="useDeviceCameraCapture()">
-                                <i class="bi bi-camera-fill me-1"></i> 📸 Take Photo (Device Camera)
+                        <div class="d-flex flex-column gap-2 align-items-center w-100 px-3" style="max-width: 320px;">
+                            <button type="button" class="btn btn-sm btn-success rounded-pill py-2 px-3 fw-bold shadow-sm w-100 d-flex align-items-center justify-content-center" style="background-color: #15803d; border-color: #15803d; font-size: 0.82rem;" onclick="useDeviceCameraCapture()">
+                                <i class="bi bi-camera-fill me-2 fs-6"></i>
+                                <span>Take Photo (Device Camera)</span>
                             </button>
-                            <button type="button" class="btn btn-sm btn-light rounded-pill px-3 py-1.5 fw-bold w-100" onclick="useDeviceFileUpload()">
-                                <i class="bi bi-folder-fill me-1"></i> 📁 Choose from Computer / Files
+                            <button type="button" class="btn btn-sm btn-light rounded-pill py-2 px-3 fw-bold w-100 shadow-sm d-flex align-items-center justify-content-center text-dark" style="font-size: 0.82rem;" onclick="useDeviceFileUpload()">
+                                <i class="bi bi-cloud-arrow-up-fill me-2 fs-6 text-primary"></i>
+                                <span>Choose from Computer / Files</span>
                             </button>
-                            <button type="button" class="btn btn-link text-white-50 text-decoration-none p-0 mt-1" style="font-size: 0.72rem;" onclick="retryCamera()">
+                            <button type="button" class="btn btn-link text-white-50 text-decoration-none p-0 mt-1" style="font-size: 0.74rem;" onclick="retryCamera()">
                                 <i class="bi bi-arrow-clockwise me-1"></i> Retry Live Webcam
                             </button>
                         </div>
@@ -569,19 +571,19 @@
 </div>
 
 
-<!-- WhatsApp Registration OTP Verification Modal -->
+<!-- Official Email Registration OTP Verification Modal -->
 <div class="modal fade" id="whatsappOtpModal" tabindex="-1" aria-labelledby="whatsappOtpModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-            <!-- Header with WhatsApp Green Gradient -->
-            <div class="modal-header border-0 py-3.5 px-4 text-white" style="background: linear-gradient(135deg, #128C7E 0%, #25D366 100%);">
+            <!-- Header with Official Emerald Green Gradient -->
+            <div class="modal-header border-0 py-3.5 px-4 text-white" style="background: linear-gradient(135deg, #15803d 0%, #166534 50%, #0f766e 100%);">
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-circle bg-white text-success d-flex align-items-center justify-content-center shadow-sm" style="width: 46px; height: 46px;">
-                        <i class="bi bi-whatsapp fs-3" style="color: #25D366;"></i>
+                        <i class="bi bi-envelope-check-fill fs-3 text-success"></i>
                     </div>
                     <div>
-                        <h5 class="fw-bold mb-0.5 text-white" id="whatsappOtpModalLabel">WhatsApp Verification</h5>
-                        <small class="text-white-50" style="font-size: 0.78rem;">એગ્રીએઆઈ સુરક્ષા વેરિફિકેશન</small>
+                        <h5 class="fw-bold mb-0.5 text-white" id="whatsappOtpModalLabel">Email Verification</h5>
+                        <small class="text-white-50" style="font-size: 0.78rem;">એગ્રીએઆઈ સત્તાવાર સુરક્ષા વેરિફિકેશન</small>
                     </div>
                 </div>
                 <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close" onclick="resetOtpModal()"></button>
@@ -590,18 +592,18 @@
             <div class="modal-body p-4 text-center bg-white">
                 <div class="mb-3">
                     <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1.5 rounded-pill fw-bold small">
-                        <i class="bi bi-shield-check me-1"></i>Official WhatsApp OTP Sent
+                        <i class="bi bi-shield-check me-1"></i>Official Security OTP Sent
                     </span>
                 </div>
 
                 <p class="text-muted small mb-1">
-                    We sent a 6-digit security code to your Email / WhatsApp:
+                    We sent a 6-digit security verification code to your Email:
                 </p>
-                <h6 class="fw-bold text-dark font-monospace mb-2" id="otpPhoneDisplay">
-                    +91 ••••• •••47
+                <h6 class="fw-bold text-success font-monospace mb-2" id="otpPhoneDisplay">
+                    ••••@gmail.com
                 </h6>
                 <p class="text-muted" style="font-size: 0.76rem;">
-                    <em>તમારા Email અથવા WhatsApp પર મોકલેલો ૬ આંકડાનો કોડ અહીં લખો:</em>
+                    <em>તમારા Email ઇનબોક્સ (અથવા સ્પામ ફોલ્ડર) માં આવેલો ૬ આંકડાનો કોડ અહીં લખો:</em>
                 </p>
 
                 <!-- OTP Input Field -->
@@ -609,7 +611,7 @@
                     <input type="text" id="whatsappOtpInput" maxlength="6" inputmode="numeric" 
                            class="form-control text-center font-monospace fw-extrabold shadow-sm"
                            placeholder="• • • • • •"
-                           style="font-size: 2rem; letter-spacing: 12px; height: 60px; border: 2px solid #25D366; border-radius: 16px; color: #128C7E;"
+                           style="font-size: 2rem; letter-spacing: 12px; height: 60px; border: 2px solid #15803d; border-radius: 16px; color: #15803d;"
                            autocomplete="one-time-code" />
                 </div>
 
@@ -626,7 +628,7 @@
                 </div>
 
                 <!-- Verify Button -->
-                <button type="button" id="btnConfirmOtp" class="btn btn-success w-100 py-3 fw-bold rounded-pill shadow d-inline-flex align-items-center justify-content-center gap-2" style="background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); border: none; font-size: 1rem;" onclick="verifyOtpAndRegister()">
+                <button type="button" id="btnConfirmOtp" class="btn btn-success w-100 py-3 fw-bold rounded-pill shadow d-inline-flex align-items-center justify-content-center gap-2" style="background: linear-gradient(135deg, #15803d 0%, #166534 100%); border: none; font-size: 1rem;" onclick="verifyOtpAndRegister()">
                     <span id="btnConfirmOtpText">Verify &amp; Create Account</span>
                     <i class="bi bi-check2-circle fs-5" id="btnConfirmOtpIcon"></i>
                     <div class="spinner-border spinner-border-sm text-white d-none" id="btnConfirmOtpSpinner" role="status"></div>
@@ -638,14 +640,14 @@
                         <i class="bi bi-clock me-1"></i>Resend in <strong id="otpTimerSeconds">45</strong>s
                     </span>
                     <button type="button" id="btnResendOtp" class="btn btn-link text-success fw-bold text-decoration-none p-0 small disabled" onclick="resendOtpViaWhatsApp()" style="font-size: 0.80rem;">
-                        <i class="bi bi-arrow-repeat me-1"></i>Resend Code
+                        <i class="bi bi-arrow-repeat me-1"></i>Resend Code to Email
                     </button>
                 </div>
             </div>
 
             <div class="modal-footer bg-light border-top py-2.5 px-4 d-flex justify-content-between">
                 <button type="button" class="btn btn-link text-muted text-decoration-none small p-0" data-bs-dismiss="modal" onclick="resetOtpModal()" style="font-size: 0.78rem;">
-                    <i class="bi bi-pencil me-1"></i>Change Mobile Number
+                    <i class="bi bi-arrow-left me-1"></i>Back to Registration Form
                 </button>
                 <small class="text-muted" style="font-size: 0.72rem;">AgriAI Escrow &amp; Security</small>
             </div>
@@ -839,6 +841,23 @@
             const em = document.getElementById('regEmail')?.value.trim();
             const password = document.getElementById('regPassword')?.value;
             const confirmPass = document.getElementById('regConfirmPassword')?.value;
+
+            // Check mandatory profile photo
+            const hasProfilePhoto = (capturedDataUrl && capturedDataUrl.length > 100) || 
+                                    (document.getElementById('capturedPhotoInput')?.value?.length > 100) ||
+                                    (document.getElementById('profilePicInput')?.files?.length > 0) ||
+                                    (document.getElementById('mobileCameraInput')?.files?.length > 0);
+
+            if (!hasProfilePhoto) {
+                if (errorMsg) errorMsg.textContent = 'Profile photo is mandatory. Please capture via Camera or Upload an image. / પ્રોફાઇલ ફોટો ઉમેરવો ફરજિયાત છે.';
+                if (errorAlert) {
+                    errorAlert.classList.remove('d-none');
+                    errorAlert.classList.add('d-flex');
+                }
+                const avatarBox = document.getElementById('avatarPreview');
+                if (avatarBox) avatarBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
 
             if (!fn || !ln || !un || !em || !password || !confirmPass) {
                 if (errorMsg) errorMsg.textContent = 'Please fill in all mandatory account details (Name, Username, Email, Password) to proceed.';
@@ -1062,9 +1081,24 @@
             } catch (err) {
                 clearTimeout(permissionTimer);
                 console.error('Camera stream error:', err);
-                hideCameraLoading();
+                
+                // Hide loading spinner and NEVER show viewfinder overlay on error
+                const loadingBox = document.getElementById('cameraLoadingBox');
+                if (loadingBox) {
+                    loadingBox.style.display = 'none';
+                    loadingBox.classList.add('d-none');
+                }
+                const overlay = document.getElementById('viewfinderOverlay');
+                if (overlay) {
+                    overlay.style.display = 'none';
+                    overlay.classList.add('d-none');
+                }
                 if (video) video.classList.add('d-none');
-                if (errorBox) errorBox.classList.remove('d-none');
+                if (errorBox) {
+                    errorBox.classList.remove('d-none');
+                    errorBox.classList.add('d-flex');
+                    errorBox.style.display = 'flex';
+                }
 
                 let message = 'Camera access was blocked or unavailable.';
                 if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
@@ -1242,6 +1276,19 @@
             const phoneInput = document.getElementById('regPhone');
             const phoneNumber = phoneInput ? phoneInput.value.trim() : '';
 
+            // Check mandatory profile photo
+            const hasProfilePhoto = (capturedDataUrl && capturedDataUrl.length > 100) || 
+                                    (document.getElementById('capturedPhotoInput')?.value?.length > 100) ||
+                                    (document.getElementById('profilePicInput')?.files?.length > 0) ||
+                                    (document.getElementById('mobileCameraInput')?.files?.length > 0);
+
+            if (!hasProfilePhoto) {
+                showStep1Error('Profile photo is mandatory. Please capture via Camera or Upload an image. / પ્રોફાઇલ ફોટો ઉમેરવો ફરજિયાત છે.');
+                const avatarBox = document.getElementById('avatarPreview');
+                if (avatarBox) avatarBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
             // Validate Step 1 fields
             const fName = document.getElementById('regFirstName')?.value.trim();
             const lName = document.getElementById('regLastName')?.value.trim();
@@ -1266,7 +1313,7 @@
             }
 
             if (!phoneNumber) {
-                showStep1Error('Please enter your mobile number for WhatsApp OTP verification.');
+                showStep1Error('Please enter your 10-digit mobile number.');
                 if (phoneInput) phoneInput.focus();
                 return;
             }
@@ -1313,7 +1360,7 @@
             const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span><span>Sending WhatsApp OTP...</span>';
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span><span>Sending OTP to Email...</span>';
             }
 
             const formData = new FormData();
@@ -1338,12 +1385,12 @@
 
                 if (data.success) {
                     currentOtpPhone = digitsOnly;
-                    document.getElementById('otpPhoneDisplay').textContent = (data.email ? data.email + " / " : "") + (data.maskedPhone || phoneNumber);
+                    document.getElementById('otpPhoneDisplay').textContent = data.email || email;
                     document.getElementById('whatsappOtpInput').value = '';
                     document.getElementById('otpErrorAlert').classList.add('d-none');
                     document.getElementById('otpSuccessAlert').classList.add('d-none');
 
-                    // Open WhatsApp OTP Modal
+                    // Open OTP Verification Modal
                     const modalEl = document.getElementById('whatsappOtpModal');
                     const otpModal = bootstrap.Modal.getOrCreateInstance(modalEl);
                     otpModal.show();
@@ -1355,7 +1402,7 @@
 
                     startOtpTimer(45);
                 } else {
-                    showStep1Error(data.message || 'Could not send WhatsApp OTP.');
+                    showStep1Error(data.message || 'Could not send verification OTP to Email.');
                 }
             })
             .catch(err => {
@@ -1363,7 +1410,7 @@
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalBtnHtml;
                 }
-                showStep1Error('Network error while connecting to WhatsApp service: ' + err.message);
+                showStep1Error('Network error while connecting to verification service: ' + err.message);
             });
         }
 
@@ -1372,7 +1419,7 @@
             const otp = otpInput ? otpInput.value.trim() : '';
 
             if (!otp || otp.length < 6) {
-                showOtpError('Please enter the 6-digit code received on WhatsApp.');
+                showOtpError('Please enter the 6-digit verification code received in your Email.');
                 if (otpInput) otpInput.focus();
                 return;
             }
@@ -1421,7 +1468,7 @@
                     if (icon) icon.classList.remove('d-none');
                     if (spinner) spinner.classList.add('d-none');
 
-                    showOtpError(data.message || 'Incorrect OTP code. Please check WhatsApp.');
+                    showOtpError(data.message || 'Incorrect OTP code. Please check your Email.');
                     if (otpInput) {
                         otpInput.focus();
                         otpInput.select();

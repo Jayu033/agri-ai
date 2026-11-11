@@ -217,6 +217,12 @@ namespace AgriAI.Web.Controllers
                 }
             }
 
+            // Mandatory Profile Photo Validation
+            if ((model.ProfilePictureFile == null || model.ProfilePictureFile.Length == 0) && string.IsNullOrWhiteSpace(model.CapturedProfilePictureBase64))
+            {
+                ModelState.AddModelError("ProfilePictureFile", "Profile photo is mandatory. Please capture or upload your profile picture.");
+            }
+
             if (ModelState.IsValid)
             {
                 string? profilePicPath = null;
