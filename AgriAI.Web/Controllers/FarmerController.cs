@@ -463,7 +463,7 @@ namespace AgriAI.Web.Controllers
 
                 if (!string.IsNullOrEmpty(buyerPhone))
                 {
-                    var res = await _whatsAppService.SendProduceReadyNotificationAsync(order, buyerPhone, buyerName, farmerName, farmerPhone, pickupAddress);
+                    var res = await _whatsAppService.SendProduceReadyNotificationAsync(order, buyerPhone, buyerName, farmerName, farmerPhone, pickupAddress, buyerUser?.Email ?? "");
                     _logger.LogInformation("✅ [Farmer WhatsApp] Produce Ready alert sent to Buyer {Phone}. Success={Success}, MsgId={MsgId}, Err={Err}", 
                         buyerPhone, res.Success, res.MessageId, res.ErrorMessage);
                 }
@@ -522,7 +522,8 @@ namespace AgriAI.Web.Controllers
                         farmerName, 
                         farmerPhone, 
                         order.CargoServiceName ?? "GSRTC ST Bus Parcel", 
-                        order.BiltyNumber ?? "LR-Direct");
+                        order.BiltyNumber ?? "LR-Direct",
+                        buyerUser?.Email ?? "");
 
                     _logger.LogInformation("✅ [Farmer WhatsApp] Produce Dispatched alert sent to Buyer {Phone}. Success={Success}, MsgId={MsgId}, Err={Err}", 
                         buyerPhone, res.Success, res.MessageId, res.ErrorMessage);

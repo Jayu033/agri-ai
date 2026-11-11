@@ -603,7 +603,7 @@ namespace AgriAI.Web.Controllers
                 // 1. Send automated WhatsApp confirmation to Buyer (Payment Confirmed - NO OTP)
                 if (!string.IsNullOrEmpty(buyerPhone))
                 {
-                    var buyerRes = await _whatsAppService.SendOrderConfirmationToBuyerAsync(fullOrder, buyerPhone, buyerName, farmerName, farmerPhone, farmerAddress);
+                    var buyerRes = await _whatsAppService.SendOrderConfirmationToBuyerAsync(fullOrder, buyerPhone, buyerName, farmerName, farmerPhone, farmerAddress, buyerUser?.Email ?? "");
                     _logger.LogInformation("✅ [WhatsApp Automation] Buyer alert sent to {Phone}. Success={Success}, MsgId={MsgId}, Err={Err}", 
                         buyerPhone, buyerRes.Success, buyerRes.MessageId, buyerRes.ErrorMessage);
                 }
@@ -615,7 +615,7 @@ namespace AgriAI.Web.Controllers
                 // 2. Send automated WhatsApp message to Farmer (New Order Notification)
                 if (!string.IsNullOrEmpty(farmerPhone))
                 {
-                    var farmerRes = await _whatsAppService.SendOrderNotificationToFarmerAsync(fullOrder, farmerPhone, farmerName, buyerName, farmerEarnings, buyerPhone);
+                    var farmerRes = await _whatsAppService.SendOrderNotificationToFarmerAsync(fullOrder, farmerPhone, farmerName, buyerName, farmerEarnings, buyerPhone, farmerUser?.Email ?? "");
                     _logger.LogInformation("✅ [WhatsApp Automation] Farmer alert sent to {Phone}. Success={Success}, MsgId={MsgId}, Err={Err}", 
                         farmerPhone, farmerRes.Success, farmerRes.MessageId, farmerRes.ErrorMessage);
                 }

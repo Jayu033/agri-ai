@@ -595,13 +595,13 @@
                 </div>
 
                 <p class="text-muted small mb-1">
-                    We sent a 6-digit security code to your WhatsApp:
+                    We sent a 6-digit security code to your Email / WhatsApp:
                 </p>
                 <h6 class="fw-bold text-dark font-monospace mb-2" id="otpPhoneDisplay">
                     +91 ••••• •••47
                 </h6>
                 <p class="text-muted" style="font-size: 0.76rem;">
-                    <em>તમારા WhatsApp પર મોકલેલો ૬ આંકડાનો કોડ અહીં લખો:</em>
+                    <em>તમારા Email અથવા WhatsApp પર મોકલેલો ૬ આંકડાનો કોડ અહીં લખો:</em>
                 </p>
 
                 <!-- OTP Input Field -->
@@ -1338,7 +1338,7 @@
 
                 if (data.success) {
                     currentOtpPhone = digitsOnly;
-                    document.getElementById('otpPhoneDisplay').textContent = data.maskedPhone || phoneNumber;
+                    document.getElementById('otpPhoneDisplay').textContent = (data.email ? data.email + " / " : "") + (data.maskedPhone || phoneNumber);
                     document.getElementById('whatsappOtpInput').value = '';
                     document.getElementById('otpErrorAlert').classList.add('d-none');
                     document.getElementById('otpSuccessAlert').classList.add('d-none');

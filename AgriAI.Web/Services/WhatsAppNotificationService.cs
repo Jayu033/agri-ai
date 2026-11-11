@@ -1,4 +1,6 @@
 using AgriAI.Domain.Entities;
+using System.Net;
+using System.Net.Mail;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -28,6 +30,51 @@ namespace AgriAI.Web.Services
             _instanceId = _configuration["WhatsApp:InstanceId"] ?? "";
             _token = _configuration["WhatsApp:Token"] ?? "";
             _isEnabled = _configuration.GetValue<bool>("WhatsApp:IsEnabled", true);
+        }
+
+        private async Task<bool> SendEmailAsync(string toEmail, string subject, string messageBody)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(toEmail)) return false;
+
+                var isEmailEnabled = _configuration.GetValue<bool>("EmailSettings:IsEnabled", true);
+                if (!isEmailEnabled) return false;
+
+                var smtpServer = _configuration["EmailSettings:SmtpServer"] ?? "smtp.gmail.com";
+                var port = _configuration.GetValue<int>("EmailSettings:Port", 587);
+                var senderEmail = _configuration["EmailSettings:SenderEmail"] ?? "meetradadiya0166@gmail.com";
+                var senderName = _configuration["EmailSettings:SenderName"] ?? "AgriAI Gujarat";
+                var password = _configuration["EmailSettings:Password"] ?? "ybegmtysukxmjymc";
+
+                using var client = new SmtpClient(smtpServer, port)
+                {
+                    Credentials = new NetworkCredential(senderEmail, password),
+                    EnableSsl = true,
+                    DeliveryMethod = SmtpDeliveryMethod.Network,
+                    Timeout = 15000
+                };
+
+                using var mailMessage = new MailMessage
+                {
+                    From = new MailAddress(senderEmail, senderName),
+                    Subject = subject,
+                    Body = messageBody,
+                    IsBodyHtml = false, // Preserves exact emojis, formatting and line breaks
+                    BodyEncoding = Encoding.UTF8,
+                    SubjectEncoding = Encoding.UTF8
+                };
+                mailMessage.To.Add(toEmail.Trim());
+
+                await client.SendMailAsync(mailMessage);
+                _logger.LogInformation("✅ [Email Notification Delivered] To: {Email}, Subject: {Subject}", toEmail, subject);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ [Email Send Failed] To: {Email}, Error: {Message}", toEmail, ex.Message);
+                return false;
+            }
         }
 
         private string CleanPhoneNumber(string phone)
@@ -154,7 +201,7 @@ namespace AgriAI.Web.Services
 
         // 1. Farmer gets incoming order notification when Customer pays
         public async Task<(bool Success, string MessageId, string ErrorMessage)> SendOrderNotificationToFarmerAsync(
-            Order order, string farmerPhone, string farmerName, string buyerName, decimal farmerEarnings, string buyerPhone = "")
+            Order order, string farmerPhone, string farmerName, string buyerName, decimal farmerEarnings, string buyerPhone = "", string farmerEmail = "")
         {
             var firstItem = order.OrderItems.FirstOrDefault();
             var cropName = firstItem?.Product?.Name ?? "ખેતી પાક (Produce)";
@@ -215,12 +262,21 @@ namespace AgriAI.Web.Services
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
             sb.AppendLine("🚜 *AgriAI - Direct Gujarat Farm-to-Consumer Portal* 🌾");
 
-            return await SendMessageAsync(farmerPhone, sb.ToString());
+            var messageBody = sb.ToString();
+
+            // Send Email to Farmer if email provided
+            if (!string.IsNullOrWhiteSpace(farmerEmail))
+            {
+                await SendEmailAsync(farmerEmail, $"🌾 AgriAI - નવો ઓર્ડર રસીદ #{order.Id:D5}", messageBody);
+            }
+
+            // Also send WhatsApp
+            return await SendMessageAsync(farmerPhone, messageBody);
         }
 
         // 2. Customer gets strictly Payment Successful & Order Confirmed (NO OTP)
         public async Task<(bool Success, string MessageId, string ErrorMessage)> SendOrderConfirmationToBuyerAsync(
-            Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone = "", string pickupAddress = "")
+            Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone = "", string pickupAddress = "", string buyerEmail = "")
         {
             var firstItem = order.OrderItems.FirstOrDefault();
             var cropName = firstItem?.Product?.Name ?? "ખેતી પાક (Produce)";
@@ -254,12 +310,21 @@ namespace AgriAI.Web.Services
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
             sb.AppendLine("🚜 *AgriAI - Pure Direct Farm Marketplace* 🌾");
 
-            return await SendMessageAsync(buyerPhone, sb.ToString());
+            var messageBody = sb.ToString();
+
+            // Send Email to Buyer if email provided
+            if (!string.IsNullOrWhiteSpace(buyerEmail))
+            {
+                await SendEmailAsync(buyerEmail, $"🌾 AgriAI - ઓર્ડર કન્ફર્મ અને પેમેન્ટ રસીદ #{order.Id:D5}", messageBody);
+            }
+
+            // Also send WhatsApp
+            return await SendMessageAsync(buyerPhone, messageBody);
         }
 
         // 3. Customer gets Ready for Pickup notification when Farmer marks ready (NO OTP)
         public async Task<(bool Success, string MessageId, string ErrorMessage)> SendProduceReadyNotificationAsync(
-            Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone, string pickupAddress)
+            Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone, string pickupAddress, string buyerEmail = "")
         {
             var firstItem = order.OrderItems.FirstOrDefault();
             var cropName = firstItem?.Product?.Name ?? "ખેતી પાક (Produce)";
@@ -299,12 +364,21 @@ namespace AgriAI.Web.Services
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
             sb.AppendLine("🚜 *AgriAI - Direct Gujarat Farm-to-Consumer Portal* 🌾");
 
-            return await SendMessageAsync(buyerPhone, sb.ToString());
+            var messageBody = sb.ToString();
+
+            // Send Email to Buyer
+            if (!string.IsNullOrWhiteSpace(buyerEmail))
+            {
+                await SendEmailAsync(buyerEmail, $"🌾 AgriAI - તમારો પાક ખેતરે તૈયાર છે #{order.Id:D5}", messageBody);
+            }
+
+            // Also send WhatsApp
+            return await SendMessageAsync(buyerPhone, messageBody);
         }
 
         // 4. Customer gets Dispatched notification when Farmer dispatches via Cargo/Bus (NO OTP)
         public async Task<(bool Success, string MessageId, string ErrorMessage)> SendProduceDispatchedNotificationAsync(
-            Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone, string cargoServiceName, string biltyNumber)
+            Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone, string cargoServiceName, string biltyNumber, string buyerEmail = "")
         {
             var firstItem = order.OrderItems.FirstOrDefault();
             var cropName = firstItem?.Product?.Name ?? "ખેતી પાક (Produce)";
@@ -340,11 +414,20 @@ namespace AgriAI.Web.Services
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
             sb.AppendLine("🚜 *AgriAI - Direct Gujarat Farm-to-Consumer Portal* 🌾");
 
-            return await SendMessageAsync(buyerPhone, sb.ToString());
+            var messageBody = sb.ToString();
+
+            // Send Email to Buyer
+            if (!string.IsNullOrWhiteSpace(buyerEmail))
+            {
+                await SendEmailAsync(buyerEmail, $"🚚 AgriAI - તમારો પાક રવાના થઈ ગયો છે #{order.Id:D5}", messageBody);
+            }
+
+            // Also send WhatsApp
+            return await SendMessageAsync(buyerPhone, messageBody);
         }
 
         // 5. Account Registration OTP
-        public async Task<(bool Success, string MessageId, string ErrorMessage)> SendRegistrationOtpAsync(string phoneNumber, string otpCode, string role)
+        public async Task<(bool Success, string MessageId, string ErrorMessage)> SendRegistrationOtpAsync(string phoneNumber, string otpCode, string role, string email = "")
         {
             var roleName = string.Equals(role, "Farmer", StringComparison.OrdinalIgnoreCase) 
                 ? "ખેડૂત ભાઈ (Farmer)" 
@@ -370,12 +453,29 @@ namespace AgriAI.Web.Services
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
             sb.AppendLine("🚜 *AgriAI - Direct Gujarat Farm-to-Consumer Portal* 🌾");
 
-            return await SendMessageAsync(phoneNumber, sb.ToString());
+            var messageBody = sb.ToString();
+            bool emailDelivered = false;
+
+            // 1. Send Email OTP immediately via Gmail SMTP
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                emailDelivered = await SendEmailAsync(email, "🌾 AgriAI - એકાઉન્ટ સુરક્ષા વેરિફિકેશન કોડ (OTP)", messageBody);
+            }
+
+            // 2. Also try WhatsApp if enabled
+            var waResult = await SendMessageAsync(phoneNumber, messageBody);
+
+            if (emailDelivered)
+            {
+                return (true, "email_otp_" + Guid.NewGuid().ToString("N")[..8], string.Empty);
+            }
+
+            return waResult;
         }
 
         // 6. Farmer KYC Approved Notification by Admin
         public async Task<(bool Success, string MessageId, string ErrorMessage)> SendFarmerKycApprovedNotificationAsync(
-            string farmerPhone, string farmerName)
+            string farmerPhone, string farmerName, string farmerEmail = "")
         {
             var safeFarmerName = string.IsNullOrWhiteSpace(farmerName) ? "ખેડૂત મિત્ર" : farmerName.Trim();
 
@@ -399,7 +499,16 @@ namespace AgriAI.Web.Services
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━");
             sb.AppendLine("🚜 *AgriAI - Empowering Gujarat Farmers* 🌾");
 
-            return await SendMessageAsync(farmerPhone, sb.ToString());
+            var messageBody = sb.ToString();
+
+            // Send Email to Farmer
+            if (!string.IsNullOrWhiteSpace(farmerEmail))
+            {
+                await SendEmailAsync(farmerEmail, "🌾 AgriAI - ખેડૂત એકાઉન્ટ મંજૂર થયેલ છે (KYC Approved)", messageBody);
+            }
+
+            // Also send WhatsApp
+            return await SendMessageAsync(farmerPhone, messageBody);
         }
     }
 }

@@ -425,7 +425,7 @@ namespace AgriAI.Web.Controllers
 
                 try
                 {
-                    var waRes = await _whatsAppService.SendFarmerKycApprovedNotificationAsync(user.PhoneNumber, farmerName);
+                    var waRes = await _whatsAppService.SendFarmerKycApprovedNotificationAsync(user.PhoneNumber, farmerName, user.Email ?? "");
                     _logger.LogInformation("✅ [Admin KYC Approval] WhatsApp notification sent to {Phone}. Success={Success}, MsgId={MsgId}",
                         user.PhoneNumber, waRes.Success, waRes.MessageId);
                 }

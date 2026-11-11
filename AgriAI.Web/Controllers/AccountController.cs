@@ -82,7 +82,7 @@ namespace AgriAI.Web.Controllers
                 HttpContext.Session.Remove("Reg_Verified");
 
                 // Send via WhatsApp
-                var result = await _whatsAppService.SendRegistrationOtpAsync(digitsOnly, otpCode, role ?? "Customer");
+                var result = await _whatsAppService.SendRegistrationOtpAsync(digitsOnly, otpCode, role ?? "Customer", email?.Trim() ?? "");
                 if (!result.Success && !string.IsNullOrEmpty(result.ErrorMessage) && !result.ErrorMessage.Contains("simulated"))
                 {
                     return Json(new { success = false, message = $"Could not send WhatsApp OTP: {result.ErrorMessage}" });
@@ -96,7 +96,8 @@ namespace AgriAI.Web.Controllers
                 return Json(new { 
                     success = true, 
                     maskedPhone = masked,
-                    message = "Verification OTP sent successfully to your WhatsApp." 
+                    email = email?.Trim() ?? "",
+                    message = !string.IsNullOrWhiteSpace(email) ? $"Verification OTP sent successfully to {email.Trim()}." : "Verification OTP sent successfully." 
                 });
             }
             catch (Exception ex)
