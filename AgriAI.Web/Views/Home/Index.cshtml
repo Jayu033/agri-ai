@@ -5,41 +5,108 @@
 }
 
 
+@section Styles {
+    <script>
+        (function () {
+            try {
+                if (sessionStorage.getItem('agriai_3d_intro_shown') === 'true') {
+                    document.documentElement.classList.add('intro-already-shown');
+                } else {
+                    document.documentElement.classList.add('intro-active');
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <style>
+        /* Immediate Zero-Flash Styles for 3D Intro */
+        html.intro-already-shown #agri3dIntroOverlay {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
+        html.intro-active #agri3dIntroOverlay {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: #000000 !important;
+            z-index: 9999999 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            overflow: hidden !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        html.intro-active body {
+            overflow: hidden !important;
+            background: #000000 !important;
+        }
+
+        /* Prevent ANY flash of homepage content during intro initialization */
+        html.intro-active .gov-main-header,
+        html.intro-active .gov-top-bar,
+        html.intro-active #mainContent,
+        html.intro-active footer,
+        html.intro-active .footer-custom,
+        html.intro-active #agriAiChatbot,
+        html.intro-active #openChatBtn {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
+        /* Smooth reveal transition once intro is dismissed */
+        html:not(.intro-active) .gov-main-header,
+        html:not(.intro-active) .gov-top-bar,
+        html:not(.intro-active) #mainContent,
+        html:not(.intro-active) footer,
+        html:not(.intro-active) .footer-custom,
+        html:not(.intro-active) #openChatBtn {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+    </style>
+}
+
 <!-- =========================================================================
      3D CINEMATIC INTRO OVERLAY (Sweet Corn & Glowing AgriAi Burst - Plays ONCE per session)
      ========================================================================= -->
-<script>
-    (function () {
-        try {
-            if (sessionStorage.getItem('agriai_3d_intro_shown') === 'true') {
-                document.documentElement.classList.add('intro-already-shown');
-            }
-        } catch (e) {}
-    })();
-</script>
-<style>
-    html.intro-already-shown #agri3dIntroOverlay {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-    }
-</style>
-
-<div id="agri3dIntroOverlay" class="agri3d-intro-screen" aria-hidden="true">
+<div id="agri3dIntroOverlay" class="agri3d-intro-screen" aria-hidden="true" style="position: fixed; inset: 0; width: 100vw; height: 100vh; background: #000000; z-index: 9999999; display: flex; align-items: center; justify-content: center; overflow: hidden;">
     <div class="agri3d-intro-backdrop"></div>
     
     <!-- Cinematic Video Player (7-Second 3D AgriAi Launch - Mobile & Desktop Responsive) -->
-    <video id="agri3dIntroVideo" class="agri3d-intro-video" playsinline muted autoplay preload="auto">
+    <video id="agri3dIntroVideo" class="agri3d-intro-video" playsinline muted autoplay preload="auto" style="width: 100%; height: 100%; object-fit: cover;">
         <source src="@Url.Content("~/videos/agriai-intro-mobile.mp4")" media="(max-width: 768px)" type="video/mp4" />
         <source src="@Url.Content("~/videos/agriai-intro-3d.mp4")" type="video/mp4" />
-        <source src="/videos/agriai-intro-3d.mp4" type="video/mp4" />
     </video>
 
     <!-- Ambient Vignette -->
     <div class="agri3d-vignette-overlay"></div>
-
 </div>
+
+<script>
+    // Immediate Fast-Start: buffer & start video without waiting for page body or DOMContentLoaded
+    (function () {
+        var v = document.getElementById('agri3dIntroVideo');
+        if (v && document.documentElement.classList.contains('intro-active')) {
+            var isMob = window.innerWidth <= 768;
+            var mobSrc = '@Url.Content("~/videos/agriai-intro-mobile.mp4")';
+            var deskSrc = '@Url.Content("~/videos/agriai-intro-3d.mp4")';
+            v.src = isMob ? mobSrc : deskSrc;
+            v.muted = true;
+            try {
+                v.load();
+                var p = v.play();
+                if (p !== undefined) p.catch(function () {});
+            } catch (e) {}
+        }
+    })();
+</script>
 
 <div id="mainContent">
     <!-- 1. Hero Carousel Slider -->
@@ -1203,19 +1270,12 @@
                 sessionStorage.setItem('agriai_3d_intro_shown', 'true');
             } catch (e) {}
 
-            // Select mobile vs desktop video based on screen width
-            if (window.innerWidth <= 768) {
-                const mobSrc = '@Url.Content("~/videos/agriai-intro-mobile.mp4")';
-                if (!introVideo.currentSrc || !introVideo.currentSrc.includes('agriai-intro-mobile.mp4')) {
-                    introVideo.src = mobSrc;
-                    try { introVideo.load(); } catch (e) {}
-                }
-            } else {
-                const deskSrc = '@Url.Content("~/videos/agriai-intro-3d.mp4")';
-                if (!introVideo.currentSrc || !introVideo.currentSrc.includes('agriai-intro-3d.mp4')) {
-                    introVideo.src = deskSrc;
-                    try { introVideo.load(); } catch (e) {}
-                }
+            // Select mobile vs desktop video based on screen width if not already playing
+            const isMob = window.innerWidth <= 768;
+            const targetSrc = isMob ? '@Url.Content("~/videos/agriai-intro-mobile.mp4")' : '@Url.Content("~/videos/agriai-intro-3d.mp4")';
+            if (!introVideo.currentSrc || !introVideo.currentSrc.includes(isMob ? 'agriai-intro-mobile.mp4' : 'agriai-intro-3d.mp4')) {
+                introVideo.src = targetSrc;
+                try { introVideo.load(); } catch (e) {}
             }
 
             let isDismissed = false;
@@ -1223,6 +1283,12 @@
             function dismissIntro() {
                 if (isDismissed) return;
                 isDismissed = true;
+
+                document.documentElement.classList.remove('intro-active');
+                document.documentElement.classList.add('intro-already-shown');
+                try {
+                    sessionStorage.setItem('agriai_3d_intro_shown', 'true');
+                } catch (e) {}
 
                 introOverlay.classList.add('dismissed');
                 if (mainContent) {
@@ -1235,8 +1301,9 @@
                 }, 850);
             }
 
-            // Automatically dismiss when 7-second video finishes
+            // Automatically dismiss when 7-second video finishes or on error
             introVideo.addEventListener('ended', dismissIntro);
+            introVideo.addEventListener('error', dismissIntro);
 
             // Safety timeout: 7.5 seconds
             setTimeout(dismissIntro, 7500);
