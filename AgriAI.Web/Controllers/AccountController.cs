@@ -85,7 +85,7 @@ namespace AgriAI.Web.Controllers
                 var result = await _whatsAppService.SendRegistrationOtpAsync(digitsOnly, otpCode, role ?? "Customer", email?.Trim() ?? "");
                 if (!result.Success && !string.IsNullOrEmpty(result.ErrorMessage) && !result.ErrorMessage.Contains("simulated"))
                 {
-                    return Json(new { success = false, message = $"Could not send WhatsApp OTP: {result.ErrorMessage}" });
+                    return Json(new { success = false, message = $"Could not send OTP: {result.ErrorMessage}" });
                 }
 
                 // Mask phone for display: e.g. +91 97245 ***47

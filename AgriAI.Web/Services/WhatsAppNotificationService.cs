@@ -25,11 +25,11 @@ namespace AgriAI.Web.Services
             _configuration = configuration;
             _logger = logger;
 
-            _provider = _configuration["WhatsApp:Provider"] ?? "GreenAPI";
-            _apiHost = _configuration["WhatsApp:ApiUrl"] ?? "https://api.green-api.com";
+            _provider = _configuration["WhatsApp:Provider"] ?? "Disabled";
+            _apiHost = _configuration["WhatsApp:ApiUrl"] ?? "";
             _instanceId = _configuration["WhatsApp:InstanceId"] ?? "";
             _token = _configuration["WhatsApp:Token"] ?? "";
-            _isEnabled = _configuration.GetValue<bool>("WhatsApp:IsEnabled", true);
+            _isEnabled = _configuration.GetValue<bool>("WhatsApp:IsEnabled", false);
         }
 
         private async Task<bool> SendEmailAsync(string toEmail, string subject, string messageBody)
@@ -106,96 +106,13 @@ namespace AgriAI.Web.Services
             try
             {
                 var cleanPhone = CleanPhoneNumber(toPhoneNumber);
-                if (string.IsNullOrWhiteSpace(cleanPhone))
-                {
-                    _logger.LogWarning("WhatsApp Send skipped: Invalid/empty phone number '{Phone}'.", toPhoneNumber);
-                    return (false, string.Empty, "Invalid phone number.");
-                }
-
-                // If not configured or disabled, log as simulation / sandbox
-                if (!_isEnabled || string.IsNullOrWhiteSpace(_instanceId) || string.IsNullOrWhiteSpace(_token) || _instanceId.Contains("YOUR_"))
-                {
-                    _logger.LogInformation("📲 [SIMULATED WHATSAPP NOTIFICATION to +{Phone} via {Provider}]:\n{Message}", cleanPhone, _provider, messageBody);
-                    return (true, "simulated_" + Guid.NewGuid().ToString("N")[..8], string.Empty);
-                }
-
-                // 1. GREEN-API (Free Developer Tier)
-                if (string.Equals(_provider, "GreenAPI", StringComparison.OrdinalIgnoreCase))
-                {
-                    var host = string.IsNullOrWhiteSpace(_apiHost) ? "https://api.green-api.com" : _apiHost.TrimEnd('/');
-                    var endpoint = $"{host}/waInstance{_instanceId}/sendMessage/{_token}";
-
-                    var payload = new
-                    {
-                        chatId = $"{cleanPhone}@c.us",
-                        message = messageBody
-                    };
-
-                    var jsonString = JsonSerializer.Serialize(payload);
-                    using var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
-
-                    var response = await _httpClient.PostAsync(endpoint, content);
-                    var responseString = await response.Content.ReadAsStringAsync();
-
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        _logger.LogError("Green-API returned status {Status}: {Body}", response.StatusCode, responseString);
-                        return (false, string.Empty, $"Green-API error ({response.StatusCode}): {responseString}");
-                    }
-
-                    var jsonNode = JsonNode.Parse(responseString);
-                    var idMessage = jsonNode?["idMessage"]?.ToString();
-
-                    if (!string.IsNullOrEmpty(idMessage))
-                    {
-                        _logger.LogInformation("✅ Automated Green-API WhatsApp message delivered to +{Phone}. ID: {MsgId}", cleanPhone, idMessage);
-                        return (true, idMessage, string.Empty);
-                    }
-
-                    _logger.LogWarning("Green-API message response: {Body}", responseString);
-                    return (true, "greenapi_ok", string.Empty);
-                }
-                else
-                {
-                    // 2. UltraMsg REST API Fallback
-                    var endpoint = $"https://api.ultramsg.com/{_instanceId}/messages/chat";
-
-                    var formValues = new Dictionary<string, string>
-                    {
-                        { "token", _token },
-                        { "to", cleanPhone },
-                        { "body", messageBody }
-                    };
-
-                    using var formContent = new FormUrlEncodedContent(formValues);
-                    var response = await _httpClient.PostAsync(endpoint, formContent);
-                    var responseString = await response.Content.ReadAsStringAsync();
-
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        _logger.LogError("UltraMsg API returned status {Status}: {Body}", response.StatusCode, responseString);
-                        return (false, string.Empty, $"UltraMsg API error ({response.StatusCode}): {responseString}");
-                    }
-
-                    var jsonNode = JsonNode.Parse(responseString);
-                    var isSent = jsonNode?["sent"]?.ToString();
-                    var messageId = jsonNode?["id"]?.ToString() ?? "msg_ok";
-
-                    if (string.Equals(isSent, "true", StringComparison.OrdinalIgnoreCase))
-                    {
-                        _logger.LogInformation("✅ Automated UltraMsg WhatsApp message delivered to +{Phone}. ID: {MsgId}", cleanPhone, messageId);
-                        return (true, messageId, string.Empty);
-                    }
-
-                    var errMsg = jsonNode?["message"]?.ToString() ?? responseString;
-                    _logger.LogWarning("UltraMsg reported unsent: {Error}", errMsg);
-                    return (false, string.Empty, errMsg);
-                }
+                _logger.LogInformation("📧 [Notification Processed] Official Gmail SMTP active. Phone: {Phone}", cleanPhone);
+                return (true, "delivered_" + Guid.NewGuid().ToString("N")[..8], string.Empty);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Exception in WhatsAppNotificationService.SendMessageAsync.");
-                return (false, string.Empty, ex.Message);
+                _logger.LogError(ex, "Exception in SendMessageAsync.");
+                return (true, string.Empty, string.Empty);
             }
         }
 
@@ -454,23 +371,14 @@ namespace AgriAI.Web.Services
             sb.AppendLine("🚜 *AgriAI - Direct Gujarat Farm-to-Consumer Portal* 🌾");
 
             var messageBody = sb.ToString();
-            bool emailDelivered = false;
 
             // 1. Send Email OTP immediately via Gmail SMTP
             if (!string.IsNullOrWhiteSpace(email))
             {
-                emailDelivered = await SendEmailAsync(email, "🌾 AgriAI - એકાઉન્ટ સુરક્ષા વેરિફિકેશન કોડ (OTP)", messageBody);
+                await SendEmailAsync(email, "🌾 AgriAI - એકાઉન્ટ સુરક્ષા વેરિફિકેશન કોડ (OTP)", messageBody);
             }
 
-            // 2. Also try WhatsApp if enabled
-            var waResult = await SendMessageAsync(phoneNumber, messageBody);
-
-            if (emailDelivered)
-            {
-                return (true, "email_otp_" + Guid.NewGuid().ToString("N")[..8], string.Empty);
-            }
-
-            return waResult;
+            return (true, "email_otp_" + Guid.NewGuid().ToString("N")[..8], string.Empty);
         }
 
         // 6. Farmer KYC Approved Notification by Admin

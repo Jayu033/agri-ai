@@ -11,3 +11,7 @@
 appsettings.Development.json
 *.log
 scratch/
+publish/
+publish.zip
+*.zip
+
