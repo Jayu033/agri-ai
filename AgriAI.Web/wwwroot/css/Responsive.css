@@ -240,9 +240,10 @@ img, video, canvas, svg {
     }
 
     .trust-badge-card strong {
-        font-size: 0.72rem !important;
-        line-height: 1.15 !important;
-        white-space: nowrap !important;
+        font-size: 0.68rem !important;
+        line-height: 1.2 !important;
+        white-space: normal !important;
+        word-break: break-word !important;
     }
 
     .trust-badge-card small {
