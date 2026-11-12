@@ -30,8 +30,140 @@
 }
 
 @media (max-width: 576px) {
+    .register-page-bg {
+        padding: 20px 10px !important;
+    }
+
     .modern-register-card {
-        padding: 26px 20px;
+        padding: 22px 14px !important;
+        border-radius: 18px !important;
+    }
+
+    .register-card-title {
+        font-size: 1.95rem !important;
+    }
+
+    .register-card-subtext {
+        font-size: 0.80rem !important;
+        margin-bottom: 14px !important;
+    }
+
+    /* Role Selection Grid & Vertical App-Style Cards */
+    .role-cards-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+
+    .role-card-option {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        padding: 13px 6px 11px 6px !important;
+        gap: 6px !important;
+        position: relative !important;
+        min-height: 110px !important;
+        justify-content: center !important;
+    }
+
+    .role-icon-box {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 1.15rem !important;
+        margin: 0 auto !important;
+    }
+
+    .role-card-text {
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    .role-title {
+        font-size: 0.84rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 2px !important;
+        text-align: center !important;
+        line-height: 1.15 !important;
+    }
+
+    .role-desc {
+        font-size: 0.67rem !important;
+        line-height: 1.15 !important;
+        text-align: center !important;
+        margin: 0 !important;
+    }
+
+    .role-radio-badge {
+        position: absolute !important;
+        top: 6px !important;
+        right: 6px !important;
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    /* Profile Photo Selector Box - 2-Row Stacked App Layout */
+    .profile-photo-card {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        padding: 11px 12px !important;
+    }
+
+    .profile-photo-user-info {
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }
+
+    .profile-photo-btn-group {
+        width: 100% !important;
+        display: flex !important;
+        gap: 8px !important;
+        padding-top: 8px !important;
+        border-top: 1px dashed #cbd5e1 !important;
+    }
+
+    .profile-photo-btn-group .btn {
+        flex: 1 1 0% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 7px 10px !important;
+        font-size: 0.80rem !important;
+        border-radius: 50px !important;
+    }
+
+    #btnRemovePhoto {
+        flex: 0 0 auto !important;
+    }
+
+    /* Stepper on Mobile */
+    .reg-stepper-container {
+        padding: 8px 10px !important;
+        gap: 6px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .reg-step-item {
+        font-size: 0.72rem !important;
+        gap: 5px !important;
+    }
+
+    .reg-step-circle {
+        width: 20px !important;
+        height: 20px !important;
+        font-size: 0.70rem !important;
+    }
+
+    .reg-step-line {
+        width: 18px !important;
+    }
+
+    /* Buttons */
+    .btn-register-submit {
+        padding: 11px 16px !important;
+        font-size: 0.90rem !important;
     }
 }
 
@@ -282,6 +414,23 @@ input.btn-check:checked + .role-card-option .role-radio-badge::after,
     height: 6px;
     border-radius: 50%;
     background: #ffffff;
+}
+
+/* Profile Photo Selector Box */
+.profile-photo-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.profile-photo-user-info {
+    display: flex;
+    align-items: center;
+}
+
+.profile-photo-btn-group {
+    display: flex;
+    align-items: center;
 }
 
 /* Modern Input Groups */

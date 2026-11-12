@@ -124,7 +124,7 @@
                             <div class="role-icon-box">
                                 <i class="bi bi-cart-check-fill"></i>
                             </div>
-                            <div>
+                            <div class="role-card-text">
                                 <h6 class="role-title">Customer</h6>
                                 <p class="role-desc">Buy fresh farm produce</p>
                             </div>
@@ -137,7 +137,7 @@
                             <div class="role-icon-box">
                                 <i class="bi bi-tree-fill"></i>
                             </div>
-                            <div>
+                            <div class="role-card-text">
                                 <h6 class="role-title">Farmer</h6>
                                 <p class="role-desc">Sell crops &amp; use AI tools</p>
                             </div>
@@ -148,29 +148,29 @@
                 </div>
 
                 <!-- Modern Mandatory Profile Photo Selector -->
-                <div class="d-flex align-items-center justify-content-between p-2.5 px-3 bg-light rounded-4 border mb-2.5 shadow-xs">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="position-relative d-inline-block">
+                <div class="profile-photo-card p-2.5 px-3 bg-light rounded-4 border mb-2.5 shadow-xs">
+                    <div class="profile-photo-user-info d-flex align-items-center gap-2">
+                        <div class="position-relative d-inline-block flex-shrink-0">
                             <img id="avatarPreview" src="https://ui-avatars.com/api/?name=User&background=15803d&color=fff&size=128" 
                                  class="rounded-circle border border-2 border-success shadow-sm" style="width: 46px; height: 46px; object-fit: cover;" alt="Profile Avatar" />
                             <span id="photoTypeBadge" class="badge bg-success position-absolute bottom-0 end-0 rounded-circle p-0.5 shadow border border-white" style="display: none; width: 16px; height: 16px; font-size: 0.60rem;" title="Photo selected">
                                 <i class="bi bi-check"></i>
                             </span>
                         </div>
-                        <div class="lh-sm text-start ps-1">
-                            <strong class="text-dark small d-block" style="font-size: 0.83rem;">Profile Photo <span class="text-danger fw-bold" style="font-size: 0.76rem;">* (Mandatory)</span></strong>
-                            <small class="text-muted" id="photoStatusText" style="font-size: 0.70rem;">Camera or local file upload</small>
+                        <div class="lh-sm text-start ps-1 flex-grow-1">
+                            <strong class="text-dark small d-block" style="font-size: 0.84rem;">Profile Photo <span class="text-danger fw-bold" style="font-size: 0.76rem;">* (Mandatory)</span></strong>
+                            <small class="text-muted" id="photoStatusText" style="font-size: 0.72rem;">Camera or local file upload</small>
                         </div>
                     </div>
 
                     <!-- Clean Action Buttons with crisp icon spacing -->
-                    <div class="d-flex align-items-center gap-2">
-                        <button type="button" class="btn btn-sm btn-success rounded-pill fw-bold px-3 py-1.5 shadow-sm d-inline-flex align-items-center" style="font-size: 0.80rem; background-color: #15803d; border-color: #15803d;" data-bs-toggle="modal" data-bs-target="#cameraCaptureModal" onclick="startCameraStream()" title="Take Photo with Camera">
+                    <div class="profile-photo-btn-group d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-success rounded-pill fw-bold px-3 py-1.5 shadow-sm d-inline-flex align-items-center justify-content-center" style="font-size: 0.80rem; background-color: #15803d; border-color: #15803d;" data-bs-toggle="modal" data-bs-target="#cameraCaptureModal" onclick="startCameraStream()" title="Take Photo with Camera">
                             <i class="bi bi-camera-fill me-1.5" style="margin-right: 6px;"></i>
                             <span>Camera</span>
                         </button>
 
-                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-3 py-1.5 shadow-sm d-inline-flex align-items-center" style="font-size: 0.80rem;" onclick="document.getElementById('profilePicInput').click()" title="Upload File from Device">
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-3 py-1.5 shadow-sm d-inline-flex align-items-center justify-content-center" style="font-size: 0.80rem;" onclick="document.getElementById('profilePicInput').click()" title="Upload File from Device">
                             <i class="bi bi-cloud-arrow-up-fill me-1.5" style="margin-right: 6px;"></i>
                             <span>Upload</span>
                         </button>
