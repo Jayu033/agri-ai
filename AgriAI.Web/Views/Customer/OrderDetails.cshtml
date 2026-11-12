@@ -132,8 +132,33 @@
             border-radius: 14px !important;
         }
         .order-alert-hero {
+            padding: 16px 14px !important;
+            border-radius: 16px !important;
+        }
+        .order-alert-hero h4 {
+            font-size: 1.15rem !important;
+            line-height: 1.35 !important;
+        }
+        .order-alert-hero p {
+            font-size: 0.82rem !important;
+            line-height: 1.45 !important;
+        }
+        .order-hero-action-box {
+            width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
             padding: 14px 12px !important;
             border-radius: 14px !important;
+            margin-top: 6px !important;
+            background: rgba(0, 0, 0, 0.25) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+        .w-100-mobile {
+            width: 100% !important;
+            justify-content: center !important;
         }
         .inspection-guide-card {
             padding: 14px 12px !important;
@@ -262,19 +287,19 @@
             <div class="order-alert-hero bg-warning bg-opacity-10 border border-warning border-opacity-50 text-dark mb-4">
                 <div class="row align-items-center g-3">
                     <div class="col-md-8">
-                        <div class="d-flex align-items-center gap-2 mb-1">
+                        <div class="d-flex align-items-center gap-2 mb-1.5 flex-wrap">
                             <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
                                 <i class="bi bi-hourglass-split me-1"></i> AWAITING PRODUCER ACCEPTANCE
                             </span>
-                            <span class="text-muted small">100% Escrow Protected</span>
+                            <span class="text-muted small d-block d-sm-inline" style="font-size: 0.78rem;">100% Escrow Protected</span>
                         </div>
-                        <h5 class="fw-bold text-dark mb-1">Your Order Request has been sent to the Producer</h5>
-                        <p class="text-muted small mb-0">
+                        <h5 class="fw-bold text-dark mb-1" style="font-size: 1.15rem; line-height: 1.3;">Your Order Request has been sent to the Producer</h5>
+                        <p class="text-muted small mb-0" style="font-size: 0.85rem; line-height: 1.5;">
                             The farmer will review and accept your order shortly. You can cancel with an instant 100% refund at any time before dispatch lock.
                         </p>
                     </div>
                     <div class="col-md-4 text-md-end">
-                        <button type="button" class="btn btn-outline-danger rounded-pill px-3.5 py-2 fw-bold shadow-sm" onclick="openCancelModal()">
+                        <button type="button" class="btn btn-outline-danger rounded-pill px-3.5 py-2 fw-bold shadow-sm w-100-mobile" onclick="openCancelModal()">
                             <i class="bi bi-x-circle me-1"></i> Cancel Request (100% Refund)
                         </button>
                     </div>
@@ -288,21 +313,21 @@
                 <div class="order-alert-hero order-hero-green mb-4">
                     <div class="row align-items-center g-3">
                         <div class="col-md-7">
-                            <div class="d-flex align-items-center gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                                 <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
                                     <i class="bi bi-clock-history me-1"></i> 3-HOUR CANCELLATION WINDOW ACTIVE
                                 </span>
-                                <span class="text-white-50 small">100% Instant Refund Available</span>
+                                <span class="text-white-50 small d-block d-sm-inline" style="font-size: 0.78rem;">100% Instant Refund Available</span>
                             </div>
-                            <h4 class="fw-bold text-white mb-1">Your Order is in the 3-Hour Review Period</h4>
-                            <p class="text-white-50 small mb-0">
+                            <h4 class="fw-bold text-white mb-1.5" style="font-size: 1.25rem; line-height: 1.3;">Your Order is in the 3-Hour Review Period</h4>
+                            <p class="text-white-50 small mb-0" style="font-size: 0.85rem; line-height: 1.5;">
                                 The farmer accepted your order! You have a 3-hour window to review or cancel for an immediate refund. When the countdown reaches zero, the order will lock for fresh harvest packaging.
                             </p>
                         </div>
                         <div class="col-md-5 text-md-end">
-                            <div class="d-inline-block bg-black bg-opacity-25 p-3 rounded-4 border border-white border-opacity-20 text-center shadow-sm">
-                                <small class="text-white-50 d-block mb-1" style="font-size: 0.75rem;">CANCELLATION COUNTDOWN</small>
-                                <span class="fs-2 fw-extrabold text-warning font-monospace d-block" id="customerCountdownTimer" data-remaining="@remainingSeconds">
+                            <div class="order-hero-action-box d-inline-flex flex-column align-items-center justify-content-center bg-black bg-opacity-25 p-3 rounded-4 border border-white border-opacity-20 text-center shadow-sm">
+                                <small class="text-white-50 letter-spacing-1 fw-semibold d-block mb-1" style="font-size: 0.72rem;">CANCELLATION COUNTDOWN</small>
+                                <span class="fs-2 fw-extrabold text-warning font-monospace d-block my-0.5" id="customerCountdownTimer" data-remaining="@remainingSeconds">
                                     @{
                                         int ch = remainingSeconds / 3600;
                                         int cm = (remainingSeconds % 3600) / 60;
@@ -310,7 +335,7 @@
                                         @($"{ch:D2}h {cm:D2}m {cs:D2}s")
                                     }
                                 </span>
-                                <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1 fw-bold mt-2" onclick="openCancelModal()">
+                                <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3.5 py-1.5 fw-bold mt-1.5 shadow-xs" onclick="openCancelModal()">
                                     <i class="bi bi-x-circle me-1"></i> Cancel &amp; Instant Refund
                                 </button>
                             </div>
@@ -487,20 +512,20 @@
             <div class="order-alert-hero order-hero-navy mb-4">
                 <div class="row align-items-center g-3">
                     <div class="col-md-7">
-                        <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                             <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
                                 <i class="bi bi-shield-lock-fill me-1"></i> CONFIDENTIAL CARGO DELIVERY PASS
                             </span>
-                            <span class="text-white-50 small">Remote Cargo / GSRTC Delivery</span>
+                            <span class="text-white-50 small d-block d-sm-inline" style="font-size: 0.78rem;">Remote Cargo / GSRTC Delivery</span>
                         </div>
-                        <h4 class="fw-bold text-white mb-1">Your 4-Digit Parcel Delivery OTP</h4>
-                        <p class="text-white-50 small mb-0">
+                        <h4 class="fw-bold text-white mb-1.5" style="font-size: 1.25rem; line-height: 1.3;">Your 4-Digit Parcel Delivery OTP</h4>
+                        <p class="text-white-50 small mb-0" style="font-size: 0.85rem; line-height: 1.5;">
                             Show this 4-digit code at the parcel destination counter <strong>ONLY after inspecting the parcel</strong> to claim your harvest.
                         </p>
                     </div>
 
                     <div class="col-md-5 text-md-end">
-                        <div class="d-inline-flex align-items-center gap-3 bg-white bg-opacity-10 p-2.5 px-4 rounded-4 border border-white border-opacity-20 shadow">
+                        <div class="order-hero-action-box d-inline-flex align-items-center justify-content-center gap-3 bg-black bg-opacity-25 p-3 rounded-4 border border-white border-opacity-20 shadow-sm text-center">
                             <span class="fs-2 fw-extrabold text-warning letter-spacing-3 font-monospace" id="confidentialOtp">
                                 @(string.IsNullOrEmpty(Model.DeliveryOtp) ? "7492" : Model.DeliveryOtp)
                             </span>
@@ -516,26 +541,26 @@
         {
             <div class="order-alert-hero order-hero-green mb-4">
                 <div class="row align-items-center g-3">
-                    <div class="col-md-8">
-                        <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="col-md-7 col-lg-8">
+                        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                             <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
                                 <i class="bi bi-geo-alt-fill me-1"></i> DIRECT FARM PICKUP PASS
                             </span>
-                            <span class="text-white-50 small">100% Escrow Funded &bull; In-Person Handover</span>
+                            <span class="text-white-50 small d-block d-sm-inline" style="font-size: 0.78rem;">100% Escrow Funded &bull; In-Person Handover</span>
                         </div>
-                        <h4 class="fw-bold text-white mb-1">Direct Farm Collection &bull; No OTP Needed</h4>
-                        <p class="text-white-50 small mb-0">
+                        <h4 class="fw-bold text-white mb-1.5" style="font-size: 1.25rem; line-height: 1.3;">Direct Farm Collection &bull; No OTP Needed</h4>
+                        <p class="text-white-50 small mb-0" style="font-size: 0.85rem; line-height: 1.5;">
                             Visit the producer's farm directly. Inspect your fresh harvest produce in person, and the farmer will confirm physical handover directly on the spot.
                         </p>
                     </div>
 
-                    <div class="col-md-4 text-md-end">
-                        <div class="d-inline-flex flex-column align-items-md-end gap-1 bg-white bg-opacity-10 p-3 rounded-4 border border-white border-opacity-20 shadow text-end">
-                            <small class="text-white-50" style="font-size: 0.72rem;">COLLECTION STATUS</small>
-                            <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill fs-6">
+                    <div class="col-md-5 col-lg-4 text-md-end">
+                        <div class="order-hero-action-box d-inline-flex flex-column align-items-center justify-content-center gap-1.5 bg-black bg-opacity-25 p-3 rounded-4 border border-white border-opacity-20 shadow-sm text-center">
+                            <small class="text-white-50 letter-spacing-1 fw-semibold d-block" style="font-size: 0.72rem;">COLLECTION STATUS</small>
+                            <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill shadow-xs" style="font-size: 0.90rem;">
                                 @(Model.Status == "Ready for Pickup" ? "Ready for Farm Pickup 🟢" : (Model.Status == "Accepted" ? "Harvest Packaging in Progress" : Model.Status))
                             </span>
-                            <small class="text-white-50 mt-1" style="font-size: 0.70rem;">Show Order #@Model.Id.ToString("D5") to Farmer</small>
+                            <small class="text-white-50 mt-1 d-block" style="font-size: 0.72rem;">Show Order #@Model.Id.ToString("D5") to Farmer</small>
                         </div>
                     </div>
                 </div>
