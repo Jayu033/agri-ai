@@ -314,6 +314,27 @@
                 padding: 1.5rem;
             }
         }
+
+        @@media (max-width: 576px) {
+            .order-hero-title {
+                font-size: 1.45rem !important;
+            }
+            .order-unified-card {
+                padding: 16px 12px !important;
+                border-radius: 18px !important;
+            }
+            .pricing-breakdown-card {
+                padding: 14px 12px !important;
+                border-radius: 14px !important;
+            }
+            .payout-highlight-box {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                padding: 12px 14px !important;
+                border-radius: 12px !important;
+                overflow: hidden !important;
+            }
+        }
     </style>
 }
 
@@ -712,37 +733,39 @@
 
                     <!-- Pricing Micro-Breakdown -->
                     <div class="pricing-breakdown-card">
-                        <div class="d-flex justify-content-between small text-muted mb-2">
+                        <div class="d-flex justify-content-between align-items-center small text-muted mb-2 gap-2">
                             <span>Farmer Produce Value:</span>
-                            <span class="fw-bold text-success fs-6">₹@baseAmount.ToString("N2")</span>
+                            <span class="fw-bold text-success fs-6 text-nowrap">₹@baseAmount.ToString("N2")</span>
                         </div>
-                        <div class="d-flex justify-content-between small text-muted mb-2">
+                        <div class="d-flex justify-content-between align-items-center small text-muted mb-2 gap-2">
                             <span>Transport / Logistics (Customer paid):</span>
-                            <span class="text-dark fw-medium">₹@Model.LogisticsFee.ToString("N2")</span>
+                            <span class="text-dark fw-medium text-nowrap">₹@Model.LogisticsFee.ToString("N2")</span>
                         </div>
-                        <div class="d-flex justify-content-between small text-muted mb-2.5">
+                        <div class="d-flex justify-content-between align-items-center small text-muted mb-2.5 gap-2">
                             <span>Platform Escrow Fee (Customer paid tax):</span>
-                            <span class="text-dark fw-medium">₹@Model.PlatformFee.ToString("N2")</span>
+                            <span class="text-dark fw-medium text-nowrap">₹@Model.PlatformFee.ToString("N2")</span>
                         </div>
-                        <div class="d-flex justify-content-between border-top pt-2.5 small text-muted mb-2">
+                        <div class="d-flex justify-content-between align-items-center border-top pt-2.5 small text-muted mb-2 gap-2">
                             <span>Total Paid by Customer:</span>
-                            <span class="text-dark fw-bold">₹@Model.TotalAmount.ToString("N2")</span>
+                            <span class="text-dark fw-bold text-nowrap">₹@Model.TotalAmount.ToString("N2")</span>
                         </div>
                         @if (Model.Payment != null && !string.IsNullOrEmpty(Model.Payment.RazorpayPaymentId))
                         {
-                            <div class="d-flex justify-content-between small text-muted mb-2">
+                            <div class="d-flex justify-content-between align-items-center small text-muted mb-2 gap-2 flex-wrap">
                                 <span>Razorpay Escrow Ref:</span>
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 font-monospace">@Model.Payment.RazorpayPaymentId</span>
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 font-monospace text-truncate" style="max-width: 170px;">@Model.Payment.RazorpayPaymentId</span>
                             </div>
                         }
                         
                         <!-- Payout Highlight Box -->
                         <div class="payout-highlight-box">
-                            <div>
-                                <span class="d-block small text-success fw-bold text-uppercase" style="letter-spacing: 0.5px;">100% Guaranteed Farmer Payout</span>
-                                <strong class="text-dark fs-5">Net Farmer Earning:</strong>
+                            <div class="w-100 mb-1">
+                                <span class="d-block small text-success fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.72rem;">100% Guaranteed Farmer Payout</span>
                             </div>
-                            <strong class="text-success fw-extrabold fs-3">₹@baseAmount.ToString("N2")</strong>
+                            <div class="d-flex justify-content-between align-items-center w-100 gap-2 flex-wrap">
+                                <strong class="text-dark" style="font-size: 1.05rem;">Net Farmer Earning:</strong>
+                                <strong class="text-success fw-extrabold" style="font-size: 1.45rem; white-space: nowrap;">₹@baseAmount.ToString("N2")</strong>
+                            </div>
                         </div>
                     </div>
                 </div>

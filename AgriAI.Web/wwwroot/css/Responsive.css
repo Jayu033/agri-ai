@@ -545,6 +545,25 @@ img, video, canvas, svg {
         white-space: nowrap !important;
     }
 
+    /* Farmer Order Details & Payout Highlight Box Mobile Fit */
+    .order-unified-card {
+        padding: 16px 12px !important;
+        border-radius: 18px !important;
+    }
+
+    .pricing-breakdown-card {
+        padding: 14px 12px !important;
+        border-radius: 14px !important;
+    }
+
+    .payout-highlight-box {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        padding: 12px 14px !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+    }
+
     .kpi-card {
         padding: 14px !important;
         border-radius: 14px !important;
