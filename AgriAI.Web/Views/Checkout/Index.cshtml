@@ -133,11 +133,11 @@
                     
                     <!-- 1. Order Summary Card -->
                     <div class="checkout-card">
-                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-                            <h5 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 pb-2 border-bottom gap-2">
+                            <h5 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2" style="font-size: 1.05rem;">
                                 <i class="bi bi-receipt-cutoff text-success fs-5"></i> Produce Order Summary
                             </h5>
-                            <span class="badge rounded-pill px-3 py-1 fw-bold shadow-sm" style="background-color: #ecfdf5; color: #047857; border: 1px solid #86efac; font-size: 0.78rem;">
+                            <span class="badge rounded-pill px-2.5 py-1 fw-bold shadow-sm" style="background-color: #ecfdf5; color: #047857; border: 1px solid #86efac; font-size: 0.75rem;">
                                 <i class="bi bi-patch-check-fill me-1 text-success"></i> Direct Farm Sourced
                             </span>
                         </div>
@@ -147,29 +147,29 @@
                             <div class="d-flex flex-column gap-2 mb-2">
                                 @foreach (var item in cartItems)
                                 {
-                                    <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-4 border">
+                                    <div class="checkout-item-card d-flex align-items-center gap-2.5 p-2.5 p-sm-3 bg-light rounded-4 border">
                                         @if (!string.IsNullOrEmpty(item.ImageUrl))
                                         {
-                                            <img src="@item.ImageUrl" class="rounded-3 shadow-sm" alt="@item.ProductName" style="width: 70px; height: 70px; object-fit: cover;" />
+                                            <img src="@item.ImageUrl" class="rounded-3 shadow-sm flex-shrink-0" alt="@item.ProductName" style="width: 65px; height: 65px; object-fit: cover;" />
                                         }
                                         else
                                         {
-                                            <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 70px; height: 70px;">
+                                            <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border flex-shrink-0" style="width: 65px; height: 65px;">
                                                 <i class="bi bi-tree text-success fs-2"></i>
                                             </div>
                                         }
-                                        <div class="flex-grow-1">
-                                            <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-0.5 rounded-pill small mb-1 border border-success border-opacity-25" style="font-size: 0.70rem;">
+                                        <div class="flex-grow-1" style="min-width: 0;">
+                                            <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2 py-0.5 rounded-pill small mb-1 border border-success border-opacity-25" style="font-size: 0.70rem;">
                                                 @(item.CategoryName ?? "Farm Produce")
                                             </span>
-                                            <h6 class="mb-1 fw-bold text-dark fs-6">@item.ProductName</h6>
-                                            <div class="text-muted small">
+                                            <h6 class="mb-0.5 fw-bold text-dark fs-6 text-truncate">@item.ProductName</h6>
+                                            <div class="text-muted small" style="font-size: 0.78rem;">
                                                 <span>Producer: <strong>@item.FarmerName</strong></span>
-                                                <span class="ms-2">&bull; Rate: ₹@item.UnitPrice.ToString("N2")/Kg</span>
+                                                <span class="ms-1">&bull; ₹@item.UnitPrice.ToString("N2")/Kg</span>
                                             </div>
                                         </div>
-                                        <div class="text-end">
-                                            <span class="badge bg-white text-dark border px-3 py-1 mb-1 d-inline-block fw-bold shadow-sm">
+                                        <div class="text-end flex-shrink-0 ms-1">
+                                            <span class="badge bg-white text-dark border px-2 py-1 mb-1 d-inline-block fw-bold shadow-xs" style="font-size: 0.75rem;">
                                                 @item.Quantity Kg
                                             </span>
                                             <div class="fw-extrabold text-success fs-6">₹@item.TotalPrice.ToString("N2")</div>
@@ -180,32 +180,32 @@
                         }
                         else if (product != null)
                         {
-                            <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-4 border">
+                            <div class="checkout-item-card d-flex align-items-center gap-2.5 p-2.5 p-sm-3 bg-light rounded-4 border">
                                 @if (!string.IsNullOrEmpty(imgUrl))
                                 {
-                                    <img src="@imgUrl" class="rounded-3 shadow-sm" alt="@product.Name" style="width: 80px; height: 80px; object-fit: cover;" />
+                                    <img src="@imgUrl" class="rounded-3 shadow-sm flex-shrink-0" alt="@product.Name" style="width: 65px; height: 65px; object-fit: cover;" />
                                 }
                                 else
                                 {
-                                    <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 80px; height: 80px;">
+                                    <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border flex-shrink-0" style="width: 65px; height: 65px;">
                                         <i class="bi bi-tree text-success fs-2"></i>
                                     </div>
                                 }
-                                <div class="flex-grow-1">
-                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-0.5 rounded-pill small mb-1 border border-success border-opacity-25" style="font-size: 0.72rem;">
+                                <div class="flex-grow-1" style="min-width: 0;">
+                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2 py-0.5 rounded-pill small mb-1 border border-success border-opacity-25" style="font-size: 0.70rem;">
                                         @(product.Category?.Name ?? "Farm Crop")
                                     </span>
-                                    <h5 class="mb-1 fw-bold text-dark fs-6">@product.Name</h5>
-                                    <div class="text-muted small">
-                                        <span>Rate: <strong>₹@product.Price.ToString("N2")</strong> / Kg</span>
-                                        <span class="text-muted ms-2">(₹@maundPrice.ToString("N0") / Maund)</span>
+                                    <h5 class="mb-0.5 fw-bold text-dark text-truncate" style="font-size: 0.95rem;">@product.Name</h5>
+                                    <div class="text-muted small" style="font-size: 0.78rem;">
+                                        <span>Rate: <strong>₹@product.Price.ToString("N2")</strong>/Kg</span>
+                                        <span class="text-muted d-none d-sm-inline ms-1">(₹@maundPrice.ToString("N0")/Maund)</span>
                                     </div>
                                 </div>
-                                <div class="text-end">
-                                    <span class="badge bg-white text-dark border px-3 py-1.5 mb-1 d-inline-block fw-bold shadow-sm">
+                                <div class="text-end flex-shrink-0 ms-1">
+                                    <span class="badge bg-white text-dark border px-2 py-1 mb-1 d-inline-block fw-bold shadow-xs" style="font-size: 0.75rem;">
                                         Qty: @quantity Kg
                                     </span>
-                                    <div class="fw-extrabold text-success fs-5">₹@baseTotal.ToString("N2")</div>
+                                    <div class="fw-extrabold text-success" style="font-size: 1.05rem;">₹@baseTotal.ToString("N2")</div>
                                 </div>
                             </div>
                         }
@@ -213,25 +213,25 @@
 
                     <!-- 2. Payment Method Selection -->
                     <div class="checkout-card">
-                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-                            <h5 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 pb-2 border-bottom gap-1">
+                            <h5 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2" style="font-size: 1.05rem;">
                                 <i class="bi bi-shield-check text-success fs-5"></i> 1. Choose Payment Method
                             </h5>
-                            <small class="text-muted">Select payment preference</small>
+                            <small class="text-muted" style="font-size: 0.78rem;">Select payment preference</small>
                         </div>
 
                         <!-- Option A: Online Payment (Escrow Safe) -->
                         <div class="selection-box active mb-3" id="boxPayOnline" onclick="selectPaymentMethod('Online')">
-                            <div class="d-flex align-items-start gap-3">
-                                <input class="form-check-input mt-1 shadow-none" type="radio" name="paymentMethod" id="payOnline" value="Online" checked onchange="onPaymentMethodChanged()">
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <strong class="text-dark fs-6">
+                            <div class="d-flex align-items-start gap-2.5">
+                                <input class="form-check-input mt-1 shadow-none flex-shrink-0" type="radio" name="paymentMethod" id="payOnline" value="Online" checked onchange="onPaymentMethodChanged()">
+                                <div class="flex-grow-1" style="min-width: 0;">
+                                    <div class="selection-box-header d-flex justify-content-between align-items-center mb-1 flex-wrap gap-1">
+                                        <strong class="text-dark" style="font-size: 0.95rem;">
                                             <i class="bi bi-shield-lock-fill text-success me-1"></i> Online Escrow Payment (Powered by Razorpay)
                                         </strong>
-                                        <span class="badge bg-success text-white px-2.5 py-1 rounded-pill small">Recommended</span>
+                                        <span class="badge bg-success text-white px-2.5 py-1 rounded-pill small flex-shrink-0">Recommended</span>
                                     </div>
-                                    <p class="text-muted small mb-2">
+                                    <p class="text-muted small mb-2" style="font-size: 0.82rem; line-height: 1.4;">
                                         Funds held securely in AgriAI Escrow. Released to farmer only upon safe physical handover or OTP delivery. Supports all payment modes:
                                     </p>
                                     <div class="d-flex flex-wrap align-items-center gap-1.5">
@@ -246,16 +246,16 @@
 
                         <!-- Option B: Cash on Delivery / Pay on Pickup (COD) -->
                         <div class="selection-box" id="boxPayCOD" onclick="selectPaymentMethod('COD')">
-                            <div class="d-flex align-items-start gap-3">
-                                <input class="form-check-input mt-1 shadow-none" type="radio" name="paymentMethod" id="payCOD" value="COD" onchange="onPaymentMethodChanged()">
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <strong class="text-dark fs-6">
+                            <div class="d-flex align-items-start gap-2.5">
+                                <input class="form-check-input mt-1 shadow-none flex-shrink-0" type="radio" name="paymentMethod" id="payCOD" value="COD" onchange="onPaymentMethodChanged()">
+                                <div class="flex-grow-1" style="min-width: 0;">
+                                    <div class="selection-box-header d-flex justify-content-between align-items-center mb-1 flex-wrap gap-1">
+                                        <strong class="text-dark" style="font-size: 0.95rem;">
                                             <i class="bi bi-cash-stack text-warning me-1"></i> Cash on Delivery (Pay on Pickup)
                                         </strong>
-                                        <span class="badge bg-secondary text-white px-2.5 py-1 rounded-pill small">Self Pickup Only</span>
+                                        <span class="badge bg-secondary text-white px-2.5 py-1 rounded-pill small flex-shrink-0">Self Pickup Only</span>
                                     </div>
-                                    <p class="text-muted small mb-0">
+                                    <p class="text-muted small mb-0" style="font-size: 0.82rem; line-height: 1.4;">
                                         Pay cash directly to the farmer after inspecting produce at farm. <em>(Available only with Direct Farm Pickup)</em>.
                                     </p>
                                 </div>
@@ -265,8 +265,8 @@
 
                     <!-- 3. Delivery / Logistics Mode (Dynamic based on Payment Method) -->
                     <div class="checkout-card">
-                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-                            <h5 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 pb-2 border-bottom gap-1">
+                            <h5 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2" style="font-size: 1.05rem;">
                                 <i class="bi bi-truck text-success fs-5"></i> 2. Choose Delivery / Logistics Mode
                             </h5>
                             <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1 small" id="deliveryModeBadge">
@@ -276,16 +276,16 @@
 
                         <!-- Option 1: Direct Farm Pickup -->
                         <div class="selection-box active mb-3" id="boxTransPickup" onclick="selectTransportMode('Direct Farm Pickup')">
-                            <div class="d-flex align-items-start gap-3">
-                                <input class="form-check-input mt-1 shadow-none" type="radio" name="transportType" id="transPickup" value="Direct Farm Pickup" checked onchange="onTransportModeChanged()">
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <strong class="text-dark fs-6">
+                            <div class="d-flex align-items-start gap-2.5">
+                                <input class="form-check-input mt-1 shadow-none flex-shrink-0" type="radio" name="transportType" id="transPickup" value="Direct Farm Pickup" checked onchange="onTransportModeChanged()">
+                                <div class="flex-grow-1" style="min-width: 0;">
+                                    <div class="selection-box-header d-flex justify-content-between align-items-center mb-1 flex-wrap gap-1">
+                                        <strong class="text-dark" style="font-size: 0.95rem;">
                                             <i class="bi bi-geo-alt-fill text-success me-1"></i> 1. Direct Farm Pickup (Self Pickup)
                                         </strong>
-                                        <span class="badge bg-success text-white px-2.5 py-1 rounded-pill small">FREE ₹0</span>
+                                        <span class="badge bg-success text-white px-2.5 py-1 rounded-pill small flex-shrink-0">FREE ₹0</span>
                                     </div>
-                                    <p class="text-muted small mb-0">
+                                    <p class="text-muted small mb-0" style="font-size: 0.82rem; line-height: 1.4;">
                                         Pick up produce directly from verified farmer's farm / godown in Gujarat. No delivery fee or transport address required.
                                     </p>
                                 </div>
@@ -294,16 +294,16 @@
 
                         <!-- Option 2: GSRTC / Bus Cargo -->
                         <div class="selection-box mb-3" id="boxTransCargo" onclick="selectTransportMode('GSRTC / Private Cargo (To-Pay)')">
-                            <div class="d-flex align-items-start gap-3">
-                                <input class="form-check-input mt-1 shadow-none" type="radio" name="transportType" id="transCargo" value="GSRTC / Private Cargo (To-Pay)" onchange="onTransportModeChanged()">
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <strong class="text-dark fs-6">
+                            <div class="d-flex align-items-start gap-2.5">
+                                <input class="form-check-input mt-1 shadow-none flex-shrink-0" type="radio" name="transportType" id="transCargo" value="GSRTC / Private Cargo (To-Pay)" onchange="onTransportModeChanged()">
+                                <div class="flex-grow-1" style="min-width: 0;">
+                                    <div class="selection-box-header d-flex justify-content-between align-items-center mb-1 flex-wrap gap-1">
+                                        <strong class="text-dark" style="font-size: 0.95rem;">
                                             <i class="bi bi-bus-front-fill text-primary me-1"></i> 2. GSRTC / Private Cargo (Parcel Delivery)
                                         </strong>
-                                        <span class="badge bg-primary text-white px-2.5 py-1 rounded-pill small">"To-Pay" Freight</span>
+                                        <span class="badge bg-primary text-white px-2.5 py-1 rounded-pill small flex-shrink-0">"To-Pay" Freight</span>
                                     </div>
-                                    <p class="text-muted small mb-0">
+                                    <p class="text-muted small mb-0" style="font-size: 0.82rem; line-height: 1.4;">
                                         Farmer books produce via GSRTC ST Bus parcel or private courier (Patel, Shrinath, Eagle) and uploads Bilty receipt. Pay nominal freight directly at parcel counter upon receipt.
                                     </p>
                                 </div>
@@ -382,7 +382,7 @@
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="button" id="btnPlaceOrder" onclick="handlePlaceOrderClick()" class="btn btn-success btn-lg py-3 fw-bold rounded-pill shadow d-flex align-items-center justify-content-center gap-2" style="background-color: #006653; border-color: #006653;">
+                            <button type="button" id="btnPlaceOrder" onclick="handlePlaceOrderClick()" class="btn btn-success checkout-pay-btn shadow d-flex align-items-center justify-content-center gap-2" style="background-color: #006653; border-color: #006653;">
                                 <i class="bi bi-shield-lock-fill fs-5" id="btnIcon"></i> <span id="btnText">Pay Securely via Razorpay</span> (<span id="btnPayAmount">₹@((baseTotal + platformFee).ToString("N2"))</span>)
                             </button>
                         </div>
@@ -479,7 +479,7 @@
                 transPickup.checked = true;
                 if (deliveryBadge) deliveryBadge.textContent = "Self Pickup Only (COD)";
                 if (guaranteeNote) guaranteeNote.textContent = "Pay cash directly to farmer after inspecting produce at farm.";
-                if (btnText) btnText.textContent = "Confirm & Place Order (Pay on Pickup)";
+                if (btnText) btnText.textContent = "Confirm Order (Pay on Pickup)";
                 if (btnIcon) btnIcon.className = "bi bi-check-circle-fill fs-5";
             }
 
@@ -509,7 +509,7 @@
                 btn.disabled = false;
                 btn.innerHTML = isOnline
                     ? '<i class="bi bi-shield-lock-fill fs-5" id="btnIcon"></i> <span id="btnText">Pay Securely via Razorpay</span> (<span id="btnPayAmount">₹' + (baseTotal + platformFee).toFixed(2) + '</span>)'
-                    : '<i class="bi bi-check-circle-fill fs-5" id="btnIcon"></i> <span id="btnText">Confirm & Place Order (Pay on Pickup)</span> (<span id="btnPayAmount">₹' + (baseTotal + platformFee).toFixed(2) + '</span>)';
+                    : '<i class="bi bi-check-circle-fill fs-5" id="btnIcon"></i> <span id="btnText">Confirm Order (Pay on Pickup)</span> (<span id="btnPayAmount">₹' + (baseTotal + platformFee).toFixed(2) + '</span>)';
             }
         }
 

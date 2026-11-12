@@ -394,11 +394,11 @@
                                     <span class="fs-4 fw-extrabold text-success" id="totalPricePreview">₹@Model.Price.ToString("N2")</span>
                                 </div>
                             </div>
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-outline-success py-2.5 fw-bold rounded-pill shadow-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.88rem;" onclick="addToCartFromDetails()">
+                            <div class="product-buy-buttons d-flex flex-column-reverse flex-sm-row gap-2">
+                                <button type="button" class="btn btn-outline-success btn-product-cart py-2.5 fw-bold rounded-pill shadow-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.88rem;" onclick="addToCartFromDetails()">
                                     <i class="bi bi-cart-plus fs-6"></i> Add to Cart
                                 </button>
-                                <button type="submit" class="btn btn-success py-2.5 fw-bold rounded-pill shadow flex-grow-1 d-flex align-items-center justify-content-center gap-1.5" style="background-color: #006653; border-color: #006653; font-size: 0.88rem;">
+                                <button type="submit" class="btn btn-success btn-product-buy py-2.5 fw-bold rounded-pill shadow flex-grow-1 d-flex align-items-center justify-content-center gap-1.5" style="background-color: #006653; border-color: #006653; font-size: 0.92rem;">
                                     <i class="bi bi-lightning-charge-fill fs-6"></i> Buy Now (<span id="btnAmountPreview">₹@Model.Price.ToString("N2")</span>)
                                 </button>
                             </div>

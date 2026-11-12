@@ -272,9 +272,39 @@ img, video, canvas, svg {
         height: 36px !important;
         font-size: 0.95rem !important;
     }
+
+    /* Product Details Action Buttons on Mobile (< 768px & < 576px) */
+    .product-buy-buttons {
+        gap: 8px !important;
+    }
+
+    .btn-product-buy,
+    .btn-product-cart {
+        white-space: nowrap !important;
+    }
 }
 
 @media (max-width: 576px) {
+    .product-buy-buttons {
+        flex-direction: column-reverse !important;
+    }
+
+    .btn-product-buy {
+        width: 100% !important;
+        min-height: 44px !important;
+        font-size: 0.94rem !important;
+        padding: 11px 16px !important;
+        border-radius: 50px !important;
+    }
+
+    .btn-product-cart {
+        width: 100% !important;
+        min-height: 42px !important;
+        font-size: 0.88rem !important;
+        padding: 9px 16px !important;
+        border-radius: 50px !important;
+    }
+
     .product-img-wrapper {
         height: 155px !important;
     }
@@ -816,7 +846,7 @@ img, video, canvas, svg {
 }
 
 /* --------------------------------------------------------------------------
-   10. CART & CHECKOUT MOBILE OPTIMIZATION (< 768px)
+   10. CART & CHECKOUT MOBILE OPTIMIZATION (< 768px & < 576px)
    -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
     .cart-table-wrapper {
@@ -825,6 +855,33 @@ img, video, canvas, svg {
 
     .cart-mobile-cards {
         display: block !important;
+    }
+
+    .checkout-main-container {
+        padding: 14px 10px 40px 10px !important;
+        border-radius: 16px !important;
+        margin-bottom: 3.5rem !important;
+    }
+
+    .checkout-card {
+        padding: 14px 12px !important;
+        border-radius: 16px !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .selection-box {
+        padding: 12px 10px !important;
+        border-radius: 14px !important;
+    }
+
+    .price-breakdown-card {
+        padding: 16px 12px !important;
+        border-radius: 16px !important;
+    }
+
+    .checkout-item-card {
+        padding: 10px 8px !important;
+        border-radius: 12px !important;
     }
 
     .checkout-summary-card {
@@ -836,6 +893,58 @@ img, video, canvas, svg {
     .btn-checkout-action {
         padding: 13px 18px !important;
         font-size: 1rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .selection-box {
+        padding: 11px 9px !important;
+        border-radius: 12px !important;
+    }
+
+    .selection-box-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 4px !important;
+    }
+
+    .selection-box-header strong {
+        font-size: 0.88rem !important;
+        line-height: 1.35 !important;
+        display: block !important;
+    }
+
+    .selection-box-header .badge {
+        font-size: 0.68rem !important;
+        padding: 3px 8px !important;
+        align-self: flex-start !important;
+        margin-top: 2px !important;
+    }
+
+    .checkout-pay-btn {
+        width: 100% !important;
+        padding: 12px 12px !important;
+        font-size: 0.88rem !important;
+        font-weight: 700 !important;
+        border-radius: 50px !important;
+        min-height: 46px !important;
+        white-space: nowrap !important;
+        line-height: 1.2 !important;
+        letter-spacing: -0.2px !important;
+        justify-content: center !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .checkout-pay-btn i {
+        font-size: 1.05rem !important;
+    }
+}
+
+@media (max-width: 360px) {
+    .checkout-pay-btn {
+        padding: 11px 8px !important;
+        font-size: 0.82rem !important;
     }
 }
 
