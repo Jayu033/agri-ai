@@ -157,6 +157,13 @@
     margin-bottom: 24px;
 }
 
+.dash-section-header a.btn,
+.dash-section-header button.btn,
+.dash-btn-add-product {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
 .dash-section-title {
     font-size: 1.35rem;
     font-weight: 800;
@@ -222,6 +229,70 @@
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   Responsive Adjustments for Dashboards (< 768px and <= 576px)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .dashboard-page-bg {
+        padding: 16px 0 40px 0;
+    }
+
+    .dashboard-sidebar-card {
+        padding: 16px;
+        margin-bottom: 16px;
+        position: static;
+        top: auto;
+    }
+
+    .dash-main-card {
+        padding: 16px 12px !important;
+        border-radius: 16px !important;
+        min-height: unset !important;
+    }
+
+    .dash-section-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        padding-bottom: 14px !important;
+        margin-bottom: 18px !important;
+    }
+
+    .dash-section-header > div:first-child {
+        width: 100% !important;
+    }
+
+    .dash-section-header .dash-section-title {
+        font-size: 1.15rem !important;
+        line-height: 1.25 !important;
+    }
+
+    .dash-section-header > a.btn,
+    .dash-section-header > button.btn,
+    .dash-btn-add-product {
+        width: 100% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+        padding: 9px 16px !important;
+        font-size: 0.86rem !important;
+        border-radius: 50px !important;
+    }
+
+    .dash-section-header > .d-flex {
+        width: 100% !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .dash-section-header > .d-flex .btn {
+        width: 100% !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+    }
 }
 
 
