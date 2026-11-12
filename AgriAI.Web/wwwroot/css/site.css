@@ -35,7 +35,7 @@ body {
     color: var(--text-primary);
     font-family: 'Inter', sans-serif;
     line-height: 1.6;
-    overflow-x: hidden;
+    overflow-x: clip;
     margin: 0;
     padding: 0;
 }

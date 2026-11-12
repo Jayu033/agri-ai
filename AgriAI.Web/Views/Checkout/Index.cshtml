@@ -70,6 +70,32 @@
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
     }
 
+    /* Sticky Sidebar on Desktop / Large screens (>= 992px) */
+    @media (min-width: 992px) {
+        .checkout-sticky-col {
+            position: -webkit-sticky !important;
+            position: sticky !important;
+            top: 24px !important;
+            align-self: flex-start !important;
+            z-index: 30 !important;
+        }
+        .price-breakdown-card {
+            position: -webkit-sticky !important;
+            position: sticky !important;
+            top: 24px !important;
+        }
+    }
+    @media (max-width: 991.98px) {
+        .checkout-sticky-col {
+            position: static !important;
+            top: auto !important;
+        }
+        .price-breakdown-card {
+            position: static !important;
+            top: auto !important;
+        }
+    }
+
     /* Prevent AI Bot collision with Checkout & Price Breakdown Box */
     #openChatBtn {
         left: 24px !important;
@@ -335,9 +361,9 @@
 
                 </div>
 
-                <!-- Right Column: Final Bill Breakdown & Place Order -->
-                <div class="col-lg-5">
-                    <div class="price-breakdown-card sticky-top" style="top: 20px;">
+                <!-- Right Column: Final Bill Breakdown & Place Order (Sticky on Desktop) -->
+                <div class="col-lg-5 checkout-sticky-col">
+                    <div class="price-breakdown-card">
                         <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom d-flex align-items-center gap-2">
                             <i class="bi bi-calculator text-success"></i> Price Breakdown
                         </h5>
