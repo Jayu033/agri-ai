@@ -20,6 +20,17 @@ builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(keysFolder))
     .SetApplicationName("AgriAI");
 
+// Ensure physical directories for runtime uploads exist inside wwwroot
+var webRootPath = builder.Environment.WebRootPath ?? Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
+foreach (var subDir in new[] { "profiles", "kyc", "bilty", "products" })
+{
+    var uploadSubFolder = Path.Combine(webRootPath, "uploads", subDir);
+    if (!Directory.Exists(uploadSubFolder))
+    {
+        Directory.CreateDirectory(uploadSubFolder);
+    }
+}
+
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -95,6 +106,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles(); // CRITICAL: Serves runtime uploaded files from wwwroot (profiles, products, kyc, bilty)
 app.UseRouting();
 
 app.UseSession();

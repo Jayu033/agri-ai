@@ -127,11 +127,87 @@ namespace AgriAI.Web.Controllers
                 .ToDictionaryAsync(x => x.ProductId, x => x.Sold);
 
             ViewBag.SoldQuantities = soldQuantities;
-            ViewBag.AllUsers = userVMs;
+            ViewBag.AllUsers = userVMs.OrderByDescending(u => u.CreatedAt).ToList();
             ViewBag.AllProducts = products;
             ViewBag.AllCategories = categories;
 
             return View(orders);
+        }
+
+        // GET: /Admin/GetLiveUsersDirectory
+        [HttpGet]
+        public async Task<IActionResult> GetLiveUsersDirectory(int lastKnownCount = 0)
+        {
+            var allUsers = await _userManager.Users.ToListAsync();
+            var userVMs = new List<UserManagementViewModel>();
+            int farmersCount = 0;
+            int customersCount = 0;
+
+            foreach (var user in allUsers)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                var roleName = roles.FirstOrDefault() ?? "Customer";
+
+                if (string.Equals(roleName, "Farmer", StringComparison.OrdinalIgnoreCase))
+                    farmersCount++;
+                else if (string.Equals(roleName, "Customer", StringComparison.OrdinalIgnoreCase))
+                    customersCount++;
+
+                if (!string.Equals(roleName, "Admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    bool isBlocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
+                    userVMs.Add(new UserManagementViewModel
+                    {
+                        Id = user.Id,
+                        Username = user.UserName ?? string.Empty,
+                        Email = user.Email ?? string.Empty,
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        ProfilePicturePath = user.ProfilePicturePath,
+                        Role = roleName,
+                        IsBlocked = isBlocked,
+                        IsApprovedByAdmin = user.IsApprovedByAdmin,
+                        City = user.City,
+                        Address = user.Address,
+                        BankName = user.BankName,
+                        BankAccountNumber = user.BankAccountNumber,
+                        BankIfscCode = user.BankIfscCode,
+                        UpiId = user.UpiId,
+                        KycDocumentPath = user.KycDocumentPath,
+                        KycDocumentType = user.KycDocumentType,
+                        KycSubmittedAt = user.KycSubmittedAt,
+                        KycRejectionReason = user.KycRejectionReason,
+                        CreatedAt = user.CreatedAt
+                    });
+                }
+            }
+
+            var sortedUsers = userVMs.OrderByDescending(u => u.CreatedAt).ToList();
+            bool hasChanged = lastKnownCount != sortedUsers.Count;
+
+            return Json(new
+            {
+                success = true,
+                hasChanged = hasChanged,
+                totalUsers = sortedUsers.Count,
+                farmersCount = farmersCount,
+                customersCount = customersCount,
+                users = sortedUsers.Select(u => new
+                {
+                    id = u.Id,
+                    username = u.Username,
+                    email = u.Email,
+                    fullName = u.FullName,
+                    profilePicturePath = u.ProfilePicturePath,
+                    role = u.Role,
+                    isBlocked = u.IsBlocked,
+                    isApprovedByAdmin = u.IsApprovedByAdmin,
+                    bankName = u.BankName,
+                    bankAccountNumber = u.BankAccountNumber,
+                    city = u.City,
+                    createdAtFormatted = u.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
+                })
+            });
         }
 
         // GET: /Admin/ExportOrdersCsv

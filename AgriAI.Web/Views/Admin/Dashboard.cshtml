@@ -258,9 +258,14 @@
 
                     <!-- 2. MODULE: Farmer and User Directory -->
                     <div id="adminUsersTab" class="dash-tab-panel @(activeTab == "users" ? "active" : "")">
-                        <div class="dash-section-header">
+                        <div class="dash-section-header d-flex flex-wrap align-items-center justify-content-between gap-2">
                             <div>
-                                <h3 class="dash-section-title">Farmer and Users Directory</h3>
+                                <h3 class="dash-section-title d-inline-flex align-items-center gap-2">
+                                    <span>Farmer and Users Directory</span>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1" style="font-size:0.75rem; font-weight:600;">
+                                        <span class="live-dot-pulse"></span>Live Auto-Sync Active
+                                    </span>
+                                </h3>
                                 <p class="text-muted small mb-0">Manage registered farmers and retail customers, verify documents, bank payout accounts, and review profiles.</p>
                             </div>
                         </div>
@@ -269,13 +274,13 @@
                         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 bg-light p-2.5 rounded-4 border">
                             <div class="d-flex gap-2">
                                 <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-dark text-white active shadow-sm" data-filter="all" onclick="filterUsersTable('all', this)">
-                                    All Users (@allUsers.Count)
+                                    All Users <span id="userFilterCountAll">(@allUsers.Count)</span>
                                 </button>
                                 <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-success" data-filter="Farmer" onclick="filterUsersTable('Farmer', this)">
-                                    <i class="bi bi-tree-fill me-1"></i> Farmers (@allUsers.Count(u => u.Role == "Farmer"))
+                                    <i class="bi bi-tree-fill me-1"></i> Farmers <span id="userFilterCountFarmers">(@allUsers.Count(u => u.Role == "Farmer"))</span>
                                 </button>
                                 <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-primary" data-filter="Customer" onclick="filterUsersTable('Customer', this)">
-                                    <i class="bi bi-bag-heart me-1"></i> Customers (@allUsers.Count(u => u.Role == "Customer"))
+                                    <i class="bi bi-bag-heart me-1"></i> Customers <span id="userFilterCountCustomers">(@allUsers.Count(u => u.Role == "Customer"))</span>
                                 </button>
                             </div>
                             <div class="admin-search-input-box" style="max-width: 280px;">
@@ -308,7 +313,10 @@
                                                 <div class="d-flex align-items-center gap-2.5">
                                                     @if (!string.IsNullOrEmpty(user.ProfilePicturePath))
                                                     {
-                                                        <img src="@user.ProfilePicturePath" class="rounded-circle shadow-sm border border-2 border-success" style="width: 38px; height: 38px; object-fit: cover;" alt="@user.FullName" />
+                                                        <img src="@Url.Content(user.ProfilePicturePath)" class="rounded-circle shadow-sm border border-2 border-success user-avatar-clickable" style="width: 38px; height: 38px; object-fit: cover;" alt="@user.FullName" title="Click to view full photo" onclick="openFullPhotoModal('@Url.Content(user.ProfilePicturePath)', '@user.FullName')" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                                        <div class="rounded-circle text-white align-items-center justify-content-center fw-bold shadow-sm" style="display: none; width: 38px; height: 38px; font-size: 0.90rem; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">
+                                                            @init
+                                                        </div>
                                                     }
                                                     else
                                                     {
@@ -1180,6 +1188,35 @@
     </div>
 </div>
 
+<!-- Full Profile Photo Lightbox Modal -->
+<div class="modal fade" id="fullPhotoModal" tabindex="-1" aria-labelledby="fullPhotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-dark text-white p-3 px-4 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-person-bounding-box text-success fs-5"></i>
+                    <div>
+                        <h6 class="modal-title fw-bold mb-0 text-white" id="fullPhotoModalTitle">Profile Picture</h6>
+                        <small class="text-light opacity-75" style="font-size: 0.72rem;" id="fullPhotoModalSubtitle">User Avatar Preview</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center bg-light">
+                <div class="rounded-4 overflow-hidden shadow-sm border bg-white p-2 d-inline-block" style="max-width: 100%;">
+                    <img id="fullPhotoModalImg" src="" alt="Full Profile" class="img-fluid rounded-3" style="max-height: 400px; width: 100%; object-fit: contain;" />
+                </div>
+            </div>
+            <div class="modal-footer bg-white border-top p-2.5 px-3 d-flex justify-content-between align-items-center">
+                <a id="fullPhotoDownloadBtn" href="#" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1.5">
+                    <i class="bi bi-box-arrow-up-right"></i> Open Original
+                </a>
+                <button type="button" class="btn btn-sm btn-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Farmer KYC Review Inspector Modal -->
 <div class="modal fade" id="kycReviewModal" tabindex="-1" aria-labelledby="kycReviewModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -1350,7 +1387,41 @@
             window.history.replaceState({ tab: tabName }, '', newUrl);
         }
 
+        // Full Photo Modal Helper
+        function openFullPhotoModal(imgSrc, userName) {
+            if (!imgSrc || imgSrc.trim() === '') return;
+            const imgEl = document.getElementById('fullPhotoModalImg');
+            const titleEl = document.getElementById('fullPhotoModalTitle');
+            const dlBtn = document.getElementById('fullPhotoDownloadBtn');
+            if (imgEl) imgEl.src = imgSrc;
+            if (titleEl) titleEl.textContent = (userName && userName.trim() !== '') ? userName : 'Profile Picture';
+            if (dlBtn) dlBtn.href = imgSrc;
+            const modalEl = document.getElementById('fullPhotoModal');
+            if (modalEl) {
+                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                modal.show();
+            }
+        }
+
+        let currentUserRoleFilter = 'all';
+        let currentUserSearchQuery = '';
+        let lastKnownUsersCount = @allUsers.Count;
+
+        function applyUserFiltersAndSearch() {
+            const rows = document.querySelectorAll('.dash-user-row');
+            rows.forEach(function (row) {
+                const roleMatch = (currentUserRoleFilter === 'all' || row.getAttribute('data-role') === currentUserRoleFilter);
+                const searchMatch = !currentUserSearchQuery || (row.getAttribute('data-search') || '').includes(currentUserSearchQuery);
+                if (roleMatch && searchMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
         function filterUsersTable(role, element) {
+            currentUserRoleFilter = role;
             document.querySelectorAll('.user-filter-btn').forEach(function (btn) {
                 btn.classList.remove('active', 'btn-dark', 'text-white');
                 if (btn.getAttribute('data-filter') === 'Farmer') {
@@ -1362,16 +1433,128 @@
                 }
             });
 
-            element.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-dark text-white active shadow-sm';
+            if (element) {
+                element.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-dark text-white active shadow-sm';
+            }
 
-            const rows = document.querySelectorAll('.dash-user-row');
-            rows.forEach(function (row) {
-                if (role === 'all' || row.getAttribute('data-role') === role) {
-                    row.style.display = '';
+            applyUserFiltersAndSearch();
+        }
+
+        function escapeUserHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderLiveUsersTable(users) {
+            const tbody = document.querySelector('#dashUsersTable tbody');
+            if (!tbody) return;
+
+            if (!users || users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No users registered yet.</td></tr>';
+                return;
+            }
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+
+            let html = '';
+            users.forEach(function (u) {
+                const init = (u.username && u.username.length > 0) ? u.username.substring(0, 1).toUpperCase() : 'U';
+                const fullNameEsc = escapeUserHtml(u.fullName || u.username);
+                const usernameEsc = escapeUserHtml(u.username);
+                const emailEsc = escapeUserHtml(u.email);
+                const cityEsc = escapeUserHtml(u.city || '');
+                const searchData = (fullNameEsc + ' ' + usernameEsc + ' ' + emailEsc + ' ' + cityEsc).toLowerCase();
+
+                let profilePicHtml = '';
+                if (u.profilePicturePath && u.profilePicturePath.trim() !== '') {
+                    const picUrl = u.profilePicturePath;
+                    profilePicHtml = '<img src="' + picUrl + '" class="rounded-circle shadow-sm border border-2 border-success user-avatar-clickable" style="width: 38px; height: 38px; object-fit: cover;" alt="' + fullNameEsc + '" title="Click to view full photo" onclick="openFullPhotoModal(\'' + picUrl + '\', \'' + fullNameEsc + '\')" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';" />' +
+                        '<div class="rounded-circle text-white align-items-center justify-content-center fw-bold shadow-sm" style="display: none; width: 38px; height: 38px; font-size: 0.90rem; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">' + init + '</div>';
                 } else {
-                    row.style.display = 'none';
+                    profilePicHtml = '<div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 38px; height: 38px; font-size: 0.90rem; background: linear-gradient(135deg, #006653 0%, #16a34a 100%);">' + init + '</div>';
                 }
+
+                let roleBadgeHtml = '';
+                if (u.role === 'Farmer') {
+                    roleBadgeHtml = '<span class="admin-badge-role-farmer"><i class="bi bi-tree-fill"></i> Farmer</span>';
+                } else {
+                    roleBadgeHtml = '<span class="admin-badge-role-customer"><i class="bi bi-bag-heart-fill"></i> Customer</span>';
+                }
+
+                let kycHtml = '';
+                if (u.role === 'Farmer') {
+                    if (!u.isApprovedByAdmin) {
+                        kycHtml = '<span class="admin-badge-kyc-pending"><i class="bi bi-clock-history"></i> Pending Review</span>';
+                    } else {
+                        kycHtml = '<span class="admin-badge-kyc-verified"><i class="bi bi-patch-check-fill"></i> KYC Verified</span>';
+                    }
+                    if (u.bankAccountNumber) {
+                        kycHtml += '<div class="text-muted font-monospace mt-0.5" style="font-size: 0.72rem;">' + escapeUserHtml(u.bankName || 'Bank') + ': ' + escapeUserHtml(u.bankAccountNumber) + '</div>';
+                    }
+                } else {
+                    kycHtml = '<span class="text-muted small" style="font-size: 0.74rem;">— Retail Buyer —</span>';
+                }
+
+                let statusHtml = '';
+                if (u.isBlocked) {
+                    statusHtml = '<span class="admin-status-dot-blocked"><i class="bi bi-slash-circle-fill"></i> Blocked</span>';
+                } else if (u.role === 'Farmer' && !u.isApprovedByAdmin) {
+                    statusHtml = '<span class="admin-status-dot-review"><i class="bi bi-hourglass-split"></i> Under Review</span>';
+                } else {
+                    statusHtml = '<span class="admin-status-dot-active"><i class="bi bi-check-circle-fill"></i> Active</span>';
+                }
+
+                const blockBtnClass = u.isBlocked ? 'text-success' : 'btn-block-action';
+                const blockBtnIcon = u.isBlocked ? 'bi-unlock-fill' : 'bi-lock-fill';
+                const blockBtnTitle = u.isBlocked ? 'Unblock User' : 'Block User';
+                const tokenInput = token ? '<input type="hidden" name="__RequestVerificationToken" value="' + token + '" />' : '';
+
+                html += '<tr class="user-table-row dash-user-row" data-role="' + u.role + '" data-search="' + searchData + '">' +
+                    '<td><div class="d-flex align-items-center gap-2.5">' + profilePicHtml +
+                    '<div><strong class="text-dark d-block small fw-bold">' + fullNameEsc + '</strong><small class="text-muted" style="font-size: 0.72rem;">@@' + usernameEsc + ' • ' + emailEsc + '</small></div>' +
+                    '</div></td>' +
+                    '<td>' + roleBadgeHtml + '</td>' +
+                    '<td>' + kycHtml + '</td>' +
+                    '<td>' + statusHtml + '</td>' +
+                    '<td class="text-end">' +
+                    '<div class="d-inline-flex gap-1.5 align-items-center">' +
+                    '<a href="/Admin/UserDetails/' + u.id + '" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" title="View Full Profile, KYC, Orders &amp; Details"><i class="bi bi-eye"></i><span>Details</span></a>' +
+                    '<form action="/Admin/ToggleBlockUser" method="post" class="m-0 d-inline">' + tokenInput + '<input type="hidden" name="id" value="' + u.id + '" /><button type="submit" class="btn-action-circle ' + blockBtnClass + '" title="' + blockBtnTitle + '" onclick="return confirm(\'Change block status for ' + emailEsc + '?\');"><i class="bi ' + blockBtnIcon + '"></i></button></form>' +
+                    '<form action="/Admin/DeleteUser" method="post" class="m-0 d-inline" onsubmit="return confirm(\'Permanently delete user ' + emailEsc + '? This cannot be undone.\');">' + tokenInput + '<input type="hidden" name="id" value="' + u.id + '" /><button type="submit" class="btn-action-circle btn-delete-action" title="Delete User"><i class="bi bi-trash3-fill"></i></button></form>' +
+                    '</div></td>' +
+                    '</tr>';
             });
+
+            tbody.innerHTML = html;
+            applyUserFiltersAndSearch();
+        }
+
+        function pollLiveUsersDirectory() {
+            fetch('/Admin/GetLiveUsersDirectory?lastKnownCount=' + lastKnownUsersCount)
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (!data || !data.success) return;
+
+                    const countAll = document.getElementById('userFilterCountAll');
+                    const countFarmers = document.getElementById('userFilterCountFarmers');
+                    const countCust = document.getElementById('userFilterCountCustomers');
+                    if (countAll) countAll.textContent = '(' + data.totalUsers + ')';
+                    if (countFarmers) countFarmers.textContent = '(' + data.farmersCount + ')';
+                    if (countCust) countCust.textContent = '(' + data.customersCount + ')';
+
+                    if (data.hasChanged) {
+                        lastKnownUsersCount = data.totalUsers;
+                        renderLiveUsersTable(data.users);
+                    }
+                })
+                .catch(function (err) {
+                    console.debug('Live sync poll note:', err);
+                });
         }
 
         // Live search filter inside dashboard user tab & tab URL parameter selector
@@ -1404,17 +1587,13 @@
             const searchInput = document.getElementById('dashUserSearchInput');
             if (searchInput) {
                 searchInput.addEventListener('input', function () {
-                    const q = this.value.toLowerCase().trim();
-                    document.querySelectorAll('.dash-user-row').forEach(function (row) {
-                        const content = row.getAttribute('data-search') || '';
-                        if (!q || content.includes(q)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
+                    currentUserSearchQuery = this.value.toLowerCase().trim();
+                    applyUserFiltersAndSearch();
                 });
             }
+
+            // Start live auto-polling every 5 seconds
+            setInterval(pollLiveUsersDirectory, 5000);
         });
 
         function openKycReviewModal(id, name, email, city, address, bankName, bankAcc, bankIfsc, upi, docType, docPath, isApproved, rejectionReason, profilePic) {

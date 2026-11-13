@@ -121,9 +121,10 @@ namespace AgriAI.Web.Controllers
             }
 
             // 2. Handle New Profile Picture upload
+            var webRoot = _env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot");
             if (model.NewProfilePictureFile != null && model.NewProfilePictureFile.Length > 0)
             {
-                var profilesDir = Path.Combine(_env.WebRootPath, "uploads", "profiles");
+                var profilesDir = Path.Combine(webRoot, "uploads", "profiles");
                 if (!Directory.Exists(profilesDir))
                 {
                     Directory.CreateDirectory(profilesDir);
@@ -143,7 +144,7 @@ namespace AgriAI.Web.Controllers
             // 3. Handle New KYC Document upload (for Farmers)
             if (isFarmer && model.NewKycDocumentFile != null && model.NewKycDocumentFile.Length > 0)
             {
-                var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "kyc");
+                var uploadsDir = Path.Combine(webRoot, "uploads", "kyc");
                 if (!Directory.Exists(uploadsDir))
                 {
                     Directory.CreateDirectory(uploadsDir);

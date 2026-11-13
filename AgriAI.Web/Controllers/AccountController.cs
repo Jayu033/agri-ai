@@ -229,9 +229,10 @@ namespace AgriAI.Web.Controllers
                 string? kycDocPath = null;
 
                 // Handle Profile Photo Upload or Camera Capture (Farmer or Customer)
+                var webRoot = _env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot");
                 if (model.ProfilePictureFile != null && model.ProfilePictureFile.Length > 0)
                 {
-                    var profilesDir = Path.Combine(_env.WebRootPath, "uploads", "profiles");
+                    var profilesDir = Path.Combine(webRoot, "uploads", "profiles");
                     if (!Directory.Exists(profilesDir))
                     {
                         Directory.CreateDirectory(profilesDir);
@@ -249,7 +250,7 @@ namespace AgriAI.Web.Controllers
                 }
                 else if (!string.IsNullOrWhiteSpace(model.CapturedProfilePictureBase64))
                 {
-                    var profilesDir = Path.Combine(_env.WebRootPath, "uploads", "profiles");
+                    var profilesDir = Path.Combine(webRoot, "uploads", "profiles");
                     if (!Directory.Exists(profilesDir))
                     {
                         Directory.CreateDirectory(profilesDir);
@@ -272,7 +273,7 @@ namespace AgriAI.Web.Controllers
                 // Handle KYC document upload for Farmers
                 if (isFarmer && model.KycDocumentFile != null && model.KycDocumentFile.Length > 0)
                 {
-                    var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "kyc");
+                    var uploadsDir = Path.Combine(webRoot, "uploads", "kyc");
                     if (!Directory.Exists(uploadsDir))
                     {
                         Directory.CreateDirectory(uploadsDir);

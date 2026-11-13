@@ -75,9 +75,11 @@
                         }
                         @if (hasFarmerPhoto)
                         {
-                            <img src="@farmerProfilePic" 
-                                 class="dash-avatar-img" 
+                            <img src="@Url.Content(farmerProfilePic)" 
+                                 class="dash-avatar-img user-avatar-clickable" 
                                  alt="@userName" 
+                                 title="Click to view full photo"
+                                 onclick="openFullPhotoModal('@Url.Content(farmerProfilePic)', '@userName')"
                                  onerror="this.style.display='none'; var f=document.getElementById('farmerDashAvatarInitial'); if(f) f.style.display='flex';" />
                             <div class="dash-avatar-circle" id="farmerDashAvatarInitial" style="display: none; background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);">
                                 @userInitial
@@ -1202,6 +1204,35 @@
     </div>
 </div>
 
+<!-- Full Profile Photo Lightbox Modal -->
+<div class="modal fade" id="fullPhotoModal" tabindex="-1" aria-labelledby="fullPhotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-dark text-white p-3 px-4 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-person-bounding-box text-success fs-5"></i>
+                    <div>
+                        <h6 class="modal-title fw-bold mb-0 text-white" id="fullPhotoModalTitle">Profile Picture</h6>
+                        <small class="text-light opacity-75" style="font-size: 0.72rem;" id="fullPhotoModalSubtitle">User Avatar Preview</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center bg-light">
+                <div class="rounded-4 overflow-hidden shadow-sm border bg-white p-2 d-inline-block" style="max-width: 100%;">
+                    <img id="fullPhotoModalImg" src="" alt="Full Profile" class="img-fluid rounded-3" style="max-height: 400px; width: 100%; object-fit: contain;" />
+                </div>
+            </div>
+            <div class="modal-footer bg-white border-top p-2.5 px-3 d-flex justify-content-between align-items-center">
+                <a id="fullPhotoDownloadBtn" href="#" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1.5">
+                    <i class="bi bi-box-arrow-up-right"></i> Open Original
+                </a>
+                <button type="button" class="btn btn-sm btn-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Beautiful Custom Farmer Cart Action Confirmation Modal -->
 <div class="modal fade" id="farmerCartConfirmModal" tabindex="-1" aria-labelledby="farmerCartConfirmModalLabel" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
@@ -1362,6 +1393,21 @@
                     window.location.href = '/Farmer/Dashboard?tab=farmerPurchasesTab';
                 }
             });
+        }
+
+        function openFullPhotoModal(imgSrc, userName) {
+            if (!imgSrc || imgSrc.trim() === '') return;
+            const imgEl = document.getElementById('fullPhotoModalImg');
+            const titleEl = document.getElementById('fullPhotoModalTitle');
+            const dlBtn = document.getElementById('fullPhotoDownloadBtn');
+            if (imgEl) imgEl.src = imgSrc;
+            if (titleEl) titleEl.textContent = (userName && userName.trim() !== '') ? userName : 'Profile Picture';
+            if (dlBtn) dlBtn.href = imgSrc;
+            const modalEl = document.getElementById('fullPhotoModal');
+            if (modalEl) {
+                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                modal.show();
+            }
         }
     </script>
 }
