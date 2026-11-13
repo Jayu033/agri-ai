@@ -38,6 +38,74 @@
 }
 
 <style>
+    /* 1. Hero Header Banner (Matches Farmer OrderDetails Portal) */
+    .order-hero-header {
+        background: linear-gradient(135deg, #006653 0%, #047857 100%);
+        border-radius: 1.25rem;
+        padding: 2.25rem 2rem;
+        color: #ffffff;
+        margin-bottom: 1.75rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 50, 35, 0.05), 0 1px 4px rgba(0, 0, 0, 0.02);
+        animation: orderFadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .order-hero-header::after {
+        content: "";
+        position: absolute;
+        right: -30px;
+        bottom: -30px;
+        width: 220px;
+        height: 220px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .order-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 6px 16px;
+        border-radius: 30px;
+        color: #ffffff;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        margin-bottom: 10px;
+        backdrop-filter: blur(8px);
+    }
+
+    .order-hero-title {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: -0.5px;
+        margin-bottom: 6px;
+    }
+
+    .order-hero-subtitle {
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.88);
+        max-width: 760px;
+        margin-bottom: 0;
+        line-height: 1.5;
+    }
+
+    @@keyframes orderFadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     /* Master Unified Container Card (Matches Checkout & Dashboard Master Box) */
     .order-main-container {
         background: #ffffff;
@@ -48,6 +116,20 @@
         margin-bottom: 2rem;
     }
     @@media (max-width: 768px) {
+        .order-hero-header {
+            padding: 1.6rem 1.25rem !important;
+            border-radius: 1.15rem !important;
+        }
+        .order-hero-header .order-hero-actions {
+            width: 100% !important;
+            justify-content: flex-start !important;
+            margin-top: 1rem !important;
+        }
+        .order-hero-header .order-hero-actions .btn {
+            flex: 1 1 auto !important;
+            text-align: center !important;
+            justify-content: center !important;
+        }
         .order-main-container {
             padding: 1.25rem 1rem;
             border-radius: 1.25rem;
@@ -118,6 +200,21 @@
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
     @@media (max-width: 576px) {
+        .order-hero-header {
+            padding: 1.4rem 1.1rem !important;
+            border-radius: 1rem !important;
+            margin-bottom: 1.25rem !important;
+        }
+        .order-hero-title {
+            font-size: 1.45rem !important;
+        }
+        .order-hero-subtitle {
+            font-size: 0.82rem !important;
+        }
+        .order-hero-badge {
+            font-size: 0.75rem !important;
+            padding: 4px 12px !important;
+        }
         .order-main-container {
             padding: 14px 10px !important;
             border-radius: 16px !important;
@@ -208,76 +305,112 @@
 
 <div class="container-fluid py-3 px-2 px-md-3 px-xl-4" style="max-width: 1680px;">
     
-    <div class="order-main-container">
-
-        <!-- Top Header Bar inside Unified Master Box -->
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-3">
-            <div>
-                <div class="d-flex align-items-center gap-2.5 mb-1">
-                    <h2 class="fw-extrabold text-dark mb-0" style="letter-spacing: -0.5px;">Order #@Model.Id.ToString("D5")</h2>
+    <!-- 1. Hero Header Banner (Matching Farmer Portal) -->
+    <div class="order-hero-header shadow-sm">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+                <div class="order-hero-badge">
+                    <i class="bi bi-receipt-cutoff text-warning"></i>
+                    <span>Direct Farm Purchase &bull; 100% Escrow Protected</span>
+                </div>
+                <h1 class="order-hero-title d-flex align-items-center flex-wrap gap-2.5">
+                    <span>Order #@Model.Id.ToString("D5")</span>
                     @if (Model.Status == "Requested")
                     {
-                        <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill shadow-sm">
-                            <i class="bi bi-hourglass-top me-1"></i> Request Sent ⏳
+                        <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill shadow-sm fs-6">
+                            <i class="bi bi-hourglass-top me-1"></i>Request Sent ⏳
                         </span>
                     }
                     else if (Model.Status == "Accepted")
                     {
-                        @if (Model.CancellationDeadline.HasValue && DateTime.UtcNow < Model.CancellationDeadline.Value)
+                        @if (remainingSeconds > 0)
                         {
-                            <span class="badge bg-info text-dark fw-bold px-3 py-1.5 rounded-pill shadow-sm">
-                                <i class="bi bi-clock-history me-1"></i> Accepted (3h Review Window)
+                            <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill fs-6 shadow-sm">
+                                <i class="bi bi-clock-history me-1"></i>Active (3h Review)
                             </span>
                         }
                         else
                         {
-                            <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
-                                <i class="bi bi-lock-fill me-1"></i> Locked for Harvest &amp; Dispatch
+                            <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill fs-6 shadow-sm">
+                                <i class="bi bi-lock-fill me-1"></i>Locked for Dispatch
                             </span>
                         }
                     }
+                    else if (Model.Status == "Ready for Pickup")
+                    {
+                        <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm fs-6">
+                            <i class="bi bi-check-circle-fill me-1"></i>Ready for Pickup 🟢
+                        </span>
+                    }
+                    else if (Model.Status == "In Transit")
+                    {
+                        <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm fs-6">
+                            <i class="bi bi-truck me-1"></i>In Transit
+                        </span>
+                    }
                     else if (Model.Status == "Declined")
                     {
-                        <span class="badge bg-danger text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
-                            <i class="bi bi-x-circle-fill me-1"></i> Declined (Refunded)
+                        <span class="badge bg-danger text-white fw-bold px-3 py-1.5 rounded-pill fs-6 shadow-sm">
+                            <i class="bi bi-x-circle-fill me-1"></i>Declined (Refunded)
                         </span>
                     }
                     else if (Model.Status == "Cancelled")
                     {
-                        <span class="badge bg-secondary text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
-                            <i class="bi bi-slash-circle me-1"></i> Cancelled (Refunded)
+                        <span class="badge bg-secondary text-white fw-bold px-3 py-1.5 rounded-pill fs-6 shadow-sm">
+                            <i class="bi bi-slash-circle me-1"></i>Cancelled (Refunded)
                         </span>
                     }
                     else if (Model.Status.Contains("Delivered") || Model.Status.Contains("Settled"))
                     {
-                        <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
-                            <i class="bi bi-check-circle-fill me-1"></i> Completed 🟢
+                        <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill fs-6 shadow-sm">
+                            <i class="bi bi-check-circle-fill me-1"></i>Completed &bull; Delivered 🟢
                         </span>
                     }
                     else
                     {
-                        <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
-                            <i class="bi bi-truck me-1"></i> @Model.Status
+                        <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill fs-6 shadow-sm">
+                            <i class="bi bi-truck me-1"></i>@Model.Status
                         </span>
                     }
-                </div>
-                <p class="text-muted small mb-0">
-                    <i class="bi bi-calendar3 me-1"></i> Placed on <strong>@dateFormatted</strong> &bull;
-                    <i class="bi bi-shield-check text-success ms-1 me-1"></i> 100% AgriAI Escrow Protected &bull;
-                    <i class="bi bi-truck ms-1 me-1"></i> @(isParcel ? "ST Bus Parcel / Cargo" : "Direct Farm Handover")
+                </h1>
+                <p class="order-hero-subtitle">
+                    Placed on <strong>@dateFormatted</strong> &bull; Producer: <strong>@fDisplayName</strong> &bull; Total Amount: <strong>₹@Model.TotalAmount.ToString("N2")</strong> (@(Model.PaymentMethod ?? "Online Escrow Vault"))
                 </p>
             </div>
-
-            <div class="d-flex align-items-center gap-2 flex-wrap order-header-actions">
-                <a asp-controller="Product" asp-action="Index" class="btn btn-outline-success rounded-pill px-3.5 py-2 fw-bold small shadow-sm d-inline-flex align-items-center">
-                    <i class="bi bi-shop me-2"></i> Continue Shopping
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0 d-flex flex-wrap gap-2 justify-content-lg-end order-hero-actions">
+                <a asp-controller="Product" asp-action="Index" class="btn btn-outline-light rounded-pill px-3.5 py-2 fw-bold small shadow-sm d-inline-flex align-items-center">
+                    <i class="bi bi-shop me-1.5"></i> Continue Shopping
                 </a>
-                <a href="@backUrl" class="btn btn-outline-secondary rounded-pill px-3.5 py-2 fw-bold small shadow-sm d-inline-flex align-items-center">
-                    <i class="bi bi-arrow-left me-2"></i> @backLabel
+                <a href="@backUrl" class="btn btn-outline-light rounded-pill px-3.5 py-2 fw-bold small shadow-sm d-inline-flex align-items-center">
+                    <i class="bi bi-arrow-left me-1.5"></i> @backLabel
                 </a>
-                <button type="button" class="btn btn-success rounded-pill px-3.5 py-2 fw-bold small shadow-sm d-inline-flex align-items-center" style="background-color: #006653; border-color: #006653;" onclick="printOrderInvoice('@orderNoStr', '@dateFormatted', '@User.Identity?.Name', '@produceName', @itemQty, @unitPrice, @baseAmount, @Model.LogisticsFee, @Model.PlatformFee, @Model.TotalAmount, '@(Model.PaymentMethod ?? "Online (Escrow)")', '@(Model.TransportType ?? "Direct Farm Pickup")', '@(string.IsNullOrEmpty(Model.ShippingAddress) ? "Gujarat Farm Location" : Model.ShippingAddress)')">
-                    <i class="bi bi-printer me-2"></i> Print Tax Invoice
+                <button type="button" class="btn btn-light text-success rounded-pill px-4 py-2 fw-bold small shadow-sm d-inline-flex align-items-center" onclick="printOrderInvoice('@orderNoStr', '@dateFormatted', '@User.Identity?.Name', '@produceName', @itemQty, @unitPrice, @baseAmount, @Model.LogisticsFee, @Model.PlatformFee, @Model.TotalAmount, '@(Model.PaymentMethod ?? "Online (Escrow)")', '@(Model.TransportType ?? "Direct Farm Pickup")', '@(string.IsNullOrEmpty(Model.ShippingAddress) ? "Gujarat Farm Location" : Model.ShippingAddress)')">
+                    <i class="bi bi-printer-fill me-1.5"></i> Print Tax Invoice
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Master Unified Order Container -->
+    <div class="order-main-container shadow-sm">
+
+        <!-- Top Header Bar inside Master Box (Matching Farmer Portal) -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-3">
+            <div>
+                <h3 class="fw-extrabold text-dark mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.3px;">
+                    <i class="bi bi-box-seam-fill text-success fs-4"></i> Direct Farm Purchase &amp; Delivery Tracking
+                </h3>
+                <p class="text-muted small mb-0">
+                    Track produce harvest packaging, cargo logistics dispatch, and inspect crop quality before delivery confirmation.
+                </p>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-xs" style="background-color: #ecfdf5; color: #047857; border: 1.5px solid #86efac; font-size: 0.8rem;">
+                    <i class="bi bi-shield-check me-1 text-success"></i> 100% Escrow Protected
+                </span>
+                <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-xs" style="background-color: #eff6ff; color: #1d4ed8; border: 1.5px solid #bfdbfe; font-size: 0.8rem;">
+                    <i class="bi bi-truck me-1 text-primary"></i> @(isParcel ? "ST Bus Parcel / Cargo" : "Direct Farm Handover")
+                </span>
             </div>
         </div>
 

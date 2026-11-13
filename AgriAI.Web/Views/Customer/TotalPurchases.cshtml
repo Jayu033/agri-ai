@@ -12,6 +12,74 @@
 
 @section Styles {
     <style>
+        /* 1. Hero Header Banner (Matching Farmer Portal) */
+        .purchases-hero-header {
+            background: linear-gradient(135deg, #006653 0%, #047857 100%);
+            border-radius: 1.25rem;
+            padding: 2.25rem 2rem;
+            color: #ffffff;
+            margin-bottom: 1.75rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 50, 35, 0.05), 0 1px 4px rgba(0, 0, 0, 0.02);
+            animation: purchasesFadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .purchases-hero-header::after {
+            content: "";
+            position: absolute;
+            right: -30px;
+            bottom: -30px;
+            width: 220px;
+            height: 220px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .purchases-hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 16px;
+            border-radius: 30px;
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(8px);
+        }
+
+        .purchases-hero-title {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        .purchases-hero-subtitle {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.88);
+            max-width: 760px;
+            margin-bottom: 0;
+            line-height: 1.5;
+        }
+
+        @@keyframes purchasesFadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .total-purchases-main-container {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -21,9 +89,40 @@
             margin-bottom: 2rem;
         }
         @@media (max-width: 768px) {
+            .purchases-hero-header {
+                padding: 1.6rem 1.25rem !important;
+                border-radius: 1.15rem !important;
+            }
+            .purchases-header-actions {
+                width: 100% !important;
+                justify-content: flex-start !important;
+                margin-top: 1rem !important;
+            }
+            .purchases-header-actions .btn {
+                flex: 1 1 auto !important;
+                text-align: center !important;
+                justify-content: center !important;
+            }
             .total-purchases-main-container {
                 padding: 1.25rem 1rem;
                 border-radius: 1.25rem;
+            }
+        }
+        @@media (max-width: 576px) {
+            .purchases-hero-header {
+                padding: 1.4rem 1.1rem !important;
+                border-radius: 1rem !important;
+                margin-bottom: 1.25rem !important;
+            }
+            .purchases-hero-title {
+                font-size: 1.45rem !important;
+            }
+            .purchases-hero-subtitle {
+                font-size: 0.82rem !important;
+            }
+            .purchases-hero-badge {
+                font-size: 0.75rem !important;
+                padding: 4px 12px !important;
             }
         }
         .purchase-metric-box {
@@ -81,30 +180,55 @@
 }
 
 <div class="container-fluid py-3 px-2 px-md-3 px-xl-4" style="max-width: 1680px;">
-    <div class="total-purchases-main-container">
-        <!-- Header with Back Button & Action Controls inside Master Box -->
-        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4 pb-3 border-bottom gap-3">
-            <div>
-                <h2 class="fw-extrabold text-dark mb-1" style="letter-spacing: -0.5px;">
-                    My Total Purchases &amp; Financial Summary 📊
-                </h2>
-                <p class="text-muted small mb-0">
-                    <i class="bi bi-shield-check text-success me-1"></i> Itemized purchase ledger, cumulative crop weight (Kg), and direct farmer savings.
+    
+    <!-- 1. Hero Header Banner (Matching Farmer Portal) -->
+    <div class="purchases-hero-header shadow-sm">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-7">
+                <div class="purchases-hero-badge">
+                    <i class="bi bi-wallet2 text-warning"></i>
+                    <span>Customer Account Ledger &bull; 100% Escrow Protected</span>
+                </div>
+                <h1 class="purchases-hero-title">
+                    My Total Purchases &amp; Financial Summary
+                </h1>
+                <p class="purchases-hero-subtitle">
+                    Itemized purchase ledger, cumulative crop weight (Kg), and direct farmer savings verified under AgriAI Escrow standards.
                 </p>
             </div>
-            <div class="d-flex flex-wrap align-items-center gap-2">
-                <a asp-controller="Product" asp-action="Index" class="btn btn-sm btn-outline-success rounded-pill px-3.5 py-2 fw-bold shadow-sm d-inline-flex align-items-center">
-                    <i class="bi bi-shop me-2"></i><span>Browse Crops</span>
+            <div class="col-lg-5 text-lg-end mt-3 mt-lg-0 d-flex flex-wrap gap-2 justify-content-lg-end purchases-header-actions">
+                <a asp-controller="Product" asp-action="Index" class="btn btn-outline-light rounded-pill px-3.5 py-2 fw-bold small shadow-sm d-inline-flex align-items-center">
+                    <i class="bi bi-shop me-1.5"></i><span>Browse Crops</span>
                 </a>
-                <a href="/Customer/Dashboard?tab=activeOrdersTab" class="btn btn-sm btn-outline-success rounded-pill px-3.5 py-2 fw-bold shadow-sm d-inline-flex align-items-center">
-                    <i class="bi bi-box-seam me-2"></i><span>My Active Orders</span>
+                <a href="/Customer/Dashboard?tab=activeOrdersTab" class="btn btn-outline-light rounded-pill px-3.5 py-2 fw-bold small shadow-sm d-inline-flex align-items-center">
+                    <i class="bi bi-box-seam me-1.5"></i><span>Active Orders</span>
                 </a>
-                <a href="/Customer/Dashboard?tab=overviewTab" class="btn btn-sm btn-outline-secondary rounded-pill px-3.5 py-2 fw-bold shadow-sm d-inline-flex align-items-center">
-                    <i class="bi bi-arrow-left me-2"></i><span>Back to Dashboard</span>
+                <a href="/Customer/Dashboard?tab=overviewTab" class="btn btn-outline-light rounded-pill px-3.5 py-2 fw-bold small shadow-sm d-inline-flex align-items-center">
+                    <i class="bi bi-arrow-left me-1.5"></i><span>Dashboard</span>
                 </a>
-                <button type="button" class="btn btn-sm btn-success rounded-pill px-3.5 py-2 fw-bold shadow-sm d-inline-flex align-items-center text-white" style="background-color: #006653; border-color: #006653;" onclick="printPurchaseStatement()">
-                    <i class="bi bi-printer me-2"></i><span>Print Statement</span>
+                <button type="button" class="btn btn-light text-success rounded-pill px-3.5 py-2 fw-bold small shadow-sm d-inline-flex align-items-center" onclick="printPurchaseStatement()">
+                    <i class="bi bi-printer-fill me-1.5"></i><span>Print Statement</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Master Unified Container -->
+    <div class="total-purchases-main-container shadow-sm">
+        <!-- Header inside Master Box (Matching Farmer Portal) -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-3">
+            <div>
+                <h3 class="fw-extrabold text-dark mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.3px;">
+                    <i class="bi bi-journal-text text-success fs-4"></i> Cumulative Purchase Ledger &amp; Analytics
+                </h3>
+                <p class="text-muted small mb-0">
+                    Real-time aggregated spending, direct producer transactions, and crop volume metrics.
+                </p>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-xs" style="background-color: #ecfdf5; color: #047857; border: 1.5px solid #86efac; font-size: 0.8rem;">
+                    <i class="bi bi-shield-check me-1 text-success"></i> 100% Escrow Protected
+                </span>
             </div>
         </div>
 

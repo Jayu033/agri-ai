@@ -14,6 +14,74 @@
 }
 
 <style>
+    /* 1. Hero Header Banner (Matching Farmer Portal) */
+    .checkout-hero-header {
+        background: linear-gradient(135deg, #006653 0%, #047857 100%);
+        border-radius: 1.25rem;
+        padding: 2.25rem 2rem;
+        color: #ffffff;
+        margin-bottom: 1.75rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 50, 35, 0.05), 0 1px 4px rgba(0, 0, 0, 0.02);
+        animation: checkoutFadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .checkout-hero-header::after {
+        content: "";
+        position: absolute;
+        right: -30px;
+        bottom: -30px;
+        width: 220px;
+        height: 220px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .checkout-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 6px 16px;
+        border-radius: 30px;
+        color: #ffffff;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        margin-bottom: 10px;
+        backdrop-filter: blur(8px);
+    }
+
+    .checkout-hero-title {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: -0.5px;
+        margin-bottom: 6px;
+    }
+
+    .checkout-hero-subtitle {
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.88);
+        max-width: 760px;
+        margin-bottom: 0;
+        line-height: 1.5;
+    }
+
+    @@keyframes checkoutFadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     /* Master Unified Container Card (Same Box as Empty State / Dashboard) */
     .checkout-main-container {
         background: #ffffff;
@@ -24,9 +92,40 @@
         margin-bottom: 2rem;
     }
     @@media (max-width: 768px) {
+        .checkout-hero-header {
+            padding: 1.6rem 1.25rem !important;
+            border-radius: 1.15rem !important;
+        }
+        .checkout-header-actions {
+            width: 100% !important;
+            justify-content: flex-start !important;
+            margin-top: 1rem !important;
+        }
+        .checkout-header-actions .btn {
+            flex: 1 1 auto !important;
+            text-align: center !important;
+            justify-content: center !important;
+        }
         .checkout-main-container {
             padding: 1.25rem 1rem;
             border-radius: 1.25rem;
+        }
+    }
+    @@media (max-width: 576px) {
+        .checkout-hero-header {
+            padding: 1.4rem 1.1rem !important;
+            border-radius: 1rem !important;
+            margin-bottom: 1.25rem !important;
+        }
+        .checkout-hero-title {
+            font-size: 1.45rem !important;
+        }
+        .checkout-hero-subtitle {
+            font-size: 0.82rem !important;
+        }
+        .checkout-hero-badge {
+            font-size: 0.75rem !important;
+            padding: 4px 12px !important;
         }
     }
     .checkout-card {
@@ -117,27 +216,53 @@
     
     @if (hasItems)
     {
-        <div class="checkout-main-container">
-            <!-- Top Header Bar inside Unified Master Box -->
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-3">
-                <div>
-                    <h2 class="fw-extrabold text-dark mb-1" style="letter-spacing: -0.5px;">
-                        Direct Farm Checkout 🛒 @(isCart ? $"- Multi-Product Order ({cartItems?.Count} Varieties)" : "")
-                    </h2>
-                    <p class="text-muted small mb-0">
-                        <i class="bi bi-shield-check text-success me-1"></i> Secure escrow-protected order placement directly from verified local Gujarat farmers.
+        <!-- 1. Hero Header Banner (Matching Farmer Portal) -->
+        <div class="checkout-hero-header shadow-sm">
+            <div class="row align-items-center g-3">
+                <div class="col-lg-7">
+                    <div class="checkout-hero-badge">
+                        <i class="bi bi-shield-check text-warning"></i>
+                        <span>Direct Farm Sourced &bull; 100% Escrow Protected</span>
+                    </div>
+                    <h1 class="checkout-hero-title">
+                        Direct Farm Checkout 🛒 @(isCart ? $"- Multi-Product ({cartItems?.Count} Varieties)" : "")
+                    </h1>
+                    <p class="checkout-hero-subtitle">
+                        Direct farm purchase with 100% Escrow security from verified local Gujarat producers. Zero middleman fees.
                     </p>
                 </div>
-                <div class="d-flex align-items-center gap-2">
+                <div class="col-lg-5 text-lg-end mt-3 mt-lg-0 d-flex flex-wrap gap-2 justify-content-lg-end checkout-header-actions">
                     @if (isCart)
                     {
-                        <a href="@(User.IsInRole("Farmer") ? "/Farmer/Dashboard?tab=farmerPurchasesTab" : "/Customer/Dashboard?tab=cartTab")" class="btn btn-outline-secondary rounded-pill px-3.5 py-2 fw-bold small shadow-sm">
-                            <i class="bi bi-cart3 me-1"></i> Edit Cart
+                        <a href="@(User.IsInRole("Farmer") ? "/Farmer/Dashboard?tab=farmerPurchasesTab" : "/Customer/Dashboard?tab=cartTab")" class="btn btn-outline-light rounded-pill px-3.5 py-2 fw-bold small shadow-sm d-inline-flex align-items-center">
+                            <i class="bi bi-cart3 me-1.5"></i> Edit Cart
                         </a>
                     }
-                    <a asp-controller="Product" asp-action="Index" class="btn btn-outline-success rounded-pill px-4 py-2 fw-bold small shadow-sm d-inline-flex align-items-center gap-1.5">
+                    <a asp-controller="Product" asp-action="Index" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold small shadow-sm d-inline-flex align-items-center gap-1.5">
                         <i class="bi bi-arrow-left"></i> Back to Shop
                     </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="checkout-main-container shadow-sm">
+            <!-- Top Header Bar inside Master Box (Matching Farmer Portal) -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-3">
+                <div>
+                    <h3 class="fw-extrabold text-dark mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.3px;">
+                        <i class="bi bi-bag-check-fill text-success fs-4"></i> Produce Order &amp; Settlement Details
+                    </h3>
+                    <p class="text-muted small mb-0">
+                        Review harvest produce items, confirm delivery logistics, and complete escrow-secured checkout.
+                    </p>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-xs" style="background-color: #ecfdf5; color: #047857; border: 1.5px solid #86efac; font-size: 0.8rem;">
+                        <i class="bi bi-patch-check-fill me-1 text-success"></i> Direct Farm Sourced
+                    </span>
+                    <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-xs" style="background-color: #eff6ff; color: #1d4ed8; border: 1.5px solid #bfdbfe; font-size: 0.8rem;">
+                        <i class="bi bi-shield-check me-1 text-primary"></i> 100% Escrow Protected
+                    </span>
                 </div>
             </div>
 
