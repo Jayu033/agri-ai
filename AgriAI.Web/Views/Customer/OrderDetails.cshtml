@@ -507,6 +507,23 @@
                 </div>
             </div>
         }
+        else if (Model.Status == "Ready for Pickup")
+        {
+            <div class="alert alert-success border-0 shadow-sm rounded-4 p-3.5 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3" style="background-color: #ecfdf5; border-left: 5px solid #10b981 !important;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="width: 44px; height: 44px;">
+                        <i class="bi bi-geo-alt-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <strong class="text-success fs-6 d-block">Fresh Harvest is Packed &amp; Ready for Farm Pickup! 🟢</strong>
+                        <p class="small text-muted mb-0">Visit the farmer's land, inspect produce quality, and tap "Confirm Produce Received" below to release payment.</p>
+                    </div>
+                </div>
+                <a href="#pickupPassSection" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm text-white text-nowrap">
+                    <i class="bi bi-arrow-down-circle me-1"></i> View Pickup Pass &amp; Release Payment
+                </a>
+            </div>
+        }
 
         <!-- 2. GSRTC / Private Cargo Bilty Dispatch Card (If Parcel Dispatched) -->
         @if (Model.TransportType != null && (Model.TransportType.Contains("Cargo") || Model.TransportType.Contains("GSRTC") || Model.TransportType.Contains("Parcel")) && (!string.IsNullOrEmpty(Model.BiltyNumber) || !string.IsNullOrEmpty(Model.BiltyImageUrl)))
@@ -631,7 +648,7 @@
                             else
                             {
                                 <strong class="d-block text-dark small mb-0.5">3. Confirm Direct Handover</strong>
-                                <span class="text-muted small" style="font-size: 0.78rem;">Inspect produce in person at the farm, then take direct delivery on the spot.</span>
+                                <span class="text-muted small" style="font-size: 0.78rem;">Inspect produce in person at the farm, then click Confirm Handover on your phone to release payment.</span>
                             }
                         </div>
                     </div>
@@ -672,31 +689,58 @@
         }
         else if (!isParcel && !Model.Status.Contains("Delivered") && Model.Status != "Declined" && Model.Status != "Cancelled")
         {
-            <div class="order-alert-hero order-hero-green mb-4">
+            <div class="order-alert-hero order-hero-green mb-4" id="pickupPassSection">
                 <div class="row align-items-center g-3">
-                    <div class="col-md-7 col-lg-8">
+                    <div class="col-md-7 col-lg-7">
                         <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                             <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill small">
                                 <i class="bi bi-geo-alt-fill me-1"></i> DIRECT FARM PICKUP PASS
                             </span>
-                            <span class="text-white-50 small d-block d-sm-inline" style="font-size: 0.78rem;">100% Escrow Funded &bull; In-Person Handover</span>
+                            <span class="text-white-50 small d-block d-sm-inline" style="font-size: 0.78rem;">100% Escrow Protected &bull; Buyer Confirmation Required</span>
                         </div>
-                        <h4 class="fw-bold text-white mb-1.5" style="font-size: 1.25rem; line-height: 1.3;">Direct Farm Collection &bull; No OTP Needed</h4>
+                        <h4 class="fw-bold text-white mb-1.5" style="font-size: 1.25rem; line-height: 1.3;">Direct Farm Collection &bull; Verify Harvest &amp; Release Payout</h4>
                         <p class="text-white-50 small mb-0" style="font-size: 0.85rem; line-height: 1.5;">
-                            Visit the producer's farm directly. Inspect your fresh harvest produce in person, and the farmer will confirm physical handover directly on the spot.
+                            Visit the producer's farm directly. Inspect your fresh harvest produce in person. Once you are satisfied with the quality, confirm produce handover below to release ₹@Model.TotalAmount.ToString("N2") from escrow to the farmer.
                         </p>
                     </div>
 
-                    <div class="col-md-5 col-lg-4 text-md-end">
-                        <div class="order-hero-action-box d-inline-flex flex-column align-items-center justify-content-center gap-1.5 bg-black bg-opacity-25 p-3 rounded-4 border border-white border-opacity-20 shadow-sm text-center">
-                            <small class="text-white-50 letter-spacing-1 fw-semibold d-block" style="font-size: 0.72rem;">COLLECTION STATUS</small>
-                            <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill shadow-xs" style="font-size: 0.90rem;">
-                                @(Model.Status == "Ready for Pickup" ? "Ready for Farm Pickup 🟢" : (Model.Status == "Accepted" ? "Harvest Packaging in Progress" : Model.Status))
+                    <div class="col-md-5 col-lg-5 text-md-end">
+                        <div class="order-hero-action-box d-inline-flex flex-column align-items-center justify-content-center gap-1.5 bg-black bg-opacity-25 p-3 rounded-4 border border-white border-opacity-20 shadow-sm text-center w-100 w-sm-auto">
+                            <small class="text-white-50 letter-spacing-1 fw-semibold d-block" style="font-size: 0.72rem;">PICKUP PASSCODE (OFFLINE OTP)</small>
+                            <span class="fs-2 fw-extrabold text-warning letter-spacing-3 font-monospace" id="confidentialOtp">
+                                @(string.IsNullOrEmpty(Model.DeliveryOtp) ? "7492" : Model.DeliveryOtp)
                             </span>
-                            <small class="text-white-50 mt-1 d-block" style="font-size: 0.72rem;">Show Order #@Model.Id.ToString("D5") to Farmer</small>
+                            <div class="d-flex align-items-center gap-1.5 mt-1">
+                                <button type="button" class="btn btn-sm btn-light rounded-pill px-3 py-1 fw-bold shadow-sm" onclick="navigator.clipboard.writeText('@Model.DeliveryOtp'); this.innerHTML='<i class=\'bi bi-check2\'></i> Copied!';">
+                                    <i class="bi bi-clipboard me-1"></i> Copy Code
+                                </button>
+                            </div>
+                            <small class="text-white-50 d-block mt-1" style="font-size: 0.70rem;">Share with farmer if your phone has no internet</small>
                         </div>
                     </div>
                 </div>
+
+                @if (Model.Status == "Ready for Pickup" || Model.Status == "Accepted")
+                {
+                    <div class="mt-3 pt-3 border-top border-white border-opacity-15">
+                        <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-3 bg-black bg-opacity-20 p-3 rounded-3">
+                            <div class="d-flex align-items-center gap-2.5 text-white">
+                                <i class="bi bi-shield-lock-fill text-warning fs-3 flex-shrink-0"></i>
+                                <div>
+                                    <span class="fw-bold d-block small">Buyer Escrow Protection Active:</span>
+                                    <span class="text-white-50 small" style="font-size: 0.80rem;">Payment stays secure in escrow until you approve the produce and click the button.</span>
+                                </div>
+                            </div>
+                            <form asp-controller="Customer" asp-action="ConfirmHandover" method="post" class="m-0 flex-shrink-0" onsubmit="return confirm('Have you inspected and received your fresh produce? Clicking OK will release ₹@Model.TotalAmount.ToString("N2") from escrow to the farmer.');">
+                                <input type="hidden" name="orderId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-warning text-dark fw-extrabold px-4 py-2.5 rounded-pill shadow-lg d-flex align-items-center justify-content-center gap-2 w-100" style="font-size: 0.98rem; letter-spacing: -0.2px;">
+                                    <i class="bi bi-patch-check-fill text-success fs-5"></i>
+                                    <span>Confirm Produce Received &amp; Release Payment (₹@Model.TotalAmount.ToString("N2"))</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
             </div>
         }
 

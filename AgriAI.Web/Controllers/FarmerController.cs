@@ -325,6 +325,13 @@ namespace AgriAI.Web.Controllers
 
             if (order != null)
             {
+                // Escrow Security Protection: Farmer cannot unilaterally release payout without buyer confirmation or 4-digit passcode
+                if (status.Equals("Delivered & Settled", StringComparison.OrdinalIgnoreCase))
+                {
+                    TempData["ErrorMessage"] = "❌ Escrow Protection: Payout can only be released when the customer confirms handover on their phone or by verifying their 4-digit Pickup Passcode/OTP.";
+                    return RedirectToFarmerOrder(orderId, returnUrl);
+                }
+
                 order.Status = status;
                 order.CancellationDeadline = DateTime.UtcNow; // Lock review window immediately on dispatch / ready
                 await _context.SaveChangesAsync();
@@ -343,7 +350,10 @@ namespace AgriAI.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> VerifyDeliveryOtp(int orderId, string enteredOtp, string? returnUrl = null)
         {
-            var order = await _context.Orders.FindAsync(orderId);
+            var order = await _context.Orders
+                .Include(o => o.Payment)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
             if (order == null)
             {
                 TempData["ErrorMessage"] = "Order not found.";
@@ -353,12 +363,17 @@ namespace AgriAI.Web.Controllers
             if (!string.IsNullOrEmpty(order.DeliveryOtp) && order.DeliveryOtp.Trim() == enteredOtp?.Trim())
             {
                 order.Status = "Delivered & Settled";
+                order.DeliveredAt = DateTime.UtcNow;
+                if (order.Payment != null && order.Payment.Status != "Completed")
+                {
+                    order.Payment.Status = "Completed";
+                }
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"🔐 OTP Verified successfully! Order #{order.Id:D5} completed and ₹{order.TotalAmount:N2} credited to farmer.";
+                TempData["SuccessMessage"] = $"🔐 Passcode / OTP Verified successfully! Order #{order.Id:D5} completed and ₹{order.TotalAmount:N2} released to farmer.";
             }
             else
             {
-                TempData["ErrorMessage"] = "❌ Invalid Delivery OTP! Please check the 4-digit code in the customer's dashboard.";
+                TempData["ErrorMessage"] = "❌ Invalid Delivery Passcode / OTP! Please check the 4-digit code in the customer's dashboard.";
             }
 
             return RedirectToFarmerOrder(orderId, returnUrl);

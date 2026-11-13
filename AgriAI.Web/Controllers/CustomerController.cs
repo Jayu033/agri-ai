@@ -255,5 +255,60 @@ namespace AgriAI.Web.Controllers
             TempData["SuccessMessage"] = $"🚫 Order #{order.Id:D5} has been cancelled successfully. 100% refund of ₹{order.TotalAmount:N2} will be credited back instantly.";
             return RedirectToAction("OrderDetails", new { id = orderId });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> ConfirmHandover(int orderId, string? returnUrl = null)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userName = User.Identity?.Name;
+
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .Include(o => o.Payment)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null)
+            {
+                TempData["ErrorMessage"] = "Order not found.";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
+            // Verify order ownership
+            if (!User.IsInRole("Admin") && order.CustomerId != userId && order.CustomerId != userName && order.CustomerId != "guest-user")
+            {
+                TempData["ErrorMessage"] = "You do not have authorization to confirm this order.";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
+            // Only allow confirmation if order is in Ready for Pickup, Accepted, or In Transit
+            if (order.Status == "Ready for Pickup" || order.Status == "Accepted" || order.Status == "In Transit")
+            {
+                order.Status = "Delivered & Settled";
+                order.DeliveredAt = DateTime.UtcNow;
+                if (order.Payment != null && order.Payment.Status != "Completed")
+                {
+                    order.Payment.Status = "Completed";
+                }
+                await _context.SaveChangesAsync();
+
+                var farmerName = order.OrderItems.FirstOrDefault()?.Product?.FarmerName ?? "the farmer";
+                TempData["SuccessMessage"] = $"✅ Produce handover confirmed! Order #{order.Id:D5} marked completed and ₹{order.TotalAmount:N2} payment has been released from escrow to {farmerName}.";
+            }
+            else if (order.Status == "Delivered & Settled")
+            {
+                TempData["SuccessMessage"] = $"Order #{order.Id:D5} is already marked delivered and payment released.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = $"Order cannot be confirmed in '{order.Status}' status.";
+            }
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            return RedirectToAction("OrderDetails", new { id = orderId });
+        }
     }
 }
