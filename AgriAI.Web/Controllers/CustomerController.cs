@@ -292,8 +292,19 @@ namespace AgriAI.Web.Controllers
                 }
                 await _context.SaveChangesAsync();
 
-                var farmerName = order.OrderItems.FirstOrDefault()?.Product?.FarmerName ?? "the farmer";
-                TempData["SuccessMessage"] = $"✅ Produce handover confirmed! Order #{order.Id:D5} marked completed and ₹{order.TotalAmount:N2} payment has been released from escrow to {farmerName}.";
+                var farmerId = order.OrderItems.FirstOrDefault()?.Product?.FarmerId;
+                string farmerDisplayName = "the farmer";
+                if (!string.IsNullOrEmpty(farmerId))
+                {
+                    var farmerUser = await _userManager.FindByIdAsync(farmerId) ?? await _userManager.FindByNameAsync(farmerId);
+                    if (farmerUser != null)
+                    {
+                        var fullName = $"{farmerUser.FirstName} {farmerUser.LastName}".Trim();
+                        farmerDisplayName = string.IsNullOrWhiteSpace(fullName) ? (farmerUser.UserName ?? "the farmer") : fullName;
+                    }
+                }
+
+                TempData["SuccessMessage"] = $"✅ Produce handover confirmed! Order #{order.Id:D5} marked completed and ₹{order.TotalAmount:N2} payment has been released from escrow to {farmerDisplayName}.";
             }
             else if (order.Status == "Delivered & Settled")
             {
