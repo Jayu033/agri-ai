@@ -717,13 +717,13 @@
                         </div>
                         <h5 class="fw-bold text-success mb-1">Produce is Packed &amp; Waiting for Buyer Collection</h5>
                         <p class="text-muted small mb-0">
-                            The buyer will collect harvest directly from your farm. Escrow payout will release once buyer confirms handover on their phone or provides their 4-digit Pickup Passcode.
+                            The buyer will collect harvest directly from your farm. No OTP required. Hand over produce and the buyer will confirm handover on their phone to release your payment.
                         </p>
                     </div>
                     <div>
-                        <a href="#otpVerificationCard" class="btn btn-success rounded-pill px-4 py-2.5 fw-bold shadow-sm" style="background-color: #006653; border-color: #006653;">
-                            <i class="bi bi-key-fill me-1"></i> Verify Passcode / Settlement
-                        </a>
+                        <span class="badge rounded-pill px-4 py-2.5 fw-bold shadow-xs text-white" style="background-color: #006653; font-size: 0.90rem;">
+                            <i class="bi bi-phone me-1"></i> Buyer Confirms On Phone
+                        </span>
                     </div>
                 </div>
             </div>
@@ -922,15 +922,15 @@
                         }
                         else if (!isParcel)
                         {
-                            <!-- Direct Farm Pickup: Physical Handover Settlement & Escrow Verification -->
+                            <!-- Direct Farm Pickup: Physical Handover Settlement (NO OTP NEEDED) -->
                             <div class="pickup-handover-box">
                                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2.5">
                                     <div class="d-flex align-items-center gap-2 flex-wrap">
                                         <span class="badge rounded-pill px-3 py-1.5 fw-bold" style="background: #ecfdf5; color: #047857; border: 1.5px solid #86efac; font-size: 0.78rem;">
                                             <i class="bi bi-geo-alt-fill me-1 text-success"></i> DIRECT FARM PICKUP
                                         </span>
-                                        <span class="badge rounded-pill px-3 py-1.5 fw-bold" style="background: #fef3c7; color: #b45309; border: 1.5px solid #fde68a; font-size: 0.78rem;">
-                                            <i class="bi bi-hourglass-split me-1"></i> Awaiting Buyer Confirmation
+                                        <span class="badge rounded-pill px-3 py-1.5 fw-bold" style="background: #f8fafc; color: #15803d; border: 1px solid #86efac; font-size: 0.78rem;">
+                                            <i class="bi bi-check2-circle me-1 text-success"></i> No OTP Required &bull; Direct Handover
                                         </span>
                                     </div>
                                     <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill small">
@@ -942,7 +942,7 @@
                                     Customer Collecting Produce at Farm
                                 </h5>
                                 <p class="text-muted small mb-0" style="line-height: 1.55; font-size: 0.88rem;">
-                                    The customer visits your farm in person. Once you hand over the fresh crop produce and the buyer inspects and approves it, the buyer confirms receipt on their phone to immediately credit ₹@baseAmount.ToString("N2") to your wallet.
+                                    The customer visits your farm in person. Hand over the fresh harvest produce to the customer. When the customer inspects and taps <strong>"Confirm Produce Handover"</strong> on their phone, ₹@baseAmount.ToString("N2") will be credited immediately to your farmer wallet. No OTP is required.
                                 </p>
 
                                 <div class="payout-amount-badge-card">
@@ -952,7 +952,7 @@
                                         </div>
                                         <div>
                                             <span class="d-block text-muted text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">Net Guaranteed Producer Payout</span>
-                                            <span class="fw-bold text-dark" style="font-size: 0.95rem;">Instant Wallet Credit (Escrow Release)</span>
+                                            <span class="fw-bold text-dark" style="font-size: 0.95rem;">Instant Wallet Credit (Upon Customer Confirmation)</span>
                                         </div>
                                     </div>
                                     <div class="text-sm-end mt-2 mt-sm-0">
@@ -961,28 +961,12 @@
                                     </div>
                                 </div>
 
-                                <div class="bg-light p-3.5 rounded-4 border mt-3">
-                                    <div class="d-flex align-items-center gap-2 mb-2">
-                                        <i class="bi bi-shield-lock-fill text-success fs-5"></i>
-                                        <strong class="text-dark small">How Payout is Released:</strong>
+                                <div class="alert alert-warning border-0 rounded-4 p-3 d-flex align-items-center gap-3 mb-0 mt-3" style="background-color: #fefce8; color: #854d0e; border-left: 4px solid #eab308 !important;">
+                                    <i class="bi bi-phone-vibrate fs-3 flex-shrink-0 text-warning"></i>
+                                    <div>
+                                        <strong class="d-block small">Awaiting Customer Confirmation:</strong>
+                                        <span class="small" style="font-size: 0.82rem;">Please ask the customer to open this order on their phone and tap <strong>"Confirm Produce Handover"</strong> once they receive the harvest. Payout will be released to your wallet instantly without needing any OTP.</span>
                                     </div>
-                                    <ul class="text-muted small mb-3 ps-3" style="font-size: 0.84rem; line-height: 1.55;">
-                                        <li><strong>Method 1 (Recommended):</strong> Buyer taps <em>"Confirm Produce Received"</em> on their phone while standing at your farm. Payout is credited to you instantly.</li>
-                                        <li><strong>Method 2 (Offline Backup Passcode):</strong> If the buyer's phone has no internet at the farm, ask them for their <strong>4-digit Pickup Passcode</strong> shown on their phone screen, and enter it below:</li>
-                                    </ul>
-
-                                    <form asp-action="VerifyDeliveryOtp" method="post" class="row g-2 align-items-center">
-                                        <input type="hidden" name="orderId" value="@Model.Id" />
-                                        <div class="col-sm-5 col-md-4">
-                                            <input type="text" name="enteredOtp" placeholder="4-Digit Code" maxlength="6" class="form-control text-center fw-bold fs-4 bg-white shadow-none" style="letter-spacing: 6px; border: 2px solid #86efac; border-radius: 14px; height: 50px;" required />
-                                        </div>
-                                        <div class="col-sm-7 col-md-8">
-                                            <button type="submit" class="btn btn-success w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" style="height: 50px; background-color: #006653; border-color: #006653; border-radius: 14px;">
-                                                <i class="bi bi-shield-check fs-5"></i>
-                                                <span>Verify Code &amp; Release ₹@baseAmount.ToString("N2")</span>
-                                            </button>
-                                        </div>
-                                    </form>
                                 </div>
                             </div>
                         }
