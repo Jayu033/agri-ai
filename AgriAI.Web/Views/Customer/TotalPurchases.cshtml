@@ -102,7 +102,7 @@
                 <a href="/Customer/Dashboard?tab=overviewTab" class="btn btn-sm btn-outline-secondary rounded-pill px-3.5 py-2 fw-bold shadow-sm d-inline-flex align-items-center">
                     <i class="bi bi-arrow-left me-2"></i><span>Back to Dashboard</span>
                 </a>
-                <button type="button" class="btn btn-sm btn-success rounded-pill px-3.5 py-2 fw-bold shadow-sm d-inline-flex align-items-center text-white" style="background-color: #006653; border-color: #006653;" onclick="window.print()">
+                <button type="button" class="btn btn-sm btn-success rounded-pill px-3.5 py-2 fw-bold shadow-sm d-inline-flex align-items-center text-white" style="background-color: #006653; border-color: #006653;" onclick="printPurchaseStatement()">
                     <i class="bi bi-printer me-2"></i><span>Print Statement</span>
                 </button>
             </div>
@@ -448,6 +448,195 @@
         `;
 
         printWindow.document.write(invoiceHtml);
+        printWindow.document.close();
+    }
+
+    function printPurchaseStatement() {
+        const printWindow = window.open('', '_blank', 'width=950,height=950');
+        const statementOrdersData = [
+            @foreach (var o in allOrders)
+            {
+                var firstIt = o.OrderItems.FirstOrDefault();
+                var pName = (firstIt?.Product?.Name ?? "Farm Produce").Replace("'", "\\'");
+                var pCat = (firstIt?.Product?.Category?.Name ?? "Farm Crop").Replace("'", "\\'");
+                var pQty = (firstIt?.Quantity ?? 1) + " Kg";
+                var pRate = "₹" + (firstIt?.UnitPrice ?? o.TotalAmount).ToString("N2");
+                var pLog = (o.TransportType ?? "Direct Farm Pickup").Replace("'", "\\'");
+                var pStat = (o.Status.Contains("Delivered") || o.Status.Contains("Settled")) ? "Delivered" : o.Status;
+                var pTotal = "₹" + o.TotalAmount.ToString("N2");
+                var pDate = o.OrderDate.ToString("dd MMM yyyy");
+                var pId = o.Id.ToString("D5");
+                @:{ id: '@pId', orderDate: '@pDate', productName: '@pName', category: '@pCat', quantity: '@pQty', rate: '@pRate', logistics: '@pLog', status: '@pStat', total: '@pTotal' },
+            }
+        ];
+
+        let rowsHtml = '';
+        if (statementOrdersData.length === 0) {
+            rowsHtml = '<tr><td colspan="7" style="text-align:center; padding: 30px; color: #64748b;">No purchase transactions recorded yet.</td></tr>';
+        } else {
+            statementOrdersData.forEach((item, index) => {
+                const isDeliv = item.status === 'Delivered';
+                const isCanc = item.status === 'Cancelled' || item.status === 'Declined';
+                const statusColor = isDeliv ? '#15803d' : (isCanc ? '#b91c1c' : '#b45309');
+                const statusBg = isDeliv ? '#dcfce7' : (isCanc ? '#fee2e2' : '#fef3c7');
+
+                rowsHtml += `
+                <tr>
+                    <td style="padding: 10px 12px; font-weight: bold; color: #0f172a; border-bottom: 1px solid #e2e8f0; font-size: 12px;">
+                        #${item.id}<br><small style="color: #64748b; font-weight: normal;">${item.orderDate}</small>
+                    </td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 12.5px;">
+                        <span style="font-size: 10.5px; background: #f1f5f9; color: #006653; padding: 2px 6px; border-radius: 4px; font-weight: 600;">${item.category}</span><br>
+                        <strong style="color: #1e293b;">${item.productName}</strong>
+                    </td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: center; font-weight: 600; font-size: 12.5px;">
+                        ${item.quantity}
+                    </td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #475569; font-size: 12px;">
+                        ${item.rate}
+                    </td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 11.5px; color: #475569;">
+                        ${item.logistics}
+                    </td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: center;">
+                        <span style="background: ${statusBg}; color: ${statusColor}; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-block;">
+                            ${item.status}
+                        </span>
+                    </td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 800; color: #006653; font-size: 13px;">
+                        ${item.total}
+                    </td>
+                </tr>`;
+            });
+        }
+
+        const statementHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Purchase Statement - @userName - AgriAI Platform</title>
+            <style>
+                @@page { size: A4 portrait; margin: 12mm 10mm; }
+                body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 25px; color: #1e293b; background: #fff; line-height: 1.4; }
+                .statement-card { max-width: 820px; margin: auto; }
+                .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #006653; padding-bottom: 14px; margin-bottom: 18px; }
+                .logo-title { color: #006653; font-size: 22px; font-weight: 800; margin: 0; }
+                .logo-sub { color: #64748b; font-size: 11.5px; margin: 2px 0 0 0; }
+                .badge-doc { background: #ecfdf5; color: #047857; border: 1.5px solid #86efac; padding: 4px 12px; border-radius: 20px; font-weight: 800; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; }
+                .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+                .info-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; }
+                .info-box h4 { margin: 0 0 4px 0; font-size: 11.5px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+                .info-box p { margin: 2px 0; font-size: 12.5px; color: #1e293b; }
+                .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+                .metric-cell { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px; text-align: center; }
+                .metric-val { font-size: 16px; font-weight: 800; color: #006653; margin-bottom: 2px; }
+                .metric-lbl { font-size: 10.5px; color: #475569; font-weight: 600; text-transform: uppercase; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+                th { background: #f1f5f9; text-align: left; padding: 9px 12px; font-size: 11.5px; color: #334155; border-bottom: 2px solid #cbd5e1; border-top: 1px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.3px; }
+                .grand-total-row td { background: #f8fafc; border-top: 2px solid #006653 !important; font-size: 13.5px; font-weight: 800; color: #006653; padding: 10px 12px; }
+                .footer { border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b; }
+                .stamp { border: 1.5px dashed #86efac; background: #f0fdf4; padding: 5px 12px; border-radius: 6px; color: #15803d; font-weight: 800; font-size: 11px; }
+                @@media print {
+                    body { padding: 0 !important; }
+                    .statement-card { border: none !important; padding: 0 !important; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="statement-card">
+                <div class="header">
+                    <div>
+                        <h1 class="logo-title">🌱 AgriAI Customer Purchase Statement</h1>
+                        <p class="logo-sub">Direct Farm-to-Buyer Agricultural Trade Platform &bull; Gujarat, India</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="badge-doc">Official Account Ledger</span>
+                        <p style="margin: 5px 0 0 0; font-size: 11.5px; color: #64748b;"><strong>Statement Date:</strong> @DateTime.Now.ToString("dd MMM yyyy, hh:mm tt")</p>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-box">
+                        <h4>Account Holder (Buyer)</h4>
+                        <p><strong>Customer Name:</strong> @userName</p>
+                        <p><strong>Account Status:</strong> Verified Buyer</p>
+                        <p><strong>Platform Security:</strong> 100% Escrow Protected</p>
+                    </div>
+                    <div class="info-box">
+                        <h4>Audit &amp; Security Standard</h4>
+                        <p><strong>Platform Escrow:</strong> 100% Escrow Protected Trade</p>
+                        <p><strong>Fulfillment Mode:</strong> Direct Gujarat Producer Network</p>
+                        <p><strong>Total Transactions:</strong> @totalOrdersCount Orders</p>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-cell">
+                        <div class="metric-val">₹@totalSpent.ToString("N2")</div>
+                        <div class="metric-lbl">Total Expenditure</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-val">@totalKg Kg</div>
+                        <div class="metric-lbl">Produce Volume</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-val">@successfulOrdersCount / @totalOrdersCount</div>
+                        <div class="metric-lbl">Fulfilled Orders</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-val">₹@estimatedSavings.ToString("N2")</div>
+                        <div class="metric-lbl">Direct Farmer Savings</div>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Order ID &amp; Date</th>
+                            <th style="width: 25%;">Produce / Crop</th>
+                            <th style="width: 12%; text-align: center;">Quantity</th>
+                            <th style="width: 12%; text-align: right;">Rate (₹/Kg)</th>
+                            <th style="width: 18%;">Logistics</th>
+                            <th style="width: 10%; text-align: center;">Status</th>
+                            <th style="width: 18%; text-align: right;">Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                    <tfoot>
+                        <tr class="grand-total-row">
+                            <td colspan="5" style="text-align: right; text-transform: uppercase;">Cumulative Total Expenditure:</td>
+                            <td colspan="2" style="text-align: right;">₹@totalSpent.ToString("N2")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div class="footer">
+                    <div>
+                        <p style="margin: 0;"><strong>Official Verified Record &bull; AgriAI Platform</strong></p>
+                        <p style="margin: 2px 0 0 0;">This is a computer-generated financial purchase statement verified under AgriAI Escrow Protection standards.</p>
+                    </div>
+                    <div class="stamp">
+                        ✓ VERIFIED BUYER LEDGER
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                window.onload = function() {
+                    setTimeout(function() {
+                        window.print();
+                    }, 400);
+                };
+            <\/script>
+        </body>
+        </html>
+        `;
+
+        printWindow.document.open();
+        printWindow.document.write(statementHtml);
         printWindow.document.close();
     }
 </script>
