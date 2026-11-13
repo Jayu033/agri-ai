@@ -332,7 +332,7 @@ namespace AgriAI.Web.Controllers
                     }
                     else
                     {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        await _signInManager.SignInAsync(user, isPersistent: true);
                         return RedirectToAction("Dashboard", "Customer");
                     }
                 }
@@ -379,7 +379,9 @@ namespace AgriAI.Web.Controllers
                         return View(model);
                     }
 
-                    var result = await _signInManager.PasswordSignInAsync(user.UserName!, model.Password, model.RememberMe, lockoutOnFailure: false);
+                    // Always use persistent cookie (with 30-day sliding expiry) to prevent unexpected session loss on page refresh
+                    bool isPersistent = true;
+                    var result = await _signInManager.PasswordSignInAsync(user.UserName!, model.Password, isPersistent, lockoutOnFailure: false);
                     if (result.Succeeded)
                     {
                         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
