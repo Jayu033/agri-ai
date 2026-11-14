@@ -3,6 +3,11 @@
 
 @{
     ViewData["Title"] = "Farmer Dashboard";
+    string activeTab = Context.Request.Query["tab"].ToString();
+    if (string.IsNullOrEmpty(activeTab))
+    {
+        activeTab = (ViewBag.ActiveTab as string) ?? "overview";
+    }
     var userName = User.Identity?.Name ?? "Farmer";
     var userInitial = userName.Substring(0, 1).ToUpper();
     var productCount = Model?.Count() ?? 0;
@@ -1165,7 +1170,7 @@
                     <!-- ========================================== -->
                     <div id="farmerProfileTab" class="dash-tab-panel @(activeTab == "farmerProfileTab" || activeTab == "profile" ? "active" : "")">
                         @{
-                            var currFarmer = ViewBag.CurrentUser as AgriAI.Web.Models.ApplicationUser;
+                            var currFarmer = ViewBag.CurrentUser as AgriAI.Infrastructure.Identity.ApplicationUser;
                             var farmerDisplayName = (currFarmer != null && !string.IsNullOrWhiteSpace($"{currFarmer.FirstName} {currFarmer.LastName}"))
                                 ? $"{currFarmer.FirstName} {currFarmer.LastName}".Trim()
                                 : userName;
@@ -1318,7 +1323,7 @@
                                     </div>
                                     <div>
                                         <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Listed Produce</small>
-                                        <h4 class="fw-extrabold text-dark mb-0 fs-5">@Model.Count Crops</h4>
+                                        <h4 class="fw-extrabold text-dark mb-0 fs-5">@productCount Crops</h4>
                                     </div>
                                 </div>
                             </div>
@@ -1461,14 +1466,14 @@
                         <!-- Listed Farm Produce Table -->
                         <div class="user-info-card mb-4">
                             <div class="user-info-header">
-                                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-tree text-success me-2"></i>Listed Farm Produce (@Model.Count)</h5>
+                                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-tree text-success me-2"></i>Listed Farm Produce (@productCount)</h5>
                                 <a asp-controller="Product" asp-action="Create" class="btn btn-xs btn-outline-success rounded-pill px-3 fw-bold">
                                     <i class="bi bi-plus-circle me-1"></i> Add Harvest
                                 </a>
                             </div>
 
                             <div class="user-info-body p-0">
-                                @if (Model.Any())
+                                @if (Model != null && Model.Any())
                                 {
                                     <div class="table-responsive">
                                         <table class="table table-hover align-middle mb-0">

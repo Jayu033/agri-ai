@@ -1265,7 +1265,7 @@
                     <!-- ========================================== -->
                     <div id="profileTab" class="dash-tab-panel @(activeTab == "profileTab" || activeTab == "profile" ? "active" : "")">
                         @{
-                            var currCust = ViewBag.CurrentUser as AgriAI.Web.Models.ApplicationUser;
+                            var currCust = ViewBag.CurrentUser as AgriAI.Infrastructure.Identity.ApplicationUser;
                             var custDisplayName = (currCust != null && !string.IsNullOrWhiteSpace($"{currCust.FirstName} {currCust.LastName}"))
                                 ? $"{currCust.FirstName} {currCust.LastName}".Trim()
                                 : (!string.IsNullOrEmpty(displayName) ? displayName : userName);
