@@ -22,6 +22,7 @@ builder.Services.AddDataProtection()
 
 // Ensure physical directories for runtime uploads exist inside wwwroot
 var webRootPath = builder.Environment.WebRootPath ?? Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
+builder.Environment.WebRootPath = webRootPath;
 foreach (var subDir in new[] { "profiles", "kyc", "bilty", "products" })
 {
     var uploadSubFolder = Path.Combine(webRootPath, "uploads", subDir);
@@ -106,7 +107,19 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles(); // CRITICAL: Serves runtime uploaded files from wwwroot (profiles, products, kyc, bilty)
+
+// CRITICAL: Serves runtime uploaded files from physical wwwroot (profiles, products, kyc, bilty)
+var physicalWebRoot = app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+if (Directory.Exists(physicalWebRoot))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(physicalWebRoot),
+        RequestPath = ""
+    });
+}
+app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseSession();
