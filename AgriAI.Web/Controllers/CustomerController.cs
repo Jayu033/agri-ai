@@ -266,8 +266,9 @@ namespace AgriAI.Web.Controllers
             {
                 var buyerUser = await _userManager.FindByIdAsync(order.CustomerId)
                                ?? await _userManager.FindByNameAsync(order.CustomerId);
-                var buyerPhone = order.CustomerPhoneNumber ?? buyerUser?.PhoneNumber ?? "";
-                var buyerName = order.CustomerName ?? buyerUser?.FullName ?? "Customer";
+                var buyerPhone = buyerUser?.PhoneNumber ?? "";
+                var buyerName = $"{buyerUser?.FirstName} {buyerUser?.LastName}".Trim();
+                if (string.IsNullOrEmpty(buyerName)) buyerName = "Customer";
                 var buyerEmail = buyerUser?.Email ?? "";
 
                 await _whatsAppService.SendRefundNotificationToBuyerAsync(
