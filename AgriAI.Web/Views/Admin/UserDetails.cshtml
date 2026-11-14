@@ -53,25 +53,25 @@
     <!-- Alert for Farmer Pending Review -->
     @if (isFarmer && !user.IsApprovedByAdmin)
     {
-        <div class="p-4 rounded-4 border border-warning mb-4 shadow-sm" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);">
+        <div class="p-3 p-md-4 rounded-4 border mb-3 shadow-sm" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-color: #fde68a !important; border-radius: 18px;">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.4rem;">
+                    <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.3rem;">
                         <i class="bi bi-hourglass-split"></i>
                     </div>
                     <div>
-                        <h5 class="fw-bold text-dark mb-1">7/12 (Satbara) KYC Verification Pending</h5>
+                        <h5 class="fw-bold text-dark mb-1 fs-6">7/12 (Satbara) KYC Verification Pending</h5>
                         <p class="text-muted small mb-0">This farmer is awaiting Admin verification before their produce can be published to the public marketplace.</p>
                     </div>
                 </div>
                 <div class="d-flex gap-2">
                     <form asp-action="ApproveFarmer" method="post" class="m-0">
                         <input type="hidden" name="id" value="@user.Id" />
-                        <button type="submit" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
+                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3.5 py-2 fw-bold shadow-sm" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); border: none;">
                             <i class="bi bi-check-circle-fill me-1"></i> Approve Farmer
                         </button>
                     </form>
-                    <button type="button" class="btn btn-outline-danger rounded-pill px-3.5 py-2 fw-bold" onclick="toggleRejectBox()">
+                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-2 fw-bold" onclick="toggleRejectBox()">
                         <i class="bi bi-x-circle me-1"></i> Reject
                     </button>
                 </div>
@@ -322,7 +322,7 @@
     <!-- Farmer Specific: 7/12 KYC Document & Bank Details Row -->
     @if (isFarmer)
     {
-        <div class="row g-4 mb-4">
+        <div class="row g-3 mb-3">
             <!-- 7/12 Satbara Document Proof -->
             <div class="col-lg-6">
                 <div class="user-info-card h-100 d-flex flex-column justify-content-between">
@@ -427,7 +427,7 @@
         </div>
 
         <!-- Listed Crop Produce Table -->
-        <div class="user-info-card mb-4">
+        <div class="user-info-card mb-3">
             <div class="user-info-header">
                 <h5 class="fw-bold text-dark mb-0"><i class="bi bi-tree text-success me-2"></i>Listed Farm Produce (@Model.Products.Count)</h5>
             </div>
