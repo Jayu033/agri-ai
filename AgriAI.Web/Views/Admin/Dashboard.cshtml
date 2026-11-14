@@ -41,19 +41,17 @@
                         </div>
                         <h4 class="dash-user-name">@userName.Split('@')[0]</h4>
                         <span class="dash-user-role-badge" style="background: #f1f5f9; color: #0f172a; border-color: #cbd5e1;">
-                            <i class="bi bi-shield-lock-fill me-1 text-success"></i>Super Administrator
+                            Super Administrator
                         </span>
                     </div>
 
                     <!-- Navigation Tab Buttons (7 Essential Modules) -->
                     <div class="dash-nav-pills">
                         <button type="button" class="dash-tab-link @(activeTab == "overview" ? "active" : "")" onclick="switchDashTab('adminOverviewTab', this)">
-                            <i class="bi bi-speedometer2"></i>
                             <span>1. Executive KPI Overview</span>
                         </button>
                         
                         <button type="button" class="dash-tab-link @(activeTab == "users" ? "active" : "")" onclick="switchDashTab('adminUsersTab', this)">
-                            <i class="bi bi-people-fill"></i>
                             <span>2. Farmer and Users</span>
                             @if (pendingKycCount > 0)
                             {
@@ -62,7 +60,6 @@
                         </button>
 
                         <button type="button" class="dash-tab-link @(activeTab == "escrow" ? "active" : "")" onclick="switchDashTab('adminEscrowTab', this)">
-                            <i class="bi bi-shield-check"></i>
                             <span>3. Escrow &amp; Bilty Payouts</span>
                             @if (inTransitCount > 0)
                             {
@@ -71,33 +68,27 @@
                         </button>
 
                         <button type="button" class="dash-tab-link @(activeTab == "products" ? "active" : "")" onclick="switchDashTab('adminProductsTab', this)">
-                            <i class="bi bi-tree"></i>
                             <span>4. Listed Crops &amp; Categories</span>
                         </button>
 
                         <button type="button" class="dash-tab-link @(activeTab == "orders" ? "active" : "")" onclick="switchDashTab('adminOrdersTab', this)">
-                            <i class="bi bi-receipt"></i>
                             <span>5. Orders &amp; Transactions</span>
                         </button>
 
                         <button type="button" class="dash-tab-link @(activeTab == "ai" ? "active" : "")" onclick="switchDashTab('adminAiTab', this)">
-                            <i class="bi bi-cpu-fill text-success"></i>
                             <span>6. AI &amp; Mandi Intelligence</span>
                         </button>
 
                         <button type="button" class="dash-tab-link @(activeTab == "reports" ? "active" : "")" onclick="switchDashTab('adminReportsTab', this)">
-                            <i class="bi bi-file-earmark-spreadsheet-fill text-primary"></i>
                             <span>7. Reports &amp; Financials</span>
                         </button>
 
                         <button type="button" class="dash-tab-link @(activeTab == "profile" ? "active" : "")" onclick="switchDashTab('adminProfileTab', this)">
-                            <i class="bi bi-person-gear"></i>
                             <span>Admin Profile Settings</span>
                         </button>
 
                         <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
                             <button type="submit" class="dash-tab-link logout-btn">
-                                <i class="bi bi-box-arrow-right"></i>
                                 <span>Logout</span>
                             </button>
                         </form>
@@ -277,10 +268,10 @@
                                     All Users <span id="userFilterCountAll">(@allUsers.Count)</span>
                                 </button>
                                 <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-success" data-filter="Farmer" onclick="filterUsersTable('Farmer', this)">
-                                    <i class="bi bi-tree-fill me-1"></i> Farmers <span id="userFilterCountFarmers">(@allUsers.Count(u => u.Role == "Farmer"))</span>
+                                    Farmers <span id="userFilterCountFarmers">(@allUsers.Count(u => u.Role == "Farmer"))</span>
                                 </button>
                                 <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold user-filter-btn btn-outline-primary" data-filter="Customer" onclick="filterUsersTable('Customer', this)">
-                                    <i class="bi bi-bag-heart me-1"></i> Customers <span id="userFilterCountCustomers">(@allUsers.Count(u => u.Role == "Customer"))</span>
+                                    Customers <span id="userFilterCountCustomers">(@allUsers.Count(u => u.Role == "Customer"))</span>
                                 </button>
                             </div>
                             <div class="admin-search-input-box" style="max-width: 280px;">
@@ -333,11 +324,11 @@
                                             <td>
                                                 @if (user.Role == "Farmer")
                                                 {
-                                                    <span class="admin-badge-role-farmer"><i class="bi bi-tree-fill"></i> Farmer</span>
+                                                    <span class="admin-badge-role-farmer">Farmer</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="admin-badge-role-customer"><i class="bi bi-bag-heart-fill"></i> Customer</span>
+                                                    <span class="admin-badge-role-customer">Customer</span>
                                                 }
                                             </td>
                                             <td>
@@ -1271,7 +1262,7 @@
                                         <h6 class="fw-bold text-dark mb-0 fs-6" id="kycFarmerName"></h6>
                                         <small class="text-muted d-block" id="kycFarmerEmail"></small>
                                         <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-0.5 rounded-pill mt-0.5" style="font-size: 0.70rem;">
-                                            <i class="bi bi-tree-fill me-1"></i> Registered Farmer
+                                            Registered Farmer
                                         </span>
                                     </div>
                                 </div>
@@ -1481,9 +1472,9 @@
 
                 let roleBadgeHtml = '';
                 if (u.role === 'Farmer') {
-                    roleBadgeHtml = '<span class="admin-badge-role-farmer"><i class="bi bi-tree-fill"></i> Farmer</span>';
+                    roleBadgeHtml = '<span class="admin-badge-role-farmer">Farmer</span>';
                 } else {
-                    roleBadgeHtml = '<span class="admin-badge-role-customer"><i class="bi bi-bag-heart-fill"></i> Customer</span>';
+                    roleBadgeHtml = '<span class="admin-badge-role-customer">Customer</span>';
                 }
 
                 let kycHtml = '';

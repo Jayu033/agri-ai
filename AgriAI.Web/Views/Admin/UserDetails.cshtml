@@ -36,8 +36,7 @@
             <!-- Top Header Navigation Banner Card -->
             <div class="admin-header-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3 shadow-sm">
                 <div>
-                    <h2 class="fw-extrabold text-dark mb-1 fs-4 d-flex align-items-center gap-2">
-                        <i class="bi @(isFarmer ? "bi-tree-fill text-success" : "bi-person-badge-fill text-primary")"></i>
+                    <h2 class="fw-extrabold text-dark mb-1 fs-4">
                         @(isFarmer ? "Farmer Profile & Farm Portfolio" : "Customer Profile & Order History")
                     </h2>
                     <p class="text-muted small mb-0">Detailed administrative view for profile verification, order fulfillment, and account controls.</p>
@@ -120,11 +119,11 @@
                             
                             @if (isFarmer)
                             {
-                                <span class="admin-badge-role-farmer"><i class="bi bi-tree-fill"></i> Farmer</span>
+                                <span class="admin-badge-role-farmer">Farmer</span>
                             }
                             else
                             {
-                                <span class="admin-badge-role-customer"><i class="bi bi-bag-heart-fill"></i> Customer</span>
+                                <span class="admin-badge-role-customer">Customer</span>
                             }
 
                             @if (user.IsBlocked)
