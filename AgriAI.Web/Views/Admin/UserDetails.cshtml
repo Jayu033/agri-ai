@@ -147,15 +147,32 @@
                             <a href="mailto:@user.Email" class="text-muted text-decoration-none hover-dark">
                                 <i class="bi bi-envelope me-1"></i>@user.Email
                             </a>
+                            @if (!string.IsNullOrEmpty(user.PhoneNumber))
+                            {
+                                <span>•</span>
+                                <a href="tel:@user.PhoneNumber" class="text-success text-decoration-none hover-dark fw-bold d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-telephone-fill"></i>@user.PhoneNumber
+                                </a>
+                            }
                         </div>
 
-                        @if (!string.IsNullOrEmpty(user.City) || !string.IsNullOrEmpty(user.Address))
-                        {
-                            <div class="user-location-pill mt-1">
-                                <i class="bi bi-geo-alt-fill text-success"></i>
-                                <span>@(string.IsNullOrEmpty(user.Address) ? "" : user.Address + ", ")@(user.City ?? "Gujarat")</span>
-                            </div>
-                        }
+                        <div class="d-flex align-items-center gap-2 flex-wrap mt-1">
+                            @if (!string.IsNullOrEmpty(user.PhoneNumber))
+                            {
+                                <a href="tel:@user.PhoneNumber" class="user-location-pill text-decoration-none shadow-none" style="background: rgba(22, 101, 52, 0.08); border-color: rgba(22, 101, 52, 0.25); color: #166534;" title="Click to call mobile">
+                                    <i class="bi bi-telephone-fill text-success"></i>
+                                    <span class="fw-bold">@user.PhoneNumber</span>
+                                </a>
+                            }
+
+                            @if (!string.IsNullOrEmpty(user.City) || !string.IsNullOrEmpty(user.Address))
+                            {
+                                <div class="user-location-pill">
+                                    <i class="bi bi-geo-alt-fill text-success"></i>
+                                    <span>@(string.IsNullOrEmpty(user.Address) ? "" : user.Address + ", ")@(user.City ?? "Gujarat")</span>
+                                </div>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
@@ -328,13 +345,41 @@
                 <div class="user-info-card h-100 d-flex flex-column justify-content-between">
                     <div>
                         <div class="user-info-header">
-                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-file-earmark-check-fill text-success me-2"></i>7/12 Satbara &amp; KYC Proof</h5>
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 fw-bold px-2.5 py-1 rounded-pill">
-                                @(user.KycDocumentType ?? "7/12 (Satbara)")
+                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-file-earmark-check-fill text-success me-2"></i>KYC Proof</h5>
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 fw-bold px-3 py-1.5 rounded-pill d-inline-flex align-items-center gap-1.5">
+                                <i class="bi bi-shield-check"></i>
+                                <span>@(string.IsNullOrEmpty(user.KycDocumentType) ? "Identity Proof" : user.KycDocumentType)</span>
                             </span>
                         </div>
 
                         <div class="user-info-body">
+                            <!-- Dedicated Proof Detail Box -->
+                            <div class="p-2.5 px-3 bg-light rounded-3 border mb-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+                                <div class="d-flex align-items-center gap-2.5">
+                                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 1rem;">
+                                        <i class="bi bi-file-earmark-text-fill"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Attached Proof Type</small>
+                                        <span class="fw-extrabold text-dark fs-6">@(string.IsNullOrEmpty(user.KycDocumentType) ? "Aadhaar Card / Land Document" : user.KycDocumentType)</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    @if (!string.IsNullOrEmpty(user.KycDocumentPath))
+                                    {
+                                        <span class="badge bg-success rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-1">
+                                            <i class="bi bi-check-circle-fill"></i> Document Attached
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-1">
+                                            <i class="bi bi-exclamation-triangle-fill"></i> Not Uploaded
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+
                             <div class="p-2 border rounded-3 bg-light text-center d-flex align-items-center justify-content-center overflow-hidden mb-3" style="min-height: 260px; max-height: 340px;">
                                 @if (!string.IsNullOrEmpty(user.KycDocumentPath))
                                 {
@@ -344,7 +389,7 @@
                                     }
                                     else
                                     {
-                                        <img src="@Url.Content(user.KycDocumentPath)" class="img-fluid rounded shadow-sm user-avatar-clickable" alt="7/12 Satbara Document" style="max-height: 310px; object-fit: contain;" onclick="openFullPhotoModal('@Url.Content(user.KycDocumentPath)', '7/12 Land Document')" />
+                                        <img src="@Url.Content(user.KycDocumentPath)" class="img-fluid rounded shadow-sm user-avatar-clickable" alt="@(user.KycDocumentType ?? "KYC Proof")" style="max-height: 310px; object-fit: contain;" onclick="openFullPhotoModal('@Url.Content(user.KycDocumentPath)', '@(user.KycDocumentType ?? "KYC Document")')" />
                                     }
                                 }
                                 else
@@ -402,8 +447,14 @@
                                 </div>
                                 <div class="col-6">
                                     <div class="p-3 bg-light rounded-3 border">
-                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">UPI Handle</small>
-                                        <span class="fw-bold text-dark font-monospace fs-6">@(string.IsNullOrEmpty(user.UpiId) ? "None" : user.UpiId)</span>
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Mobile (WhatsApp)</small>
+                                        <span class="fw-bold text-success font-monospace fs-6">@(string.IsNullOrEmpty(user.PhoneNumber) ? "Not Provided" : user.PhoneNumber)</span>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="p-3 bg-light rounded-3 border">
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">UPI Handle / VPA</small>
+                                        <span class="fw-bold text-primary font-monospace fs-6">@(string.IsNullOrEmpty(user.UpiId) ? "None" : user.UpiId)</span>
                                     </div>
                                 </div>
                             </div>
@@ -481,7 +532,7 @@
     }
     else
     {
-        <div class="row g-4 mb-4">
+        <div class="row g-3 mb-3">
             <!-- Customer Shipping & Contact Details -->
             <div class="col-lg-6">
                 <div class="user-info-card h-100 d-flex flex-column justify-content-between">
@@ -514,6 +565,12 @@
                                     </div>
                                 </div>
                                 <div class="col-6">
+                                    <div class="p-3 bg-light rounded-3 border">
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Mobile Phone</small>
+                                        <span class="fw-bold text-success font-monospace fs-6">@(string.IsNullOrEmpty(user.PhoneNumber) ? "Not Provided" : user.PhoneNumber)</span>
+                                    </div>
+                                </div>
+                                <div class="col-12">
                                     <div class="p-3 bg-light rounded-3 border">
                                         <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Email Address</small>
                                         <span class="fw-bold text-dark text-truncate fs-6 d-block">@user.Email</span>
