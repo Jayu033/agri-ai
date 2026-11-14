@@ -313,10 +313,10 @@
                             }
                         </button>
 
-                        <!-- 7. Profile Settings -->
+                        <!-- 7. Profile & Portfolio -->
                         <button type="button" class="dash-tab-link @(activeTab == "profileTab" ? "active" : "")" onclick="switchDashTab('profileTab', this)">
-                            <i class="bi bi-person-gear"></i>
-                            <span>Profile Settings</span>
+                            <i class="bi bi-person-badge-fill text-primary"></i>
+                            <span>Profile &amp; Portfolio</span>
                         </button>
 
                         <!-- 8. Helpdesk & Order Support -->
@@ -1260,45 +1260,365 @@
                         }
                     </div>
 
-                    <!-- TAB 5: My Profile Settings -->
-                    <div id="profileTab" class="dash-tab-panel @(activeTab == "profileTab" ? "active" : "")">
-                        <div class="dash-section-header">
+                    <!-- ========================================== -->
+                    <!-- TAB 7: Customer Profile & Order History    -->
+                    <!-- ========================================== -->
+                    <div id="profileTab" class="dash-tab-panel @(activeTab == "profileTab" || activeTab == "profile" ? "active" : "")">
+                        @{
+                            var currCust = ViewBag.CurrentUser as AgriAI.Web.Models.ApplicationUser;
+                            var custDisplayName = (currCust != null && !string.IsNullOrWhiteSpace($"{currCust.FirstName} {currCust.LastName}"))
+                                ? $"{currCust.FirstName} {currCust.LastName}".Trim()
+                                : (!string.IsNullOrEmpty(displayName) ? displayName : userName);
+                            var custPhotoUrl = currCust?.ProfilePicturePath ?? customerProfilePic;
+                            var hasCustPhoto = !string.IsNullOrWhiteSpace(custPhotoUrl);
+                            decimal custTotalSpent = (decimal)(ViewBag.TotalSpent ?? 0m);
+                            int custTotalOrders = (int)(ViewBag.TotalOrdersCount ?? 0);
+                            int custCompletedOrders = (int)(ViewBag.CompletedOrdersCount ?? 0);
+                            int custActiveOrders = (int)(ViewBag.ActiveOrdersCount ?? 0);
+                            int custTotalKg = (int)(ViewBag.TotalKgPurchased ?? 0);
+                            decimal custSavings = (decimal)(ViewBag.EstimatedSavings ?? 0m);
+                            var custOrderList = ViewBag.Orders as List<AgriAI.Domain.Entities.Order> ?? new List<AgriAI.Domain.Entities.Order>();
+                        }
+
+                        <!-- Top Header Navigation Banner Card -->
+                        <div class="dash-section-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
                             <div>
-                                <h3 class="dash-section-title">My Account &amp; Profile Settings</h3>
-                                <p class="text-muted small mb-0">Manage your verified customer profile and delivery address.</p>
+                                <h3 class="dash-section-title d-flex align-items-center gap-2 mb-1">
+                                    <i class="bi bi-person-badge-fill text-primary"></i>
+                                    <span>Customer Profile &amp; Order History</span>
+                                </h3>
+                                <p class="text-muted small mb-0">Personal administrative view for profile verification, delivery addresses, and complete purchase history.</p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a asp-controller="Profile" asp-action="Index" class="btn btn-sm btn-outline-primary rounded-pill px-3.5 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5">
+                                    <i class="bi bi-pencil-square"></i>
+                                    <span>Edit Credentials</span>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-primary rounded-pill px-3.5 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" onclick="switchDashTab('overviewTab', document.querySelector('[onclick*=\'overviewTab\']'))">
+                                    <i class="bi bi-speedometer2"></i>
+                                    <span>Back to Overview</span>
+                                </button>
                             </div>
                         </div>
 
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-6">
-                                <div class="p-4 rounded-4 border bg-white shadow-sm h-100">
-                                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-person text-success me-1"></i> Account Details</h6>
-                                    <div class="mb-3">
-                                        <label class="form-label small text-muted">Full Name</label>
-                                        <input type="text" class="form-control bg-light" value="@displayName" readonly />
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label small text-muted">Email Address</label>
-                                        <input type="email" class="form-control bg-light" value="@userEmail" readonly />
-                                    </div>
-                                    <div>
-                                        <label class="form-label small text-muted">Phone Number</label>
-                                        <input type="text" class="form-control bg-light" value="@userPhone" readonly />
+                        <!-- Hero Profile Overview Card (Elevated Luxury Banner) -->
+                        <div class="user-profile-hero mb-4">
+                            <div class="row g-4 align-items-center">
+                                <!-- Left Avatar & Details -->
+                                <div class="col-lg-7">
+                                    <div class="d-flex align-items-center gap-4 flex-wrap flex-sm-nowrap">
+                                        <div class="user-hero-avatar-wrap">
+                                            @if (hasCustPhoto)
+                                            {
+                                                <img src="@Url.Content(custPhotoUrl)" class="user-hero-avatar-img user-avatar-clickable" alt="@custDisplayName" title="Click to view full photo" onclick="openFullPhotoModal('@Url.Content(custPhotoUrl)', '@custDisplayName')" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                                <div class="user-hero-avatar-fallback" style="display: none; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+                                                    @userInitial
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="user-hero-avatar-fallback" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+                                                    @userInitial
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <div style="min-width: 0;">
+                                            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                                                <h3 class="fw-extrabold text-dark mb-0 fs-4 text-truncate">@custDisplayName</h3>
+                                                <span class="admin-badge-role-customer"><i class="bi bi-bag-heart-fill"></i> Customer</span>
+                                                <span class="admin-status-dot-active"><i class="bi bi-check-circle-fill"></i> Verified Buyer</span>
+                                            </div>
+
+                                            <div class="text-muted small d-flex align-items-center gap-2 flex-wrap mb-1">
+                                                <span class="text-dark fw-semibold">@@@(userName?.Split('@')[0] ?? "user")</span>
+                                                <span>•</span>
+                                                <span class="text-muted text-decoration-none">
+                                                    <i class="bi bi-envelope me-1"></i>@(currCust?.Email ?? userEmail)
+                                                </span>
+                                            </div>
+
+                                            @if (!string.IsNullOrEmpty(currCust?.City) || !string.IsNullOrEmpty(currCust?.Address))
+                                            {
+                                                <div class="user-location-pill mt-1">
+                                                    <i class="bi bi-geo-alt-fill text-success"></i>
+                                                    <span>@(string.IsNullOrEmpty(currCust?.Address) ? "" : currCust.Address + ", ")@(currCust?.City ?? "Gujarat")</span>
+                                                </div>
+                                            }
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="p-4 rounded-4 border bg-white shadow-sm h-100">
-                                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-shield-check text-success me-1"></i> Security &amp; Guarantee</h6>
-                                    <p class="text-muted small mb-3">Your purchases on AgriAI are protected by automated 2-way Escrow security and verified Farmer certificates.</p>
-                                    <ul class="list-unstyled small text-muted d-flex flex-column gap-2 mb-0">
-                                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>100% Direct Farmer Produce</li>
-                                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Escrow Holding until Delivery</li>
-                                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>4-Digit Secure Delivery OTP verification</li>
-                                    </ul>
+
+                                <!-- Right Controls Bar -->
+                                <div class="col-lg-5">
+                                    <div class="d-flex flex-column align-items-lg-end gap-3">
+                                        <div class="text-lg-end">
+                                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">Registered On</small>
+                                            <span class="fw-bold text-dark fs-6">@(currCust?.CreatedAt.ToString("MMMM dd, yyyy") ?? "Active Member")</span>
+                                        </div>
+
+                                        <div class="d-flex align-items-center gap-2 flex-wrap justify-content-lg-end">
+                                            <a asp-controller="Profile" asp-action="Index" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 fw-bold shadow-sm">
+                                                <i class="bi bi-pencil-square me-1"></i> Edit Profile &amp; Address
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm" onclick="switchDashTab('shopTab', document.querySelector('[onclick*=\'shopTab\']'))">
+                                                <i class="bi bi-shop me-1"></i> Shop Farm Produce
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- 4 KPI Stat Metric Cards -->
+                        <div class="row g-3 mb-4">
+                            <!-- 1. Total Spend -->
+                            <div class="col-xl-3 col-sm-6">
+                                <div class="user-stat-card">
+                                    <div class="user-stat-icon-wrap" style="background: rgba(21, 128, 61, 0.12); color: #15803d;">
+                                        <i class="bi bi-wallet2"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Total Spend</small>
+                                        <h4 class="fw-extrabold text-success mb-0 fs-5">₹@custTotalSpent.ToString("N2")</h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Total Purchases -->
+                            <div class="col-xl-3 col-sm-6">
+                                <div class="user-stat-card">
+                                    <div class="user-stat-icon-wrap" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;">
+                                        <i class="bi bi-bag-check"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Total Purchases</small>
+                                        <h4 class="fw-extrabold text-dark mb-0 fs-5">@custTotalOrders Orders</h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. Settled Deliveries -->
+                            <div class="col-xl-3 col-sm-6">
+                                <div class="user-stat-card">
+                                    <div class="user-stat-icon-wrap" style="background: rgba(13, 148, 136, 0.12); color: #0d9488;">
+                                        <i class="bi bi-box-seam"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Settled Deliveries</small>
+                                        <h4 class="fw-extrabold text-dark mb-0 fs-5">@custCompletedOrders Completed</h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 4. Active Orders -->
+                            <div class="col-xl-3 col-sm-6">
+                                <div class="user-stat-card">
+                                    <div class="user-stat-icon-wrap" style="background: rgba(245, 158, 11, 0.12); color: #d97706;">
+                                        <i class="bi bi-truck"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Active Orders</small>
+                                        <h4 class="fw-extrabold text-dark mb-0 fs-5">@custActiveOrders In-Progress</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delivery Address & Shopping Protection Row -->
+                        <div class="row g-4 mb-4">
+                            <!-- Delivery & Shipping Details -->
+                            <div class="col-lg-6">
+                                <div class="user-info-card h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="user-info-header">
+                                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-geo-alt-fill text-primary me-2"></i>Verified Shipping Address</h5>
+                                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 fw-bold px-2.5 py-1 rounded-pill">
+                                                Primary Destination
+                                            </span>
+                                        </div>
+
+                                        <div class="user-info-body">
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-6">
+                                                    <div class="p-3 bg-light rounded-3 border">
+                                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Recipient Name</small>
+                                                        <span class="fw-bold text-dark fs-6">@custDisplayName</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="p-3 bg-light rounded-3 border">
+                                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Contact Number</small>
+                                                        <span class="fw-bold text-dark fs-6">@(string.IsNullOrEmpty(userPhone) ? "Not Provided" : userPhone)</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="p-3 bg-light rounded-3 border">
+                                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">City / District</small>
+                                                        <span class="fw-bold text-dark fs-6">@(string.IsNullOrEmpty(currCust?.City) ? "Gujarat" : currCust.City)</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="p-3 bg-light rounded-3 border">
+                                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Account Email</small>
+                                                        <span class="fw-bold text-dark text-truncate fs-6 d-block">@(currCust?.Email ?? userEmail)</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="p-3 bg-light rounded-3 border">
+                                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Full Street Address</small>
+                                                        <span class="fw-semibold text-dark fs-6">@(string.IsNullOrEmpty(currCust?.Address) ? "No street address configured yet. Click below to add your delivery address." : currCust.Address)</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="px-4 pb-4">
+                                        <a asp-controller="Profile" asp-action="Index" class="btn btn-outline-primary rounded-pill fw-bold w-100 py-2 shadow-sm">
+                                            <i class="bi bi-pencil-square me-1"></i> Update Shipping Address &amp; Contact
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Escrow Trust & Savings Card -->
+                            <div class="col-lg-6">
+                                <div class="user-info-card h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="user-info-header">
+                                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-shield-lock-fill text-success me-2"></i>Escrow Security &amp; Guarantee</h5>
+                                            <span class="badge bg-success fw-bold px-2.5 py-1 rounded-pill">
+                                                100% Escrow Protected
+                                            </span>
+                                        </div>
+
+                                        <div class="user-info-body">
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-6">
+                                                    <div class="p-3 bg-light rounded-3 border">
+                                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Direct Sourcing</small>
+                                                        <span class="fw-bold text-success fs-6"><i class="bi bi-patch-check-fill me-1"></i>100% Farm Fresh</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="p-3 bg-light rounded-3 border">
+                                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Escrow Protection</small>
+                                                        <span class="fw-bold text-success fs-6"><i class="bi bi-shield-check me-1"></i>Auto Escrow Lock</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="p-3 bg-light rounded-3 border">
+                                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Produce Received</small>
+                                                        <span class="fw-bold text-dark fs-6">@custTotalKg Kg Farm Crops</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="p-3 bg-light rounded-3 border">
+                                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Estimated Savings</small>
+                                                        <span class="fw-bold text-success fs-6">₹@custSavings.ToString("N2")</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="px-4 pb-4">
+                                        <button type="button" class="btn btn-outline-success rounded-pill fw-bold w-100 py-2 shadow-sm" onclick="switchDashTab('shopTab', document.querySelector('[onclick*=\'shopTab\']'))">
+                                            <i class="bi bi-shop me-1"></i> Browse Fresh Farm Produce
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Purchase & Order History Table -->
+                        <div class="user-info-card mb-5">
+                            <div class="user-info-header">
+                                <h5 class="fw-bold text-dark mb-0">
+                                    <i class="bi bi-receipt text-primary me-2"></i>
+                                    Purchase &amp; Order History (@custOrderList.Count)
+                                </h5>
+                                <button type="button" class="btn btn-xs btn-outline-success rounded-pill px-3 fw-bold" onclick="switchDashTab('shopTab', document.querySelector('[onclick*=\'shopTab\']'))">
+                                    <i class="bi bi-plus-circle me-1"></i> New Purchase
+                                </button>
+                            </div>
+
+                            <div class="user-info-body p-0">
+                                @if (custOrderList.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light small text-uppercase">
+                                                <tr>
+                                                    <th class="ps-4">Order ID</th>
+                                                    <th>Date</th>
+                                                    <th>Gross Amount</th>
+                                                    <th>Status</th>
+                                                    <th>Transport &amp; Bilty</th>
+                                                    <th class="text-end pe-4">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var order in custOrderList)
+                                                {
+                                                    <tr>
+                                                        <td class="ps-4">
+                                                            <strong class="text-dark font-monospace">#@order.Id.ToString("D5")</strong>
+                                                        </td>
+                                                        <td class="small text-muted">@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                                                        <td class="fw-extrabold text-success fs-6">₹@order.TotalAmount.ToString("N2")</td>
+                                                        <td>
+                                                            @if (order.Status.Contains("Delivered") || order.Status.Contains("Settled"))
+                                                            {
+                                                                <span class="badge bg-success rounded-pill px-3 py-1.5 fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Delivered &amp; Settled</span>
+                                                            }
+                                                            else if (order.Status == "In Transit")
+                                                            {
+                                                                <span class="badge bg-primary rounded-pill px-3 py-1.5 fw-bold"><i class="bi bi-truck me-1"></i> In Transit</span>
+                                                            }
+                                                            else if (order.Status == "Cancelled" || order.Status == "Declined")
+                                                            {
+                                                                <span class="badge bg-danger rounded-pill px-3 py-1.5 fw-bold">@order.Status</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 fw-bold">@order.Status</span>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            @if (!string.IsNullOrEmpty(order.BiltyImageUrl))
+                                                            {
+                                                                <a href="@Url.Content(order.BiltyImageUrl)" target="_blank" class="badge bg-light text-primary border text-decoration-none px-2.5 py-1">
+                                                                    <i class="bi bi-file-earmark-image me-1"></i>Bilty #@(order.BiltyNumber ?? "Proof")
+                                                                </a>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted small">—</span>
+                                                            }
+                                                        </td>
+                                                        <td class="text-end pe-4">
+                                                            <a asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm d-inline-flex align-items-center gap-1">
+                                                                <i class="bi bi-eye"></i> View Order
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="text-center text-muted py-5">
+                                        <i class="bi bi-bag-x display-5 d-block mb-2 text-secondary opacity-50"></i>
+                                        <p class="mb-0 fw-semibold">No transaction records found for this account.</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>

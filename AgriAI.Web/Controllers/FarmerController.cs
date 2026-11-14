@@ -105,6 +105,24 @@ namespace AgriAI.Web.Controllers
             ViewBag.Orders = incomingOrders;
             ViewBag.CustomerUsers = usersDict;
 
+            decimal settledPayouts = 0m;
+            int fulfilledOrdersCount = 0;
+            if (myProductIds.Any())
+            {
+                var settledOrders = incomingOrders
+                    .Where(o => o.Status.Contains("Delivered") || o.Status.Contains("Settled") || o.Status == "Completed")
+                    .ToList();
+                fulfilledOrdersCount = settledOrders.Count;
+                settledPayouts = settledOrders
+                    .SelectMany(o => o.OrderItems)
+                    .Where(oi => myProductIds.Contains(oi.ProductId))
+                    .Sum(oi => oi.UnitPrice * oi.Quantity);
+            }
+
+            ViewBag.CurrentUser = currentUser;
+            ViewBag.SettledPayouts = settledPayouts;
+            ViewBag.FulfilledOrdersCount = fulfilledOrdersCount;
+
             // Load orders PLACED BY this farmer (Sourced / Purchased from other farmers)
             var purchasedOrders = await _context.Orders
                 .Include(o => o.OrderItems)

@@ -112,6 +112,7 @@ namespace AgriAI.Web.Controllers
             ViewBag.SuccessfulOrdersCount = successfulOrders.Count;
             ViewBag.AllOrders = customerOrders;
             ViewBag.CartSummary = cartSummary;
+            ViewBag.CurrentUser = currentUser;
 
             return View(products);
         }

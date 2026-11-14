@@ -152,10 +152,10 @@
                             }
                         </button>
 
-                        <!-- 6. Settings -->
-                        <button type="button" class="dash-tab-link" onclick="switchDashTab('farmerProfileTab', this)">
-                            <i class="bi bi-gear"></i>
-                            <span>Settings</span>
+                        <!-- 7. Profile & Farm Portfolio -->
+                        <button type="button" class="dash-tab-link @(activeTab == "farmerProfileTab" || activeTab == "profile" ? "active" : "")" onclick="switchDashTab('farmerProfileTab', this)">
+                            <i class="bi bi-person-badge-fill text-success"></i>
+                            <span>Profile &amp; Farm Portfolio</span>
                         </button>
 
                         <!-- 8. Helpdesk & Payout Support -->
@@ -1161,40 +1161,443 @@
 
 
                     <!-- ========================================== -->
-                    <!-- TAB 6: Settings (Profile Settings)         -->
+                    <!-- TAB 7: Farmer Profile & Farm Portfolio     -->
                     <!-- ========================================== -->
-                    <div id="farmerProfileTab" class="dash-tab-panel">
-                        <div class="dash-section-header">
+                    <div id="farmerProfileTab" class="dash-tab-panel @(activeTab == "farmerProfileTab" || activeTab == "profile" ? "active" : "")">
+                        @{
+                            var currFarmer = ViewBag.CurrentUser as AgriAI.Web.Models.ApplicationUser;
+                            var farmerDisplayName = (currFarmer != null && !string.IsNullOrWhiteSpace($"{currFarmer.FirstName} {currFarmer.LastName}"))
+                                ? $"{currFarmer.FirstName} {currFarmer.LastName}".Trim()
+                                : userName;
+                            var farmerPhotoUrl = currFarmer?.ProfilePicturePath ?? farmerProfilePic;
+                            var hasPhoto = !string.IsNullOrWhiteSpace(farmerPhotoUrl);
+                            var isFarmerApproved = currFarmer?.IsApprovedByAdmin ?? false;
+                            decimal farmerSettledPayouts = (decimal)(ViewBag.SettledPayouts ?? 0m);
+                            int farmerFulfilledCount = (int)(ViewBag.FulfilledOrdersCount ?? 0);
+                            var farmerOrderList = incomingOrders ?? new List<AgriAI.Domain.Entities.Order>();
+                        }
+
+                        <!-- Top Header Navigation Banner Card -->
+                        <div class="dash-section-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
                             <div>
-                                <h3 class="dash-section-title">Farm &amp; Producer Settings ⚙️</h3>
-                                <p class="text-muted small mb-0">Update your farming location, producer credentials, and login security.</p>
+                                <h3 class="dash-section-title d-flex align-items-center gap-2 mb-1">
+                                    <i class="bi bi-tree-fill text-success"></i>
+                                    <span>Farmer Profile &amp; Farm Portfolio</span>
+                                </h3>
+                                <p class="text-muted small mb-0">Personal administrative view for profile verification, order fulfillment, and account controls.</p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a asp-controller="Profile" asp-action="Index" class="btn btn-sm btn-outline-success rounded-pill px-3.5 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5">
+                                    <i class="bi bi-pencil-square"></i>
+                                    <span>Edit Credentials</span>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-success rounded-pill px-3.5 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" onclick="switchDashTab('farmerOverviewTab', document.querySelector('[onclick*=\'farmerOverviewTab\']'))">
+                                    <i class="bi bi-speedometer2"></i>
+                                    <span>Back to Overview</span>
+                                </button>
                             </div>
                         </div>
 
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <div class="p-3.5 bg-light rounded-4 border mb-3">
-                                    <label class="form-label small fw-bold text-dark">Farmer Producer Account</label>
-                                    <input type="text" class="form-control bg-white shadow-none" value="@userName" readonly />
-                                </div>
-                                <div class="p-3.5 bg-light rounded-4 border mb-3">
-                                    <label class="form-label small fw-bold text-dark">Primary Farm Region</label>
-                                    <input type="text" class="form-control bg-white shadow-none" value="Gujarat, India" />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="p-3.5 bg-light rounded-4 border mb-3">
-                                    <label class="form-label small fw-bold text-dark">Account Classification</label>
-                                    <input type="text" class="form-control bg-white shadow-none text-success fw-bold" value="Verified Agricultural Producer" readonly />
-                                </div>
-                                <div class="p-3.5 bg-light rounded-4 border mb-3">
-                                    <label class="form-label small fw-bold text-dark">Account Credentials</label>
-                                    <a asp-controller="Profile" asp-action="Index" class="btn btn-outline-success fw-bold rounded-pill w-100">
-                                        <i class="bi bi-shield-lock me-1"></i> Edit Password &amp; Personal Info
+                        <!-- Alert for Farmer Pending Review / Approved / Rejected -->
+                        @if (!isFarmerApproved)
+                        {
+                            <div class="p-4 rounded-4 border border-warning mb-4 shadow-sm" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);">
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.4rem;">
+                                            <i class="bi bi-hourglass-split"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold text-dark mb-1">7/12 (Satbara) KYC Verification Pending</h5>
+                                            <p class="text-muted small mb-0">Your 7/12 land record &amp; identity documents are currently under review by the AgriAI administration team.</p>
+                                        </div>
+                                    </div>
+                                    <a asp-controller="Profile" asp-action="Index" class="btn btn-sm btn-outline-dark rounded-pill px-3 py-1.5 fw-bold">
+                                        <i class="bi bi-file-earmark-arrow-up me-1"></i> Update KYC Document
                                     </a>
                                 </div>
                             </div>
+                        }
+
+                        <!-- Hero Profile Overview Card (Elevated Luxury Banner) -->
+                        <div class="user-profile-hero mb-4">
+                            <div class="row g-4 align-items-center">
+                                <!-- Left Avatar & Details -->
+                                <div class="col-lg-7">
+                                    <div class="d-flex align-items-center gap-4 flex-wrap flex-sm-nowrap">
+                                        <div class="user-hero-avatar-wrap">
+                                            @if (hasPhoto)
+                                            {
+                                                <img src="@Url.Content(farmerPhotoUrl)" class="user-hero-avatar-img user-avatar-clickable" alt="@farmerDisplayName" title="Click to view full photo" onclick="openFullPhotoModal('@Url.Content(farmerPhotoUrl)', '@farmerDisplayName')" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                                <div class="user-hero-avatar-fallback" style="display: none;">
+                                                    @userInitial
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="user-hero-avatar-fallback">
+                                                    @userInitial
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <div style="min-width: 0;">
+                                            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                                                <h3 class="fw-extrabold text-dark mb-0 fs-4 text-truncate">@farmerDisplayName</h3>
+                                                <span class="admin-badge-role-farmer"><i class="bi bi-tree-fill"></i> Farmer</span>
+                                                @if (isFarmerApproved)
+                                                {
+                                                    <span class="admin-status-dot-active"><i class="bi bi-check-circle-fill"></i> Active</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="admin-status-dot-review"><i class="bi bi-hourglass-split"></i> Under Review</span>
+                                                }
+                                            </div>
+
+                                            <div class="text-muted small d-flex align-items-center gap-2 flex-wrap mb-1">
+                                                <span class="text-dark fw-semibold">@@@userName</span>
+                                                <span>•</span>
+                                                <span class="text-muted text-decoration-none">
+                                                    <i class="bi bi-envelope me-1"></i>@(currFarmer?.Email ?? "N/A")
+                                                </span>
+                                            </div>
+
+                                            @if (!string.IsNullOrEmpty(currFarmer?.City) || !string.IsNullOrEmpty(currFarmer?.Address))
+                                            {
+                                                <div class="user-location-pill mt-1">
+                                                    <i class="bi bi-geo-alt-fill text-success"></i>
+                                                    <span>@(string.IsNullOrEmpty(currFarmer?.Address) ? "" : currFarmer.Address + ", ")@(currFarmer?.City ?? "Gujarat")</span>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right Controls Bar -->
+                                <div class="col-lg-5">
+                                    <div class="d-flex flex-column align-items-lg-end gap-3">
+                                        <div class="text-lg-end">
+                                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">Registered On</small>
+                                            <span class="fw-bold text-dark fs-6">@(currFarmer?.CreatedAt.ToString("MMMM dd, yyyy") ?? "Active Producer")</span>
+                                        </div>
+
+                                        <div class="d-flex align-items-center gap-2 flex-wrap justify-content-lg-end">
+                                            <a asp-controller="Profile" asp-action="Index" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm">
+                                                <i class="bi bi-pencil-square me-1"></i> Edit Profile &amp; Bank
+                                            </a>
+                                            <a asp-controller="Product" asp-action="Create" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm">
+                                                <i class="bi bi-plus-circle me-1"></i> Add Harvest Crop
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- 4 KPI Stat Metric Cards -->
+                        <div class="row g-3 mb-4">
+                            <!-- 1. Settled Payouts -->
+                            <div class="col-xl-3 col-sm-6">
+                                <div class="user-stat-card">
+                                    <div class="user-stat-icon-wrap" style="background: rgba(21, 128, 61, 0.12); color: #15803d;">
+                                        <i class="bi bi-cash-stack"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Settled Payouts</small>
+                                        <h4 class="fw-extrabold text-success mb-0 fs-5">₹@farmerSettledPayouts.ToString("N2")</h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Listed Crops -->
+                            <div class="col-xl-3 col-sm-6">
+                                <div class="user-stat-card">
+                                    <div class="user-stat-icon-wrap" style="background: rgba(13, 148, 136, 0.12); color: #0d9488;">
+                                        <i class="bi bi-tree"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Listed Produce</small>
+                                        <h4 class="fw-extrabold text-dark mb-0 fs-5">@Model.Count Crops</h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. Completed Orders -->
+                            <div class="col-xl-3 col-sm-6">
+                                <div class="user-stat-card">
+                                    <div class="user-stat-icon-wrap" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;">
+                                        <i class="bi bi-check2-circle"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Fulfilled Orders</small>
+                                        <h4 class="fw-extrabold text-dark mb-0 fs-5">@farmerFulfilledCount Orders</h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 4. KYC Status -->
+                            <div class="col-xl-3 col-sm-6">
+                                <div class="user-stat-card">
+                                    <div class="user-stat-icon-wrap" style="background: @(isFarmerApproved ? "rgba(22, 163, 74, 0.12)" : "rgba(217, 119, 6, 0.12)"); color: @(isFarmerApproved ? "#16a34a" : "#d97706");">
+                                        <i class="bi @(isFarmerApproved ? "bi-shield-check" : "bi-hourglass-split")"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">KYC Verification</small>
+                                        <h4 class="fw-extrabold @(isFarmerApproved ? "text-success" : "text-warning") mb-0 fs-6">
+                                            @(isFarmerApproved ? "7/12 Verified" : "Pending Review")
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 7/12 Satbara & Bank Details Row -->
+                        <div class="row g-4 mb-4">
+                            <!-- 7/12 Satbara Document Proof -->
+                            <div class="col-lg-6">
+                                <div class="user-info-card h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="user-info-header">
+                                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-file-earmark-check-fill text-success me-2"></i>7/12 Satbara &amp; KYC Proof</h5>
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 fw-bold px-2.5 py-1 rounded-pill">
+                                                @(currFarmer?.KycDocumentType ?? "7/12 (Satbara)")
+                                            </span>
+                                        </div>
+
+                                        <div class="user-info-body">
+                                            <div class="p-2 border rounded-3 bg-light text-center d-flex align-items-center justify-content-center overflow-hidden mb-3" style="min-height: 260px; max-height: 340px;">
+                                                @if (!string.IsNullOrEmpty(currFarmer?.KycDocumentPath))
+                                                {
+                                                    @if (currFarmer.KycDocumentPath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                                                    {
+                                                        <iframe src="@Url.Content(currFarmer.KycDocumentPath)" class="w-100" style="height: 320px; border: none;"></iframe>
+                                                    }
+                                                    else
+                                                    {
+                                                        <img src="@Url.Content(currFarmer.KycDocumentPath)" class="img-fluid rounded shadow-sm user-avatar-clickable" alt="7/12 Satbara Document" style="max-height: 310px; object-fit: contain;" onclick="openFullPhotoModal('@Url.Content(currFarmer.KycDocumentPath)', '7/12 Land Document')" />
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <div class="text-muted p-4">
+                                                        <i class="bi bi-file-earmark-x display-4 text-secondary opacity-50 d-block mb-2"></i>
+                                                        <p class="small mb-2">No document uploaded yet</p>
+                                                        <a asp-controller="Profile" asp-action="Index" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">Upload 7/12 Satbara</a>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @if (!string.IsNullOrEmpty(currFarmer?.KycDocumentPath))
+                                    {
+                                        <div class="px-4 pb-4">
+                                            <a href="@Url.Content(currFarmer.KycDocumentPath)" target="_blank" class="btn btn-outline-success rounded-pill fw-bold w-100 py-2 shadow-sm">
+                                                <i class="bi bi-arrows-fullscreen me-1"></i> Open / Download Original Document
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Bank & Payout Details -->
+                            <div class="col-lg-6">
+                                <div class="user-info-card h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="user-info-header">
+                                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-bank text-primary me-2"></i>Bank Account &amp; Payout Setup</h5>
+                                            <span class="badge @(isFarmerApproved ? "bg-success" : "bg-warning text-dark") fw-bold px-2.5 py-1 rounded-pill">
+                                                @(isFarmerApproved ? "Verified Bank" : "Pending Verification")
+                                            </span>
+                                        </div>
+
+                                        <div class="user-info-body">
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-6">
+                                                    <div class="p-3 bg-light rounded-3 border">
+                                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Bank Name</small>
+                                                        <span class="fw-bold text-dark fs-6">@(string.IsNullOrEmpty(currFarmer?.BankName) ? "Not Provided" : currFarmer.BankName)</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="p-3 bg-light rounded-3 border">
+                                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Account Number</small>
+                                                        <span class="fw-bold text-success font-monospace fs-6">@(string.IsNullOrEmpty(currFarmer?.BankAccountNumber) ? "Not Provided" : currFarmer.BankAccountNumber)</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="p-3 bg-light rounded-3 border">
+                                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">IFSC Code</small>
+                                                        <span class="fw-bold text-dark font-monospace fs-6">@(string.IsNullOrEmpty(currFarmer?.BankIfscCode) ? "Not Provided" : currFarmer.BankIfscCode)</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="p-3 bg-light rounded-3 border">
+                                                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">UPI Handle</small>
+                                                        <span class="fw-bold text-dark font-monospace fs-6">@(string.IsNullOrEmpty(currFarmer?.UpiId) ? "None" : currFarmer.UpiId)</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="px-4 pb-4">
+                                        <div class="p-3 bg-success bg-opacity-10 rounded-3 border border-success border-opacity-25 d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <small class="text-success fw-bold text-uppercase d-block" style="font-size: 0.70rem;">TOTAL COMPLETED PAYOUTS</small>
+                                                <span class="fs-4 fw-extrabold text-success">₹@farmerSettledPayouts.ToString("N2")</span>
+                                            </div>
+                                            <div class="text-end">
+                                                <small class="text-muted d-block" style="font-size: 0.70rem;">FULFILLED ORDERS</small>
+                                                <span class="fw-bold text-dark fs-5">@farmerFulfilledCount</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Listed Farm Produce Table -->
+                        <div class="user-info-card mb-4">
+                            <div class="user-info-header">
+                                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-tree text-success me-2"></i>Listed Farm Produce (@Model.Count)</h5>
+                                <a asp-controller="Product" asp-action="Create" class="btn btn-xs btn-outline-success rounded-pill px-3 fw-bold">
+                                    <i class="bi bi-plus-circle me-1"></i> Add Harvest
+                                </a>
+                            </div>
+
+                            <div class="user-info-body p-0">
+                                @if (Model.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light small text-uppercase">
+                                                <tr>
+                                                    <th class="ps-4">Crop Name</th>
+                                                    <th>Category</th>
+                                                    <th>Direct Price (₹)</th>
+                                                    <th>Stock Level</th>
+                                                    <th class="text-end pe-4">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var prod in Model)
+                                                {
+                                                    <tr>
+                                                        <td class="ps-4"><strong class="text-dark">@prod.Name</strong></td>
+                                                        <td><span class="badge bg-light text-dark border">@(prod.Category?.Name ?? "Produce")</span></td>
+                                                        <td class="fw-bold text-success">₹@prod.Price.ToString("N2")</td>
+                                                        <td>
+                                                            <span class="badge @(prod.StockQuantity > 0 ? "bg-success bg-opacity-10 text-success" : "bg-danger bg-opacity-10 text-danger") fw-bold px-2.5 py-1 rounded-pill">
+                                                                @prod.StockQuantity units
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-end pe-4">
+                                                            <a asp-controller="Product" asp-action="Details" asp-route-id="@prod.Id" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 fw-bold" target="_blank">
+                                                                <i class="bi bi-eye me-1"></i> View
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="text-center text-muted py-5">
+                                        <i class="bi bi-basket display-5 d-block mb-2 text-secondary opacity-50"></i>
+                                        <p class="mb-0 fw-semibold">No products listed by this farmer yet.</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Fulfillment & Orders Received Table -->
+                        <div class="user-info-card mb-5">
+                            <div class="user-info-header">
+                                <h5 class="fw-bold text-dark mb-0">
+                                    <i class="bi bi-receipt text-primary me-2"></i>
+                                    Fulfillment &amp; Orders Received (@farmerOrderList.Count)
+                                </h5>
+                            </div>
+
+                            <div class="user-info-body p-0">
+                                @if (farmerOrderList.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light small text-uppercase">
+                                                <tr>
+                                                    <th class="ps-4">Order ID</th>
+                                                    <th>Date</th>
+                                                    <th>Gross Amount</th>
+                                                    <th>Status</th>
+                                                    <th>Transport &amp; Bilty</th>
+                                                    <th class="text-end pe-4">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var order in farmerOrderList)
+                                                {
+                                                    <tr>
+                                                        <td class="ps-4">
+                                                            <strong class="text-dark font-monospace">#@order.Id.ToString("D5")</strong>
+                                                        </td>
+                                                        <td class="small text-muted">@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                                                        <td class="fw-extrabold text-success fs-6">₹@order.TotalAmount.ToString("N2")</td>
+                                                        <td>
+                                                            @if (order.Status.Contains("Delivered") || order.Status.Contains("Settled"))
+                                                            {
+                                                                <span class="badge bg-success rounded-pill px-3 py-1.5 fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Delivered &amp; Settled</span>
+                                                            }
+                                                            else if (order.Status == "In Transit")
+                                                            {
+                                                                <span class="badge bg-primary rounded-pill px-3 py-1.5 fw-bold"><i class="bi bi-truck me-1"></i> In Transit</span>
+                                                            }
+                                                            else if (order.Status == "Cancelled" || order.Status == "Declined")
+                                                            {
+                                                                <span class="badge bg-danger rounded-pill px-3 py-1.5 fw-bold">@order.Status</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 fw-bold">@order.Status</span>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            @if (!string.IsNullOrEmpty(order.BiltyImageUrl))
+                                                            {
+                                                                <a href="@Url.Content(order.BiltyImageUrl)" target="_blank" class="badge bg-light text-primary border text-decoration-none px-2.5 py-1">
+                                                                    <i class="bi bi-file-earmark-image me-1"></i>Bilty #@(order.BiltyNumber ?? "Proof")
+                                                                </a>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted small">—</span>
+                                                            }
+                                                        </td>
+                                                        <td class="text-end pe-4">
+                                                            <a asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm d-inline-flex align-items-center gap-1">
+                                                                <i class="bi bi-eye"></i> View Order
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="text-center text-muted py-5">
+                                        <i class="bi bi-bag-x display-5 d-block mb-2 text-secondary opacity-50"></i>
+                                        <p class="mb-0 fw-semibold">No transaction records found for this account.</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>
