@@ -174,7 +174,7 @@
                 else if (step5_Settled)
                 {
                     <span class="badge bg-success rounded-pill px-3 py-1.5 fw-bold fs-6" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%) !important;">
-                        <i class="bi bi-patch-check-fill me-1"></i>Delivered &amp; Settled 🟢
+                        <i class="bi bi-patch-check-fill me-1"></i>Delivered &amp; Settled
                     </span>
                 }
                 else if (Model.Status == "In Transit")
@@ -220,7 +220,7 @@
                     <div>
                         <div class="d-flex align-items-center gap-2">
                             <span class="badge @(step5_Settled ? "bg-success" : "bg-primary") fw-bold rounded-pill px-2.5 py-1" style="font-size: 0.70rem;">
-                                @(step5_Settled ? "ESCROW SETTLED 🟢" : "PAYOUT MODERATION ACTIVE")
+                                @(step5_Settled ? "ESCROW SETTLED" : "PAYOUT MODERATION ACTIVE")
                             </span>
                             <span class="text-muted small">Escrow Vault: <strong>₹@Model.TotalAmount.ToString("N2")</strong></span>
                         </div>

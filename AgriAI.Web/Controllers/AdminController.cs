@@ -505,12 +505,12 @@ namespace AgriAI.Web.Controllers
                 try
                 {
                     var waRes = await _whatsAppService.SendFarmerKycApprovedNotificationAsync(user.PhoneNumber, farmerName, user.Email ?? "");
-                    _logger.LogInformation("✅ [Admin KYC Approval] WhatsApp notification sent to {Phone}. Success={Success}, MsgId={MsgId}",
+                    _logger.LogInformation("[Admin KYC Approval] WhatsApp notification sent to {Phone}. Success={Success}, MsgId={MsgId}",
                         user.PhoneNumber, waRes.Success, waRes.MessageId);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "❌ Failed to send WhatsApp KYC Approval notification to {Phone}", user.PhoneNumber);
+                    _logger.LogError(ex, "Failed to send WhatsApp KYC Approval notification to {Phone}", user.PhoneNumber);
                 }
             }
 
@@ -748,7 +748,7 @@ namespace AgriAI.Web.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"🛡️ Escrow Payout of ₹{order.TotalAmount:N2} for Order #{order.Id:D5} has been released to Farmer Bank based on verified Bilty Proof!";
+            TempData["SuccessMessage"] = $"Escrow Payout of ₹{order.TotalAmount:N2} for Order #{order.Id:D5} has been released to Farmer Bank based on verified Bilty Proof!";
             return RedirectToAction(nameof(Dashboard));
         }
 

@@ -128,7 +128,7 @@
                     <div id="adminOverviewTab" class="dash-tab-panel @(activeTab == "overview" ? "active" : "")">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">Platform Master Dashboard 🛡️</h3>
+                                <h3 class="dash-section-title">Platform Master Dashboard</h3>
                                 <p class="text-muted small mb-0">System-wide monitoring for Gujarat APMC market rates, Escrow settlements, and Farmer network.</p>
                             </div>
                             <div class="d-flex gap-2">
@@ -426,7 +426,7 @@
                         <!-- Header Banner -->
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">🛡️ Escrow Vault &amp; Bilty Payout Moderation</h3>
+                                <h3 class="dash-section-title">Escrow Vault &amp; Bilty Payout Moderation</h3>
                                 <p class="text-muted small mb-0">Full-cycle financial security: Inspect uploaded transport LR/Bilty proofs, audit bank accounts, and release escrow payouts to Gujarat farmers.</p>
                             </div>
                             <div class="d-flex gap-2">
@@ -614,7 +614,7 @@
                                                 @if (isSettled)
                                                 {
                                                     <span class="badge bg-success rounded-pill px-2.5 py-1 fw-bold" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%) !important; font-size: 0.72rem;">
-                                                        <i class="bi bi-check-circle-fill me-1"></i>Settled &amp; Paid 🟢
+                                                        <i class="bi bi-check-circle-fill me-1"></i>Settled &amp; Paid
                                                     </span>
                                                 }
                                                 else if (order.Status == "In Transit")
@@ -788,7 +788,7 @@
                                             <td>
                                                 @if (order.Status == "Requested")
                                                 {
-                                                    <span class="badge bg-warning text-dark fw-bold">Requested ⏳</span>
+                                                    <span class="badge bg-warning text-dark fw-bold">Requested</span>
                                                 }
                                                 else if (order.Status == "Accepted")
                                                 {
@@ -796,11 +796,11 @@
                                                 }
                                                 else if (order.Status == "In Transit")
                                                 {
-                                                    <span class="badge bg-primary text-white fw-bold">In Transit 🚚</span>
+                                                    <span class="badge bg-primary text-white fw-bold">In Transit</span>
                                                 }
                                                 else if (order.Status.Contains("Delivered") || order.Status.Contains("Settled"))
                                                 {
-                                                    <span class="badge bg-success text-white fw-bold">Delivered &amp; Settled 🟢</span>
+                                                    <span class="badge bg-success text-white fw-bold">Delivered &amp; Settled</span>
                                                 }
                                                 else if (order.Status == "Declined" || order.Status == "Cancelled")
                                                 {
@@ -828,7 +828,7 @@
                     <div id="adminAiTab" class="dash-tab-panel @(activeTab == "ai" ? "active" : "")">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">AI Engine &amp; Gujarat Mandi Intelligence 🤖</h3>
+                                <h3 class="dash-section-title">AI Engine &amp; Gujarat Mandi Intelligence</h3>
                                 <p class="text-muted small mb-0">Real-time market analytics, crop demand trends, and AI prediction models.</p>
                             </div>
                             <a asp-controller="Home" asp-action="LiveMandi" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm">
@@ -841,17 +841,17 @@
                             <div class="col-md-4">
                                 <div class="p-3 bg-light rounded-4 border">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span class="fw-bold text-dark">🌾 Wheat (Tukdi)</span>
+                                        <span class="fw-bold text-dark">Wheat (Tukdi)</span>
                                         <span class="badge bg-success text-white">Rajkot APMC</span>
                                     </div>
                                     <div class="fs-5 fw-extrabold text-success">₹2,480 - ₹2,750 <small class="text-muted fs-6">/ Qtl</small></div>
-                                    <small class="text-muted" style="font-size: 0.72rem;">Demand: High • Trend: Bullish 📈</small>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Demand: High • Trend: Bullish</small>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="p-3 bg-light rounded-4 border">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span class="fw-bold text-dark">☁️ Cotton (Kapas)</span>
+                                        <span class="fw-bold text-dark">Cotton (Kapas)</span>
                                         <span class="badge bg-success text-white">Gondal APMC</span>
                                     </div>
                                     <div class="fs-5 fw-extrabold text-success">₹7,200 - ₹7,850 <small class="text-muted fs-6">/ Qtl</small></div>
@@ -861,11 +861,11 @@
                             <div class="col-md-4">
                                 <div class="p-3 bg-light rounded-4 border">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span class="fw-bold text-dark">🌿 Cumin (Jeera)</span>
+                                        <span class="fw-bold text-dark">Cumin (Jeera)</span>
                                         <span class="badge bg-success text-white">Unjha APMC</span>
                                     </div>
                                     <div class="fs-5 fw-extrabold text-success">₹24,500 - ₹28,000 <small class="text-muted fs-6">/ Qtl</small></div>
-                                    <small class="text-muted" style="font-size: 0.72rem;">Demand: Very High • Trend: Bullish 📈</small>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Demand: Very High • Trend: Bullish</small>
                                 </div>
                             </div>
                         </div>
@@ -911,7 +911,7 @@
                                     </span>
                                     <span class="text-muted small">&bull; Real-time Decision Support System</span>
                                 </div>
-                                <h3 class="dash-section-title mb-1">📊 Strategic Reports, Financial Intelligence &amp; Business Decisions</h3>
+                                <h3 class="dash-section-title mb-1">Strategic Reports, Financial Intelligence &amp; Business Decisions</h3>
                                 <p class="text-muted small mb-0">Transform platform trade data into certified statements for GST tax filing, bank NEFT transfers, profit &amp; loss analysis, and investor reviews.</p>
                             </div>
                             <div class="d-flex align-items-center gap-2">
@@ -992,7 +992,7 @@
                                         </div>
 
                                         <div class="p-3 bg-light rounded-3 border my-3">
-                                            <strong class="d-block text-dark small mb-1">🎯 Key Strategic Decisions &amp; Insights:</strong>
+                                            <strong class="d-block text-dark small mb-1">Key Strategic Decisions &amp; Insights:</strong>
                                             <ul class="mb-0 text-muted small ps-3" style="line-height: 1.6;">
                                                 <li>Identify high-demand crop commodities across Gujarat APMC districts (Rajkot, Unjha, Gondal).</li>
                                                 <li>Evaluate month-on-month sales growth and calculate average transaction volume.</li>
@@ -1030,7 +1030,7 @@
                                         </div>
 
                                         <div class="p-3 bg-light rounded-3 border my-3">
-                                            <strong class="d-block text-dark small mb-1">🎯 Key Strategic Decisions &amp; Insights:</strong>
+                                            <strong class="d-block text-dark small mb-1">Key Strategic Decisions &amp; Insights:</strong>
                                             <ul class="mb-0 text-muted small ps-3" style="line-height: 1.6;">
                                                 <li>Provide certified audited transaction ledgers to Chartered Accountants (CA).</li>
                                                 <li>Streamline 18% GST calculation on platform fees and Input Tax Credit (ITC) reconciliation.</li>
@@ -1068,7 +1068,7 @@
                                         </div>
 
                                         <div class="p-3 bg-light rounded-3 border my-3">
-                                            <strong class="d-block text-dark small mb-1">🎯 Key Strategic Decisions &amp; Insights:</strong>
+                                            <strong class="d-block text-dark small mb-1">Key Strategic Decisions &amp; Insights:</strong>
                                             <ul class="mb-0 text-muted small ps-3" style="line-height: 1.6;">
                                                 <li>Access verified bank account numbers, IFSC codes, and UPI handles for all registered producers.</li>
                                                 <li>Generate direct NEFT / RTGS batch payment files for bank branch transfers.</li>
@@ -1106,7 +1106,7 @@
                                         </div>
 
                                         <div class="p-3 bg-light rounded-3 border my-3">
-                                            <strong class="d-block text-dark small mb-1">🎯 Key Strategic Decisions &amp; Insights:</strong>
+                                            <strong class="d-block text-dark small mb-1">Key Strategic Decisions &amp; Insights:</strong>
                                             <ul class="mb-0 text-muted small ps-3" style="line-height: 1.6;">
                                                 <li>Audit total buyer inflows against farmer payouts and active vault balances.</li>
                                                 <li>Review net 2% platform commission revenues broken down by date, month, and year.</li>
