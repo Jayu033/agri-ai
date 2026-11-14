@@ -710,7 +710,8 @@ namespace AgriAI.Web.Controllers
                 user.SecurityStamp = Guid.NewGuid().ToString();
                 await _userManager.UpdateAsync(user);
 
-                var displayName = !string.IsNullOrWhiteSpace(user.FullName) ? user.FullName : (user.UserName ?? user.Email);
+                var fullName = $"{user.FirstName} {user.LastName}".Trim();
+                var displayName = !string.IsNullOrWhiteSpace(fullName) ? fullName : (user.UserName ?? user.Email);
                 TempData["SuccessMessage"] = $"Password for '{displayName}' has been updated successfully!";
             }
             else
