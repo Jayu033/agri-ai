@@ -308,13 +308,15 @@ namespace AgriAI.Web.Controllers
             order.IsFarmerDeclined = true;
             order.FarmerDeclineReason = string.IsNullOrWhiteSpace(reason) ? "Produce unavailable / harvest constraint" : reason.Trim();
 
+            string refundId = "rfnd_direct";
             // Process Razorpay Escrow Refund if paid online
             if (order.Payment != null && !string.IsNullOrEmpty(order.Payment.RazorpayPaymentId))
             {
-                var (refundOk, refundId, refundErr) = await _razorpayService.RefundPaymentAsync(order.Payment.RazorpayPaymentId, order.TotalAmount);
+                var (refundOk, rId, refundErr) = await _razorpayService.RefundPaymentAsync(order.Payment.RazorpayPaymentId, order.TotalAmount);
                 if (refundOk)
                 {
                     order.Payment.Status = "Refunded";
+                    refundId = rId;
                 }
             }
 
@@ -328,6 +330,23 @@ namespace AgriAI.Web.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            // Send Refund Notification to Buyer (WhatsApp + HTML Email)
+            try
+            {
+                var buyerUser = await _userManager.FindByIdAsync(order.CustomerId)
+                               ?? await _userManager.FindByNameAsync(order.CustomerId);
+                var buyerPhone = order.CustomerPhoneNumber ?? buyerUser?.PhoneNumber ?? "";
+                var buyerName = order.CustomerName ?? buyerUser?.FullName ?? "Customer";
+                var buyerEmail = buyerUser?.Email ?? "";
+
+                await _whatsAppService.SendRefundNotificationToBuyerAsync(
+                    order, buyerPhone, buyerName, order.TotalAmount, refundId, order.FarmerDeclineReason ?? "Produce unavailable / harvest constraint", buyerEmail);
+            }
+            catch
+            {
+                // Notification failure shouldn't block declining
+            }
 
             TempData["SuccessMessage"] = $"❌ Order #{order.Id:D5} cancelled/declined. Customer notified and ₹{order.TotalAmount:N2} will be refunded.";
             return RedirectToFarmerOrder(orderId, returnUrl);

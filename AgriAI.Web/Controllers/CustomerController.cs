@@ -17,12 +17,18 @@ namespace AgriAI.Web.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IRazorpayPaymentService _razorpayService;
+        private readonly IWhatsAppNotificationService _whatsAppService;
 
-        public CustomerController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IRazorpayPaymentService razorpayService)
+        public CustomerController(
+            ApplicationDbContext context, 
+            UserManager<ApplicationUser> userManager, 
+            IRazorpayPaymentService razorpayService,
+            IWhatsAppNotificationService whatsAppService)
         {
             _context = context;
             _userManager = userManager;
             _razorpayService = razorpayService;
+            _whatsAppService = whatsAppService;
         }
 
         public async Task<IActionResult> Dashboard()
@@ -232,13 +238,15 @@ namespace AgriAI.Web.Controllers
             order.IsCustomerCancelled = true;
             order.CustomerCancelReason = string.IsNullOrWhiteSpace(reason) ? "Cancelled by buyer within 3-hour review window" : reason.Trim();
 
+            string refundId = "rfnd_direct";
             // Process Razorpay Escrow Refund if paid online
             if (order.Payment != null && !string.IsNullOrEmpty(order.Payment.RazorpayPaymentId))
             {
-                var (refundOk, refundId, refundErr) = await _razorpayService.RefundPaymentAsync(order.Payment.RazorpayPaymentId, order.TotalAmount);
+                var (refundOk, rId, refundErr) = await _razorpayService.RefundPaymentAsync(order.Payment.RazorpayPaymentId, order.TotalAmount);
                 if (refundOk)
                 {
                     order.Payment.Status = "Refunded";
+                    refundId = rId;
                 }
             }
 
@@ -252,6 +260,23 @@ namespace AgriAI.Web.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            // Send Refund Notification (WhatsApp + Email)
+            try
+            {
+                var buyerUser = await _userManager.FindByIdAsync(order.CustomerId)
+                               ?? await _userManager.FindByNameAsync(order.CustomerId);
+                var buyerPhone = order.CustomerPhoneNumber ?? buyerUser?.PhoneNumber ?? "";
+                var buyerName = order.CustomerName ?? buyerUser?.FullName ?? "Customer";
+                var buyerEmail = buyerUser?.Email ?? "";
+
+                await _whatsAppService.SendRefundNotificationToBuyerAsync(
+                    order, buyerPhone, buyerName, order.TotalAmount, refundId, order.CustomerCancelReason ?? "Cancelled within 3-hour review window", buyerEmail);
+            }
+            catch
+            {
+                // Notification failure shouldn't block cancellation
+            }
 
             TempData["SuccessMessage"] = $"🚫 Order #{order.Id:D5} has been cancelled successfully. 100% refund of ₹{order.TotalAmount:N2} will be credited back instantly.";
             return RedirectToAction("OrderDetails", new { id = orderId });

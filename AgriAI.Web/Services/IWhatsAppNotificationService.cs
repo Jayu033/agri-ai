@@ -23,5 +23,8 @@ namespace AgriAI.Web.Services
             
         Task<(bool Success, string MessageId, string ErrorMessage)> SendFarmerKycApprovedNotificationAsync(
             string farmerPhone, string farmerName, string farmerEmail = "");
+
+        Task<(bool Success, string MessageId, string ErrorMessage)> SendRefundNotificationToBuyerAsync(
+            Order order, string buyerPhone, string buyerName, decimal refundAmount, string refundId, string cancelReason, string buyerEmail = "");
     }
 }
