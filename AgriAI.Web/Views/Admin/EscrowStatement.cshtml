@@ -35,24 +35,25 @@
 }
 
 @section Styles {
+    <link rel="stylesheet" href="~/css/Dashboard.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Admin.css" asp-append-version="true" />
     <style>
         .statement-sheet {
             background: #ffffff;
-            border-radius: 24px;
+            border-radius: 20px;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            padding: 36px 42px;
-            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            padding: 28px 32px;
+            margin-bottom: 20px;
         }
 
         .filter-toolbar-card {
             background: #ffffff;
-            border-radius: 20px;
+            border-radius: 18px;
             border: 1px solid #e2e8f0;
-            padding: 20px 24px;
+            padding: 18px 22px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
 
         .statement-stat-box {
@@ -87,6 +88,16 @@
             .no-print, header, footer, .navbar, .btn, .filter-toolbar-card, .btn-back-custom, .admin-header-card, #openChatBtn, #agriAiChatbot, .floating-chatbot, .gov-top-bar, .gov-main-header, .app-footer, .toast-container, .global-notification-container {
                 display: none !important;
             }
+            .dashboard-page-bg {
+                background: transparent !important;
+                padding: 0 !important;
+            }
+            .user-details-master-card {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                background: transparent !important;
+            }
             .statement-sheet {
                 border: none !important;
                 box-shadow: none !important;
@@ -115,29 +126,31 @@
     </style>
 }
 
-<div class="container-fluid py-4 px-lg-4 px-md-3" style="max-width: 1440px; min-height: calc(100vh - 180px);">
+<div class="dashboard-page-bg py-3">
+    <div class="container-fluid px-2 px-md-3 px-xl-4" style="max-width: 1600px;">
+        <!-- Single Big Master Container Box containing ALL boxes -->
+        <div class="dash-main-card user-details-master-card p-3 p-md-4">
     
-    <!-- 1. Top Action Navigation Bar (Hidden in Print) -->
-    <div class="admin-header-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 shadow-sm no-print">
-        <div>
-            <h2 class="fw-extrabold text-dark mb-1 fs-3 d-flex align-items-center gap-2">
-                <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
-                Official Escrow &amp; Payout Audit Statement
-            </h2>
-            <p class="text-muted small mb-0">Audited financial statement showing buyer escrow deposits, Bilty consignments, released farmer payouts, and platform fee revenues.</p>
-        </div>
+            <!-- 1. Top Action Navigation Bar (Hidden in Print) -->
+            <div class="admin-header-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3 shadow-sm no-print">
+                <div>
+                    <h2 class="fw-extrabold text-dark mb-1 fs-3">
+                        Official Escrow &amp; Payout Audit Statement
+                    </h2>
+                    <p class="text-muted small mb-0">Audited financial statement showing buyer escrow deposits, Bilty consignments, released farmer payouts, and platform fee revenues.</p>
+                </div>
 
-        <div class="d-flex align-items-center gap-2.5">
-            <a asp-action="Dashboard" asp-route-tab="escrow" class="btn-back-custom shadow-sm">
-                <i class="bi bi-arrow-left"></i>
-                <span>Back to Escrow &amp; Payouts</span>
-            </a>
-            <button type="button" class="btn btn-danger rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2" onclick="window.print();">
-                <i class="bi bi-printer-fill fs-5"></i>
-                <span>Download / Save as PDF</span>
-            </button>
-        </div>
-    </div>
+                <div class="d-flex align-items-center gap-2.5">
+                    <a asp-action="Dashboard" asp-route-tab="escrow" class="btn-back-custom shadow-sm">
+                        <i class="bi bi-arrow-left"></i>
+                        <span>Back to Escrow &amp; Payouts</span>
+                    </a>
+                    <button type="button" class="btn btn-danger rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2" onclick="window.print();">
+                        <i class="bi bi-printer-fill fs-5"></i>
+                        <span>Download / Save as PDF</span>
+                    </button>
+                </div>
+            </div>
 
     <!-- 2. Interactive Date / Month / Year Filters Toolbar (Hidden in Print) -->
     <div class="filter-toolbar-card no-print">
@@ -406,6 +419,8 @@
             </div>
         </div>
 
-    </div>
+    </div> <!-- /.statement-sheet -->
 
-</div>
+        </div> <!-- /.user-details-master-card -->
+    </div> <!-- /.container-fluid -->
+</div> <!-- /.dashboard-page-bg -->
