@@ -932,7 +932,7 @@
                                         <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-0.5 small fw-bold">GMV</span>
                                     </div>
                                     @{
-                                        decimal grossVal = Model.Sum(o => o.TotalAmount);
+                                        decimal grossVal = Model.Where(o => o.Status != "Cancelled" && o.Status != "Declined").Sum(o => o.TotalAmount);
                                     }
                                     <h4 class="fw-extrabold text-dark mb-1 fs-4">₹@grossVal.ToString("N2")</h4>
                                     <small class="text-muted" style="font-size: 0.72rem;">Across @Model.Count() total orders</small>

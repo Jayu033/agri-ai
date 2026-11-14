@@ -101,7 +101,7 @@ namespace AgriAI.Web.Controllers
                 }
             }
 
-            decimal totalRevenue = orders.Sum(o => o.TotalAmount);
+            decimal totalRevenue = orders.Where(o => o.Status != "Cancelled" && o.Status != "Declined").Sum(o => o.TotalAmount);
             decimal escrowBalance = orders.Where(o => o.Status == "Requested" || o.Status == "Accepted" || o.Status == "In Transit").Sum(o => o.TotalAmount);
             decimal releasedPayouts = orders.Where(o => o.Status.Contains("Delivered") || o.Status.Contains("Settled")).Sum(o => o.TotalAmount);
             int pendingKycCount = userVMs.Count(u => u.Role == "Farmer" && !u.IsApprovedByAdmin);
@@ -308,7 +308,7 @@ namespace AgriAI.Web.Controllers
                 else
                 {
                     var buyerOrders = orders.Where(o => o.CustomerId == user.Id || o.CustomerId == user.UserName).ToList();
-                    totalSalesOrPurchases = buyerOrders.Sum(o => o.TotalAmount);
+                    totalSalesOrPurchases = buyerOrders.Where(o => o.Status != "Cancelled" && o.Status != "Declined").Sum(o => o.TotalAmount);
                 }
 
                 var bankName = string.IsNullOrEmpty(user.BankName) ? "Not Provided" : user.BankName;
@@ -880,7 +880,7 @@ namespace AgriAI.Web.Controllers
                 SelectedYear = selYear,
                 SelectedMonth = selMonth,
                 Transactions = transactions,
-                TotalGrossInflow = transactions.Sum(t => t.GrossAmount),
+                TotalGrossInflow = transactions.Where(t => t.Status != "Cancelled" && t.Status != "Declined").Sum(t => t.GrossAmount),
                 TotalFarmerPayoutsReleased = transactions.Where(t => t.IsPayoutReleased).Sum(t => t.GrossAmount),
                 TotalActiveEscrowHeld = transactions.Where(t => !t.IsPayoutReleased && t.Status != "Cancelled" && t.Status != "Declined").Sum(t => t.GrossAmount),
                 TotalPlatformIncome = transactions.Where(t => t.IsPayoutReleased).Sum(t => t.PlatformFee),

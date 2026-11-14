@@ -4,8 +4,8 @@
     ViewData["Title"] = "Master Orders & Sales Report - Official Statement";
     var userMap = ViewBag.UserMap as Dictionary<string, AgriAI.Infrastructure.Identity.ApplicationUser> ?? new Dictionary<string, AgriAI.Infrastructure.Identity.ApplicationUser>();
     
-    decimal totalGross = Model.Sum(o => o.TotalAmount);
-    decimal totalPlatformFee = Model.Sum(o => o.PlatformFee);
+    decimal totalGross = Model.Where(o => o.Status != "Cancelled" && o.Status != "Declined").Sum(o => o.TotalAmount);
+    decimal totalPlatformFee = Model.Where(o => o.Status != "Cancelled" && o.Status != "Declined").Sum(o => o.PlatformFee);
     decimal totalFarmerEarnings = totalGross - totalPlatformFee;
     int totalOrdersCount = Model.Count();
     int deliveredCount = Model.Count(o => o.Status == "Delivered & Settled" || o.AdminApprovedPayout);
