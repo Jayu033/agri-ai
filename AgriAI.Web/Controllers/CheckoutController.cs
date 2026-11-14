@@ -127,6 +127,12 @@ namespace AgriAI.Web.Controllers
 
                 if (product != null)
                 {
+                    if (product.StockQuantity <= 0)
+                    {
+                        TempData["ErrorMessage"] = $"⚠️ '{product.Name}' is currently Sold Out. No stock is available.";
+                        return RedirectToAction("Index", "Product");
+                    }
+
                     if (quantity > product.StockQuantity && product.StockQuantity > 0)
                     {
                         quantity = product.StockQuantity;
@@ -186,6 +192,14 @@ namespace AgriAI.Web.Controllers
                 {
                     return Json(new { success = false, message = "Your cart is empty." });
                 }
+                foreach (var item in cart)
+                {
+                    var p = await _context.Products.FindAsync(item.ProductId);
+                    if (p == null || p.StockQuantity < item.Quantity)
+                    {
+                        return Json(new { success = false, message = $"Insufficient inventory for '{item.ProductName}'. Only {p?.StockQuantity ?? 0} Kg available." });
+                    }
+                }
                 baseTotal = cart.Sum(i => i.TotalPrice);
                 description = $"AgriAI Harvest ({cart.Count} Crop Varieties)";
             }
@@ -196,7 +210,15 @@ namespace AgriAI.Web.Controllers
                 {
                     return Json(new { success = false, message = "Produce not found." });
                 }
+                if (product.StockQuantity <= 0)
+                {
+                    return Json(new { success = false, message = $"Sorry, '{product.Name}' is completely Sold Out." });
+                }
                 int qty = request.Quantity < 1 ? 1 : request.Quantity;
+                if (product.StockQuantity < qty)
+                {
+                    return Json(new { success = false, message = $"Only {product.StockQuantity} Kg of '{product.Name}' is available in stock." });
+                }
                 baseTotal = product.Price * qty;
                 description = $"{product.Name} ({qty} Kg) Direct Farm Purchase";
             }
@@ -314,18 +336,20 @@ namespace AgriAI.Web.Controllers
 
                 foreach (var item in cartItems)
                 {
+                    var dbProd = await _context.Products.FindAsync(item.ProductId);
+                    if (dbProd == null || dbProd.StockQuantity < item.Quantity)
+                    {
+                        return Json(new { success = false, message = $"Order finalization failed: '{item.ProductName}' has insufficient stock." });
+                    }
+
+                    dbProd.StockQuantity -= item.Quantity;
+
                     order.OrderItems.Add(new OrderItem
                     {
                         ProductId = item.ProductId,
                         Quantity = item.Quantity,
                         UnitPrice = item.UnitPrice
                     });
-
-                    var dbProd = await _context.Products.FindAsync(item.ProductId);
-                    if (dbProd != null && dbProd.StockQuantity >= item.Quantity)
-                    {
-                        dbProd.StockQuantity -= item.Quantity;
-                    }
                 }
 
                 // Clear session & persistent cookie cart
@@ -340,8 +364,18 @@ namespace AgriAI.Web.Controllers
                     product = await _context.Products.FindAsync(request.ProductId.Value);
                 }
 
+                if (product == null)
+                {
+                    return Json(new { success = false, message = "Produce not found." });
+                }
+
                 int qty = request.Quantity < 1 ? 1 : request.Quantity;
-                baseTotal = product != null ? product.Price * qty : 0m;
+                if (product.StockQuantity < qty)
+                {
+                    return Json(new { success = false, message = $"Order finalization failed: '{product.Name}' has only {product.StockQuantity} Kg in stock." });
+                }
+
+                baseTotal = product.Price * qty;
                 decimal platformFee = Math.Round(baseTotal * 0.02m, 2);
                 decimal grandTotal = baseTotal + platformFee;
 
@@ -361,20 +395,14 @@ namespace AgriAI.Web.Controllers
                     CancellationDeadline = DateTime.UtcNow.AddHours(3)
                 };
 
-                if (product != null)
-                {
-                    order.OrderItems.Add(new OrderItem
-                    {
-                        ProductId = product.Id,
-                        Quantity = qty,
-                        UnitPrice = product.Price
-                    });
+                product.StockQuantity -= qty;
 
-                    if (product.StockQuantity >= qty)
-                    {
-                        product.StockQuantity -= qty;
-                    }
-                }
+                order.OrderItems.Add(new OrderItem
+                {
+                    ProductId = product.Id,
+                    Quantity = qty,
+                    UnitPrice = product.Price
+                });
             }
 
             await _context.Orders.AddAsync(order);
@@ -485,19 +513,21 @@ namespace AgriAI.Web.Controllers
 
                 foreach (var item in cartItems)
                 {
+                    var dbProd = await _context.Products.FindAsync(item.ProductId);
+                    if (dbProd == null || dbProd.StockQuantity < item.Quantity)
+                    {
+                        TempData["ErrorMessage"] = $"⚠️ Insufficient inventory for '{item.ProductName}'. Only {dbProd?.StockQuantity ?? 0} Kg available.";
+                        return RedirectToAction("Index", new { isCart = true });
+                    }
+
+                    dbProd.StockQuantity -= item.Quantity;
+
                     order.OrderItems.Add(new OrderItem
                     {
                         ProductId = item.ProductId,
                         Quantity = item.Quantity,
                         UnitPrice = item.UnitPrice
                     });
-
-                    // Deduct stock in DB
-                    var dbProd = await _context.Products.FindAsync(item.ProductId);
-                    if (dbProd != null && dbProd.StockQuantity >= item.Quantity)
-                    {
-                        dbProd.StockQuantity -= item.Quantity;
-                    }
                 }
 
                 await _context.Orders.AddAsync(order);
@@ -521,7 +551,27 @@ namespace AgriAI.Web.Controllers
                 product = await _context.Products.FindAsync(productId.Value);
             }
 
-            baseTotal = product != null ? product.Price * quantity : 0;
+            if (product == null)
+            {
+                TempData["ErrorMessage"] = "Produce not found.";
+                return RedirectToAction("Index", "Product");
+            }
+
+            if (product.StockQuantity <= 0)
+            {
+                TempData["ErrorMessage"] = $"⚠️ Sorry, '{product.Name}' is currently Sold Out.";
+                return RedirectToAction("Index", "Product");
+            }
+
+            if (product.StockQuantity < quantity)
+            {
+                TempData["ErrorMessage"] = $"⚠️ Insufficient stock for '{product.Name}'. Only {product.StockQuantity} Kg available in inventory.";
+                return RedirectToAction("Index", new { productId = product.Id, quantity = Math.Max(1, product.StockQuantity) });
+            }
+
+            product.StockQuantity -= quantity;
+
+            baseTotal = product.Price * quantity;
             decimal singlePlatformFee = Math.Round(baseTotal * 0.02m, 2);
             decimal singleGrandTotal = baseTotal + singlePlatformFee;
 
@@ -541,20 +591,12 @@ namespace AgriAI.Web.Controllers
                 CancellationDeadline = DateTime.UtcNow.AddHours(3)
             };
 
-            if (product != null)
+            singleOrder.OrderItems.Add(new OrderItem
             {
-                singleOrder.OrderItems.Add(new OrderItem
-                {
-                    ProductId = product.Id,
-                    Quantity = quantity,
-                    UnitPrice = product.Price
-                });
-
-                if (product.StockQuantity >= quantity)
-                {
-                    product.StockQuantity -= quantity;
-                }
-            }
+                ProductId = product.Id,
+                Quantity = quantity,
+                UnitPrice = product.Price
+            });
 
             await _context.Orders.AddAsync(singleOrder);
             await _context.SaveChangesAsync();
