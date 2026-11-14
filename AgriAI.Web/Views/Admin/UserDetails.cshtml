@@ -9,26 +9,31 @@
 }
 
 @section Styles {
+    <link rel="stylesheet" href="~/css/Dashboard.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Admin.css" asp-append-version="true" />
 }
 
-<div class="container-fluid py-4 px-lg-4 px-md-3" style="max-width: 1440px; min-height: calc(100vh - 180px);">
-    <!-- Top Header Navigation Banner Card -->
-    <div class="admin-header-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 shadow-sm">
-        <div>
-            <h2 class="fw-extrabold text-dark mb-1 fs-3 d-flex align-items-center gap-2">
-                <i class="bi @(isFarmer ? "bi-tree-fill text-success" : "bi-person-badge-fill text-primary")"></i>
-                @(isFarmer ? "Farmer Profile & Farm Portfolio" : "Customer Profile & Order History")
-            </h2>
-            <p class="text-muted small mb-0">Detailed administrative view for profile verification, order fulfillment, and account controls.</p>
-        </div>
-        <div>
-            <a asp-action="Dashboard" asp-route-tab="users" class="btn-back-custom shadow-sm">
-                <i class="bi bi-arrow-left"></i>
-                <span>Back to Farmer &amp; Users</span>
-            </a>
-        </div>
-    </div>
+<div class="dashboard-page-bg">
+    <div class="container-fluid px-lg-4 px-md-3" style="max-width: 1440px;">
+        <!-- Single Big Master Container Box containing ALL boxes -->
+        <div class="dash-main-card user-details-master-card">
+            
+            <!-- Top Header Navigation Banner Card -->
+            <div class="admin-header-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 shadow-sm">
+                <div>
+                    <h2 class="fw-extrabold text-dark mb-1 fs-3 d-flex align-items-center gap-2">
+                        <i class="bi @(isFarmer ? "bi-tree-fill text-success" : "bi-person-badge-fill text-primary")"></i>
+                        @(isFarmer ? "Farmer Profile & Farm Portfolio" : "Customer Profile & Order History")
+                    </h2>
+                    <p class="text-muted small mb-0">Detailed administrative view for profile verification, order fulfillment, and account controls.</p>
+                </div>
+                <div>
+                    <a asp-action="Dashboard" asp-route-tab="users" class="btn-back-custom shadow-sm">
+                        <i class="bi bi-arrow-left"></i>
+                        <span>Back to Farmer &amp; Users</span>
+                    </a>
+                </div>
+            </div>
 
     <!-- Alert for Farmer Pending Review -->
     @if (isFarmer && !user.IsApprovedByAdmin)
@@ -660,7 +665,9 @@
         </div>
     </div>
 
-</div>
+        </div> <!-- End of .dash-main-card.user-details-master-card -->
+    </div> <!-- End of .container-fluid -->
+</div> <!-- End of .dashboard-page-bg -->
 
 <!-- Full Profile Photo Lightbox Modal -->
 <div class="modal fade" id="fullPhotoModal" tabindex="-1" aria-labelledby="fullPhotoModalLabel" aria-hidden="true">
