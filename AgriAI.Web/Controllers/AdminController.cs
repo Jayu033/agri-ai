@@ -671,6 +671,56 @@ namespace AgriAI.Web.Controllers
             return RedirectToAction(nameof(Dashboard), new { tab = "users" });
         }
 
+        // POST: /Admin/ChangeUserPassword
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeUserPassword(string id, string newPassword, string confirmPassword)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                TempData["ErrorMessage"] = "Invalid user ID.";
+                return RedirectToAction(nameof(Dashboard), new { tab = "users" });
+            }
+
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+            {
+                TempData["ErrorMessage"] = "Password must be at least 6 characters long.";
+                return RedirectToAction(nameof(UserDetails), new { id = id });
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                TempData["ErrorMessage"] = "New password and Confirm password do not match.";
+                return RedirectToAction(nameof(UserDetails), new { id = id });
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction(nameof(Dashboard), new { tab = "users" });
+            }
+
+            // Remove existing password and set new password
+            var removeResult = await _userManager.RemovePasswordAsync(user);
+            var addResult = await _userManager.AddPasswordAsync(user, newPassword);
+
+            if (addResult.Succeeded)
+            {
+                user.SecurityStamp = Guid.NewGuid().ToString();
+                await _userManager.UpdateAsync(user);
+
+                var displayName = !string.IsNullOrWhiteSpace(user.FullName) ? user.FullName : (user.UserName ?? user.Email);
+                TempData["SuccessMessage"] = $"Password for '{displayName}' has been updated successfully!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to update password: " + string.Join(", ", addResult.Errors.Select(e => e.Description));
+            }
+
+            return RedirectToAction(nameof(UserDetails), new { id = id });
+        }
+
         // POST: /Admin/ReleaseEscrowPayoutViaBilty (Step 6 Blueprint)
         [HttpPost]
         public async Task<IActionResult> ReleaseEscrowPayoutViaBilty(int orderId, string? reason)
