@@ -60,7 +60,7 @@
                         <i class="bi bi-hourglass-split"></i>
                     </div>
                     <div>
-                        <h5 class="fw-bold text-dark mb-1 fs-6">7/12 (Satbara) KYC Verification Pending</h5>
+                        <h5 class="fw-bold text-dark mb-1 fs-6">Account Verification Pending</h5>
                         <p class="text-muted small mb-0">This farmer is awaiting Admin verification before their produce can be published to the public marketplace.</p>
                     </div>
                 </div>
@@ -255,9 +255,9 @@
                         <i class="bi @(user.IsApprovedByAdmin ? "bi-shield-check" : "bi-hourglass-split")"></i>
                     </div>
                     <div>
-                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">KYC Verification</small>
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem;">Account Status</small>
                         <h4 class="fw-extrabold @(user.IsApprovedByAdmin ? "text-success" : "text-warning") mb-0 fs-6">
-                            @(user.IsApprovedByAdmin ? "7/12 Verified" : "Pending Review")
+                            @(user.IsApprovedByAdmin ? "Account Verified" : "Pending Review")
                         </h4>
                     </div>
                 </div>
