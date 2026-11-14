@@ -417,6 +417,15 @@ namespace AgriAI.Web.Controllers
                 return Redirect("/Admin/Dashboard?tab=products");
             }
 
+            // CRITICAL SECURITY FIX: ProcessPayment is strictly for Cash on Delivery (COD) / Pay on Pickup.
+            // Online Escrow orders MUST NEVER be placed through this endpoint; they require verified cryptographic signature via VerifyAndCompleteOrder.
+            if (!string.Equals(paymentMethod, "COD", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning("Blocked unverified direct payment attempt for payment method '{PaymentMethod}'. Online orders require verified Razorpay payment.", paymentMethod);
+                TempData["ErrorMessage"] = "⚠️ Online payments must be completed securely via the Razorpay gateway. Unverified orders cannot be accepted.";
+                return RedirectToAction("Index", new { productId, quantity, isCart });
+            }
+
             if (quantity < 1) quantity = 1;
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -464,7 +473,7 @@ namespace AgriAI.Web.Controllers
                     OrderDate = DateTime.UtcNow,
                     TotalAmount = grandTotal,
                     Status = "Accepted",
-                    PaymentMethod = paymentMethod == "COD" ? "Cash on Delivery" : "Online (Escrow Protected)",
+                    PaymentMethod = "Cash on Delivery",
                     DeliveryOtp = generatedOtp,
                     TransportType = transportType,
                     LogisticsFee = 0m,
@@ -522,7 +531,7 @@ namespace AgriAI.Web.Controllers
                 OrderDate = DateTime.UtcNow,
                 TotalAmount = singleGrandTotal,
                 Status = "Accepted",
-                PaymentMethod = paymentMethod == "COD" ? "Cash on Delivery" : "Online (Escrow Protected)",
+                PaymentMethod = "Cash on Delivery",
                 DeliveryOtp = generatedOtp,
                 TransportType = transportType,
                 LogisticsFee = 0m,

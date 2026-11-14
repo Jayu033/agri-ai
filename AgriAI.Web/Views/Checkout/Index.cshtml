@@ -266,7 +266,7 @@
                 </div>
             </div>
 
-            <form asp-action="ProcessPayment" method="post" id="checkoutForm" onsubmit="return validateCheckoutForm()">
+            <form asp-action="ProcessPayment" method="post" id="checkoutForm" onsubmit="event.preventDefault(); handlePlaceOrderClick(); return false;">
             @if (isCart)
             {
                 <input type="hidden" name="isCart" value="true" />
@@ -466,7 +466,7 @@
                             <label class="form-label fw-bold text-dark small mb-1.5 d-flex align-items-center gap-1.5">
                                 <i class="bi bi-geo-alt text-danger"></i> Destination City / Parcel Delivery Address <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="deliveryAddress" id="deliveryAddressInput" class="form-control bg-white shadow-none py-2.5" placeholder="e.g. GSRTC ST Bus Station Parcel Office, Surat / Rajkot / Ahmedabad" />
+                            <input type="text" name="deliveryAddress" id="deliveryAddressInput" class="form-control bg-white shadow-none py-2.5" placeholder="e.g. GSRTC ST Bus Station Parcel Office, Surat / Rajkot / Ahmedabad" onkeydown="if(event.key === 'Enter'){ event.preventDefault(); return false; }" />
                             <small class="text-muted d-block mt-1">
                                 Please specify the nearest ST bus station or parcel transport office where farmer should send the cargo bilty.
                             </small>
@@ -637,23 +637,37 @@
             onTransportModeChanged();
         }
 
+        let isPlacingOrder = false;
+
         async function handlePlaceOrderClick() {
+            if (isPlacingOrder) {
+                return;
+            }
+
             if (!validateCheckoutForm()) {
                 return;
             }
 
             const isOnline = document.getElementById('payOnline')?.checked;
             if (!isOnline) {
+                isPlacingOrder = true;
+                const btn = document.getElementById('btnPlaceOrder');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Placing COD Order...';
+                }
                 // Submit regular COD form
                 document.getElementById('checkoutForm').submit();
                 return;
             }
 
             // Online Payment via Razorpay
+            isPlacingOrder = true;
             await initiateRazorpayCheckout();
         }
 
         function resetOrderButton() {
+            isPlacingOrder = false;
             const btn = document.getElementById('btnPlaceOrder');
             const isOnline = document.getElementById('payOnline')?.checked;
             if (btn) {
