@@ -18,9 +18,17 @@
         : "Verified Gujarat Producer";
     var farmerEmail = farmerUser?.Email ?? "farmer@agriai.com";
     var farmerPhone = !string.IsNullOrEmpty(farmerUser?.PhoneNumber) ? farmerUser.PhoneNumber : "+91 97245 60047";
-    var farmerLocation = !string.IsNullOrEmpty(farmerUser?.City) ? $"{farmerUser.City}, {farmerUser.State ?? "Gujarat"}" : "Gujarat Agricultural Farm Location";
-    var farmerBank = !string.IsNullOrEmpty(farmerUser?.BankName) ? $"{farmerUser.BankName} (A/C: {farmerUser.BankAccountNumber})" : "Primary Bank Account";
-    var farmerIfsc = !string.IsNullOrEmpty(farmerUser?.BankIfscCode) ? farmerUser.BankIfscCode : "BARB0RAJKOT";
+    var farmerLocationParts = new List<string>();
+    if (!string.IsNullOrWhiteSpace(farmerUser?.Address)) farmerLocationParts.Add(farmerUser.Address.Trim());
+    if (!string.IsNullOrWhiteSpace(farmerUser?.City)) farmerLocationParts.Add(farmerUser.City.Trim());
+    if (!string.IsNullOrWhiteSpace(farmerUser?.State)) farmerLocationParts.Add(farmerUser.State.Trim());
+    if (!string.IsNullOrWhiteSpace(farmerUser?.ZipCode)) farmerLocationParts.Add(farmerUser.ZipCode.Trim());
+    var farmerLocation = farmerLocationParts.Any() ? string.Join(", ", farmerLocationParts) : "Gujarat Agricultural Farm Location";
+
+    var farmerBank = !string.IsNullOrEmpty(farmerUser?.BankName) 
+        ? (!string.IsNullOrEmpty(farmerUser?.BankAccountNumber) ? $"{farmerUser.BankName} (A/C: {farmerUser.BankAccountNumber})" : farmerUser.BankName) 
+        : "Primary Bank Account";
+    var farmerIfsc = !string.IsNullOrEmpty(farmerUser?.BankIfscCode) ? farmerUser.BankIfscCode : "";
 
     var customerName = customerUser != null 
         ? (!string.IsNullOrEmpty(customerUser.FirstName) || !string.IsNullOrEmpty(customerUser.LastName) 
@@ -29,7 +37,16 @@
         : (!string.IsNullOrEmpty(Model.CustomerId) ? Model.CustomerId : "Verified Buyer");
     var customerEmail = customerUser?.Email ?? (!string.IsNullOrEmpty(Model.CustomerId) && Model.CustomerId.Contains("@") ? Model.CustomerId : "buyer@agriai.com");
     var customerPhone = !string.IsNullOrEmpty(customerUser?.PhoneNumber) ? customerUser.PhoneNumber : "+91 98790 12345";
-    var deliveryAddress = !string.IsNullOrEmpty(Model.ShippingAddress) ? Model.ShippingAddress : (customerUser?.Address ?? "Gujarat Delivery Location");
+
+    var customerAddressParts = new List<string>();
+    if (!string.IsNullOrWhiteSpace(customerUser?.Address)) customerAddressParts.Add(customerUser.Address.Trim());
+    if (!string.IsNullOrWhiteSpace(customerUser?.City)) customerAddressParts.Add(customerUser.City.Trim());
+    if (!string.IsNullOrWhiteSpace(customerUser?.State)) customerAddressParts.Add(customerUser.State.Trim());
+    if (!string.IsNullOrWhiteSpace(customerUser?.ZipCode)) customerAddressParts.Add(customerUser.ZipCode.Trim());
+    var fallbackCustomerAddress = customerAddressParts.Any() ? string.Join(", ", customerAddressParts) : "Gujarat Delivery Location";
+    var deliveryAddress = !string.IsNullOrWhiteSpace(Model.ShippingAddress) && Model.ShippingAddress != "Farm Location / Gujarat"
+        ? Model.ShippingAddress.Trim() 
+        : (!string.IsNullOrWhiteSpace(customerUser?.Address) ? fallbackCustomerAddress : (!string.IsNullOrWhiteSpace(Model.ShippingAddress) ? Model.ShippingAddress.Trim() : "Gujarat Delivery Location"));
 
     var baseAmount = Model.TotalAmount - Model.LogisticsFee - Model.PlatformFee;
     var dateFormatted = Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt");
@@ -451,46 +468,56 @@
             <div class="row g-3 mb-3">
                 <!-- Farmer Card -->
                 <div class="col-md-6">
-                    <div class="order-profile-card">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="fw-bold text-dark mb-0">
-                                Seller (Farmer)
-                            </h6>
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-0.5 small fw-bold rounded-pill">
-                                Producer
-                            </span>
+                    <div class="order-profile-card d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold text-dark mb-0">
+                                    Seller (Farmer)
+                                </h6>
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2.5 py-1 small fw-bold rounded-pill">
+                                    Producer
+                                </span>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2.5 mb-3">
+                                <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-xs flex-shrink-0" style="width: 44px; height: 44px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);">
+                                    @(!string.IsNullOrEmpty(farmerName) ? farmerName.Substring(0, 1).ToUpper() : "F")
+                                </div>
+                                <div class="overflow-hidden">
+                                    <strong class="text-dark d-block">@farmerName</strong>
+                                    <small class="text-muted d-block text-break">@farmerEmail</small>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-light rounded-3 border small mb-3">
+                                <div class="text-muted d-flex justify-content-between align-items-center mb-2 pb-1.5 border-bottom">
+                                    <span class="fw-semibold">Phone:</span>
+                                    <strong class="text-dark">@farmerPhone</strong>
+                                </div>
+                                <div class="text-muted mb-2 pb-1.5 border-bottom">
+                                    <span class="fw-semibold d-block mb-1">Farm Location / Address:</span>
+                                    <div class="text-dark fw-bold bg-white p-2 rounded-2 border border-light-subtle" style="word-break: break-word; line-height: 1.45;">
+                                        @farmerLocation
+                                    </div>
+                                </div>
+                                <div class="text-muted">
+                                    <span class="fw-semibold d-block mb-1">Bank &amp; Settlement Account:</span>
+                                    <div class="text-success fw-bold bg-white p-2 rounded-2 border border-light-subtle" style="word-break: break-word; line-height: 1.45;">
+                                        @farmerBank
+                                        @if (!string.IsNullOrEmpty(farmerIfsc))
+                                        {
+                                            <span class="text-muted small font-monospace d-block mt-0.5">IFSC: @farmerIfsc</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="d-flex align-items-center gap-2.5 mb-3">
-                            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-xs" style="width: 44px; height: 44px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);">
-                                @(!string.IsNullOrEmpty(farmerName) ? farmerName.Substring(0, 1).ToUpper() : "F")
-                            </div>
-                            <div class="overflow-hidden">
-                                <strong class="text-dark d-block text-truncate">@farmerName</strong>
-                                <small class="text-muted d-block text-truncate">@farmerEmail</small>
-                            </div>
-                        </div>
-
-                        <div class="p-2.5 bg-light rounded-3 border small mb-3">
-                            <div class="text-muted d-flex justify-content-between mb-1">
-                                <span>Phone:</span>
-                                <strong class="text-dark">@farmerPhone</strong>
-                            </div>
-                            <div class="text-muted d-flex justify-content-between mb-1">
-                                <span>Location:</span>
-                                <strong class="text-dark text-truncate" style="max-width: 140px;">@farmerLocation</strong>
-                            </div>
-                            <div class="text-muted d-flex justify-content-between">
-                                <span>Bank:</span>
-                                <strong class="text-success text-truncate" style="max-width: 140px;">@farmerBank</strong>
-                            </div>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            <a href="tel:@farmerPhone" class="btn btn-xs btn-outline-success rounded-pill px-3 py-1 fw-bold flex-grow-1 text-center">
+                        <div class="d-flex gap-2 pt-1">
+                            <a href="tel:@farmerPhone" class="btn btn-xs btn-outline-success rounded-pill px-3 py-1.5 fw-bold flex-grow-1 text-center">
                                 <i class="bi bi-telephone-fill me-1"></i> Call
                             </a>
-                            <a href="https://wa.me/@(farmerPhone.Replace("+","").Replace(" ",""))?text=AgriAI%20Order%20#@Model.Id:D5" target="_blank" class="btn btn-xs btn-success rounded-pill px-3 py-1 fw-bold flex-grow-1 text-center" style="background-color: #25D366; border-color: #25D366;">
+                            <a href="https://wa.me/@(farmerPhone.Replace("+","").Replace(" ",""))?text=AgriAI%20Order%20#@Model.Id:D5" target="_blank" class="btn btn-xs btn-success rounded-pill px-3 py-1.5 fw-bold flex-grow-1 text-center" style="background-color: #25D366; border-color: #25D366;">
                                 <i class="bi bi-whatsapp me-1"></i> Chat
                             </a>
                         </div>
@@ -499,43 +526,47 @@
 
                 <!-- Customer Card -->
                 <div class="col-md-6">
-                    <div class="order-profile-card">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="fw-bold text-dark mb-0">
-                                Buyer (Customer)
-                            </h6>
-                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-0.5 small fw-bold rounded-pill">
-                                Retail Buyer
-                            </span>
+                    <div class="order-profile-card d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold text-dark mb-0">
+                                    Buyer (Customer)
+                                </h6>
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1 small fw-bold rounded-pill">
+                                    Retail Buyer
+                                </span>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2.5 mb-3">
+                                <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-xs flex-shrink-0" style="width: 44px; height: 44px; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);">
+                                    @(!string.IsNullOrEmpty(customerName) ? customerName.Substring(0, 1).ToUpper() : "C")
+                                </div>
+                                <div class="overflow-hidden">
+                                    <strong class="text-dark d-block">@customerName</strong>
+                                    <small class="text-muted d-block text-break">@customerEmail</small>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-light rounded-3 border small mb-3">
+                                <div class="text-muted d-flex justify-content-between align-items-center mb-2 pb-1.5 border-bottom">
+                                    <span class="fw-semibold">Phone:</span>
+                                    <strong class="text-dark">@customerPhone</strong>
+                                </div>
+                                <div class="text-muted mb-2 pb-1.5 border-bottom">
+                                    <span class="fw-semibold d-block mb-1">Full Delivery / Shipping Address:</span>
+                                    <div class="text-dark fw-bold bg-white p-2 rounded-2 border border-light-subtle" style="word-break: break-word; line-height: 1.45;">
+                                        @deliveryAddress
+                                    </div>
+                                </div>
+                                <div class="text-muted d-flex justify-content-between align-items-center">
+                                    <span class="fw-semibold">Payment Method:</span>
+                                    <strong class="text-primary">@(Model.PaymentMethod ?? "Online Escrow")</strong>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="d-flex align-items-center gap-2.5 mb-3">
-                            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-xs" style="width: 44px; height: 44px; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);">
-                                @(!string.IsNullOrEmpty(customerName) ? customerName.Substring(0, 1).ToUpper() : "C")
-                            </div>
-                            <div class="overflow-hidden">
-                                <strong class="text-dark d-block text-truncate">@customerName</strong>
-                                <small class="text-muted d-block text-truncate">@customerEmail</small>
-                            </div>
-                        </div>
-
-                        <div class="p-2.5 bg-light rounded-3 border small mb-3">
-                            <div class="text-muted d-flex justify-content-between mb-1">
-                                <span>Phone:</span>
-                                <strong class="text-dark">@customerPhone</strong>
-                            </div>
-                            <div class="text-muted d-flex justify-content-between mb-1">
-                                <span>Delivery To:</span>
-                                <strong class="text-dark text-truncate" style="max-width: 140px;">@deliveryAddress</strong>
-                            </div>
-                            <div class="text-muted d-flex justify-content-between">
-                                <span>Payment:</span>
-                                <strong class="text-primary">@(Model.PaymentMethod ?? "Online Escrow")</strong>
-                            </div>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            <a href="tel:@customerPhone" class="btn btn-xs btn-outline-primary rounded-pill px-3 py-1 fw-bold w-100 text-center">
+                        <div class="d-flex gap-2 pt-1">
+                            <a href="tel:@customerPhone" class="btn btn-xs btn-outline-primary rounded-pill px-3 py-1.5 fw-bold w-100 text-center">
                                 <i class="bi bi-telephone-fill me-1"></i> Call Buyer
                             </a>
                         </div>
