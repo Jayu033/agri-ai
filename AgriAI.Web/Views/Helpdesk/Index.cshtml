@@ -399,16 +399,16 @@
                             All Tickets (@ViewBag.TotalCount)
                         </a>
                         <a asp-action="Index" asp-route-filter="payouts" class="help-filter-pill @(activeFilter == "payouts" ? "active" : "")" style="border-color: #ef4444; color: #dc2626;">
-                            🚨 Farmer Payout Disputes (@ViewBag.PayoutDisputesCount)
+                             Farmer Payout Disputes (@ViewBag.PayoutDisputesCount)
                         </a>
                         <a asp-action="Index" asp-route-filter="orders" class="help-filter-pill @(activeFilter == "orders" ? "active" : "")">
-                            📦 Buyer Issues (@ViewBag.CustomerIssuesCount)
+                             Buyer Issues (@ViewBag.CustomerIssuesCount)
                         </a>
                         <a asp-action="Index" asp-route-filter="guest" class="help-filter-pill @(activeFilter == "guest" ? "active" : "")">
-                            ✉️ Guest Queries (@ViewBag.GuestQueriesCount)
+                             Guest Queries (@ViewBag.GuestQueriesCount)
                         </a>
                         <a asp-action="Index" asp-route-filter="resolved" class="help-filter-pill @(activeFilter == "resolved" ? "active" : "")">
-                            ✅ Resolved (@ViewBag.ResolvedCount)
+                            Resolved (@ViewBag.ResolvedCount)
                         </a>
                     </div>
                 </div>
@@ -1232,9 +1232,9 @@
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold text-dark small mb-1">Update Status</label>
                                     <select name="status" class="form-select rounded-3 py-2">
-                                        <option value="Resolved" selected="@(ticket.Status == "Resolved")">✅ Mark as Resolved</option>
-                                        <option value="In Progress" selected="@(ticket.Status == "In Progress")">⏳ In Progress / Under Review</option>
-                                        <option value="Closed" selected="@(ticket.Status == "Closed")">📁 Close Ticket</option>
+                                        <option value="Resolved" selected="@(ticket.Status == "Resolved")"> Mark as Resolved</option>
+                                        <option value="In Progress" selected="@(ticket.Status == "In Progress")">In Progress / Under Review</option>
+                                        <option value="Closed" selected="@(ticket.Status == "Closed")">Close Ticket</option>
                                     </select>
                                 </div>
                             </div>
@@ -1262,7 +1262,7 @@
             <div class="modal-content rounded-4 border-0 shadow-lg">
                 <div class="modal-header bg-success text-white p-4">
                     <div>
-                        <h5 class="modal-title fw-bold" id="farmerModalLabel">🌾 Submit Farmer Support Request</h5>
+                        <h5 class="modal-title fw-bold" id="farmerModalLabel"> Submit Farmer Support Request</h5>
                         <small class="text-white-50">Report payment delay, bilty verification, or order issues</small>
                     </div>
                     <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1280,10 +1280,10 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-dark small mb-1">Issue Category <span class="text-danger">*</span></label>
                                 <select name="category" class="form-select rounded-3 py-2.5" required>
-                                    <option value="Escrow & Payout">💰 Escrow Payout Not Received</option>
-                                    <option value="Bilty Verification">🚚 Bilty / Transporter Assistance</option>
-                                    <option value="Account KYC">📋 Bank &amp; KYC Verification</option>
-                                    <option value="General">❓ General Inquiry</option>
+                                    <option value="Escrow & Payout"> Escrow Payout Not Received</option>
+                                    <option value="Bilty Verification"> Bilty / Transporter Assistance</option>
+                                    <option value="Account KYC"> Bank &amp; KYC Verification</option>
+                                    <option value="General"> General Inquiry</option>
                                 </select>
                             </div>
 
@@ -1308,8 +1308,8 @@
                             <div class="col-md-4">
                                 <label class="form-label fw-bold text-dark small mb-1">Priority</label>
                                 <select name="priority" class="form-select rounded-3 py-2.5">
-                                    <option value="Urgent">🚨 Urgent (Delayed Payout)</option>
-                                    <option value="High">⚠️ High</option>
+                                    <option value="Urgent">Urgent (Delayed Payout)</option>
+                                    <option value="High">High</option>
                                     <option value="Medium" selected>Standard</option>
                                 </select>
                             </div>
@@ -1366,10 +1366,10 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-dark small mb-1">Issue Category <span class="text-danger">*</span></label>
                                 <select name="category" class="form-select rounded-3 py-2.5" required>
-                                    <option value="Quality Issue">⚠️ Damaged / Substandard Quality</option>
-                                    <option value="Delivery Delay">🚚 Shipment Delay / Tracking</option>
-                                    <option value="Refund & Cancellation">💳 Refund / Cancellation Request</option>
-                                    <option value="General">❓ General Inquiry</option>
+                                    <option value="Quality Issue"> Damaged / Substandard Quality</option>
+                                    <option value="Delivery Delay">Shipment Delay / Tracking</option>
+                                    <option value="Refund & Cancellation">Refund / Cancellation Request</option>
+                                    <option value="General"> General Inquiry</option>
                                 </select>
                             </div>
 
@@ -1394,7 +1394,7 @@
                             <div class="col-md-4">
                                 <label class="form-label fw-bold text-dark small mb-1">Priority</label>
                                 <select name="priority" class="form-select rounded-3 py-2.5">
-                                    <option value="High">⚠️ High</option>
+                                    <option value="High">High</option>
                                     <option value="Medium" selected>Standard</option>
                                 </select>
                             </div>
