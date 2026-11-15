@@ -164,9 +164,12 @@
                         </button>
 
                         <!-- 8. Helpdesk & Payout Support -->
-                        <a asp-controller="Helpdesk" asp-action="Index" class="dash-tab-link text-decoration-none">
-                            <i class="bi bi-headset text-success"></i>
-                            <span>Helpdesk &amp; Payouts</span>
+                        <a asp-controller="Helpdesk" asp-action="Index" class="dash-tab-link text-decoration-none d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-headset text-success"></i>
+                                <span>Helpdesk &amp; Payouts</span>
+                            </div>
+                            <span class="badge helpdesk-badge" style="display: none; font-size: 0.70rem; padding: 2px 7px;">0</span>
                         </a>
 
                         <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">

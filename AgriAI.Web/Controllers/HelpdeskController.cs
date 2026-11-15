@@ -253,6 +253,65 @@ namespace AgriAI.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // GET: /Helpdesk/GetNotificationCount
+        [HttpGet]
+        public async Task<IActionResult> GetNotificationCount()
+        {
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                return Json(new { count = 0, role = "Guest", unread = false });
+            }
+
+            try
+            {
+                await EnsureTicketTableExistsAsync();
+
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var currentUser = currentUserId != null ? await _userManager.FindByIdAsync(currentUserId) : null;
+                var currentEmail = currentUser?.Email ?? User.Identity?.Name;
+
+                if (User.IsInRole("Admin"))
+                {
+                    // Admin gets count of all pending/open tickets requiring review & action
+                    var pendingCount = await _context.SupportTickets
+                        .CountAsync(t => t.Status != "Resolved" && t.Status != "Closed");
+
+                    return Json(new
+                    {
+                        count = pendingCount,
+                        role = "Admin",
+                        unread = pendingCount > 0,
+                        message = pendingCount == 1 ? "1 active grievance pending review" : $"{pendingCount} active grievances pending review"
+                    });
+                }
+                else if (User.IsInRole("Farmer") || User.IsInRole("Customer"))
+                {
+                    // Farmer or Customer gets count of their active tickets OR tickets with Admin responses
+                    var userTickets = await _context.SupportTickets
+                        .Where(t => (currentUserId != null && t.UserId == currentUserId) || (currentEmail != null && t.SenderEmail == currentEmail))
+                        .ToListAsync();
+
+                    var activeCount = userTickets.Count(t => t.Status != "Closed");
+                    var hasAdminResponse = userTickets.Any(t => !string.IsNullOrEmpty(t.AdminResponse));
+
+                    return Json(new
+                    {
+                        count = activeCount,
+                        role = User.IsInRole("Farmer") ? "Farmer" : "Customer",
+                        unread = activeCount > 0,
+                        hasResponse = hasAdminResponse,
+                        message = activeCount == 1 ? "1 active support ticket in Helpdesk" : $"{activeCount} active support tickets in Helpdesk"
+                    });
+                }
+
+                return Json(new { count = 0, role = "Guest", unread = false });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { count = 0, error = ex.Message });
+            }
+        }
+
         private async Task EnsureTicketTableExistsAsync()
         {
             try
