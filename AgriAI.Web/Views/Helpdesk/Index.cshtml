@@ -617,7 +617,7 @@
                                     @if (!string.IsNullOrEmpty(ticket.AdminResponse))
                                     {
                                         <span class="badge bg-danger rounded-pill px-2.5 py-1 text-white fw-bold shadow-xs d-inline-flex align-items-center gap-1" style="font-size: 0.70rem;">
-                                            <i class="bi bi-bell-fill"></i> સત્તાવાર જવાબ (Official Reply)
+                                            <i class="bi bi-bell-fill"></i> Official Reply
                                         </span>
                                     }
                                     @if (ticket.Status == "Resolved")
@@ -663,13 +663,13 @@
                                                 <div class="d-flex align-items-center gap-2 flex-wrap">
                                                     <strong class="text-dark" style="font-size: 0.88rem;">AgriAI Super Administrator Command</strong>
                                                     <span class="badge bg-success text-white rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.68rem; letter-spacing: 0.3px;">
-                                                        <i class="bi bi-patch-check-fill me-0.5"></i> સત્તાવાર નિર્ણય (Official Reply)
+                                                        <i class="bi bi-patch-check-fill me-0.5"></i> Official Reply
                                                     </span>
                                                 </div>
                                                 @if (ticket.ResolvedAt.HasValue)
                                                 {
                                                     <small class="text-muted font-monospace d-block" style="font-size: 0.68rem;">
-                                                        <i class="bi bi-clock-history me-1"></i>જવાબનો સમય: @ticket.ResolvedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+                                                        <i class="bi bi-clock-history me-1"></i>Resolved on: @ticket.ResolvedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
                                                     </small>
                                                 }
                                             </div>
@@ -866,7 +866,7 @@
                                     @if (!string.IsNullOrEmpty(ticket.AdminResponse))
                                     {
                                         <span class="badge bg-danger rounded-pill px-2.5 py-1 text-white fw-bold shadow-xs d-inline-flex align-items-center gap-1" style="font-size: 0.70rem;">
-                                            <i class="bi bi-bell-fill"></i> સત્તાવાર જવાબ (Official Reply)
+                                            <i class="bi bi-bell-fill"></i> Official Reply
                                         </span>
                                     }
                                     @if (ticket.Status == "Resolved")
@@ -912,13 +912,13 @@
                                                 <div class="d-flex align-items-center gap-2 flex-wrap">
                                                     <strong class="text-dark" style="font-size: 0.88rem;">AgriAI Buyer Support Operations</strong>
                                                     <span class="badge bg-primary text-white rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.68rem; letter-spacing: 0.3px;">
-                                                        <i class="bi bi-patch-check-fill me-0.5"></i> સત્તાવાર નિર્ણય (Official Reply)
+                                                        <i class="bi bi-patch-check-fill me-0.5"></i> Official Reply
                                                     </span>
                                                 </div>
                                                 @if (ticket.ResolvedAt.HasValue)
                                                 {
                                                     <small class="text-muted font-monospace d-block" style="font-size: 0.68rem;">
-                                                        <i class="bi bi-clock-history me-1"></i>જવાબનો સમય: @ticket.ResolvedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+                                                        <i class="bi bi-clock-history me-1"></i>Resolved on: @ticket.ResolvedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
                                                     </small>
                                                 }
                                             </div>
