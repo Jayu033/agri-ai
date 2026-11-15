@@ -348,12 +348,12 @@
                                 var rowCategory = isDelivered ? "delivered" : (isActive ? "active" : "cancelled");
                                 var baseAmt = order.TotalAmount - order.LogisticsFee - order.PlatformFee;
                                 var orderNoStr = "AG-" + order.Id.ToString("D5");
-                                var dateFormatted = order.OrderDate.ToString("dd MMM yyyy, hh:mm tt");
+                                var dateFormatted = order.OrderDate.ToIst().ToString("dd MMM yyyy, hh:mm tt");
 
                                 <tr class="purchase-row" data-category="@rowCategory">
                                     <td class="ps-4">
                                         <strong class="text-dark d-block">#@order.Id.ToString("D5")</strong>
-                                        <small class="text-muted">@order.OrderDate.ToString("dd MMM yyyy")</small>
+                                        <small class="text-muted">@order.OrderDate.ToIst().ToString("dd MMM yyyy")</small>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center gap-2.5">
@@ -588,7 +588,7 @@
                 var pLog = (o.TransportType ?? "Direct Farm Pickup").Replace("'", "\\'");
                 var pStat = (o.Status.Contains("Delivered") || o.Status.Contains("Settled")) ? "Delivered" : o.Status;
                 var pTotal = "₹" + o.TotalAmount.ToString("N2");
-                var pDate = o.OrderDate.ToString("dd MMM yyyy");
+                var pDate = o.OrderDate.ToIst().ToString("dd MMM yyyy");
                 var pId = o.Id.ToString("D5");
                 @:{ id: '@pId', orderDate: '@pDate', productName: '@pName', category: '@pCat', quantity: '@pQty', rate: '@pRate', logistics: '@pLog', status: '@pStat', total: '@pTotal' },
             }
@@ -676,7 +676,7 @@
                     </div>
                     <div style="text-align: right;">
                         <span class="badge-doc">Official Account Ledger</span>
-                        <p style="margin: 5px 0 0 0; font-size: 11.5px; color: #64748b;"><strong>Statement Date:</strong> @DateTime.Now.ToString("dd MMM yyyy, hh:mm tt")</p>
+                        <p style="margin: 5px 0 0 0; font-size: 11.5px; color: #64748b;"><strong>Statement Date:</strong> @IndianTimeHelper.Now.ToString("dd MMM yyyy, hh:mm tt")</p>
                     </div>
                 </div>
 

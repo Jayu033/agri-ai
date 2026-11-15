@@ -49,7 +49,7 @@
         : (!string.IsNullOrWhiteSpace(customerUser?.Address) ? fallbackCustomerAddress : (!string.IsNullOrWhiteSpace(Model.ShippingAddress) ? Model.ShippingAddress.Trim() : "Gujarat Delivery Location"));
 
     var baseAmount = Model.TotalAmount - Model.LogisticsFee - Model.PlatformFee;
-    var dateFormatted = Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt");
+    var dateFormatted = Model.OrderDate.ToIst().ToString("dd MMM yyyy, hh:mm tt");
     
     // Order Lifecycle Steps Calculation
     bool isCancelled = Model.Status == "Cancelled" || Model.Status == "Declined";

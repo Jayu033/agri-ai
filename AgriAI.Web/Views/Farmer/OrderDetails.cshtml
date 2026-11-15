@@ -15,7 +15,7 @@
 
     var baseAmount = Model.TotalAmount - Model.LogisticsFee - Model.PlatformFee;
     var orderNoStr = "AG-" + Model.Id.ToString("D5");
-    var dateFormatted = Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt");
+    var dateFormatted = Model.OrderDate.ToIst().ToString("dd MMM yyyy, hh:mm tt");
     var firstItem = Model.OrderItems.FirstOrDefault();
     var produceName = firstItem?.Product?.Name ?? "Farm Crop Harvest";
     var itemQty = firstItem?.Quantity ?? 1;

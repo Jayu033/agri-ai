@@ -552,7 +552,7 @@
                                                 <a asp-action="OrderDetails" asp-route-id="@order.Id" asp-route-from="escrow" class="text-decoration-none fw-bold text-dark d-block">
                                                     #@order.Id.ToString("D5")
                                                 </a>
-                                                <small class="text-muted" style="font-size: 0.72rem;">@order.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</small>
+                                                <small class="text-muted" style="font-size: 0.72rem;">@order.OrderDate.ToIst().ToString("dd MMM yyyy, hh:mm tt")</small>
                                             </td>
 
                                             <!-- Farmer & Bank Account Details -->
@@ -774,7 +774,7 @@
                                     {
                                         <tr>
                                             <td><strong>#@order.Id.ToString("D5")</strong></td>
-                                            <td>@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                                            <td>@order.OrderDate.ToIst().ToString("MMM dd, yyyy")</td>
                                             <td class="fw-bold text-success">₹@order.TotalAmount.ToString("N2")</td>
                                             <td>
                                                 @if (order.Status == "Requested")

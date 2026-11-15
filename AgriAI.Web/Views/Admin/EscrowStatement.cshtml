@@ -18,15 +18,15 @@
         new { Val = 12, Name = "December" }
     };
     
-    int currentYear = DateTime.UtcNow.Year;
+    int currentYear = IndianTimeHelper.Now.Year;
     var years = Enumerable.Range(currentYear - 2, 4).ToList();
 
     string periodLabel = Model.Period switch
     {
-        "today" => $"Today ({DateTime.UtcNow:dd MMM yyyy})",
-        "this_month" => $"This Month ({DateTime.UtcNow:MMMM yyyy})",
-        "last_month" => $"Last Month ({DateTime.UtcNow.AddMonths(-1):MMMM yyyy})",
-        "this_year" => $"This Year ({DateTime.UtcNow:yyyy})",
+        "today" => $"Today ({IndianTimeHelper.Now:dd MMM yyyy})",
+        "this_month" => $"This Month ({IndianTimeHelper.Now:MMMM yyyy})",
+        "last_month" => $"Last Month ({IndianTimeHelper.Now.AddMonths(-1):MMMM yyyy})",
+        "this_year" => $"This Year ({IndianTimeHelper.Now:yyyy})",
         "month_select" => $"{months.FirstOrDefault(m => m.Val == Model.SelectedMonth)?.Name} {Model.SelectedYear}",
         "year_select" => $"Full Year {Model.SelectedYear}",
         "custom" => $"Custom Range ({(Model.FromDate.HasValue ? Model.FromDate.Value.ToString("dd MMM yyyy") : "Start")} to {(Model.ToDate.HasValue ? Model.ToDate.Value.ToString("dd MMM yyyy") : "Present")})",
@@ -166,13 +166,13 @@
                     Today
                 </a>
                 <a asp-action="EscrowStatement" asp-route-period="this_month" class="btn btn-sm @(Model.Period == "this_month" ? "btn-dark active" : "btn-outline-secondary") rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;">
-                    This Month (@DateTime.UtcNow.ToString("MMM yyyy"))
+                    This Month (@IndianTimeHelper.Now.ToString("MMM yyyy"))
                 </a>
                 <a asp-action="EscrowStatement" asp-route-period="last_month" class="btn btn-sm @(Model.Period == "last_month" ? "btn-dark active" : "btn-outline-secondary") rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;">
-                    Last Month (@DateTime.UtcNow.AddMonths(-1).ToString("MMM yyyy"))
+                    Last Month (@IndianTimeHelper.Now.AddMonths(-1).ToString("MMM yyyy"))
                 </a>
                 <a asp-action="EscrowStatement" asp-route-period="this_year" class="btn btn-sm @(Model.Period == "this_year" ? "btn-dark active" : "btn-outline-secondary") rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;">
-                    This Year (@DateTime.UtcNow.ToString("yyyy"))
+                    This Year (@IndianTimeHelper.Now.ToString("yyyy"))
                 </a>
             </div>
 
@@ -247,7 +247,7 @@
             </div>
 
             <div class="text-end">
-                <div class="text-muted small">Date: <strong class="text-dark">@DateTime.UtcNow.ToString("dd MMM yyyy, hh:mm tt")</strong></div>
+                <div class="text-muted small">Date: <strong class="text-dark">@IndianTimeHelper.Now.ToString("dd MMM yyyy, hh:mm tt")</strong></div>
                 <div class="text-muted small">Total Records: <strong class="text-dark">@Model.Transactions.Count</strong></div>
             </div>
         </div>
@@ -333,7 +333,7 @@
                         <tr>
                             <td>
                                 <strong class="text-dark d-block">#@t.OrderId.ToString("D5")</strong>
-                                <small class="text-muted font-monospace" style="font-size: 0.70rem;">@t.OrderDate.ToString("dd/MM/yyyy HH:mm")</small>
+                                <small class="text-muted font-monospace" style="font-size: 0.70rem;">@t.OrderDate.ToIst().ToString("dd/MM/yyyy HH:mm")</small>
                             </td>
                             <td>
                                 <strong class="text-dark d-block">@t.BuyerName</strong>
@@ -372,7 +372,7 @@
                                         <i class="bi bi-check-circle-fill me-1"></i>Settled &amp; Paid
                                     </span>
                                     <small class="text-muted d-block mt-0.5" style="font-size: 0.68rem;">
-                                        Paid: @(t.DeliveredAt.HasValue ? t.DeliveredAt.Value.ToString("dd/MM/yy HH:mm") : "Verified")
+                                        Paid: @(t.DeliveredAt.HasValue ? t.DeliveredAt.Value.ToIst().ToString("dd/MM/yy HH:mm") : "Verified")
                                     </small>
                                 }
                                 else if (t.Status == "In Transit")

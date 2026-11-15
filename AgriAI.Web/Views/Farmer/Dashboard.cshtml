@@ -220,7 +220,7 @@
                                     </div>
                                     <div>
                                         <div class="dash-metric-num text-success">₹@pendingEscrowIncome.ToString("N2")</div>
-                                        <div class="dash-metric-label">In Escrow Vault (Locked) 🔒</div>
+                                        <div class="dash-metric-label">In Escrow Vault (Locked) </div>
                                     </div>
                                 </div>
                             </div>
@@ -267,7 +267,7 @@
                                                     <strong class="text-dark">Order #@nextOrder.Id.ToString("D5")</strong>
                                                     <span class="badge bg-success bg-opacity-10 text-success fw-bold">@nextOrder.Status</span>
                                                 </div>
-                                                <small class="text-muted d-block">Ordered @nextOrder.OrderDate.ToString("dd MMM yyyy, hh:mm tt") &bull; ₹@nextOrder.TotalAmount.ToString("N2")</small>
+                                                <small class="text-muted d-block">Ordered @nextOrder.OrderDate.ToIst().ToString("dd MMM yyyy, hh:mm tt") &bull; ₹@nextOrder.TotalAmount.ToString("N2")</small>
                                             </div>
                                         }
                                         else
@@ -410,7 +410,7 @@
                     <div id="farmerOrdersTab" class="dash-tab-panel">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">Active Customer Orders &amp; Dispatch 🚚</h3>
+                                <h3 class="dash-section-title">Active Customer Orders &amp; Dispatch </h3>
                                 <p class="text-muted small mb-0">Manage incoming buyer purchase requests, prepare harvest, upload Bilty, and verify OTP.</p>
                             </div>
                         </div>
@@ -440,7 +440,7 @@
                                                     Order #@order.Id.ToString("D5")
                                                 </span>
                                                 <span class="text-muted small">
-                                                    <i class="bi bi-calendar-event me-1"></i>@order.OrderDate.ToString("dd MMM yyyy, hh:mm tt")
+                                                    <i class="bi bi-calendar-event me-1"></i>@order.OrderDate.ToIst().ToString("dd MMM yyyy, hh:mm tt")
                                                 </span>
                                             </div>
                                             <div>
@@ -471,7 +471,7 @@
                                                 else if (order.Status == "Ready for Pickup")
                                                 {
                                                     <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
-                                                        <i class="bi bi-check-circle-fill me-1"></i>Ready for Pickup 🟢
+                                                        <i class="bi bi-check-circle-fill me-1"></i>Ready for Pickup 
                                                     </span>
                                                 }
                                                 else if (order.Status == "In Transit")
@@ -609,7 +609,7 @@
                     <div id="farmerIncomeTab" class="dash-tab-panel">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">Farm Income &amp; Payout Statement 💰</h3>
+                                <h3 class="dash-section-title">Farm Income &amp; Payout Statement </h3>
                                 <p class="text-muted small mb-0">Overview of completed earnings, escrow settlements, and financial ledger.</p>
                             </div>
                         </div>
@@ -683,7 +683,7 @@
                                                 var isDeclined = ord.Status.Contains("Declined") || ord.Status.Contains("Cancelled");
 
                                                 <tr>
-                                                    <td class="ps-4 text-muted small">@ord.OrderDate.ToString("dd MMM yyyy")</td>
+                                                    <td class="ps-4 text-muted small">@ord.OrderDate.ToIst().ToString("dd MMM yyyy")</td>
                                                     <td><strong class="text-dark">#@ord.Id.ToString("D5")</strong></td>
                                                     <td>
                                                         <strong class="text-dark">@cropName</strong>
@@ -734,7 +734,7 @@
                     <div id="farmerCompletedOrdersTab" class="dash-tab-panel">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">Completed Orders &amp; Past Sales 📋</h3>
+                                <h3 class="dash-section-title">Completed Orders &amp; Past Sales </h3>
                                 <p class="text-muted small mb-0">Record of all fulfilled, delivered and completed orders.</p>
                             </div>
                         </div>
@@ -758,14 +758,14 @@
                                                     Order #@order.Id.ToString("D5")
                                                 </span>
                                                 <span class="text-muted small">
-                                                    <i class="bi bi-calendar-check me-1"></i>@order.OrderDate.ToString("dd MMM yyyy, hh:mm tt")
+                                                    <i class="bi bi-calendar-check me-1"></i>@order.OrderDate.ToIst().ToString("dd MMM yyyy, hh:mm tt")
                                                 </span>
                                             </div>
                                             <div>
                                                 @if (order.Status.Contains("Delivered") || order.Status.Contains("Settled") || order.Status == "Completed" || order.Status == "Cash Received & Delivered")
                                                 {
                                                     <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill">
-                                                        <i class="bi bi-check-circle-fill me-1"></i>Delivered &amp; Settled 🟢
+                                                        <i class="bi bi-check-circle-fill me-1"></i>Delivered &amp; Settled 
                                                     </span>
                                                 }
                                                 else if (order.Status == "Declined")
@@ -849,7 +849,7 @@
                     <div id="farmerPurchasesTab" class="dash-tab-panel">
                         <div class="dash-section-header">
                             <div>
-                                <h3 class="dash-section-title">My Purchases &amp; Sourced Produce 🛍️</h3>
+                                <h3 class="dash-section-title">My Purchases &amp; Sourced Produce </h3>
                                 <p class="text-muted small mb-0">Track farm crops purchased from other verified farmers, your active cart, and Escrow deposits.</p>
                             </div>
                             <div class="d-flex gap-2">
@@ -1027,7 +1027,7 @@
                                                     Order #@pOrder.Id.ToString("D5")
                                                 </span>
                                                 <span class="text-muted small">
-                                                    <i class="bi bi-calendar-event me-1"></i>@pOrder.OrderDate.ToString("dd MMM yyyy, hh:mm tt")
+                                                    <i class="bi bi-calendar-event me-1"></i>@pOrder.OrderDate.ToIst().ToString("dd MMM yyyy, hh:mm tt")
                                                 </span>
                                             </div>
                                             <div>
@@ -1040,19 +1040,19 @@
                                                 else if (pOrder.Status == "Ready for Pickup")
                                                 {
                                                     <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
-                                                        <i class="bi bi-check-circle-fill me-1"></i>Ready for Pickup 🟢
+                                                        <i class="bi bi-check-circle-fill me-1"></i>Ready for Pickup 
                                                     </span>
                                                 }
                                                 else if (pOrder.Status == "In Transit")
                                                 {
                                                     <span class="badge bg-primary text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm">
-                                                        <i class="bi bi-truck me-1"></i>In Transit 🚚
+                                                        <i class="bi bi-truck me-1"></i>In Transit 
                                                     </span>
                                                 }
                                                 else if (pOrder.Status.Contains("Delivered") || pOrder.Status.Contains("Settled") || pOrder.Status == "Completed")
                                                 {
                                                     <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill">
-                                                        <i class="bi bi-check2-all me-1"></i>Delivered &amp; Settled 🟢
+                                                        <i class="bi bi-check2-all me-1"></i>Delivered &amp; Settled 
                                                     </span>
                                                 }
                                                 else if (pOrder.Status == "Declined" || pOrder.Status == "Cancelled")
@@ -1287,7 +1287,7 @@
                                     <div class="d-flex flex-column align-items-lg-end gap-3">
                                         <div class="text-lg-end">
                                             <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">Registered On</small>
-                                            <span class="fw-bold text-dark fs-6">@(currFarmer?.CreatedAt.ToString("MMMM dd, yyyy") ?? "Active Producer")</span>
+                                            <span class="fw-bold text-dark fs-6">@(currFarmer?.CreatedAt.ToIst().ToString("MMMM dd, yyyy") ?? "Active Producer")</span>
                                         </div>
 
                                         <div class="d-flex align-items-center gap-2 flex-wrap justify-content-lg-end">
@@ -1553,7 +1553,7 @@
                                                         <td class="ps-4">
                                                             <strong class="text-dark font-monospace">#@order.Id.ToString("D5")</strong>
                                                         </td>
-                                                        <td class="small text-muted">@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                                                        <td class="small text-muted">@order.OrderDate.ToIst().ToString("MMM dd, yyyy")</td>
                                                         <td class="fw-extrabold text-success fs-6">₹@order.TotalAmount.ToString("N2")</td>
                                                         <td>
                                                             @if (order.Status.Contains("Delivered") || order.Status.Contains("Settled"))

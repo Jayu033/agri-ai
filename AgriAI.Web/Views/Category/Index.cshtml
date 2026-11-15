@@ -267,8 +267,8 @@
 
                                 <!-- Created Date -->
                                 <td>
-                                    <span class="text-dark fw-semibold small d-block">@item.CreatedAt.ToString("dd MMM yyyy")</span>
-                                    <small class="text-muted" style="font-size: 0.70rem;">@item.CreatedAt.ToString("hh:mm tt")</small>
+                                    <span class="text-dark fw-semibold small d-block">@item.CreatedAt.ToIst().ToString("dd MMM yyyy")</span>
+                                    <small class="text-muted" style="font-size: 0.70rem;">@item.CreatedAt.ToIst().ToString("hh:mm tt")</small>
                                 </td>
 
                                 <!-- Actions: Edit & Delete -->

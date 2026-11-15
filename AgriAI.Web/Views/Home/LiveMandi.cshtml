@@ -35,7 +35,7 @@
                         <span class="badge bg-success px-2.5 py-1.5 rounded-pill fw-bold shadow-sm">2026 Live Active 🟢</span>
                     </div>
                     <div class="text-white-50 small mt-0.5" style="font-size: 0.78rem; white-space: nowrap;">
-                        <i class="bi bi-clock-history me-1"></i> Last Synced: @DateTime.Now.ToString("dd MMM yyyy, hh:mm tt")
+                        <i class="bi bi-clock-history me-1"></i> Last Synced: @IndianTimeHelper.Now.ToString("dd MMM yyyy, hh:mm tt")
                     </div>
                 </div>
             </div>
@@ -184,7 +184,7 @@
                             </td>
                             <td>
                                 <div class="mandi-market-name">@item.Market</div>
-                                <small class="text-muted">Arrival: @(string.IsNullOrEmpty(item.Arrival_Date) ? DateTime.Now.ToString("dd/MM/yyyy") : item.Arrival_Date)</small>
+                                <small class="text-muted">Arrival: @(string.IsNullOrEmpty(item.Arrival_Date) ? IndianTimeHelper.Now.ToString("dd/MM/yyyy") : item.Arrival_Date)</small>
                             </td>
                             <td>
                                 <span class="mandi-district-badge">

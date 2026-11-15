@@ -496,7 +496,7 @@
                                     </small>
                                 </td>
                                 <td>
-                                    <small class="text-muted font-monospace">@ticket.CreatedAt.ToString("dd MMM, hh:mm tt")</small>
+                                    <small class="text-muted font-monospace">@ticket.CreatedAt.ToIst().ToString("dd MMM, hh:mm tt")</small>
                                 </td>
                                 <td>
                                     @if (ticket.Status == "Resolved")
@@ -638,7 +638,7 @@
                             <h5 class="fw-bold text-dark mb-1">@ticket.Subject</h5>
                             <p class="text-muted small mb-2" style="white-space: pre-wrap; line-height: 1.6;">@ticket.Message</p>
                             <small class="text-muted font-monospace d-block mb-2" style="font-size: 0.72rem;">
-                                <i class="bi bi-clock me-1"></i>Submitted on: @ticket.CreatedAt.ToString("dd MMMM yyyy, hh:mm tt")
+                                <i class="bi bi-clock me-1"></i>Submitted on: @ticket.CreatedAt.ToIst().ToString("dd MMMM yyyy, hh:mm tt")
                             </small>
 
                             @if (!string.IsNullOrEmpty(ticket.AttachmentPath))
@@ -669,7 +669,7 @@
                                                 @if (ticket.ResolvedAt.HasValue)
                                                 {
                                                     <small class="text-muted font-monospace d-block" style="font-size: 0.68rem;">
-                                                        <i class="bi bi-clock-history me-1"></i>Resolved on: @ticket.ResolvedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+                                                        <i class="bi bi-clock-history me-1"></i>Resolved on: @ticket.ResolvedAt.Value.ToIst().ToString("dd MMM yyyy, hh:mm tt")
                                                     </small>
                                                 }
                                             </div>
@@ -887,7 +887,7 @@
                             <h5 class="fw-bold text-dark mb-1">@ticket.Subject</h5>
                             <p class="text-muted small mb-2" style="white-space: pre-wrap; line-height: 1.6;">@ticket.Message</p>
                             <small class="text-muted font-monospace d-block mb-2" style="font-size: 0.72rem;">
-                                <i class="bi bi-clock me-1"></i>Submitted on: @ticket.CreatedAt.ToString("dd MMMM yyyy, hh:mm tt")
+                                <i class="bi bi-clock me-1"></i>Submitted on: @ticket.CreatedAt.ToIst().ToString("dd MMMM yyyy, hh:mm tt")
                             </small>
 
                             @if (!string.IsNullOrEmpty(ticket.AttachmentPath))
@@ -918,7 +918,7 @@
                                                 @if (ticket.ResolvedAt.HasValue)
                                                 {
                                                     <small class="text-muted font-monospace d-block" style="font-size: 0.68rem;">
-                                                        <i class="bi bi-clock-history me-1"></i>Resolved on: @ticket.ResolvedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+                                                        <i class="bi bi-clock-history me-1"></i>Resolved on: @ticket.ResolvedAt.Value.ToIst().ToString("dd MMM yyyy, hh:mm tt")
                                                     </small>
                                                 }
                                             </div>

@@ -256,7 +256,7 @@ namespace AgriAI.Web.Controllers
                 var bilty = string.IsNullOrEmpty(order.BiltyNumber) ? "Direct Delivery / Not Required" : order.BiltyNumber;
                 var payoutReleased = order.AdminApprovedPayout || order.Status == "Delivered & Settled" ? "Released to Farmer" : "Held in Escrow Vault";
 
-                builder.AppendLine($"#{order.Id:D5},{order.OrderDate:yyyy-MM-dd HH:mm},\"{custName}\",{custPhone},{custEmail},{safeCropNames},{totalKg},{baseCropTotal:F2},{order.PlatformFee:F2},{order.TotalAmount:F2},{order.PaymentMethod},{order.Status},{order.TransportType},{bilty},{safeAddr},{payoutReleased}");
+                builder.AppendLine($"#{order.Id:D5},{order.OrderDate.ToIst():yyyy-MM-dd HH:mm},\"{custName}\",{custPhone},{custEmail},{safeCropNames},{totalKg},{baseCropTotal:F2},{order.PlatformFee:F2},{order.TotalAmount:F2},{order.PaymentMethod},{order.Status},{order.TransportType},{bilty},{safeAddr},{payoutReleased}");
             }
 
             var preamble = System.Text.Encoding.UTF8.GetPreamble();
@@ -265,7 +265,7 @@ namespace AgriAI.Web.Controllers
             Buffer.BlockCopy(preamble, 0, combinedBytes, 0, preamble.Length);
             Buffer.BlockCopy(dataBytes, 0, combinedBytes, preamble.Length, dataBytes.Length);
 
-            var fileName = $"AgriAI_Master_Orders_Report_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv";
+            var fileName = $"AgriAI_Master_Orders_Report_{IndianTimeHelper.Now:yyyyMMdd_HHmm}.csv";
             return File(combinedBytes, "text/csv; charset=utf-8", fileName);
         }
 
@@ -326,7 +326,7 @@ namespace AgriAI.Web.Controllers
             Buffer.BlockCopy(preamble, 0, combinedBytes, 0, preamble.Length);
             Buffer.BlockCopy(dataBytes, 0, combinedBytes, preamble.Length, dataBytes.Length);
 
-            var fileName = $"AgriAI_Farmer_Banking_Payouts_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv";
+            var fileName = $"AgriAI_Farmer_Banking_Payouts_{IndianTimeHelper.Now:yyyyMMdd_HHmm}.csv";
             return File(combinedBytes, "text/csv; charset=utf-8", fileName);
         }
 
@@ -761,55 +761,55 @@ namespace AgriAI.Web.Controllers
                     .ThenInclude(i => i.Product)
                 .AsQueryable();
 
-            var now = DateTime.UtcNow;
+            var istNow = IndianTimeHelper.Now;
             string selectedPeriod = (period ?? "all").ToLower();
 
-            int selYear = year ?? now.Year;
-            int selMonth = month ?? now.Month;
+            int selYear = year ?? istNow.Year;
+            int selMonth = month ?? istNow.Month;
 
             if (selectedPeriod == "today")
             {
-                var todayStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc);
+                var todayStart = IndianTimeHelper.GetIstTodayStartUtc();
                 query = query.Where(o => o.OrderDate >= todayStart);
             }
             else if (selectedPeriod == "this_month")
             {
-                var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                var monthStart = IndianTimeHelper.GetIstThisMonthStartUtc();
                 query = query.Where(o => o.OrderDate >= monthStart);
             }
             else if (selectedPeriod == "last_month")
             {
-                var lastMonth = now.AddMonths(-1);
-                var lmStart = new DateTime(lastMonth.Year, lastMonth.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-                var lmEnd = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                var lastMonth = istNow.AddMonths(-1);
+                var lmStart = IndianTimeHelper.ConvertIstToUtc(new DateTime(lastMonth.Year, lastMonth.Month, 1, 0, 0, 0));
+                var lmEnd = IndianTimeHelper.GetIstThisMonthStartUtc();
                 query = query.Where(o => o.OrderDate >= lmStart && o.OrderDate < lmEnd);
             }
             else if (selectedPeriod == "this_year")
             {
-                var yearStart = new DateTime(now.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                var yearStart = IndianTimeHelper.GetIstThisYearStartUtc();
                 query = query.Where(o => o.OrderDate >= yearStart);
             }
             else if (selectedPeriod == "custom")
             {
                 if (fromDate.HasValue)
                 {
-                    query = query.Where(o => o.OrderDate >= fromDate.Value);
+                    query = query.Where(o => o.OrderDate >= IndianTimeHelper.ConvertIstToUtc(fromDate.Value.Date));
                 }
                 if (toDate.HasValue)
                 {
-                    var endOfDay = toDate.Value.Date.AddDays(1).AddTicks(-1);
+                    var endOfDay = IndianTimeHelper.ConvertIstToUtc(toDate.Value.Date.AddDays(1).AddTicks(-1));
                     query = query.Where(o => o.OrderDate <= endOfDay);
                 }
             }
             else if (selectedPeriod == "month_select" && month.HasValue && year.HasValue)
             {
-                var mStart = new DateTime(year.Value, month.Value, 1, 0, 0, 0, DateTimeKind.Utc);
+                var mStart = IndianTimeHelper.ConvertIstToUtc(new DateTime(year.Value, month.Value, 1, 0, 0, 0));
                 var mEnd = mStart.AddMonths(1);
                 query = query.Where(o => o.OrderDate >= mStart && o.OrderDate < mEnd);
             }
             else if (selectedPeriod == "year_select" && year.HasValue)
             {
-                var yStart = new DateTime(year.Value, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                var yStart = IndianTimeHelper.ConvertIstToUtc(new DateTime(year.Value, 1, 1, 0, 0, 0));
                 var yEnd = yStart.AddYears(1);
                 query = query.Where(o => o.OrderDate >= yStart && o.OrderDate < yEnd);
             }
@@ -906,52 +906,52 @@ namespace AgriAI.Web.Controllers
                     .ThenInclude(i => i.Product)
                 .AsQueryable();
 
-            var now = DateTime.UtcNow;
+            var istNow = IndianTimeHelper.Now;
             string selectedPeriod = (period ?? "all").ToLower();
 
-            int selYear = year ?? now.Year;
-            int selMonth = month ?? now.Month;
+            int selYear = year ?? istNow.Year;
+            int selMonth = month ?? istNow.Month;
 
             if (selectedPeriod == "today")
             {
-                var todayStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc);
+                var todayStart = IndianTimeHelper.GetIstTodayStartUtc();
                 query = query.Where(o => o.OrderDate >= todayStart);
             }
             else if (selectedPeriod == "this_month")
             {
-                var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                var monthStart = IndianTimeHelper.GetIstThisMonthStartUtc();
                 query = query.Where(o => o.OrderDate >= monthStart);
             }
             else if (selectedPeriod == "last_month")
             {
-                var lastMonth = now.AddMonths(-1);
-                var lmStart = new DateTime(lastMonth.Year, lastMonth.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-                var lmEnd = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                var lastMonth = istNow.AddMonths(-1);
+                var lmStart = IndianTimeHelper.ConvertIstToUtc(new DateTime(lastMonth.Year, lastMonth.Month, 1, 0, 0, 0));
+                var lmEnd = IndianTimeHelper.GetIstThisMonthStartUtc();
                 query = query.Where(o => o.OrderDate >= lmStart && o.OrderDate < lmEnd);
             }
             else if (selectedPeriod == "this_year")
             {
-                var yearStart = new DateTime(now.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                var yearStart = IndianTimeHelper.GetIstThisYearStartUtc();
                 query = query.Where(o => o.OrderDate >= yearStart);
             }
             else if (selectedPeriod == "custom")
             {
-                if (fromDate.HasValue) query = query.Where(o => o.OrderDate >= fromDate.Value);
+                if (fromDate.HasValue) query = query.Where(o => o.OrderDate >= IndianTimeHelper.ConvertIstToUtc(fromDate.Value.Date));
                 if (toDate.HasValue)
                 {
-                    var endOfDay = toDate.Value.Date.AddDays(1).AddTicks(-1);
+                    var endOfDay = IndianTimeHelper.ConvertIstToUtc(toDate.Value.Date.AddDays(1).AddTicks(-1));
                     query = query.Where(o => o.OrderDate <= endOfDay);
                 }
             }
             else if (selectedPeriod == "month_select" && month.HasValue && year.HasValue)
             {
-                var mStart = new DateTime(year.Value, month.Value, 1, 0, 0, 0, DateTimeKind.Utc);
+                var mStart = IndianTimeHelper.ConvertIstToUtc(new DateTime(year.Value, month.Value, 1, 0, 0, 0));
                 var mEnd = mStart.AddMonths(1);
                 query = query.Where(o => o.OrderDate >= mStart && o.OrderDate < mEnd);
             }
             else if (selectedPeriod == "year_select" && year.HasValue)
             {
-                var yStart = new DateTime(year.Value, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                var yStart = IndianTimeHelper.ConvertIstToUtc(new DateTime(year.Value, 1, 1, 0, 0, 0));
                 var yEnd = yStart.AddYears(1);
                 query = query.Where(o => o.OrderDate >= yStart && o.OrderDate < yEnd);
             }

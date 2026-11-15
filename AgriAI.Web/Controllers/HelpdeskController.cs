@@ -172,7 +172,7 @@ namespace AgriAI.Web.Controllers
             }
 
             var randomCode = new Random().Next(1000, 9999);
-            var ticketNumber = $"TKT-{DateTime.UtcNow:yyMMdd}-{randomCode}";
+            var ticketNumber = $"TKT-{IndianTimeHelper.Now:yyMMdd}-{randomCode}";
 
             var ticket = new SupportTicket
             {

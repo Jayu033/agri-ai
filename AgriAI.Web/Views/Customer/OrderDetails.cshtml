@@ -12,7 +12,7 @@
     var farmerPhone = farmerUser?.PhoneNumber ?? "+91 97245 60047";
     var baseAmount = Model.TotalAmount - Model.LogisticsFee - Model.PlatformFee;
     var orderNoStr = "AG-" + Model.Id.ToString("D5");
-    var dateFormatted = Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt");
+    var dateFormatted = Model.OrderDate.ToIst().ToString("dd MMM yyyy, hh:mm tt");
     var firstItem = Model.OrderItems.FirstOrDefault();
     var produceName = firstItem?.Product?.Name ?? "Farm Crop Harvest";
     var itemQty = firstItem?.Quantity ?? 1;
@@ -542,7 +542,7 @@
                             Your produce is in transit! Show the Bilty LR Number at the parcel counter in your city and collect your harvest by paying the nominal counter parcel fee.
                         </p>
                         <div class="d-flex align-items-center gap-3">
-                            <span class="text-white-50 small"><i class="bi bi-clock-history me-1"></i>Dispatched: @(Model.DispatchedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "Recently")</span>
+                            <span class="text-white-50 small"><i class="bi bi-clock-history me-1"></i>Dispatched: @(Model.DispatchedAt.HasValue ? Model.DispatchedAt.Value.ToIst().ToString("dd MMM yyyy, hh:mm tt") : "Recently")</span>
                         </div>
                     </div>
 
