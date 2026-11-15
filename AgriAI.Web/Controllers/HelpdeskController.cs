@@ -255,7 +255,7 @@ namespace AgriAI.Web.Controllers
 
         // GET: /Helpdesk/GetNotificationCount
         [HttpGet]
-        public async Task<IActionResult> GetNotificationCount()
+        public async Task<IActionResult> GetNotificationCount(long? lastSeenEpoch)
         {
             if (User.Identity == null || !User.Identity.IsAuthenticated)
             {
@@ -286,21 +286,34 @@ namespace AgriAI.Web.Controllers
                 }
                 else if (User.IsInRole("Farmer") || User.IsInRole("Customer"))
                 {
-                    // Farmer or Customer gets count of their active tickets OR tickets with Admin responses
+                    // Farmer or Customer gets count of their active tickets with unread updates
                     var userTickets = await _context.SupportTickets
                         .Where(t => (currentUserId != null && t.UserId == currentUserId) || (currentEmail != null && t.SenderEmail == currentEmail))
                         .ToListAsync();
 
-                    var activeCount = userTickets.Count(t => t.Status != "Closed");
+                    int unreadCount = 0;
+                    if (lastSeenEpoch.HasValue && lastSeenEpoch.Value > 0)
+                    {
+                        var lastSeenDate = DateTimeOffset.FromUnixTimeMilliseconds(lastSeenEpoch.Value).UtcDateTime;
+                        // Count tickets where Admin responded or status changed AFTER user last viewed Helpdesk
+                        unreadCount = userTickets.Count(t => !string.IsNullOrEmpty(t.AdminResponse) && (t.ResolvedAt ?? t.CreatedAt) > lastSeenDate);
+                    }
+                    else
+                    {
+                        // If user has never opened Helpdesk, count unclosed tickets with responses
+                        unreadCount = userTickets.Count(t => !string.IsNullOrEmpty(t.AdminResponse) && t.Status != "Closed");
+                    }
+
                     var hasAdminResponse = userTickets.Any(t => !string.IsNullOrEmpty(t.AdminResponse));
 
                     return Json(new
                     {
-                        count = activeCount,
+                        count = unreadCount,
+                        totalTickets = userTickets.Count,
                         role = User.IsInRole("Farmer") ? "Farmer" : "Customer",
-                        unread = activeCount > 0,
+                        unread = unreadCount > 0,
                         hasResponse = hasAdminResponse,
-                        message = activeCount == 1 ? "1 active support ticket in Helpdesk" : $"{activeCount} active support tickets in Helpdesk"
+                        message = unreadCount == 1 ? "New official response received from Administrator!" : $"{unreadCount} new responses in Helpdesk"
                     });
                 }
 

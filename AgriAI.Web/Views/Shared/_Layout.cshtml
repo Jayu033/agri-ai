@@ -650,14 +650,27 @@
                 })
                 .catch(() => {});
 
-            // Helpdesk Notification Count & Badge Alert
+            // Helpdesk Notification Count & Dynamic Seen/Unread Tracking
             function updateHelpdeskNotificationBadges() {
-                fetch('/Helpdesk/GetNotificationCount')
+                const isHelpdeskPage = window.location.pathname.toLowerCase().includes('/helpdesk');
+                const badges = document.querySelectorAll('.helpdesk-badge');
+
+                // If currently on Helpdesk page, mark all messages as read/seen and hide badge immediately!
+                if (isHelpdeskPage) {
+                    localStorage.setItem('helpdesk_last_seen_epoch', Date.now().toString());
+                    badges.forEach(b => {
+                        b.style.display = 'none';
+                        b.classList.remove('helpdesk-badge-pulse');
+                    });
+                    return;
+                }
+
+                const lastSeen = localStorage.getItem('helpdesk_last_seen_epoch') || '0';
+                fetch('/Helpdesk/GetNotificationCount?lastSeenEpoch=' + encodeURIComponent(lastSeen))
                     .then(r => r.json())
                     .then(d => {
                         if (!d || d.count === undefined) return;
 
-                        const badges = document.querySelectorAll('.helpdesk-badge');
                         if (d.count > 0) {
                             badges.forEach(b => {
                                 b.textContent = d.count > 99 ? '99+' : d.count;
@@ -665,16 +678,12 @@
                                 b.classList.add('helpdesk-badge-pulse');
                             });
 
-                            // Check if on Helpdesk page
-                            const isHelpdeskPage = window.location.pathname.toLowerCase().includes('/helpdesk');
                             const storageKey = 'lastNotifiedHelpdeskCount_' + (d.role || 'User');
                             const prevCount = parseInt(sessionStorage.getItem(storageKey) || '-1', 10);
 
-                            // Trigger floating notification toast once per count change when not currently on Helpdesk
-                            if (!isHelpdeskPage && d.count > 0 && d.count !== prevCount) {
+                            // Trigger floating notification toast once per new message count
+                            if (d.count > 0 && d.count !== prevCount) {
                                 showHelpdeskNotificationToast(d.count, d.message, d.role);
-                                sessionStorage.setItem(storageKey, d.count.toString());
-                            } else if (isHelpdeskPage) {
                                 sessionStorage.setItem(storageKey, d.count.toString());
                             }
                         } else {
@@ -688,8 +697,8 @@
             }
 
             updateHelpdeskNotificationBadges();
-            // Refresh every 40 seconds
-            setInterval(updateHelpdeskNotificationBadges, 40000);
+            // Refresh every 35 seconds
+            setInterval(updateHelpdeskNotificationBadges, 35000);
         });
 
         function showHelpdeskNotificationToast(count, message, role) {
