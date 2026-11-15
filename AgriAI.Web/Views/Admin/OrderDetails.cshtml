@@ -578,9 +578,14 @@
             @if (!string.IsNullOrEmpty(Model.BiltyImageUrl))
             {
                 <div class="user-info-card mb-3">
-                    <div class="user-info-header">
+                    <div class="user-info-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <h5 class="fw-bold text-dark mb-0">Consignment Bilty / Lorry Receipt Proof</h5>
-                        <span class="badge bg-primary rounded-pill px-3 py-1 fw-bold">#@(Model.BiltyNumber ?? "Proof")</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="/tools/bilty-editor.html" target="_blank" class="btn btn-xs btn-outline-success rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.75rem;">
+                                <i class="bi bi-pencil-square me-1"></i> Bilty Editor Tool
+                            </a>
+                            <span class="badge bg-primary rounded-pill px-3 py-1 fw-bold">#@(Model.BiltyNumber ?? "Proof")</span>
+                        </div>
                     </div>
                     <div class="user-info-body text-center bg-light">
                         <img src="@Model.BiltyImageUrl" class="img-fluid rounded-3 border shadow-sm" style="max-height: 280px; object-fit: contain;" alt="Bilty Receipt" />
