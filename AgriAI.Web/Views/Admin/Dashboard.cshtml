@@ -99,21 +99,6 @@
             <!-- Right Main Content Area -->
             <div class="col-lg-9 col-md-8">
                 <div class="dash-main-card">
-                    
-                    @if (TempData["SuccessMessage"] != null)
-                    {
-                        <div class="alert alert-success alert-dismissible fade show rounded-4 p-3 mb-4 shadow-sm border-0" style="background-color: #d1fae5; color: #065f46;" role="alert">
-                            <i class="bi bi-check-circle-fill me-2 fs-5"></i> <strong>Success:</strong> @TempData["SuccessMessage"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    }
-                    @if (TempData["ErrorMessage"] != null)
-                    {
-                        <div class="alert alert-danger alert-dismissible fade show rounded-4 p-3 mb-4 shadow-sm border-0" style="background-color: #fee2e2; color: #991b1b;" role="alert">
-                            <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i> <strong>Notice:</strong> @TempData["ErrorMessage"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    }
 
                     <!-- 1. MODULE: Executive KPI Overview Dashboard -->
                     <div id="adminOverviewTab" class="dash-tab-panel @(activeTab == "overview" ? "active" : "")">
