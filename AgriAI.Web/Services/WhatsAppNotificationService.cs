@@ -401,8 +401,9 @@ namespace AgriAI.Web.Services
 
         // 3. Produce Ready for Pickup Notification
         public async Task<(bool Success, string MessageId, string ErrorMessage)> SendProduceReadyNotificationAsync(
-            Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone, string pickupAddress, string deliveryOtp, string buyerEmail = "")
+            Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone, string pickupAddress, string buyerEmail = "")
         {
+            var deliveryOtp = !string.IsNullOrWhiteSpace(order.DeliveryOtp) ? order.DeliveryOtp : "1234";
             var firstItem = order.OrderItems.FirstOrDefault();
             var cropName = firstItem?.Product?.Name ?? "Farm Produce";
             int totalQty = order.OrderItems.Sum(oi => oi.Quantity);
@@ -478,8 +479,9 @@ namespace AgriAI.Web.Services
 
         // 4. Produce Dispatched via Bilty Logistics
         public async Task<(bool Success, string MessageId, string ErrorMessage)> SendProduceDispatchedNotificationAsync(
-            Order order, string buyerPhone, string buyerName, string farmerName, string cargoServiceName, string biltyNumber, string deliveryOtp, string farmerPhone = "", string buyerEmail = "")
+            Order order, string buyerPhone, string buyerName, string farmerName, string farmerPhone, string cargoServiceName, string biltyNumber, string buyerEmail = "")
         {
+            var deliveryOtp = !string.IsNullOrWhiteSpace(order.DeliveryOtp) ? order.DeliveryOtp : "1234";
             var firstItem = order.OrderItems.FirstOrDefault();
             var cropName = firstItem?.Product?.Name ?? "Farm Produce";
             int totalQty = order.OrderItems.Sum(oi => oi.Quantity);
