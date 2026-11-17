@@ -204,8 +204,7 @@ namespace AgriAI.Web.Services
 
                 if (!_isEnabled || _provider.Equals("Disabled", StringComparison.OrdinalIgnoreCase))
                 {
-                    _logger.LogInformation("📱 [Simulated WhatsApp Alert] To: {Phone}
-{Body}", cleanPhone, messageBody);
+                    _logger.LogInformation("📱 [Simulated WhatsApp Alert] To: {Phone} - {Body}", cleanPhone, messageBody);
                     return (true, "simulated_" + Guid.NewGuid().ToString("N")[..8], string.Empty);
                 }
 
