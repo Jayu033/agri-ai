@@ -18,8 +18,8 @@
     .marketplace-catalog-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 1.5rem 1.75rem 1.75rem 1.75rem;
+        border-radius: 22px;
+        padding: 1.5rem 1.5rem 2rem 1.5rem;
         box-shadow: 0 10px 30px rgba(0, 50, 35, 0.05), 0 1px 4px rgba(0, 0, 0, 0.02);
         margin-bottom: 2rem;
     }
@@ -30,11 +30,14 @@
     }
     .marketplace-scroll-wrapper {
         min-height: 480px;
-        max-height: calc(100vh - 270px);
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding-right: 6px;
+        overflow: visible;
         padding-bottom: 8px;
+    }
+    @@media (min-width: 1400px) {
+        .col-xxl-2-4 {
+            flex: 0 0 auto;
+            width: 20%;
+        }
     }
     .marketplace-scroll-wrapper::-webkit-scrollbar {
         width: 7px;
@@ -309,62 +312,73 @@
     }
 </style>
 
-<div class="container-fluid py-3 px-2 px-md-3 px-xl-4" style="max-width: 1680px;">
+<div class="container-fluid py-3 px-2 px-md-3 px-xl-3" style="max-width: 100%;">
     
-    <!-- Hero Banner -->
-    <div class="marketplace-hero shadow-sm">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <div class="agri-page-badge">
-                    <i class="bi bi-shop"></i>
-                    <span>Direct Farmer Marketplace</span>
-                </div>
-                <h1 class="agri-page-title">
-                    Shop Fresh Farm Produce
-                </h1>
-                <p class="agri-page-subtitle">
-                    Buy organic crops, grains, and spices directly from verified Gujarat farmers with 0% middleman commission.
-                </p>
-            </div>
-            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                @if (User.Identity != null && User.Identity.IsAuthenticated)
-                {
-                    if (User.IsInRole("Farmer"))
-                    {
-                        <a asp-action="Create" class="btn btn-light text-success fw-bold px-4 py-2.5 rounded-pill shadow">
-                            <i class="bi bi-plus-circle-fill me-1"></i> List New Harvest Produce
-                        </a>
-                    }
-                }
-                else
-                {
-                    <a asp-controller="Account" asp-action="Register" class="btn btn-light text-success fw-bold px-4 py-2.5 rounded-pill shadow">
-                        <i class="bi bi-person-badge-fill me-1"></i> Register as Farmer
-                    </a>
-                }
-            </div>
-        </div>
-    </div>
-
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show bg-white shadow-sm rounded-4 border-success p-3 mb-4" role="alert">
-            <i class="bi bi-check-circle-fill me-2 text-success"></i> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show bg-white shadow-sm rounded-4 border-danger p-3 mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i> @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    <!-- Dedicated Distinct Marketplace Catalog Box (Framed with Custom Scrollbar) -->
+    <!-- Dedicated Single Master Card for Marketplace Oversight -->
     <div class="marketplace-catalog-card shadow-sm">
         
+        <!-- Hero Banner (Integrated inside main box) -->
+        <div class="marketplace-hero shadow-sm mb-4">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="agri-page-badge">
+                        <i class="bi bi-shop"></i>
+                        <span>@(User.IsInRole("Admin") ? "Marketplace Oversight & Direct Farm Audit" : "Direct Farmer Marketplace")</span>
+                    </div>
+                    <h1 class="agri-page-title">
+                        @(User.IsInRole("Admin") ? "Marketplace Oversight & Produce Catalog" : "Shop Fresh Farm Produce")
+                    </h1>
+                    <p class="agri-page-subtitle">
+                        Buy organic crops, grains, and spices directly from verified Gujarat farmers with 0% middleman commission.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        if (User.IsInRole("Farmer"))
+                        {
+                            <a asp-action="Create" class="btn btn-light text-success fw-bold px-4 py-2.5 rounded-pill shadow">
+                                <i class="bi bi-plus-circle-fill me-1"></i> List New Harvest Produce
+                            </a>
+                        }
+                        else if (User.IsInRole("Admin"))
+                        {
+                            <div class="d-inline-flex gap-2">
+                                <a asp-controller="Category" asp-action="Index" class="btn btn-light text-success fw-bold px-3 py-2 rounded-pill shadow">
+                                    <i class="bi bi-grid-fill me-1"></i> Categories
+                                </a>
+                                <a asp-controller="Admin" asp-action="Dashboard" asp-route-tab="products" class="btn btn-outline-light fw-bold px-3 py-2 rounded-pill shadow">
+                                    <i class="bi bi-speedometer2 me-1"></i> Admin Portal
+                                </a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-light text-success fw-bold px-4 py-2.5 rounded-pill shadow">
+                            <i class="bi bi-person-badge-fill me-1"></i> Register as Farmer
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show bg-white shadow-sm rounded-4 border-success p-3 mb-4" role="alert">
+                <i class="bi bi-check-circle-fill me-2 text-success"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show bg-white shadow-sm rounded-4 border-danger p-3 mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
         <!-- Filter Header: Categories & Search Bar -->
         <div class="marketplace-catalog-header d-flex flex-wrap align-items-center justify-content-between gap-3">
             <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -517,7 +531,7 @@
             var maundPrice = item.Price * 20;
             var isOwnCrop = !string.IsNullOrEmpty(currentUserId) && (item.FarmerId == currentUserId || item.FarmerId == currentUserName);
 
-            <div class="col-md-6 col-lg-4 col-xl-3 crop-card-item" data-category="@catNormalized" data-name="@item.Name.ToLower()">
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xxl-2-4 crop-card-item" data-category="@catNormalized" data-name="@item.Name.ToLower()">
                 <div class="product-card-modern">
                     <!-- Image Area -->
                     <div class="product-img-wrapper">
